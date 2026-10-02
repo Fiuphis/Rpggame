@@ -136,3 +136,6 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 ## v27
 - Service worker: imagens em cache primeiro (o jogo abre instantâneo ao escolher o grupo); HTML/JS/CSS pela rede (sempre a versão nova).
 - Barra de mana alinhada ao encaixe da moldura (mesma altura/posição do slot, antes começava mais alta).
+
+## v28
+- Tudo em cache (abre instantâneo, funciona offline). Em segundo plano o service worker revalida na rede; se algo mudou, atualiza o cache e avisa a página: no menu recarrega sozinho, no jogo aparece o botão "NOVA VERSÃO · TOQUE PARA ATUALIZAR" (não interrompe a partida).
