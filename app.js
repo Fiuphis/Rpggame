@@ -116,9 +116,10 @@ const activeGroup = GROUP_KEY || 'mage';
 // Moedas e itens são independentes por grupo (uma chave de save por classe).
 if (PARAMS.get('reset')) Object.keys(GROUPS).forEach(g => localStorage.removeItem(`bd1_save_${g}`));
 const SAVE_KEY = `bd1_save_${activeGroup}`;
+// v:2 — saves antigos (que começavam com moedas) são descartados; todo grupo começa com 0
 function loadSave(){
-  try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); if (d && typeof d.gold === 'number' && Array.isArray(d.inventory)) return d; } catch {}
-  return {gold:10, inventory:[]};
+  try { const d = JSON.parse(localStorage.getItem(SAVE_KEY)); if (d && d.v === 2 && typeof d.gold === 'number' && Array.isArray(d.inventory)) return d; } catch {}
+  return {gold:0, inventory:[]};
 }
 const saved = loadSave();
 
@@ -133,7 +134,7 @@ const state = {
   ultReady:{mage:false,knight:false,tank:false,assassin:false},   // carrega ao acertar pergunta difícil
   curQ:null, lastQ:{1:-1,2:-1,3:-1}
 };
-function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify({gold:state.gold, inventory:state.inventory})); }
+function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify({v:2, gold:state.gold, inventory:state.inventory})); }
 
 const $ = s => document.querySelector(s);
 const wait = ms => new Promise(r=>setTimeout(r,ms));

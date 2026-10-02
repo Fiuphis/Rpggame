@@ -139,3 +139,6 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 
 ## v28
 - Tudo em cache (abre instantâneo, funciona offline). Em segundo plano o service worker revalida na rede; se algo mudou, atualiza o cache e avisa a página: no menu recarrega sozinho, no jogo aparece o botão "NOVA VERSÃO · TOQUE PARA ATUALIZAR" (não interrompe a partida).
+
+## v29
+- Todos os grupos começam com 0 moedas (antes 10). Saves antigos são descartados (formato v:2).
