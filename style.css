@@ -1,0 +1,178 @@
+*{-webkit-tap-highlight-color:transparent}button{outline:none}button:focus,button:focus-visible,button:active{outline:none}::selection{background:transparent}img{-webkit-touch-callout:none}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#050711;overflow:hidden}body{display:grid;place-items:center}.game{position:relative;width:min(100vw,66.6666667vh);height:min(100vh,150vw);aspect-ratio:2/3;overflow:hidden;background:#050711;touch-action:manipulation;user-select:none;-webkit-user-select:none}.game #reference{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;image-rendering:pixelated;display:block;-webkit-user-drag:none;user-select:none}.hit,.vote-choice{appearance:none;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;outline:none;box-shadow:none}.hit{position:absolute;border:0;background:transparent;padding:0;margin:0;cursor:pointer;touch-action:manipulation;z-index:20}.hit:focus,.hit:active{outline:none;background:transparent;box-shadow:none}.hit:focus-visible{outline:1px solid rgba(255,211,77,.0)}
+/* All hitboxes use the source image coordinate system: x/1024 and y/1536. */
+.shop{top:85.10%;height:9.35%;width:7.55%}.shop.hp1{left:57.55%}.shop.hp2{left:65.43%}.shop.mana1{left:73.05%}.shop.mana2{left:81.15%}
+#inventory-hits{position:absolute;inset:0;z-index:21;pointer-events:none}.inventory-hit{position:absolute;border:0;background:transparent;appearance:none;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;outline:none}.inventory-hit:focus,.inventory-hit:active{outline:none;background:transparent}.inventory-hit:nth-child(1){left:5.75%;top:76.15%;width:12.65%;height:8.55%}.inventory-hit:nth-child(2){left:21.45%;top:76.15%;width:12.65%;height:8.55%}.inventory-hit:nth-child(3){left:37.15%;top:76.15%;width:12.65%;height:8.55%}.inventory-hit:nth-child(4){left:5.75%;top:86.05%;width:12.65%;height:8.55%}.inventory-hit:nth-child(5){left:21.45%;top:86.05%;width:12.65%;height:8.55%}.inventory-hit:nth-child(6){left:37.15%;top:86.05%;width:12.65%;height:8.55%}
+/* Painel do Mercador: cobre só o texto antigo; retrato e moldura da arte ficam intactos. */
+.game{container-type:inline-size}
+.merchant-vote{position:absolute;z-index:26;left:75.7%;top:76%;width:17.3%;height:6.2%;padding:.5cqw .8cqw;background:#05050e;color:#eee5f7;font-family:monospace;display:flex;flex-direction:column;gap:.5cqw;overflow:hidden}
+.merchant-title{font-size:1.75cqw;line-height:1.1;color:#e3a948;display:flex;justify-content:space-between;align-items:center}.merchant-title b{color:#9fe3a8;font-size:1.6cqw}.merchant-vote.urgent .merchant-title b{color:#ff536b}
+.merchant-body{display:none;flex:1;min-height:0;flex-direction:column;gap:.5cqw}
+.merchant-vote.open .merchant-body{display:flex}
+.merchant-question{font-size:1.25cqw;line-height:1.15;color:#f0d9ff}
+.vote-row{display:grid;grid-template-columns:1fr 1fr;gap:1cqw;margin-top:auto}
+.vote-choice{border:1px solid #6f6385;background:#120f20;color:#fff0ff;font-family:monospace;font-size:1.5cqw;line-height:1;padding:.5cqw .8cqw;display:flex;justify-content:space-between;align-items:center;min-width:0;cursor:pointer}
+.vote-choice b{color:#ffc54e}
+.vote-choice.selected{border-color:#ffc54e;background:#2a2110}
+.vote-choice:disabled{opacity:.6}
+.gold-hud{position:absolute;z-index:26;left:91.4%;top:2.6%;width:4.5%;height:2.3%;background:#04040c;color:#ffc54e;font:bold 2.6cqw monospace;display:flex;align-items:center;justify-content:center}
+.inventory-hit{display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.inv-icon{height:66%;image-rendering:pixelated;pointer-events:none}
+
+
+#toast{position:absolute;z-index:60;left:20%;right:20%;bottom:24%;padding:1.2%;text-align:center;background:#0d0b1c;border:1px solid #ffc449;color:#ffc449;font:clamp(7px,1vw,12px) monospace;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none}#toast.show{opacity:1;transform:none}
+@media(max-aspect-ratio:2/3){.game{width:100vw;height:auto}}@media(min-aspect-ratio:2/3){.game{height:100vh;width:auto}}
+
+
+
+.back-lobby{position:absolute;z-index:50;left:2%;top:.8%;font:bold 1.7cqw monospace;color:#c8bde0;background:rgba(5,5,14,.85);border:1px solid #4a4260;padding:.6cqw 1.2cqw;cursor:pointer;outline:none}.back-lobby:active{border-color:#ffc54e;color:#ffc54e}
+
+/* ===== Pergunta como ataque do boss (moldura vazia + conteúdo dinâmico) ===== */
+#dynamic-ui{position:absolute;inset:0;z-index:28;pointer-events:none}
+.dynamic-question{position:absolute;left:8.4%;top:23.83%;width:83.4%;height:22.14%;pointer-events:auto;animation:dq-in .34s ease-out both}
+.dynamic-question.exiting{animation:dq-out .36s ease-in both;pointer-events:none}
+.dq-frame{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;display:block;pointer-events:none}
+.dq-content{position:absolute;left:1.9%;right:1.9%;top:7.5%;bottom:4.5%;display:flex;flex-direction:column;gap:2.4%;color:#eee5f7;font-family:monospace}
+.dq-top{display:grid;grid-template-columns:25% 1fr 14%;align-items:center;gap:1.5%;min-height:0;flex:0 0 31%}
+.dq-type{display:flex;align-items:center;gap:6%;color:#c8a7ff;font-size:1.45cqw;line-height:1.15;letter-spacing:.5px}
+.dq-type img{height:6.2cqw;width:6.2cqw;image-rendering:pixelated;flex:none}
+#dq-text{text-align:center;color:#e9ccff;font-size:2.4cqw;line-height:1.25}
+.dq-reward{display:flex;align-items:center;justify-content:flex-end;gap:4%;color:#ffc54e;font-size:2.8cqw}
+.dq-reward img{height:3.6cqw;image-rendering:pixelated}
+#dq-answers{flex:1;min-height:0;display:flex;flex-direction:column;gap:3%}
+.dq-answer{appearance:none;-webkit-appearance:none;flex:1;min-height:0;display:flex;align-items:center;gap:2.2cqw;text-align:left;font-family:monospace;font-size:2.15cqw;color:#e8def3;background:#0a0816;border:1px solid #5a506e;padding:0 2.2cqw 0 .8cqw;cursor:pointer;outline:none;transition:border-color .1s,background .1s}
+.dq-answer .letter{flex:none;width:5.2cqw;text-align:center;color:#f2b04a;font-weight:bold;border-right:1px solid #5a506e;padding-right:.6cqw}
+.dq-answer:active:not(:disabled){border-color:#ffc54e}
+.dq-answer.selected{border-color:#ffc54e;background:#2a2110}
+.dq-answer.correct{border-color:#4dff8a;background:#0f2a1a;color:#d8ffe6}
+.dq-answer.wrong{border-color:#ff536b;background:#2b0f16;color:#ffd6dc}
+.dq-answer:disabled{cursor:default}
+@keyframes dq-in{from{opacity:0;transform:translateY(-16px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes dq-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(12px) scale(.98)}}
+
+/* Ataque do boss (carga antes da pergunta) e flash de dano */
+.boss-aura{position:absolute;z-index:10;left:22%;top:5%;width:56%;height:27%;pointer-events:none;opacity:0;border-radius:40%;background:radial-gradient(ellipse at 50% 45%,rgba(255,40,70,.55),rgba(255,40,70,0) 70%)}
+.game.boss-attack .boss-aura{animation:boss-charge 1s ease-in-out both}
+.game.boss-attack #reference{animation:boss-rumble 1s linear both}
+.damage-flash{position:absolute;z-index:40;inset:0;background:#ff1f3d;opacity:0;pointer-events:none}
+.damage-flash.active{animation:damage-flash .45s ease-out}
+.game.hit-shake{animation:hit-shake .4s linear}
+@keyframes boss-charge{0%{opacity:0;transform:scale(.9)}60%{opacity:1;transform:scale(1.04)}100%{opacity:.55;transform:scale(1)}}
+@keyframes boss-rumble{0%,100%{transform:translate(0,0)}15%{transform:translate(-2px,1px)}30%{transform:translate(2px,-1px)}45%{transform:translate(-1px,-1px)}60%{transform:translate(1px,1px)}75%{transform:translate(-1px,0)}}
+@keyframes damage-flash{0%{opacity:0}20%{opacity:.4}100%{opacity:0}}
+@keyframes hit-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+
+/* ===== Fase de ataque dos heróis ===== */
+.dq-answer .label{flex:1;min-width:0}
+.dq-answer .cnt{flex:none;color:#ffc54e;font-weight:bold;min-width:3.6cqw;text-align:right}
+.dq-side-timer{color:#9fe3a8;font-size:2.2cqw;font-weight:bold;line-height:1}.dq-side-timer.urgent{color:#ff536b}
+.turn-banner{position:absolute;z-index:45;left:50%;top:11.5%;transform:translate(-50%,-6px);padding:1.4cqw 3.2cqw;text-align:center;font:bold 3cqw monospace;letter-spacing:.3cqw;color:#ffc54e;background:rgba(5,5,14,.92);border:1px solid #ffc54e;box-shadow:0 0 0 2px #05050b;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;white-space:nowrap}
+.turn-banner.show{opacity:1;transform:translate(-50%,0)}
+.turn-banner small{display:block;margin-top:.5cqw;font-size:1.9cqw;font-weight:normal;letter-spacing:0;color:#c8bde0}
+.turn-ring{position:absolute;z-index:9;top:68.6%;width:20%;height:3.4%;border:2px solid #ffc54e;border-radius:50%;box-shadow:0 0 12px rgba(255,197,78,.7),inset 0 0 10px rgba(255,197,78,.4);pointer-events:none;animation:ring-pulse 1s ease-in-out infinite}
+.turn-ring[hidden]{display:none}
+.proj{position:absolute;z-index:30;width:6%;aspect-ratio:1;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
+.boss-impact{position:absolute;z-index:31;left:34%;top:9%;width:32%;height:30%;pointer-events:none;opacity:0;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 65%)}
+.boss-impact.active{animation:impact .42s ease-out}
+.game.boss-hit #reference{animation:boss-rumble .38s linear}
+.dmg-float{position:absolute;z-index:42;left:50%;top:17%;transform:translateX(-50%);font:bold 6.5cqw monospace;color:#ffd24d;text-shadow:0 0 0 #000,2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;pointer-events:none;animation:dmg-rise 1s ease-out both}
+@keyframes ring-pulse{0%,100%{opacity:.55;transform:scale(.96)}50%{opacity:1;transform:scale(1.04)}}
+@keyframes impact{0%{opacity:0;transform:scale(.4)}25%{opacity:1}100%{opacity:0;transform:scale(1.25)}}
+@keyframes dmg-rise{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}18%{opacity:1;transform:translate(-50%,0) scale(1.15)}100%{opacity:0;transform:translate(-50%,-34px) scale(1)}}
+
+/* ===== Etapa A: barras dinâmicas, fúria, painel com contagem ===== */
+.hud-bar{position:absolute;z-index:8;background:#12050a;overflow:hidden;pointer-events:none;box-shadow:inset 0 0 0 1px #05020a}
+.hud-bar i{display:block;height:100%;width:100%;transition:width .5s ease-out}
+.hud-bar.boss i{background:linear-gradient(#ff5468,#d1102e 60%,#a30a22)}
+.hud-bar.hp i{background:linear-gradient(#ff6a7c,#d4122f)}
+.hud-bar.mp i{background:linear-gradient(#52c4ff,#0a72d6)}
+.rage{position:absolute;z-index:8;display:flex;align-items:center;gap:1.2%;pointer-events:none}
+.rage-label{flex:none;width:13.5%;font:bold 1.6cqw monospace;color:#ffb347;letter-spacing:.2cqw;text-align:right;padding-right:.5cqw}
+.rage-seg{flex:1;height:100%;display:grid;grid-template-columns:repeat(5,1fr);gap:.6cqw;background:#120806;padding:.35cqw;border:1px solid #6b3a0e;box-shadow:0 0 0 1px #05020a}
+.rage-seg b{background:#2a1608;transition:background .25s,box-shadow .25s}
+.rage-seg b.on{background:linear-gradient(#ffc04d,#ff7a12);box-shadow:0 0 6px rgba(255,140,30,.7)}
+.rage.full .rage-seg{animation:rage-glow .8s ease-in-out infinite}
+@keyframes rage-glow{0%,100%{box-shadow:0 0 0 1px #05020a,0 0 6px rgba(255,120,20,.4)}50%{box-shadow:0 0 0 1px #05020a,0 0 16px rgba(255,120,20,.95)}}
+.diff{display:inline-block;font-size:1.3cqw;padding:.2cqw .7cqw;border:1px solid currentColor;letter-spacing:.1cqw}
+.diff.d1{color:#7be3a0}.diff.d2{color:#ffd24d}.diff.d3{color:#ff5a6e}.diff.d0{color:#ffc54e}
+.dq-reward{flex-direction:column;align-items:flex-end;justify-content:center;gap:.5cqw}
+.side-reward{display:flex;align-items:center;gap:.6cqw;color:#ffc54e;font-size:2.4cqw;line-height:1}.side-reward img{height:3cqw;image-rendering:pixelated}
+.dq-answer.chosen{border-color:#ffc54e;background:#2a2110}
+.dq-answer.off{opacity:.4}
+.dq-answer.correct .cnt,.dq-answer.wrong .cnt{color:inherit}
+.end-screen{position:absolute;z-index:70;inset:0;background:rgba(2,2,8,.82);display:flex;align-items:center;justify-content:center}
+.end-screen[hidden]{display:none}
+.end-box{text-align:center;font-family:monospace;color:#eee5f7;padding:6cqw 8cqw;background:#0b0916;border:2px solid #ff536b;box-shadow:0 0 0 2px #05050b}
+.end-screen.win .end-box{border-color:#ffc54e}
+.end-box h2{margin:0 0 2cqw;font-size:8cqw;letter-spacing:.8cqw;color:#ff536b}.end-screen.win h2{color:#ffc54e}
+.end-box p{margin:0 0 4cqw;font-size:2.8cqw;color:#c8bde0}
+.end-box button{appearance:none;font:bold 3cqw monospace;letter-spacing:.3cqw;color:#1a1206;background:#ffc54e;border:2px solid #ffdf8a;padding:2cqw 5cqw;cursor:pointer;outline:none}
+/* Ícone de ultimate: cinza até carregar (acertar pergunta difícil), depois colorido e pulsando */
+.ult-icon{position:absolute;z-index:9;pointer-events:none;background:url(game_clean.png) no-repeat;background-size:2327% auto;filter:grayscale(1) brightness(.55);transition:filter .3s}
+.ult-icon.ready{filter:none;animation:ult-pulse 1s ease-in-out infinite}
+@keyframes ult-pulse{0%,100%{box-shadow:0 0 4px 1px rgba(255,200,80,.5)}50%{box-shadow:0 0 14px 4px rgba(255,200,80,1)}}
+
+/* ===== Tipo/atributo do ataque do boss ===== */
+.dq-attack{display:flex;flex-direction:column;gap:.5cqw;justify-content:center}
+.dq-attack.row{flex-direction:row;gap:1cqw}
+.chip{display:flex;flex-direction:column;line-height:1.1;padding:.5cqw .9cqw;background:#120d22;border:1px solid #4a3d6b;border-left:3px solid var(--ec,#c8a7ff);min-width:0}
+.chip small{font-size:1.1cqw;letter-spacing:.15cqw;color:#8d80ab}
+.chip b{font-size:1.7cqw;color:var(--ec,#e9ccff);letter-spacing:.1cqw;white-space:nowrap}
+.chip em{font-style:normal;font-size:1.05cqw;color:#b36bff;white-space:nowrap}
+.chip .dot{display:inline-block;width:1.3cqw;height:1.3cqw;border-radius:50%;background:var(--ec);box-shadow:0 0 6px var(--ec);margin-right:.6cqw;vertical-align:-.1cqw}
+
+/* ===== Menu de habilidades (cartas) ===== */
+.action-menu{position:absolute;z-index:28;left:5%;width:90%;top:12.5%;pointer-events:auto;padding:1.6cqw;background:linear-gradient(#0d0a1c,#07060f);border:2px solid #6b5a2e;box-shadow:0 0 0 2px #05040a,0 0 0 3px #3a3118,0 8px 26px rgba(0,0,0,.8);color:#eee5f7;font-family:monospace;animation:dq-in .34s ease-out both}
+.action-menu[hidden]{display:none}
+.action-menu.exiting{animation:dq-out .36s ease-in both;pointer-events:none}
+.am-head{display:flex;align-items:center;gap:1.4cqw;padding-bottom:1.2cqw;margin-bottom:1.2cqw;border-bottom:1px solid #3a3118}
+.am-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:.4cqw}
+.am-who b{font-size:2.5cqw;color:#ffc54e;letter-spacing:.2cqw}
+.am-who span{font-size:1.5cqw;color:#a89cc4}
+.am-list{display:grid;grid-template-columns:1fr 1fr;gap:1.1cqw}
+.am-list .act-card:last-child:nth-child(odd){grid-column:1/-1}
+.act-card{appearance:none;-webkit-appearance:none;position:relative;display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"i n c" "i d d" "i t t";align-items:start;gap:.5cqw .8cqw;text-align:left;padding:1.2cqw 1.4cqw 1.2cqw 1.8cqw;min-height:9.5cqw;font-family:monospace;color:#e8def3;background:#0a0816;border:1px solid #4a4260;cursor:pointer;outline:none;overflow:hidden}
+.act-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:.8cqw;background:var(--k,#888)}
+.act-card.atk{--k:#ff5a4d}.act-card.def{--k:#4da3ff}.act-card.dodge{--k:#5ee08a}.act-card.util{--k:#ffc54e}.act-card.elem{--k:var(--ec)}
+.ac-name{grid-area:n;font-size:1.9cqw;font-weight:bold;color:#fff;line-height:1.15}
+.act-card .cnt{grid-area:c;color:#ffc54e;font-weight:bold;font-size:2cqw;min-width:2.4cqw;text-align:right}
+.ac-desc{grid-area:d;font-size:1.4cqw;line-height:1.25;color:#b3a7cd}
+.ac-chips{grid-area:t;display:flex;flex-wrap:wrap;gap:.6cqw}
+.act-card.elem{align-items:center;min-height:7cqw}.act-card.elem .ac-name{color:var(--ec)}
+.tag{font-size:1.15cqw;padding:.3cqw .7cqw;border:1px solid #4a4260;color:#c8bde0;background:#120d22;letter-spacing:.1cqw}
+.tag.mana{color:#6cc6ff;border-color:#1f5f94}.tag.cd{color:#ffb347;border-color:#7a4a12}.tag.mult{color:#ff8e7a;border-color:#7a2b22}.tag.block{color:#ff536b;border-color:#7a1f2c;background:#2b0f16;font-weight:bold}
+.act-card:active:not(:disabled){border-color:#ffc54e}
+.act-card.selected{border-color:#ffc54e;background:#2a2110}
+.act-card.chosen{border-color:#ffc54e;box-shadow:0 0 12px rgba(255,197,78,.5)}
+.act-card.off{opacity:.45;cursor:default}
+.act-card:disabled{cursor:default}
+.dq-top .dq-attack .chip{flex-direction:row;align-items:baseline;gap:.7cqw;padding:.45cqw .8cqw}
+.dq-top .dq-attack .chip em{display:none}
+.dq-top .dq-attack .chip small{font-size:1cqw}
+.dq-top .dq-attack .chip b{font-size:1.55cqw}
+
+.ac-icon{grid-area:i;width:7.6cqw;height:7.6cqw;align-self:center;display:flex;align-items:center;justify-content:center;background:#05040c;border:1px solid #3a3350;box-shadow:inset 0 0 0 1px #14102a;margin-right:.4cqw}
+.ac-icon img{width:5.8cqw;height:5.8cqw;image-rendering:pixelated}
+.act-card.off .ac-icon img{filter:grayscale(1)}
+.act-card.elem .ac-icon{border-color:var(--ec)}
+.tag.tipo{color:#e8def3;border-color:#5a506e}.tag.attr{color:#6cc6ff;border-color:#1f5f94}.tag.attr.holy{color:#ffe08a;border-color:#8a6a1a}
+/* cantos dourados pixelados no menu */
+.action-menu::before,.action-menu::after{content:"";position:absolute;width:2.4cqw;height:2.4cqw;border:2px solid #ffc54e;pointer-events:none}
+.action-menu::before{left:-2px;top:-2px;border-right:0;border-bottom:0}.action-menu::after{right:-2px;bottom:-2px;border-left:0;border-top:0}
+/* ===== Marcador da vez do herói (pixel art) ===== */
+.turn-marker{position:absolute;inset:0;z-index:12;pointer-events:none}
+.tm-arrow{position:absolute;top:45.6%;width:5.6cqw;margin-left:-2.8cqw;image-rendering:pixelated;animation:tm-bob .7s steps(2) infinite;filter:drop-shadow(0 0 3px rgba(255,197,78,.8))}
+.tm-ring{position:absolute;top:67.6%;width:19cqw;margin-left:-9.5cqw;image-rendering:pixelated;animation:tm-ring .8s steps(2) infinite}
+.tm-beam{position:absolute;top:49.5%;height:19%;width:9cqw;margin-left:-4.5cqw;background:repeating-linear-gradient(0deg,rgba(255,240,190,.0) 0 .6cqw,color-mix(in srgb,var(--col) 40%,transparent) .6cqw 1.2cqw);-webkit-mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent),linear-gradient(0deg,#000,transparent);mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent);opacity:.55;animation:tm-beam 1s steps(4) infinite}
+.tm-frame{position:absolute;border:2px solid #ffc54e;box-shadow:0 0 0 2px #05040a,0 0 8px 2px rgba(255,197,78,.6);animation:tm-blink .9s steps(2) infinite}
+@keyframes tm-bob{0%{transform:translateY(0)}100%{transform:translateY(-1.4cqw)}}
+@keyframes tm-ring{0%{opacity:1;transform:scale(1)}100%{opacity:.7;transform:scale(1.06)}}
+@keyframes tm-beam{0%{background-position:0 0}100%{background-position:0 -1.2cqw}}
+@keyframes tm-blink{0%{border-color:#ffc54e}100%{border-color:#fff2c4}}
+
+/* status dos efeitos e marcas elementais */
+.hero-status{position:absolute;z-index:9;pointer-events:none;font:bold 1.25cqw monospace;letter-spacing:.1cqw;color:#ffc54e;text-shadow:0 0 3px #000,1px 1px 0 #000;white-space:nowrap;animation:tm-blink .9s steps(2) infinite}
+.hero-status[hidden]{display:none}.hero-status.bad{color:#ff6b81}
+.boss-marks{position:absolute;z-index:9;pointer-events:none;display:flex;align-items:center;gap:1cqw}
+.boss-marks span{font:bold 1.3cqw monospace;color:#ffb347;letter-spacing:.15cqw}
+.boss-marks img{width:4cqw;height:4cqw;image-rendering:pixelated;filter:drop-shadow(0 0 3px #000)}

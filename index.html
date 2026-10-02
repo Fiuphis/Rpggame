@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="lobby.css">
+<title>Selecione sua classe</title>
+</head>
+<body>
+<main class="stage" id="stage">
+  <img class="bg" src="select_plate.webp" alt="Selecione sua classe" draggable="false">
+  <div id="msg" class="msg" role="status" aria-live="polite"></div>
+  <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
+</main>
+<button id="test-toggle" class="test-toggle" type="button"></button>
+<script src="lobby.js"></script>
+<script>
+const W=1024,H=1536;
+// box = área do card (arte inclusa), frame = moldura, cnt = onde fica o "n/7" (cobre o 0/7 da arte)
+const A={"mage": {"box": [90, 252, 502, 810], "frame": [95, 335, 497, 806], "yp": 592, "em": [292, 589, 31], "char": [103.0, 252.31, 386, 396.0], "panel": [90, 552, 412, 260]}, "knight": {"box": [520, 255, 934, 810], "frame": [524, 335, 930, 806], "yp": 592, "em": [722, 592, 31], "char": [532.0, 227.52, 390, 420.67], "panel": [520, 555, 414, 257]}, "tank": {"box": [90, 812, 502, 1334], "frame": [95, 842, 497, 1332], "yp": 1110, "em": [297, 1116, 33], "char": [103.0, 750.28, 386, 416.0], "panel": [90, 1077, 412, 259]}, "assassin": {"box": [520, 816, 934, 1334], "frame": [524, 845, 930, 1332], "yp": 1110, "em": [735, 1116, 35], "char": [532.0, 817.07, 390, 390.0], "panel": [520, 1075, 414, 261]}};
+const CARDS=[
+  {key:'mage',    cnt:[405,620,47,28],  bg:'#010618', fg:'#bee5f7'},
+  {key:'knight',  cnt:[840,620,47,28],  bg:'#06050a', fg:'#f9f7f6'},
+  {key:'tank',    cnt:[405,1136,47,28], bg:'#010610', fg:'#f3f5f8'},
+  {key:'assassin',cnt:[840,1136,47,28], bg:'#060609', fg:'#faf9f7'}
+];
+const stage=document.getElementById('stage'), msg=document.getElementById('msg'), confirmBtn=document.getElementById('confirm'), testBtn=document.getElementById('test-toggle');
+const pc=(v,t)=>(v/t*100)+'%';
+let selected=LOBBY.myGroup();
+const els={};
+CARDS.forEach(c=>{
+  const a=A[c.key], [x,y,x2,y2]=a.box, w=x2-x, h=y2-y, G=LOBBY_GROUPS[c.key];
+  const [fx,fy,fx2,fy2]=a.frame, [cx,cy,cw,ch]=c.cnt, [hx,hy,hw,hh]=a.char, [px_,py,pw,ph]=a.panel;
+  const gx=fx-3-x, gy=fy-3-y, gw=fx2-fx+6, gh=fy2-fy+6;
+  const clipTop=((a.yp-(fy-3))/gh*100).toFixed(3);
+  const pos=(l,t,ww,hh_)=>`left:${pc(l,w)};top:${pc(t,h)};width:${pc(ww,w)};height:${pc(hh_,h)}`;
+  const b=document.createElement('button'); b.type='button'; b.className='card'; b.setAttribute('aria-label',G.name);
+  b.style.cssText=(c.key==='mage'||c.key==='knight'?'clip-path:inset(-2px -80px -80px -80px);':'')+`left:${pc(x,W)};top:${pc(y,H)};width:${pc(w,W)};height:${pc(h,H)};--c:${G.color}`;
+  b.innerHTML=`<span class="tint" style="${pos(fx-x,fy-y,fx2-fx,fy2-fy)}"></span>
+    <span class="glow gb" style="${pos(gx,gy,gw,gh)}"></span>
+    <img class="char" src="char_${c.key}.webp" alt="" draggable="false" style="${pos(hx-x,hy-y,hw,hh)}">
+    <img class="panel" src="panel_${c.key}.webp" alt="" draggable="false" style="${pos(px_-x,py-y,pw,ph)}">
+    <span class="glow gf" style="${pos(gx,gy,gw,gh)};clip-path:inset(${clipTop}% -60px -60px -60px)"></span>
+    <span class="cnt" style="${pos(cx-x,cy-y,cw,ch)};background:${c.bg};color:${c.fg}"></span>`;
+  b.onclick=()=>choose(c.key);
+  const ch_=b.querySelector('.char');
+  ch_.addEventListener('animationend',()=>ch_.classList.remove('hop-in','hop-out'));
+  stage.appendChild(b); els[c.key]={b,ch:ch_,cnt:b.querySelector('.cnt')};
+});
+function say(t){msg.textContent=t;msg.classList.add('show');clearTimeout(window.__m);window.__m=setTimeout(()=>msg.classList.remove('show'),2200)}
+function hop(key,cls){const b=els[key].ch;b.classList.remove('hop-in','hop-out');void b.offsetWidth;b.classList.add(cls)}
+function choose(g){
+  const counts=LOBBY.counts(), mine=LOBBY.myGroup();
+  if(counts[g]>=LOBBY_MAX && mine!==g){say('Essa classe está cheia.');return}
+  if(selected===g){selected=null;hop(g,'hop-out')}          // tocar de novo desfaz a seleção
+  else{ if(selected)hop(selected,'hop-out'); selected=g; hop(g,'hop-in') }
+  render();
+}
+function render(){
+  const counts=LOBBY.counts(), mine=LOBBY.myGroup();
+  CARDS.forEach(c=>{
+    const g=c.key, n=counts[g], full=n>=LOBBY_MAX && mine!==g;
+    if(selected===g && full) selected=null;
+    const preview=selected===g && mine!==g, shown=preview?n+1:n;
+    const {b,cnt}=els[g];
+    b.classList.toggle('selected',selected===g); b.classList.toggle('full',full);
+    cnt.textContent=`${shown}/${LOBBY_MAX}`;
+    cnt.classList.toggle('green',preview); cnt.classList.toggle('red',full);
+  });
+  confirmBtn.disabled=!selected;
+  confirmBtn.style.setProperty('--c',selected?LOBBY_GROUPS[selected].color:'#6e6580');
+  confirmBtn.textContent=selected?`CONFIRMAR: ${LOBBY_GROUPS[selected].name}`:'ESCOLHA UMA CLASSE';
+  testBtn.textContent=LOBBY.testMode?'MODO TESTE: LIGADO (toque para desligar)':'MODO TESTE: DESLIGADO';
+}
+confirmBtn.onclick=()=>{
+  if(!selected)return;
+  const r=LOBBY.join(selected);
+  if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
+  location.href='game.html';
+};
+testBtn.onclick=()=>{LOBBY.setTest(!LOBBY.testMode);location.href='index.html'};
+render();
+window.addEventListener('storage',render);
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+</script>
+</body>
+</html>

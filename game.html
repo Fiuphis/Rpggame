@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="style.css">
+<title>Banco de Dados I — RPG</title>
+</head>
+<body>
+<div id="game" class="game">
+  <img id="reference" src="game_clean.png" alt="Banco de Dados I — tela de batalha" draggable="false">
+
+  <!-- Efeitos: brilho do boss no ataque e flash de dano. -->
+  <div id="fx" aria-hidden="true">
+    <div class="boss-aura"></div>
+    <div id="turn-ring" class="turn-ring" hidden></div>
+    <div id="boss-impact" class="boss-impact"></div>
+    <div id="damage-flash" class="damage-flash"></div>
+  </div>
+
+  <!-- Pixel-accurate transparent hit map. Coordinates are in the source image's 1024x1536 grid. -->
+  <div id="hitmap" aria-label="Controles do jogo">
+
+
+    <button class="hit shop hp1" data-action="buy" data-item="hp" aria-label="Comprar poção de HP"></button>
+    <button class="hit shop hp2" data-action="buy" data-item="hp" aria-label="Comprar poção de HP"></button>
+    <button class="hit shop mana1" data-action="buy" data-item="mana" aria-label="Comprar poção de mana"></button>
+    <button class="hit shop mana2" data-action="buy" data-item="mana" aria-label="Comprar poção de mana"></button>
+
+    <div id="inventory-hits"></div>
+  </div>
+
+  <!-- Moedas do grupo (cobre o número fixo da arte). -->
+  <div id="gold-hud" class="gold-hud" aria-label="Moedas do grupo">10</div>
+
+  <!-- Painel do Mercador: vazio (só "Mercador:") até abrir uma votação. -->
+  <section id="merchant-vote" class="merchant-vote" aria-label="Mercador">
+    <div class="merchant-title"><span>Mercador:</span><b id="merchant-timer"></b></div>
+    <div class="merchant-body">
+      <div id="merchant-question" class="merchant-question"></div>
+      <div class="vote-row">
+        <button class="vote-choice" data-action="vote" data-vote="yes"><span>SIM</span><b id="yes-count">0</b></button>
+        <button class="vote-choice" data-action="vote" data-vote="no"><span>NÃO</span><b id="no-count">0</b></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pergunta = ataque do boss. Só existe na tela durante o ataque. -->
+  <section id="dynamic-ui" hidden>
+    <div id="dynamic-question" class="dynamic-question">
+      <img class="dq-frame" src="question_panel.png" alt="" draggable="false">
+      <div class="dq-content">
+        <div class="dq-top">
+          <div id="dq-attack" class="dq-attack"></div>
+          <div id="dq-text"></div>
+          <div id="dq-side" class="dq-reward"></div>
+        </div>
+        <div id="dq-answers"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Menu de habilidades do herói (votação do grupo). -->
+  <section id="action-menu" class="action-menu" hidden>
+    <header class="am-head">
+      <div class="am-who"><b id="am-title"></b><span id="am-text"></span></div>
+      <div id="am-attack" class="dq-attack row"></div>
+      <div id="am-timer"></div>
+    </header>
+    <div id="am-list" class="am-list"></div>
+  </section>
+
+  <button id="back-lobby" class="back-lobby" type="button" aria-label="Trocar de grupo">◀ GRUPOS</button>
+
+  <div id="end-screen" class="end-screen" hidden>
+    <div class="end-box"><h2></h2><p></p><button id="restart" type="button">JOGAR DE NOVO</button></div>
+  </div>
+
+  <div id="turn-banner" class="turn-banner" role="status" aria-live="polite"></div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+</div>
+<script src="lobby.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
