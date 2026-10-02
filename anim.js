@@ -38,14 +38,18 @@ function build(){
   });
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
-    if (cfg && cfg.pad != null) WHO.forEach(w => { H[w].cv.width = cellW(w); H[w].cv.height = cellH(w); });
+    if (cfg && cfg.pad != null) WHO.forEach(w => { if (H[w].rig) return; H[w].cv.width = cellW(w); H[w].cv.height = cellH(w); });
     for (const w of WHO) { H[w].sheets = await loadSheets(w); drawStill(w); scheduleIdle(w, rnd(800, 2500)); }
   });
 }
 function buildMage(h, m, P){
+  const PX = 130, PT = 170, PB = 40, cw = m.w + 2 * PX, ch = m.h + PT + PB;
+  h.cv.width = cw; h.cv.height = ch;
+  h.cv.style.cssText = `left:${(m.x - PX) / 1024 * 100}%;top:${(m.y - PT) / 1536 * 100}%;width:${cw / 1024 * 100}%;height:${ch / 1536 * 100}%`;
   const mk = (cls) => { const k = document.createElement('canvas'); k.className = 'fxl ' + cls; k.width = 1024; k.height = 1536; return k; };
   const back = mk('back'), front = mk('front'); $('#game').append(back, front);
-  h.rig = window.MageRig.make({c:h.c, cv:h.cv, P, W:m.w, Hh:m.h, world:{x:m.x, y:m.y}, layers:{back, front}, still:h.still, scale:1, shadow:c => shadow(c, 'mage'), orbWorld:{x:m.x + 190, y:m.y + 45}});
+  h.rig = window.MageRig.make({c:h.c, cv:h.cv, P, Px:PX, Py:PT, W:m.w, Hh:m.h, world:{x:m.x, y:m.y}, layers:{back, front}, orbWorld:{x:m.x + 190, y:m.y + 45},
+    shadow:c => shadow(c, 'mage')});
   h.rig.start();
 }
 function drawStill(w){
@@ -83,7 +87,7 @@ function playSheet(w, s, {loop = false, hold = false} = {}){
 async function play(w, name, opts = {}){
   const h = H[w]; if (!h) return false;
   if (h.dead && name !== 'revive') return false;
-  if (h.rig) { const n = h.rig.has(name) ? name : h.rig.has('melee') && name !== 'idle' ? 'melee' : null; if (!n) return false; clearTimeout(h.idleT); h.cur = n; await h.rig.play(n); h.cur = null; scheduleIdle(w, rnd(1200, 3200)); return true; }
+  if (h.rig) { const n = h.rig.has(name) ? name : h.rig.has('melee') && name !== 'idle' ? 'melee' : null; if (!n) return false; clearTimeout(h.idleT); h.cur = n; await h.rig.play(n, opts); h.cur = null; scheduleIdle(w, rnd(1200, 3200)); return true; }
   const r = resolve(w, name); if (!r) return false;
   clearTimeout(h.idleT); h.cur = name;
   await playSheet(w, r.s);

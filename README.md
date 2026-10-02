@@ -174,3 +174,7 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - **Maga animada** (`mage.js`): corpo deformado por linhas (respiração, manto, ponta do chapéu, inclinação, salto) + efeitos azuis **extraídos da folha de referência** (`fx/*.png`, gerados por `tools/extrair_fx.py`): círculo rúnico, anel arcano, projétil, cristal, coluna, explosão, chama, estrelas, fios de energia.
 - Animações: 4 idles aleatórios, ataque, magia, sagrado, pesado, ultimate, defesa (anel), esquiva (rastro), dano, passar, vitória, morte/reviver.
 - Os outros personagens seguem estáticos (ou com sheets, como em v38).
+
+## v40 — Maga com as poses de costas reais
+- `tools/extrair_costas.py` recorta da folha de costas as poses (idle, andar, correr, esquiva, ataque, 4 elementos, defesas, buraco negro) em `mage/*.png` e os efeitos (fogo, água, ar, terra, escudos, buraco negro) em `fx/*.png`.
+- `mage.js` troca as poses com transição suave e mantém a deformação (respiração, manto, chapéu, salto). Ataque elemental e defesa elemental seguem o elemento escolhido no jogo; o ultimate é o Buraco Negro.
