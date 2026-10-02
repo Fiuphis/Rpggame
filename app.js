@@ -129,7 +129,7 @@ const skSay = (k, sk) => ({heavy:'heavy', super:'heavy', holy_atk:'holy', mana_a
 const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a6cff' : sk.elem && el ? ELEMENTS[el].color : '#4da3ff';
 
 const state = {
-  gold:saved.gold, question:0, answered:false,
+  gold:0, question:0, answered:false,
   inventory:saved.inventory, pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
   heroes:Object.fromEntries(['mage','knight','tank','assassin'].map(k => [k, {hp:100, mp:100}])),

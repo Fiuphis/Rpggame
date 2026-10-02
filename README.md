@@ -163,3 +163,5 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 
 ## v36 — tudo estático
 Animações, falas e o rig da Maga/Clériga removidos a pedido: o jogo volta ao visual estático (cenário original com os heróis). Histórico das animações fica no git (v30–v35).
+
+## v37 — moedas sempre começam em 0 a cada início de jogo (o inventário continua salvo).

@@ -1,4 +1,4 @@
-const CACHE='bd1-rpg-v36';
+const CACHE='bd1-rpg-v37';
 const ASSETS=['./','./index.html','./game.html','./lobby.js','./lobby.css','./select_plate.webp','./char_mage.webp','./char_knight.webp','./char_tank.webp','./char_assassin.webp','./panel_mage.webp','./panel_knight.webp','./panel_tank.webp','./panel_assassin.webp','./style.css','./app.js','./game_clean.png','./question_panel.png','./icon_attack.png','./icon_coin.png','./manifest.webmanifest','./potion_hp.png','./potion_mana.png'];
 // Tudo em cache (abre instantâneo, até offline). Em segundo plano o SW confere a rede (requisição condicional, barata);
 // se algum arquivo mudou, atualiza o cache e avisa a página, que recarrega sozinha (menu) ou mostra o aviso (jogo).
