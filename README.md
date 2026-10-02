@@ -168,3 +168,9 @@ Animações, falas e o rig da Maga/Clériga removidos a pedido: o jogo volta ao 
 
 ## v38 — tocador de sprite sheets
 Animações por código removidas de vez. `anim.js` toca sprite sheets desenhados (veja ANIMACOES.md, `gabaritos/`, `tools/`). Sem sheets, os heróis ficam parados (cenário sem heróis + sprites `spr_*.webp`).
+
+## v39 — novo cenário, personagens em camadas e Maga animada
+- Cenário novo (sala do trono) sem personagens no fundo; HUD e painel inferior nos mesmos pixels. Heróis e Lorde das Trevas são camadas separadas (`spr_*.webp`) com sombra no chão.
+- **Maga animada** (`mage.js`): corpo deformado por linhas (respiração, manto, ponta do chapéu, inclinação, salto) + efeitos azuis **extraídos da folha de referência** (`fx/*.png`, gerados por `tools/extrair_fx.py`): círculo rúnico, anel arcano, projétil, cristal, coluna, explosão, chama, estrelas, fios de energia.
+- Animações: 4 idles aleatórios, ataque, magia, sagrado, pesado, ultimate, defesa (anel), esquiva (rastro), dano, passar, vitória, morte/reviver.
+- Os outros personagens seguem estáticos (ou com sheets, como em v38).

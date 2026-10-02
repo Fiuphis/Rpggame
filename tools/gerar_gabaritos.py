@@ -1,6 +1,6 @@
 """Gera gabaritos/<heroi>_gabarito.png (guias) e <heroi>_base.png (sprite atual na célula) para desenhar os quadros."""
 from PIL import Image, ImageDraw
-META={"mage":(237,276),"knight":(236,286),"tank":(276,280),"assassin":(247,307),"boss":(946,601)}
+META={"mage":(209,284),"knight":(210,262),"tank":(244,264),"assassin":(196,282),"boss":(848,589)}
 NOME={"mage":"maga","knight":"guerreiro","tank":"tanque","assassin":"cleriga","boss":"boss"}
 PAD=60
 import os; os.makedirs('gabaritos',exist_ok=True)

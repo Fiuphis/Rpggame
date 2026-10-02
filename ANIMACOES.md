@@ -7,11 +7,11 @@ O jogo toca **quadros desenhados por você** (Aseprite, etc.). Sem sheet, o pers
 
 | Personagem | `<personagem>` / id no manifest | Célula (px) |
 |---|---|---|
-| Maga | `maga` / `mage` | 357 × 396 |
-| Guerreiro | `guerreiro` / `knight` | 356 × 406 |
-| Tanque | `tanque` / `tank` | 396 × 400 |
-| Clériga | `cleriga` / `assassin` | 367 × 427 |
-| Lorde das Trevas | `boss` / `boss` | 1066 × 721 |
+| Maga | `maga` / `mage` | 329 × 404 |
+| Guerreiro | `guerreiro` / `knight` | 330 × 382 |
+| Tanque | `tanque` / `tank` | 364 × 384 |
+| Clériga | `cleriga` / `assassin` | 316 × 402 |
+| Lorde das Trevas | `boss` / `boss` | 968 × 709 |
 
    - Amarelo = limite da célula · ciano = onde o sprite fica parado · vermelho = linha dos pés · branco = centro.
    - `<personagem>_base.png` é o sprite atual já na célula: use como quadro 1 e desenhe os demais por cima.
