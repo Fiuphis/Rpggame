@@ -155,3 +155,8 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 - `game_clean.png` agora é um cenário **sem heróis** (piso reconstruído); todos os heróis são camadas de sprite → acabaram as figuras duplicadas.
 - `puppet.js`: motor de animação em canvas (12 fps, pixel art por código) com corpo recortado em `rig/`. Protótipo para **Maga** (cajado girando no ar, orbe, runas, cast, escudo, esquiva, ultimate) e **Clériga** (Bíblia que abre/lê/fecha, halo, oração, magia sagrada, escudo, ultimate).
 - Guerreiro, Tanque e Boss ainda usam o sistema antigo (`anim.js`), aguardando aprovação do estilo.
+
+## v35 — esqueleto (rig) completo da Maga e da Clériga
+- Corpo dividido em partes (`rig/*_base/arm/hat/hood...png`, geradas por `tools/segmenta_rig.py` a partir de `tools/rig_src`): chapéu/capuz, braços, tronco e saia/capa como **malha deformável** (respiração, balanço da barra, capa ao vento, inclinação do tronco, passos dos pés).
+- Mãos desenhadas em pixel art por código, com **dedos independentes** e polegar (agarrar, abrir, batucar, virar página).
+- Maga: giro do cajado no ar, orbe, runas, tocar a aba do chapéu; Clériga: Bíblia, oração, cajado no chão, olhar ao redor, bênção. Ações: ataque, defesa, esquiva, dano, ultimate, vitória.
