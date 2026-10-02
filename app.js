@@ -284,7 +284,7 @@ function buildHud(){
   bars.boss = mkBar('boss', HUD.boss.x, HUD.boss.y, HUD.boss.w, HUD.boss.h);
   HERO_ORDER.forEach(k => {
     const [x, y, w] = HUD.heroes[k];
-    bars[k] = {hp: mkBar('hp', x, y, w, 10), mp: mkBar('mp', x, y + 17, w, 10)};
+    bars[k] = {hp: mkBar('hp', x, y, w, 10), mp: mkBar('mp', x, y + 20, Math.round(w * 0.976 * 10) / 10, 9)};
   });
   HERO_ORDER.forEach(k => {
     const d = document.createElement('div'); d.className = 'ult-icon'; d.dataset.hero = k;

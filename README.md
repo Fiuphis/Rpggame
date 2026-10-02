@@ -132,3 +132,7 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 - Menu de elementos da Maga tem card VOLTAR (o grupo vota nele): volta ao menu de habilidades.
 - Ultimate do grupo ativo não é mais perguntado sozinho ao carregar: aparece como card ESPECIAL no topo do menu de habilidades (ou toque no ícone do herói). O efeito começa a contar na hora em que é usado; depois o menu reabre para a ação normal.
 - Barra de mana com a mesma largura da de vida (faltava um pedaço).
+
+## v27
+- Service worker: imagens em cache primeiro (o jogo abre instantâneo ao escolher o grupo); HTML/JS/CSS pela rede (sempre a versão nova).
+- Barra de mana alinhada ao encaixe da moldura (mesma altura/posição do slot, antes começava mais alta).
