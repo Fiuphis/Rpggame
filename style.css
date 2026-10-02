@@ -176,3 +176,11 @@
 .boss-marks{position:absolute;z-index:9;pointer-events:none;display:flex;align-items:center;gap:1cqw}
 .boss-marks span{font:bold 1.3cqw monospace;color:#ffb347;letter-spacing:.15cqw}
 .boss-marks img{width:4cqw;height:4cqw;image-rendering:pixelated;filter:drop-shadow(0 0 3px #000)}
+/* heróis: canvas (anim.js) */
+.hero{position:absolute;z-index:4;pointer-events:none;display:block}
+.hero.boss{z-index:3}
+.hero.dead{filter:grayscale(1) brightness(.6)}
+.hero.aura-red{filter:drop-shadow(0 0 .8cqw #ff3030) drop-shadow(0 0 1.6cqw #ff3030aa)}
+.hero.aura-blue{filter:drop-shadow(0 0 .8cqw #7a3cff) drop-shadow(0 0 1.6cqw #4d8dffaa)}
+.hero.aura-orange{filter:drop-shadow(0 0 .8cqw #ff9d3d) drop-shadow(0 0 1.6cqw #ff9d3daa)}
+.hero.aura-gold{filter:drop-shadow(0 0 .8cqw #ffe08a)}
