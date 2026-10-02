@@ -40,6 +40,7 @@ const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
 const QUESTION_SECONDS = 15, ACTION_SECONDS = 10;
 const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
+const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
 const ULT_INFO = {mage:'dano em dobro nesta pergunta', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
 const HARD_EVERY = 5;   // a cada 5 perguntas sem difícil, a próxima é difícil
 const HEAL_AMOUNT = 25, REVIVE_HP = 35;
@@ -283,12 +284,13 @@ function buildHud(){
   bars.boss = mkBar('boss', HUD.boss.x, HUD.boss.y, HUD.boss.w, HUD.boss.h);
   HERO_ORDER.forEach(k => {
     const [x, y, w] = HUD.heroes[k];
-    bars[k] = {hp: mkBar('hp', x, y, w, 10), mp: mkBar('mp', x, y + 17, w - 3, 10)};
+    bars[k] = {hp: mkBar('hp', x, y, w, 10), mp: mkBar('mp', x, y + 17, w, 10)};
   });
   HERO_ORDER.forEach(k => {
     const d = document.createElement('div'); d.className = 'ult-icon'; d.dataset.hero = k;
     const ix = HUD.icons[k];
     d.style.cssText = `left:${pctX(ix)};top:${pctY(757)};width:${pctX(44)};height:${pctY(44)};background-position:${ix / (1024 - 44) * 100}% ${757 / (1536 - 44) * 100}%`;
+    d.onclick = () => { if (k !== activeGroup || !state.ultReady[k]) return; const c = document.querySelector('#am-list .act-card.ult:not(:disabled)'); if (c) c.click(); else toast('O especial é ativado na vez do seu herói, no menu de habilidades.'); };
     $('#game').appendChild(d); bars['ult_' + k] = d;
   });
   HERO_ORDER.forEach(k => {
@@ -340,6 +342,7 @@ const SPR = {
   shield:['.YYYYYYYYY.','YllllbbbbbY','YllllbbbbbY','YllllbbbbbY','YllllbbbbbY','.YlllbbbbY.','.YlllbbbbY.','..YllbbbY..','...YlbbY...','....YbY....','.....Y.....'],
   guard:['.YYYYYYYYY.','YllllWbbbbY','YllllWbbbbY','YlWWWWWWbbY','YllllWbbbbY','.YlllWbbbY.','.YlllWbbbY.','..YllWbbY..','...YlbbY...','....YbY....','.....Y.....'],
   orb:['....bbb....','..bbllllb..','.bllWWllbb.','.blWWlllbb.','bllWllllllb','bllllllllbb','bllllllllbb','.bllllllbb.','.bbllllbb..','..bbbbbb...','....bbb....'],
+  back:['...........','...WW......','..WW.......','.WWWWWWWWW.','WWWWWWWWWWW','.WWWWWWWWW.','..WW.......','...WW......','...........','...........','...........'],
   dodge:['...........','gg....gg...','.gg....gg..','..gg....gg.','...gg....gg','....gg....g','...gg....gg','..gg....gg.','.gg....gg..','gg....gg...','...........'],
   pass:['.....G.....','.....GG....','.....GGG...','GGGGGGGGG..','GGGGGGGGGG.','GGGGGGGGG..','.....GGG...','.....GG....','.....G.....','...........','...........'],
   fire:['.....R.....','....RR.....','...RRRR....','...RROR.R..','..RRROORR..','.RRROOOORR.','.RROOYYORR.','.RROYYYYOR.','.RROYYYYOR.','..RROYYOR..','...RRRRR...'],
@@ -558,21 +561,27 @@ function skillChips(sk, block){
 // Menu de ações do herói: o grupo vota numa habilidade (e, se for elemental, depois no elemento).
 async function chooseSkill(k){
   const at = state.curAttack, list = SKILLS[k];
-  const r = await runVote({
-    menu:true, title:`VEZ ${({assassin:'DA'})[k] || 'DO'} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, attack:at,
-    options: list.map(sk => { const b = skillBlock(k, sk); return {label:sk.name, desc:sk.desc, kind:sk.kind, icon:sk.icon, chips:skillChips(sk, b), disabled:!!b}; })
-  });
-  if (r.idx === null) return null;
-  const sk = list[r.idx]; let element = null;
-  if (sk.elem) {
-    const els = ['fire','water','air','earth'];
-    const r2 = await runVote({
-      menu:true, title:sk.name.toUpperCase(), text:'Escolham o elemento', seconds:8, attack:at,
-      options: els.map(e => ({label:ELEMENTS[e].name, desc:'', kind:'elem', icon:{fire:'fire',water:'drop',air:'wind',earth:'rock'}[e], color:ELEMENTS[e].color, chips: BOSS.immune.includes(e) ? '<span class="tag block">BOSS IMUNE</span>' : '<span class="tag attr holy">EFETIVO</span>'}))
-    });
-    element = els[r2.idx === null ? 0 : r2.idx];
+  for (;;) {
+    const ult = state.ultReady[k] && ultUsable(k);
+    const opts = [];
+    if (ult) opts.push({label:'ESPECIAL: ' + ULT_NAME[k], desc:ULT_INFO[k], kind:'ult', icon:ULT_ICON[k], chips:'<span class="tag attr holy">ESPECIAL</span><span class="tag cd">começa a contar ao usar</span>'});
+    list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, desc:sk.desc, kind:sk.kind, icon:sk.icon, chips:skillChips(sk, b), disabled:!!b}); });
+    const r = await runVote({menu:true, title:`VEZ ${({assassin:'DA'})[k] || 'DO'} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, attack:at, options:opts});
+    if (r.idx === null) return null;
+    if (ult && r.idx === 0) { await closePanel(); await activateUlt(k); continue; }   // ultimate ativado: o efeito começa a contar agora
+    const sk = list[r.idx - (ult ? 1 : 0)]; let element = null;
+    if (sk.elem) {
+      const els = ['fire','water','air','earth'];
+      const r2 = await runVote({
+        menu:true, title:sk.name.toUpperCase(), text:'Escolham o elemento', seconds:8, attack:at,
+        options: els.map(e => ({label:ELEMENTS[e].name, desc:'', kind:'elem', icon:{fire:'fire',water:'drop',air:'wind',earth:'rock'}[e], color:ELEMENTS[e].color, chips: BOSS.immune.includes(e) ? '<span class="tag block">BOSS IMUNE</span>' : '<span class="tag attr holy">EFETIVO</span>'}))
+          .concat([{label:'VOLTAR', desc:'Escolher outra habilidade', kind:'back', icon:'back', chips:''}])
+      });
+      if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
+      element = els[r2.idx === null ? 0 : r2.idx];
+    }
+    return {skill:sk, element};
   }
-  return {skill:sk, element};
 }
 
 async function playRound(){
@@ -609,10 +618,8 @@ async function playRound(){
   const actions = {};
   for (const k of HERO_ORDER) {
     if (state.heroes[k].hp <= 0) { actions[k] = null; continue; }
-    if (state.ultReady[k] && ultUsable(k)) {
-      const use = k === activeGroup ? await askUlt(k) : Math.random() < 0.5;
-      if (use) await activateUlt(k);
-    }
+    // ultimate do grupo ativo: só entra em ação quando o grupo escolhe o card ESPECIAL (ou toca no ícone) no menu; os outros grupos são simulados
+    if (k !== activeGroup && state.ultReady[k] && ultUsable(k) && Math.random() < 0.5) await activateUlt(k);
     const at = state.curAttack;
     if (k === activeGroup) {
       showRing(k); await wait(400);

@@ -1,4 +1,4 @@
-# Banco de Dados I — RPG (PWA)
+# Banco de Dados I — RPG (Netlify / PWA)
 
 Esta versão usa a arte original `game.png` como camada visual principal e coloca os controles por cima dela.
 
@@ -67,18 +67,8 @@ No rodapé do lobby, toque em "MODO TESTE" para ligar/desligar os jogadores simu
 ## Importante sobre votação multiplayer real
 O Netlify sozinho serve o front-end, mas `localStorage` não sincroniza votos entre celulares. O código já deixa um adaptador (`BancoDadosGame.setVoteProvider`) preparado para ligar Supabase/Firebase/Netlify Functions depois. Para votos realmente compartilhados em tempo real entre jogadores, essa camada precisa de um backend/realtime.
 
-## Rodar localmente
-```
-python -m http.server 8000
-```
-Abra http://localhost:8000
-
-## Publicar no GitHub Pages
-1. Crie um repositório no GitHub e suba **o conteúdo desta pasta na raiz** (o `index.html` precisa ficar na raiz do repositório).
-2. No repositório: **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `main` / `(root)` → Save**.
-3. Em ~1 minuto o jogo fica em `https://SEU-USUARIO.github.io/NOME-DO-REPO/`.
-
-Todos os caminhos são relativos (`./`), então funciona no subcaminho do GitHub Pages. O arquivo `.nojekyll` evita processamento do Jekyll.
+## Publicar no Netlify
+Suba o conteúdo desta pasta como site estático, ou arraste o ZIP descompactado para o deploy manual do Netlify.
 
 ## v11 — Seleção de classe em camadas
 Só o personagem recortado (char_*.webp) salta; a borda brilhante fica atrás dele (nunca corta cabeça/chapéu/cajado); painel (panel_*.webp) e contador ficam fixos. Fundo limpo: select_plate.webp.
@@ -137,3 +127,8 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 ## v24
 - Menu de habilidades some por completo logo após a escolha (todos os heróis) e é garantido fechado antes da resolução.
 - Service worker agora é "rede primeiro": o celular pega a versão nova ao reabrir (antes o cache antigo podia mostrar a versão anterior).
+
+## v25
+- Menu de elementos da Maga tem card VOLTAR (o grupo vota nele): volta ao menu de habilidades.
+- Ultimate do grupo ativo não é mais perguntado sozinho ao carregar: aparece como card ESPECIAL no topo do menu de habilidades (ou toque no ícone do herói). O efeito começa a contar na hora em que é usado; depois o menu reabre para a ação normal.
+- Barra de mana com a mesma largura da de vida (faltava um pedaço).
