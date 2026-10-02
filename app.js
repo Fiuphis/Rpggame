@@ -695,7 +695,7 @@ async function playRound(){
     const col = el ? ELEMENTS[el].color : null;
     showBanner(`${nm}: ${sk ? sk.name : 'sem ação'}${el ? ' · ' + ELEMENTS[el].name : ''}`, sub); await wait(1100);
     if (sk && sk.id === 'guard') { A.play(k, 'guard', {color:'#ff9d3d'}); A.sayRandom(k, 'guard', .6); }
-    if (dmg > 0) { const an = skAnim(k, sk); A.play(k, an); A.sayRandom(k, skSay(k, sk), .5); await wait(an === 'heavy' ? 480 : 300); await heroAttack(k, dmg, col); }
+    if (dmg > 0) { const an = skAnim(k, sk); A.play(k, an, {color:col}); A.sayRandom(k, skSay(k, sk), .5); await wait(an === 'heavy' ? 480 : 300); await heroAttack(k, dmg, col); }
     else if (hurt > 0) { if (defended) { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .5); await wait(250); } await bossCounter(k, hurt, defended); }
     else if (sk && sk.kind === 'dodge') { A.play(k, 'dodge'); A.sayRandom(k, 'dodge', .55); if (!ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8'); }
     else if (sk && sk.kind === 'def') { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .4); }

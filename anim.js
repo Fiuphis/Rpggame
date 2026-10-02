@@ -5,7 +5,7 @@
    Para trocar por sprite sheets desenhados: Anim.useSheet('knight','melee',{src:'knight_melee.webp', frames:6, fps:12}) (ver README). */
 (() => {
 'use strict';
-const META = {"mage":{"x":13,"y":805,"w":243,"h":235},"knight":{"x":255,"y":811,"w":236,"h":229},"tank":{"x":514,"y":810,"w":236,"h":230},"assassin":{"x":799,"y":809,"w":187,"h":231},"boss":{"x":44,"y":95,"w":946,"h":601}};
+const META = {"mage":{"x":19,"y":805,"w":237,"h":276},"knight":{"x":255,"y":811,"w":236,"h":286},"tank":{"x":515,"y":810,"w":276,"h":280},"assassin":{"x":747,"y":805,"w":247,"h":307},"boss":{"x":44,"y":95,"w":946,"h":601}};
 const HEROES = ['mage','knight','tank','assassin'];
 const WHO = [...HEROES, 'boss'];
 const COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ffd86b', boss:'#ff2d4d'};
@@ -87,6 +87,7 @@ const IDLES = {
   boss:['boss_breathe','boss_cape','boss_flare']
 };
 function scheduleIdle(w, delay){
+  if (window.Puppet && Puppet.has(w)) return;
   clearTimeout(S[w].timer);
   S[w].timer = setTimeout(async () => {
     if (S[w].busy || S[w].dead || document.hidden) return scheduleIdle(w, rnd(800, 1800));
@@ -145,6 +146,7 @@ const ACT = {
 const ATTACKS = {melee:1, heavy:1, cast:1, holy:1, pass:1};
 
 async function play(w, name, o){
+  if (window.Puppet && Puppet.has(w) && await Puppet.play(w, name, o)) return;
   const st = S[w], fn = ACT[name]; if (!st || !fn) return;
   if (st.dead && name !== 'revive') return;
   st.busy++; clearTimeout(st.timer); try { st.cur && st.cur.cancel(); } catch {}
@@ -154,6 +156,7 @@ async function play(w, name, o){
 
 // ===== Estados persistentes =====
 function setDead(w, dead){
+  if (window.Puppet && Puppet.has(w)) return Puppet.setDead(w, dead);
   const st = S[w]; if (!st || w === 'boss' || st.dead === dead) return;
   st.dead = dead; const b = els[w].box; b.classList.toggle('dead', dead);
   let sk = b.querySelector('.skull'); if (dead && !sk) { sk = document.createElement('i'); sk.className = 'skull'; sk.textContent = '☠'; b.appendChild(sk); }
@@ -161,10 +164,12 @@ function setDead(w, dead){
   if (dead) { sfx('die'); } else { st.dead = false; play(w, 'revive'); }
 }
 function setAura(w, kind){ // kind: red | blue | orange | gold | null
+  if (window.Puppet && Puppet.has(w)) return Puppet.setAura(w, {red:'#ff3030', blue:'#6a4dff', orange:'#ff9d3d', gold:'#ffe08a'}[kind] || null);
   const b = els[w] && els[w].box; if (!b) return;
   ['red', 'blue', 'orange', 'gold', 'purple'].forEach(c => b.classList.toggle('aura-' + c, c === kind));
 }
 function reset(){
+  if (window.Puppet) Puppet.reset();
   WHO.forEach(w => { if (!els[w]) return; S[w].dead = false; els[w].box.classList.remove('dead'); els[w].box.style.opacity = ''; const sk = els[w].box.querySelector('.skull'); if (sk) sk.remove(); setAura(w, null); scheduleIdle(w, 400); });
 }
 

@@ -149,3 +149,9 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 - Ações: ataque corpo a corpo, pesado, magia, sagrado, passar a vez, defesa (escudo colorido por tipo), esquiva (com rastro), dano, queda (cinza com caveira), reviver, especial, vitória; boss: ataque, fúria, onda sombria, risada, derrota.
 - Falas em balão pixel-art (sorteadas, ~30-60% das ações) e sons 8-bit sintetizados (botão 🔊 no canto esquerdo; preferência salva).
 - Para trocar por quadros desenhados: `Anim.useSheet('knight','melee',{src:'knight_melee.webp',frames:6,fps:12})` (sprite sheet horizontal com o mesmo enquadramento do `spr_knight.webp`).
+
+## v31–v34 — sem áudio, piso reconstruído e protótipo "puppet"
+- Áudio removido por completo.
+- `game_clean.png` agora é um cenário **sem heróis** (piso reconstruído); todos os heróis são camadas de sprite → acabaram as figuras duplicadas.
+- `puppet.js`: motor de animação em canvas (12 fps, pixel art por código) com corpo recortado em `rig/`. Protótipo para **Maga** (cajado girando no ar, orbe, runas, cast, escudo, esquiva, ultimate) e **Clériga** (Bíblia que abre/lê/fecha, halo, oração, magia sagrada, escudo, ultimate).
+- Guerreiro, Tanque e Boss ainda usam o sistema antigo (`anim.js`), aguardando aprovação do estilo.
