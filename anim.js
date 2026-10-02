@@ -1,4 +1,4 @@
-/* Banco de Dados I — RPG · animações, falas e sons
+/* Banco de Dados I — RPG · animações e falas
    Camadas recortadas do fundo (spr_*.webp) animadas por Web Animations; sons 8-bit sintetizados (WebAudio).
    API: Anim.play(quem, nome, opts) · Anim.say / sayRandom · Anim.sfx(nome) · Anim.setDead / setAura · Anim.reset()
    quem: mage | knight | tank | assassin | boss.
@@ -22,46 +22,7 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 const pick = a => a[Math.floor(Math.random() * a.length)];
 const X = x => x / 1024 * 100, Y = y => y / 1536 * 100;
 
-// ===== Sons 8-bit =====
-let ac = null, muted = false, unlocked = false;
-try { muted = localStorage.getItem('bd1_mute') === '1'; } catch {}
-function ctx(){ if (!unlocked) return null; if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch { return null; } } if (ac.state === 'suspended') ac.resume(); return ac; }
-function tone(f, d, type = 'square', vol = .07, slide = 0, delay = 0){
-  const c = ctx(); if (!c || muted) return; const t = c.currentTime + delay;
-  const o = c.createOscillator(), g = c.createGain(); o.type = type; o.frequency.setValueAtTime(f, t);
-  if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, f + slide), t + d);
-  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
-}
-function noise(d, vol = .08, f = 1800, type = 'lowpass', slide = 0, delay = 0){
-  const c = ctx(); if (!c || muted) return; const t = c.currentTime + delay;
-  const buf = c.createBuffer(1, Math.max(1, Math.floor(c.sampleRate * d)), c.sampleRate), data = buf.getChannelData(0);
-  for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-  const s = c.createBufferSource(); s.buffer = buf; const fl = c.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(f, t);
-  if (slide) fl.frequency.exponentialRampToValueAtTime(Math.max(60, f + slide), t + d);
-  const g = c.createGain(); g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d); s.connect(fl).connect(g).connect(c.destination); s.start(t);
-}
-const SFX = {
-  slash(){ noise(.16, .09, 3500, 'bandpass', -2500); tone(520, .1, 'sawtooth', .04, -300); },
-  heavy(){ noise(.3, .13, 900, 'lowpass', -600); tone(140, .3, 'square', .1, -90); tone(70, .35, 'triangle', .12, -30, .05); },
-  cast(){ [440, 587, 784, 988].forEach((f, i) => tone(f, .13, 'square', .045, 0, i * .05)); noise(.25, .03, 5000, 'highpass'); },
-  holy(){ [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .22, 'triangle', .06, 0, i * .06)); },
-  shield(){ tone(220, .12, 'square', .08, 60); tone(330, .2, 'triangle', .07, 0, .05); noise(.08, .05, 2500, 'bandpass'); },
-  dodge(){ noise(.28, .07, 800, 'bandpass', 3500); },
-  hurt(){ tone(300, .2, 'sawtooth', .08, -220); noise(.12, .07, 1500); },
-  bossAtk(){ tone(90, .5, 'sawtooth', .1, -40); tone(60, .6, 'square', .08, -20, .1); noise(.5, .08, 600, 'lowpass', 400); },
-  bossRoar(){ for (let i = 0; i < 4; i++) tone(80 + i * 6, .25, 'sawtooth', .09, -25, i * .16); noise(.8, .07, 500, 'lowpass', 300); },
-  bossHurt(){ tone(180, .22, 'sawtooth', .07, -110); noise(.1, .06, 1200); },
-  aoe(){ tone(120, .7, 'sawtooth', .09, 260); noise(.7, .07, 400, 'lowpass', 2500); },
-  heal(){ [392, 494, 587, 784].forEach((f, i) => tone(f, .16, 'triangle', .06, 0, i * .07)); },
-  ult(){ tone(200, .6, 'square', .07, 900); tone(400, .6, 'sawtooth', .04, 1200, .05); },
-  die(){ tone(300, .6, 'sawtooth', .08, -250); },
-  bossDie(){ for (let i = 0; i < 5; i++) tone(200 - i * 25, .4, 'sawtooth', .09, -80, i * .2); noise(1.2, .09, 700, 'lowpass', -400); },
-  win(){ [523, 659, 784, 1047, 784, 1047].forEach((f, i) => tone(f, .18, 'square', .06, 0, i * .12)); },
-  lose(){ [392, 330, 262, 196].forEach((f, i) => tone(f, .35, 'triangle', .08, 0, i * .25)); },
-  right(){ tone(660, .1, 'square', .05); tone(880, .16, 'square', .05, 0, .09); },
-  wrong(){ tone(220, .18, 'square', .05, -60); tone(165, .24, 'square', .05, -40, .12); }
-};
-const sfx = n => { try { SFX[n] && SFX[n](); } catch {} };
+const sfx = () => {};   // sem áudio
 
 // ===== Camadas =====
 const els = {}, S = {};
@@ -73,11 +34,6 @@ function build(){
     const img = document.createElement('img'); img.src = `spr_${w}.webp`; img.alt = ''; img.draggable = false; d.appendChild(img);
     ref.after(d); els[w] = {box:d, img}; S[w] = {busy:0, dead:false, timer:null, idle:null, aura:null};
   });
-  const mb = document.createElement('button'); mb.id = 'mute'; mb.type = 'button'; mb.setAttribute('aria-label', 'Som');
-  const paint = () => { mb.textContent = muted ? '🔇' : '🔊'; };
-  mb.onclick = () => { muted = !muted; try { localStorage.setItem('bd1_mute', muted ? '1' : '0'); } catch {} paint(); if (!muted) { unlocked = true; ctx(); sfx('right'); } };
-  paint(); game.appendChild(mb);
-  document.addEventListener('pointerdown', () => { unlocked = true; ctx(); }, {once:true});
   WHO.forEach(w => scheduleIdle(w, rnd(300, 1500)));
 }
 
@@ -247,6 +203,6 @@ function useSheet(w, name, {src, frames, fps = 12}){
     f.remove(); img.style.visibility = ''; img.src = orig;
   };
 }
-window.Anim = {META, play, say, sayRandom, sfx, setDead, setAura, reset, useSheet, shake, fx:{glow, ring, sparks, slash, beam}, isMuted:() => muted, build};
+window.Anim = {META, play, say, sayRandom, sfx, setDead, setAura, reset, useSheet, shake, fx:{glow, ring, sparks, slash, beam}, build};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
 })();
