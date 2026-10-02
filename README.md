@@ -142,3 +142,10 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 
 ## v29
 - Todos os grupos começam com 0 moedas (antes 10). Saves antigos são descartados (formato v:2).
+
+## v30 — animações, falas e sons (anim.js)
+- Heróis e boss foram recortados do fundo (segmentação + ajuste manual) em `spr_*.webp` e ficam sobre o fundo original, no mesmo lugar. Por isso os movimentos são pequenos (escala/inclinação a partir dos pés); movimentos grandes deixam um "rastro" do desenho de fundo.
+- 3 ociosos sorteados por personagem (respirar, balançar e um gesto próprio: orbe da Maga, espada do Guerreiro, ombros do Tanque, oração da Clériga; boss: respirar, capa, chama dos olhos/espada).
+- Ações: ataque corpo a corpo, pesado, magia, sagrado, passar a vez, defesa (escudo colorido por tipo), esquiva (com rastro), dano, queda (cinza com caveira), reviver, especial, vitória; boss: ataque, fúria, onda sombria, risada, derrota.
+- Falas em balão pixel-art (sorteadas, ~30-60% das ações) e sons 8-bit sintetizados (botão 🔊 no canto esquerdo; preferência salva).
+- Para trocar por quadros desenhados: `Anim.useSheet('knight','melee',{src:'knight_melee.webp',frames:6,fps:12})` (sprite sheet horizontal com o mesmo enquadramento do `spr_knight.webp`).

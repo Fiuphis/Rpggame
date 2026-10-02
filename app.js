@@ -122,6 +122,11 @@ function loadSave(){
   return {gold:0, inventory:[]};
 }
 const saved = loadSave();
+// animações/falas/sons (anim.js); sem ele o jogo funciona igual
+const A = window.Anim || new Proxy({}, {get:() => () => Promise.resolve()});
+const skAnim = (k, sk) => ({atk:'melee', heavy:'heavy', super:'heavy', mana_atk:'cast', elem_atk:'cast', holy_atk:'holy'}[sk.id] || 'melee');
+const skSay = (k, sk) => ({heavy:'heavy', super:'heavy', holy_atk:'holy', mana_atk:'attack', elem_atk:'attack'}[sk.id] || 'attack');
+const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a6cff' : sk.elem && el ? ELEMENTS[el].color : '#4da3ff';
 
 const state = {
   gold:saved.gold, question:0, answered:false,
@@ -313,6 +318,8 @@ function renderHud(){
     bars[k].hp.style.width = Math.max(0, state.heroes[k].hp / HERO_MAX_HP * 100) + '%';
     bars[k].mp.style.width = Math.max(0, state.heroes[k].mp / 100 * 100) + '%';
   });
+  HERO_ORDER.forEach(k => A.setDead(k, state.heroes[k].hp <= 0));
+  A.setAura('mage', b.bh > 0 ? 'blue' : null); A.setAura('knight', b.bers > 0 ? 'red' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
   HERO_ORDER.forEach(k => bars['ult_' + k].classList.toggle('ready', !!state.ultReady[k]));
   bars.rage.querySelectorAll('.rage-seg b').forEach((el, i) => el.classList.toggle('on', i < state.rage));
   bars.rage.classList.toggle('full', state.rage >= RAGE_MAX);
@@ -478,10 +485,10 @@ async function bossIntro(){
   const game = $('#game');
   if (state.hardNext) {
     showBanner('O BOSS ENFURECEU!', 'pergunta difícil a caminho');
-    flashHit(); await wait(1500); hideBanner();
+    flashHit(); A.play('boss', 'enrage'); A.sayRandom('boss', 'enrage', 1); await wait(1500); hideBanner();
     state.rage = 0; state.hardNext = false; renderHud();
   }
-  game.classList.add('boss-attack'); await wait(1000); game.classList.remove('boss-attack');
+  game.classList.add('boss-attack'); A.play('boss', 'attack'); A.sayRandom('boss', 'intro', .5); await wait(1000); game.classList.remove('boss-attack');
 }
 
 // ---- alvos, ultimates e marcas ----
@@ -510,7 +517,7 @@ function ultUsable(k){ return k !== 'assassin' || healTargets().some(t => !t.blo
 async function activateUlt(k){
   state.ultReady[k] = false;
   const b = state.buff; let note = ULT_INFO[k];
-  showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
+  showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note); A.play(k, 'ult'); A.sayRandom(k, 'ult', 1);
   if (k === 'mage') b.bh = 1;
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
@@ -608,6 +615,7 @@ async function playRound(){
   showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros'); await wait(1400); hideBanner();
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
+  A.sfx(correct[activeGroup] ? 'right' : 'wrong');
   if (correct[activeGroup]) { state.gold += meta.reward; persist(); renderGold(); toast(`Seu grupo acertou! +${meta.reward} moeda${meta.reward > 1 ? 's' : ''}.`); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
   if (q.difficulty === 3) HERO_ORDER.forEach(k => { if (correct[k]) state.ultReady[k] = true; });
@@ -655,7 +663,8 @@ async function playRound(){
       if (sk.id === 'pass') {
         const t = act.target; sub = `passou a vez para ${GROUPS[t]}`;
         showBanner(`${nm}: ${sk.name}`, sub); await wait(1100);
-        if (correct[t] && state.heroes[t].hp > 0) { showRing(t); await heroAttack(t, Math.round(ATTACK_DAMAGE * 1.5)); } else floatText(HERO_X[t], 56, 'ERROU!', '#ff6b81');
+        A.play(k, 'pass'); A.sayRandom(k, 'pass', .6);
+        if (correct[t] && state.heroes[t].hp > 0) { showRing(t); A.play(t, 'melee'); await wait(300); await heroAttack(t, Math.round(ATTACK_DAMAGE * 1.5)); } else floatText(HERO_X[t], 56, 'ERROU!', '#ff6b81');
         renderHud(); await wait(700); hideBanner(); hideRing();
         if (state.bossHp <= 0) return endGame(true);
         continue;
@@ -685,9 +694,11 @@ async function playRound(){
     }
     const col = el ? ELEMENTS[el].color : null;
     showBanner(`${nm}: ${sk ? sk.name : 'sem ação'}${el ? ' · ' + ELEMENTS[el].name : ''}`, sub); await wait(1100);
-    if (dmg > 0) await heroAttack(k, dmg, col);
-    else if (hurt > 0) await bossCounter(k, hurt, defended);
-    else if (sk && sk.kind === 'dodge' && !ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8');
+    if (sk && sk.id === 'guard') { A.play(k, 'guard', {color:'#ff9d3d'}); A.sayRandom(k, 'guard', .6); }
+    if (dmg > 0) { const an = skAnim(k, sk); A.play(k, an); A.sayRandom(k, skSay(k, sk), .5); await wait(an === 'heavy' ? 480 : 300); await heroAttack(k, dmg, col); }
+    else if (hurt > 0) { if (defended) { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .5); await wait(250); } await bossCounter(k, hurt, defended); }
+    else if (sk && sk.kind === 'dodge') { A.play(k, 'dodge'); A.sayRandom(k, 'dodge', .55); if (!ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8'); }
+    else if (sk && sk.kind === 'def') { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .4); }
     renderHud(); await wait(700);
     hideBanner(); hideRing();
     if (state.bossHp <= 0) return endGame(true);
@@ -697,8 +708,8 @@ async function playRound(){
   // ---- 3b) onda sombria: o boss fere todos os heróis vivos a cada rodada (tira a vantagem de só jogar certo)
   { const aoe = meta.aoe;
     if (aoe && !state.over) {
-      showBanner('ONDA SOMBRIA', `o Lorde das Trevas fere todos: -${aoe}`); flashHit();
-      HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { const a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}`, '#b36bff'); } });
+      showBanner('ONDA SOMBRIA', `o Lorde das Trevas fere todos: -${aoe}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
+      HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); const a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}`, '#b36bff'); } });
       renderHud(); await wait(1100); hideBanner();
       if (aliveHeroes().length === 0) return endGame(false);
     } }
@@ -735,7 +746,7 @@ async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null){
   const imp = $('#boss-impact'); imp.style.background = `radial-gradient(circle,#fff,${col} 35%,transparent 68%)`;
   imp.classList.remove('active'); void imp.offsetWidth; imp.classList.add('active');
   game.classList.remove('boss-hit'); void game.offsetWidth; game.classList.add('boss-hit');
-  state.bossHp = Math.max(0, state.bossHp - dmg);
+  state.bossHp = Math.max(0, state.bossHp - dmg); A.play('boss', 'hurt'); A.sayRandom('boss', 'hurt', .3);
   floatText(50, 17, `-${dmg}`, col === '#d9e6ff' ? '#ffffff' : col);
   renderHud(); await wait(600); game.classList.remove('boss-hit');
 }
@@ -743,18 +754,22 @@ async function bossCounter(hero, dmg, defended){
   const r = routeHit(hero, dmg), t = r.to;
   await shoot(50, 26, HERO_X[t], 60, '#ff2d4d', 560);
   flashHit();
-  state.heroes[t].hp = Math.max(0, state.heroes[t].hp - r.dmg);
+  state.heroes[t].hp = Math.max(0, state.heroes[t].hp - r.dmg); A.play(t, 'hurt'); A.sayRandom(t, 'hurt', .35);
   floatText(HERO_X[t], 56, `-${r.dmg}${defended ? ' (defesa)' : ''}${r.note}`, '#ff6b81');
   renderHud(); await wait(500);
 }
 
+const pickAlive = () => { const l = HERO_ORDER.filter(k => state.heroes[k].hp > 0); return l[Math.floor(Math.random() * l.length)] || 'knight'; };
 function endGame(win){
-  state.over = true; clearTimeout(turnTimer);
+  state.over = true; clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
+  if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }
+  else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
   const o = $('#end-screen'); o.querySelector('h2').textContent = win ? 'VITÓRIA!' : 'DERROTA';
   o.querySelector('p').textContent = win ? 'O Lorde das Trevas foi derrotado.' : 'Todos os heróis caíram.';
   o.classList.toggle('win', win); o.hidden = false;
 }
 function restartRun(){
+  A.reset();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; });
