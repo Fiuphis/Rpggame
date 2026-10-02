@@ -1,5 +1,5 @@
-const CACHE='bd1-rpg-v35';
-const ASSETS=['./','./index.html','./game.html','./lobby.js','./lobby.css','./select_plate.webp','./char_mage.webp','./char_knight.webp','./char_tank.webp','./char_assassin.webp','./panel_mage.webp','./panel_knight.webp','./panel_tank.webp','./panel_assassin.webp','./style.css','./app.js','./anim.js','./puppet.js','./rig/mage_base.png','./rig/mage_arm.png','./rig/mage_hat.png','./rig/cleric_base.png','./rig/cleric_armL.png','./rig/cleric_armR.png','./rig/cleric_hood.png','./spr_mage.webp','./spr_knight.webp','./spr_tank.webp','./spr_assassin.webp','./spr_boss.webp','./game_clean.png','./question_panel.png','./icon_attack.png','./icon_coin.png','./manifest.webmanifest','./potion_hp.png','./potion_mana.png'];
+const CACHE='bd1-rpg-v36';
+const ASSETS=['./','./index.html','./game.html','./lobby.js','./lobby.css','./select_plate.webp','./char_mage.webp','./char_knight.webp','./char_tank.webp','./char_assassin.webp','./panel_mage.webp','./panel_knight.webp','./panel_tank.webp','./panel_assassin.webp','./style.css','./app.js','./game_clean.png','./question_panel.png','./icon_attack.png','./icon_coin.png','./manifest.webmanifest','./potion_hp.png','./potion_mana.png'];
 // Tudo em cache (abre instantâneo, até offline). Em segundo plano o SW confere a rede (requisição condicional, barata);
 // se algum arquivo mudou, atualiza o cache e avisa a página, que recarrega sozinha (menu) ou mostra o aviso (jogo).
 const keyOf=u=>{const x=new URL(u);return x.origin+x.pathname};

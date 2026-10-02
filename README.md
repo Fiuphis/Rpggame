@@ -160,3 +160,6 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 - Corpo dividido em partes (`rig/*_base/arm/hat/hood...png`, geradas por `tools/segmenta_rig.py` a partir de `tools/rig_src`): chapéu/capuz, braços, tronco e saia/capa como **malha deformável** (respiração, balanço da barra, capa ao vento, inclinação do tronco, passos dos pés).
 - Mãos desenhadas em pixel art por código, com **dedos independentes** e polegar (agarrar, abrir, batucar, virar página).
 - Maga: giro do cajado no ar, orbe, runas, tocar a aba do chapéu; Clériga: Bíblia, oração, cajado no chão, olhar ao redor, bênção. Ações: ataque, defesa, esquiva, dano, ultimate, vitória.
+
+## v36 — tudo estático
+Animações, falas e o rig da Maga/Clériga removidos a pedido: o jogo volta ao visual estático (cenário original com os heróis). Histórico das animações fica no git (v30–v35).
