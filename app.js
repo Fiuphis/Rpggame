@@ -517,7 +517,7 @@ function ultUsable(k){ return k !== 'assassin' || healTargets().some(t => !t.blo
 async function activateUlt(k){
   state.ultReady[k] = false;
   const b = state.buff; let note = ULT_INFO[k];
-  showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note); A.play(k, 'ult'); A.sayRandom(k, 'ult', 1);
+  showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note); const ultPl = A.play(k, 'ult'); A.sayRandom(k, 'ult', 1);
   if (k === 'mage') b.bh = 1;
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
@@ -531,7 +531,7 @@ async function activateUlt(k){
     else { h.hp = Math.min(HERO_MAX_HP, h.hp + HEAL_AMOUNT); floatText(HERO_X[t], 56, `+${HEAL_AMOUNT}`, '#9fe3a8'); }
     showBanner(`Luz Sagrada: ${GROUPS[t]}`, h.hp === REVIVE_HP ? 'voltou à luta!' : 'vida restaurada'); 
   }
-  renderHud(); await wait(1200); hideBanner();
+  renderHud(); await Promise.all([wait(1200), ultPl]); hideBanner();
 }
 function applyMark(el){
   const m = state.marks;

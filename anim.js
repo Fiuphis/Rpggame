@@ -43,7 +43,7 @@ function build(){
   });
 }
 function buildMage(h, m, P){
-  const PX = 130, PT = 170, PB = 40, cw = m.w + 2 * PX, ch = m.h + PT + PB;
+  const PX = 130, PXR = 340, PT = 170, PB = 40, cw = m.w + PX + PXR, ch = m.h + PT + PB;
   h.cv.width = cw; h.cv.height = ch;
   h.cv.style.cssText = `left:${(m.x - PX) / 1024 * 100}%;top:${(m.y - PT) / 1536 * 100}%;width:${cw / 1024 * 100}%;height:${ch / 1536 * 100}%`;
   const mk = (cls) => { const k = document.createElement('canvas'); k.className = 'fxl ' + cls; k.width = 1024; k.height = 1536; return k; };

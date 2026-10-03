@@ -3,7 +3,7 @@ import numpy as np, json, sys, os, shutil
 from PIL import Image
 from scipy import ndimage as ndi
 SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'mage3'
-TARGET_H = 190.0                                    # altura do corpo (topo do chapéu → barra) no jogo, igual ao sprite parado
+TARGET_H = 228.0                                    # altura do corpo (topo do chapéu → barra) no jogo, igual ao sprite parado
 im = np.asarray(Image.open(SRC).convert('RGB')).astype(np.float32); H, W = im.shape[:2]
 nw = im.min(2) < 228
 lab, n = ndi.label(ndi.binary_dilation(nw, iterations=2))

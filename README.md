@@ -178,3 +178,7 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 ## v42 — Maga refeita com a folha de fundo branco
 - `tools/cut_white.py` recorta a folha branca (poses de costas + efeitos) em `mage3/`: todas as poses na **mesma escala** (corpo = 190 px) e ancoradas pelo mesmo ponto no chão; borda limpa, sem halo.
 - `mage.js` anima por interpolação (deslocar, inclinar, respirar, rastro na esquiva) com cross-fade curto entre quadros reais; efeitos originais da folha (cometa, fogo caindo, pilar de água, redemoinho, espinhos e pedras, Buraco Negro). Nenhuma partícula desenhada por código.
+
+## v43
+- Cena da habilidade especial agora termina antes de reabrir o menu de habilidades (todos os grupos).
+- Maga no mesmo tamanho dos outros heróis; golpes de cajado (frontal, lateral), giros no ar, corrida + golpe, esquivas variadas, idles extras e vitórias — variantes sorteadas sem repetir a anterior.
