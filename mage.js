@@ -7,8 +7,8 @@
 const POSES = ['idle1','idle2','idle3','idle4','atk1','atk2','atk3','fire','water','air','earth','castdef','defmana','deffire','defwater','defair','defearth','dodge1','dodge2','dodge3','dodge4','bh1','bh2','spin1','stars','spinwide','swingf','swingl','swingr'];
 const FXS = ['comet','orbb','fire_fall','water_pillar','air_swirl','earth_spikes','rock','bh_small','bh_spikes','bh_big','bh_big2','bolt','cross','crystal','whirl','mana_aura','orb_red','orb_orange','orb_blue','star_big','star_small','rocks'];
 const T = {x:517, y:340};                                    // alvo no chefe (design 1024x1536)
-const BASE = 258, MSZ = 0.93;                                  // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
-const PS = {castdef:1.2, fire:1.2, water:1.2, air:1.2, earth:1.2};   // poses recortadas menores na folha: ajuste p/ ficarem do mesmo tamanho das outras                                            // linha da barra do manto dentro do sprite 209x284
+const BASE = 258, MSZ = 0.91;                                  // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
+const PS = {castdef:1.2,fire:1.2,water:1.2,air:1.2,earth:1.2,dodge2:1.09,dodge3:1.12,spin1:1.1,swingl:1.1};   // poses recortadas menores na folha: ajuste p/ ficarem do mesmo tamanho das outras                                            // linha da barra do manto dentro do sprite 209x284
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
 const ease = u => u < .5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2, eo = u => 1 - Math.pow(1 - u, 3), ei = u => u * u * u;

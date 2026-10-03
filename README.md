@@ -326,3 +326,7 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v84: recorte do botão inclui o contorno preto e o topo do capuz do mercador.
 - v84: botão do inventário com a borda escura externa preservada.
 - v85: contorno escuro do botão com espessura uniforme (7px na arte original).
+
+## v86 — tamanhos padronizados por herói
+- Alturas (cabeça→pés, escala do jogo): Tanque ~309 > Guerreiro ~250 (SZ 0,9) > Maga ≈ Clériga ~225 (MSZ 0,91 / SZ 0,82).
+- Tabelas `PM` (tank.js, knight.js) e `PS` (mage.js, cleric.js): multiplicador por pose, calculado pela altura da cabeça e pela área do corpo (sem os efeitos) em relação à pose ociosa de referência (`a_i1`, `K2_3`, `idle1`, `at1`).

@@ -7,7 +7,9 @@
 const POSES = ['n1','n2','n3','a_i1','a_i2','a_hh','a_sw','a_rd','a_cr','a_lo','a_s1','a_s2','a_bub','a_swl','a_rl1','a_rl2','a_dust','p1','tA','tB','tC','v1','v2','v3','v4','d_i1','d_i2','d_i3','d_a1','d_a2','d_a3','d_a4','d_h1','d_h2','d_h3','d_h4','d_u1','d_u2','d_p1','d_p3','d_f1','d_f2','d_f3','d_e1','d_e2','d_e3','d_e4','d_m1','d_m2','d_m3','d_m4'];
 const FXS = ['rock1','rock2','rock3','rock4'], FXD = ['bring','bspike','earth','rockburst'];
 const T = {x:517, y:340};                 // ponto de impacto no boss
-const BASE = 262, SZ = 1.2, XOFF = -18;     // SZ: o Tanque é o maior dos heróis     // pés (y) e escala do corpo
+const BASE = 262, SZ = 1.2, XOFF = -18;
+const PM = {n1:1.2,n2:1.13,n3:1.16,p1:1.07,a_hh:1.05,a_sw:1.11,a_rd:1.18,a_cr:1.06,a_lo:1.09,a_s1:1.12,a_s2:1.12,a_bub:1.1,a_swl:1.12,a_rl1:1.12,a_rl2:1.12,a_dust:1.13,tA:0.93,tC:0.93,v4:0.93,d_i2:1.06,d_a2:1.1,d_a3:1.18,d_a4:1.12,d_h1:1.19,d_h4:1.16,d_u2:1.1,d_p3:1.19,d_f1:1.13,d_f2:1.15,d_f3:1.16,d_e1:1.07,d_e2:1.18,d_e3:1.13,d_e4:1.16,d_m1:1.15,d_m2:1.15,d_m3:1.15,d_m4:1.15};   // ajuste por pose: todas do mesmo tamanho do corpo (tools/ajuste_escala)
+     // SZ: o Tanque é o maior dos heróis     // pés (y) e escala do corpo
 const GOLD = '255,200,110', FIRE = '255,150,60', BLUE = '120,180,255';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
@@ -196,7 +198,7 @@ function make(host){
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1, br0 = 1){
     const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return;
     const br = Math.sin(tm / 1000 * 2.0) * br0, fx = Px + W / 2 + XOFF + dx, fy = Py + BASE + dy;
-    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * sc * (1 - .004 * br), SZ * sc * (1 + .008 * br));
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * (PM[name] || 1) * sc * (1 - .004 * br), SZ * (PM[name] || 1) * sc * (1 + .008 * br));
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();

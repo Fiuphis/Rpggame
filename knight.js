@@ -5,7 +5,8 @@
 (() => {
 'use strict';
 const T = {x:517, y:340};                 // ponto de impacto no boss
-const BASE = 262, SZ = 1, XOFF = 0;       // pés (y) e escala (o Guerreiro é o 2º maior: Tanque 314 > Guerreiro 256 > Maga/Clériga 225)
+const BASE = 262, SZ = 0.9, XOFF = 0;
+const PM = {K1_12:1.18,K1_14:0.89,K1_18:1.14,K1_24:0.85,K1_25:0.85,K1_28:0.85,K1_30:0.88,K1_33:1.2,K1_38:1.09,K1_39:1.08,K1_50:1.09,K2_1:1.18,K2_2:1.18,K2_6:1.08,K2_12:1.18,K2_13:0.89,K2_17:0.91,K2_21:1.1,K2_22:1.09,K2_23:0.89,K2_24:0.85,K2_25:0.88,K2_27:1.09,K2_29:1.1,K2_31:1.09,K2_32:0.89,K2_33:0.91,K2_34:1.09,K2_35:0.85,K2_36:0.85,K2_37:0.9,K2_38:1.1,K2_41:1.12,K2_43:1.18,K2_44:0.89,K2_45:1.14,K2_46:1.1,K3_1:1.18,K3_7:1.09,K3_14:0.91,K3_17:0.9,K3_18:0.87,K3_25:0.85,K3_28:0.85,K3_29:1.1,K3_32:1.2,K3_34:1.1,K3_36:1.08,K3_38:1.15,K3_40:0.9,K3_41:0.86,K3_45:1.08};   // ajuste por pose: mesmo tamanho de corpo em todas       // pés (y) e escala (o Guerreiro é o 2º maior: Tanque 314 > Guerreiro 256 > Maga/Clériga 225)
 const BLUE = '120,180,255', ICE = '190,230,255', GOLD = '255,205,120', RED = '255,60,50', DUST = '230,205,170';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
@@ -220,7 +221,7 @@ function make(host){
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1, br0 = 1){
     const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return;
     const br = Math.sin(tm / 1000 * 2.0) * br0, fx = Px + W / 2 + XOFF + dx, fy = Py + BASE + dy;
-    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * sc * (1 - .004 * br), SZ * sc * (1 + .008 * br));
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * (PM[name] || 1) * sc * (1 - .004 * br), SZ * (PM[name] || 1) * sc * (1 + .008 * br));
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
