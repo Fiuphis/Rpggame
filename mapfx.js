@@ -7,6 +7,10 @@ const W = 204, H = 214;
 const cv = document.createElement('canvas'); cv.width = W; cv.height = H; cv.className = 'fx'; cv.setAttribute('aria-hidden', 'true');
 map.insertBefore(cv, document.getElementById('nodes'));
 const g = cv.getContext('2d');
+const cv2 = document.createElement('canvas'); cv2.width = W; cv2.height = H; cv2.className = 'fx fly'; cv2.setAttribute('aria-hidden', 'true');
+const nodesEl = document.getElementById('nodes'); nodesEl.parentNode.insertBefore(cv2, nodesEl.nextSibling);   // acima dos nós e rótulos
+const g2 = cv2.getContext('2d');
+let ctx = g;
 const R = (a, b) => a + Math.random() * (b - a), RI = (a, b) => Math.floor(R(a, b + 1)), PICK = a => a[RI(0, a.length - 1)];
 const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 const COL = { k:'#0b1424', w:'#e8f4ff', b:'#6fa8d6', B:'#3c6e9c', g:'#2e6b5a', G:'#58b08a', p:'#5a2f7d', P:'#9a63c8', r:'#c0392b', y:'#f2c14e', n:'#6e4325', N:'#b07a45', s:'#f0c8a0', S:'#efe3c2', h:'#2fb3a8', H:'#1a7d77', f:'#37b6c8', e:'#ffe36b', o:'#e8903a' };
@@ -15,12 +19,12 @@ let m = null;   // máscara de água
 const wat = (x, y) => x >= 0 && y >= 0 && x < W && y < H && m[(y | 0) * W + (x | 0)] === 1;
 const free = (x, y, r) => wat(x - r, y - r) && wat(x + r, y - r) && wat(x - r, y + r) && wat(x + r, y + r) && wat(x, y);
 
-const px = (x, y, c, a = 1) => { g.globalAlpha = a; g.fillStyle = COL[c] || c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
+const px = (x, y, c, a = 1) => { ctx.globalAlpha = a; ctx.fillStyle = COL[c] || c; ctx.fillRect(Math.round(x), Math.round(y), 1, 1); };
 const spr = (rows, x, y, flip, a = 1, clipY = null) => {
-  if (clipY !== null) { g.save(); g.beginPath(); g.rect(0, 0, W, clipY); g.clip(); }
+  if (clipY !== null) { ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, clipY); ctx.clip(); }
   const w = rows[0].length;
   for (let j = 0; j < rows.length; j++) for (let i = 0; i < w; i++) { const ch = rows[j][flip ? w - 1 - i : i]; if (ch !== '.') px(x + i, y + j, ch, a); }
-  if (clipY !== null) g.restore();
+  if (clipY !== null) ctx.restore();
 };
 const ring = (x, y, r, a) => { if (a <= 0) return; for (let k = 0; k < r * 6; k++) { const t = k / (r * 6) * 6.283; px(x + Math.cos(t) * r, y + Math.sin(t) * r * .38, 'w', a); } };
 const drops = (x, y, t, n = 5, a = 1) => { for (let k = 0; k < n; k++) { const ang = -1.2 - k * (1.1 / n) * 1.0, v = 6 + k % 2 * 2; px(x + Math.cos(ang + (k % 2 ? .6 : 0)) * v * t * 1.1, y + Math.sin(ang) * v * t + 14 * t * t, 'w', a * (1 - t)); } };
@@ -37,16 +41,6 @@ const BOAT = [
   'nnnnnnnnnnn',
   '.nNNNNNNNn.',
   '..nnnnnnn..'];
-const MERMAID = [   // cabeça e ombros; água corta na linha 8
-  '..hhhhh..',
-  '.hhhhhhH.',
-  '.hhsssHH.',
-  '.hHskskH.',
-  '.hHssssH.',
-  'hH.sssH.H',
-  'hH.ssss.H',
-  'h.ssssss.',
-  '..ssssss.'];
 const FISH = ['.bw.', 'bwwb', '.bb.'];
 const ROCK = ['.N.', 'NnN', '.n.'];
 
@@ -120,17 +114,6 @@ const E = {
     return { dur: 4200, draw(t, now) { const env = Math.min(1, t * 6, (1 - t) * 6), blink = (t > .4 && t < .46) || (t > .7 && t < .75);
       ring(p.x, p.y + 3, 2 + env * 5, .35 * env);
       if (!blink) { for (const dx of [-3, 3]) { px(p.x + dx, p.y, 'e', env); px(p.x + dx + 1, p.y, 'e', env); px(p.x + dx, p.y - 1, 'r', env * .8); px(p.x + dx + 1, p.y - 1, 'r', env * .8); } } else { px(p.x - 3, p.y, 'k', env); px(p.x + 3, p.y, 'k', env); } } }; },
-  mermaid() { const p = pick(0, 3); if (!p) return; const flip = Math.random() < .5;
-    return { dur: 7000, draw(t, now) {
-      const yw = p.y + 3;                                  // linha d'água
-      const up = t < .12 ? ease(t / .12) : t < .78 ? 1 : t < .88 ? 1 - ease((t - .78) / .1) : 0;
-      if (up > 0) { const by = yw - 8 + (1 - up) * 10 + Math.sin(now * 2.2) * .6;
-        spr(MERMAID, p.x - 4, by, flip, 1, yw);
-        if (t > .18 && t < .72) { const wv = Math.sin(now * 7) > 0 ? 0 : 1, hx = p.x + (flip ? -6 : 6) - (flip ? 1 : 0); px(hx, by + 1 - wv, 's'); px(hx, by + 2 - wv, 's'); px(hx + (flip ? -1 : 1), by - wv, 's'); }
-        ring(p.x, yw, 5 + 3 * Math.sin(now * 2), .45 * up); }
-      if (t > .86) { const u = (t - .86) / .14, ty = yw - 7 * Math.sin(u * Math.PI) + 2;     // cauda no mergulho
-        for (let k = 0; k < 4; k++) px(p.x + (flip ? 1 : -1) * k * .8, ty + k * .3 - 3, 'f'); px(p.x - 3, ty - 4, 'f'); px(p.x + 3, ty - 4, 'f'); px(p.x - 2, ty - 5, 'f'); px(p.x + 2, ty - 5, 'f'); px(p.x, ty - 3, 'B');
-        drops(p.x, yw - 2, u, 6, .9); ring(p.x, yw, 2 + u * 10, .6 * (1 - u)); } } }; },
   rock() { const c = shore(); if (!c) return; const n = RI(1, 3);
     return { dur: 1500 + n * 700, draw(t, now) { const T = t * (1500 + n * 700);
       for (let i = 0; i < n; i++) { const st = i * 650, u = (T - st) / 620;
@@ -144,7 +127,52 @@ const pick = (r, margin) => { for (let k = 0; k < 14; k++) { const p = PICK(pts)
 const path = (p, dir, L, r) => { for (let k = 0; k <= L; k += 5) if (!free(p.x + dir * k, p.y, r)) return false; return true; };
 const shore = () => PICK(shores);
 
-const WEIGHTS = [['fish', 3], ['rock', 2.5], ['fin', 2], ['eyes', 1.5], ['tentacle', 1.5], ['serpent', 1], ['mermaid', 1.2]];
+
+/* ---------- voadores: bandos de pássaros, morcegos e wyverns cruzando o mapa em direções aleatórias ---------- */
+COL.c = '#f1ecdc'; COL.d = '#a79f8a'; COL.v = '#b58cff'; COL.V = '#6a3fb0'; COL.R = '#d8483a'; COL.q = '#8e2a2a'; COL.O = '#f0a14a';
+const fl = [];
+const route = (speed, jitter = 70) => {          // reta de uma borda a outra, em direção aleatória
+  const ang = R(0, 6.2832), dx = Math.cos(ang), dy = Math.sin(ang), off = R(-jitter, jitter), R0 = 150;
+  const sx = W / 2 - dx * R0 - dy * off, sy = H / 2 - dy * R0 + dx * off;
+  return { dx, dy, sx, sy, dur: (2 * R0) / speed * 1000 };
+};
+const tri = (ax, ay, bx, by, cx, cy, c) => {
+  const x0 = Math.floor(Math.min(ax, bx, cx)), x1 = Math.ceil(Math.max(ax, bx, cx)), y0 = Math.floor(Math.min(ay, by, cy)), y1 = Math.ceil(Math.max(ay, by, cy));
+  const d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy); if (!d) return;
+  for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+    const l1 = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / d, l2 = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / d;
+    if (l1 >= 0 && l2 >= 0 && l1 + l2 <= 1) px(x, y, c);
+  }
+};
+const F = {
+  birds() { const n = RI(5, 9), sp = R(15, 22), r = route(sp), ph = R(0, 6);
+    return { dur: r.dur, draw(t, now) { const bx = r.sx + r.dx * 2 * 150 * t, by = r.sy + r.dy * 2 * 150 * t, px_ = -r.dy, py_ = r.dx;
+      for (let i = 0; i < n; i++) { const k = i === 0 ? 0 : (i + 1) >> 1, side = i === 0 ? 0 : (i % 2 ? 1 : -1);   // formação em V
+        const x = bx - r.dx * k * 6 + px_ * side * k * 4 + Math.sin(now + i) * .6, y = by - r.dy * k * 6 + py_ * side * k * 4 + Math.cos(now * 1.3 + i) * .6;
+        const up = Math.sin(now * 9 + ph + i * .7) > 0; px(x, y, 'c'); px(x - 1, y + (up ? -1 : 1), 'c'); px(x + 1, y + (up ? -1 : 1), 'c'); px(x - 2, y + (up ? -1 : 0), 'd'); px(x + 2, y + (up ? -1 : 0), 'd'); } } }; },
+  bats() { const n = RI(4, 7), sp = R(18, 26), r = route(sp, 60), bats = Array.from({ length: n }, () => ({ o: R(0, 6), ox: R(-10, 10), oy: R(-10, 10), f: R(8, 13) }));
+    return { dur: r.dur, draw(t, now) { const bx = r.sx + r.dx * 2 * 150 * t, by = r.sy + r.dy * 2 * 150 * t;
+      for (const b of bats) { const x = bx + b.ox + Math.sin(now * 2.1 + b.o) * 7, y = by + b.oy + Math.cos(now * 2.7 + b.o * 2) * 6, up = Math.sin(now * b.f + b.o) > 0;
+        px(x, y, 'v'); px(x - 1, y + (up ? -1 : 1), 'V'); px(x + 1, y + (up ? -1 : 1), 'V'); px(x - 2, y + (up ? -1 : 0), 'V'); px(x + 2, y + (up ? -1 : 0), 'V'); px(x, y - 1, 'R', .8); } } }; },
+  wyvern() { const sp = R(13, 19), r = route(sp, 50), f = r.dx >= 0 ? 1 : -1, ph = R(0, 6);
+    return { dur: r.dur, draw(t, now) { const x = r.sx + r.dx * 2 * 150 * t, y = r.sy + r.dy * 2 * 150 * t + Math.sin(now * 2) * 1.2, a = Math.sin(now * 6 + ph), h = a * 7;
+      // asa (atrás do corpo), cauda ondulando, corpo, pescoço e cabeça
+      tri(x + f * 2, y - 1, x - f * 3, y - 1, x - f * 3 - f * 3, y - 1 - h, 'q'); tri(x + f * 2, y - 1, x - f * 3, y - 1, x + f * 0, y - 1 - h * 1.15, 'q');
+      px(x - f * 3, y - 1 - h, 'O'); px(x, y - 1 - h * 1.15, 'O');
+      for (let i = 1; i <= 8; i++) { const ty = y + Math.round(Math.sin(now * 5 - i * .7) * 1.4); px(x - f * (3 + i), ty, 'R'); if (i < 5) px(x - f * (3 + i), ty + 1, 'O'); }
+      px(x - f * 11, y + Math.round(Math.sin(now * 5 - 6.3) * 1.4), 'O');
+      for (let i = -3; i <= 3; i++) { px(x + f * i, y, 'R'); px(x + f * i, y + 1, i > -3 && i < 3 ? 'O' : 'R'); }
+      px(x + f * 4, y - 1, 'R'); px(x + f * 4, y, 'R'); px(x + f * 5, y - 2, 'R'); px(x + f * 6, y - 2, 'R'); px(x + f * 7, y - 2, 'R'); px(x + f * 6, y - 3, 'k'); px(x + f * 5, y - 3, 'R'); px(x + f * 6, y - 1, 'O'); px(x + f * 6, y - 2, 'e'); } }; }
+};
+const FW = [['birds', 3], ['bats', 2], ['wyvern', 1.6]];
+const spawnFly = force => {
+  if (!force && fl.length >= 2) return;
+  let r = Math.random() * FW.reduce((s, w) => s + w[1], 0), name = FW[0][0];
+  for (const [n, w] of FW) { if ((r -= w) <= 0) { name = n; break; } }
+  const o = F[force || name](); o.born = performance.now(); o.name = force || name; fl.push(o);
+};
+
+const WEIGHTS = [['fish', 3], ['rock', 2.5], ['fin', 2], ['eyes', 1.5], ['tentacle', 1.5], ['serpent', 1]];
 const spawn = force => {
   if (!force && ev.length >= 3) return;
   let tot = WEIGHTS.reduce((s, w) => s + w[1], 0), r = Math.random() * tot, name = WEIGHTS[0][0];
@@ -156,17 +184,19 @@ const spawn = force => {
 };
 
 /* ---------- laço ---------- */
-let last = 0, acc = 0, nextSpawn = 0, run = false;
+let last = 0, acc = 0, nextSpawn = 0, nextFly = 0, run = false;
 const frame = now => {
   if (!run) return; requestAnimationFrame(frame);
   if (document.hidden) { last = now; return; }
   const dt = Math.min(.1, (now - last) / 1000); acc += now - last; last = now;
   if (acc < 50) return; acc = 0;                       // ~20 quadros/s
-  g.clearRect(0, 0, W, H); g.globalAlpha = 1;
+  g.clearRect(0, 0, W, H); g.globalAlpha = 1; g2.clearRect(0, 0, W, H); ctx = g;
   const s = now / 1000;
   drawWater(.05, s); drawBoats(.05, s);
   for (let i = ev.length - 1; i >= 0; i--) { const e = ev[i], t = (now - e.born) / e.dur; if (t >= 1) { ev.splice(i, 1); continue; } e.draw(t, s); }
-  g.globalAlpha = 1;
+  ctx = g2; for (let i = fl.length - 1; i >= 0; i--) { const e = fl[i], t = (now - e.born) / e.dur; if (t >= 1) { fl.splice(i, 1); continue; } e.draw(t, s); }
+  ctx = g; g.globalAlpha = 1; g2.globalAlpha = 1;
+  if (now > nextFly) { spawnFly(); nextFly = now + R(5000, 11000); }
   if (now > nextSpawn) { spawn(); nextSpawn = now + R(1800, 4200); }
 };
 
@@ -183,7 +213,7 @@ img.onload = () => {
   }
   if (!pts.length) return;
   initWater(pts); initBoats(pts);
-  run = true; last = performance.now(); nextSpawn = last + 900; requestAnimationFrame(frame);
-  window.MAPFX = { spawn, ev, pts: pts.length, shores: shores.length, boats: boats.length };
+  run = true; last = performance.now(); nextSpawn = last + 900; nextFly = last + 2500; requestAnimationFrame(frame);
+  window.MAPFX = { spawn, spawnFly, fl, ev, pts: pts.length, shores: shores.length, boats: boats.length };
 };
 })();
