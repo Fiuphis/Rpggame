@@ -182,3 +182,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 ## v43
 - Cena da habilidade especial agora termina antes de reabrir o menu de habilidades (todos os grupos).
 - Maga no mesmo tamanho dos outros heróis; golpes de cajado (frontal, lateral), giros no ar, corrida + golpe, esquivas variadas, idles extras e vitórias — variantes sorteadas sem repetir a anterior.
+
+## v44
+- Poses da Maga com contorno escuro e sem pontos brancos (tools/post_outline.py, roda depois de cut_white/bake_grad).
+- Projéteis viraram luz suave com rastro e fagulhas; brilho pulsante no cajado; poses de carregamento (castdef, bolha de mana, mãos elementais).
+- Sem andar/correr; mais variantes de ataque, mágica e golpe forte; idle calmo, movimentos extras raros e aleatórios.

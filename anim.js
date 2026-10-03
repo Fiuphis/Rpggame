@@ -96,7 +96,7 @@ async function play(w, name, opts = {}){
 function scheduleIdle(w, delay){
   const h = H[w]; if (!h) return; clearTimeout(h.idleT);
   h.idleT = setTimeout(async () => {
-    if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, rnd(1500, 4200)); }
+    if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, rnd(4500, 10000)); }
     if (h.cur || h.dead || document.hidden || !h.sheets.idle) return scheduleIdle(w, rnd(1500, 3500));
     h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, rnd(1500, 4000));
   }, delay);
