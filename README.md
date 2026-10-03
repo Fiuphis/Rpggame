@@ -273,3 +273,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v66 — Tanque maior
 - Escala única de todas as poses do Tanque (`SZ = 1.2` em tank.js): corpo ~314px, contra 262–284 dos outros heróis; sombra e ponto de saída da onda acompanham a escala.
+
+## v68 — Maga e Clériga: tamanho padronizado + variações com efeitos distintos
+- Tamanho: Maga e Clériga com a mesma altura (~225, menores que o Cavaleiro 261 e o Tanque 314). Poses destoantes corrigidas (Maga: castdef/fogo/água/ar/terra ×1,2; Clériga: ult1/ult2/at1/bp3).
+- Maga: projéteis (orbe, cometa, raio, estrela dupla, cristal, redemoinho, cruz) com trajetórias (arco, reto, zigue-zague, duplo) e impactos próprios (raio, cristais, cruz, redemoinho, cometa, estrelas). Elementos: 4 variações cada com efeitos diferentes (3 colunas/chuva/meteoro de fogo; colunas/onda/anéis de água; ciclones duplos/ascendente; espinhos triplos/varredura/chuva de pedras).
+- Clériga: ataque normal 7, sagrado 6 — projéteis (raios, estrela, cruz, sol) em arco/reto/zigue-zague/duplo e impactos novos (small4, holy4 lótus+anéis, holy5 três pilares).

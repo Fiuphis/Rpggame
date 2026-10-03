@@ -7,7 +7,8 @@
 const POSES = ['idle1','idle2','idle3','idle4','atk1','atk2','atk3','fire','water','air','earth','castdef','defmana','deffire','defwater','defair','defearth','dodge1','dodge2','dodge3','dodge4','bh1','bh2','spin1','stars','spinwide','swingf','swingl','swingr'];
 const FXS = ['comet','orbb','fire_fall','water_pillar','air_swirl','earth_spikes','rock','bh_small','bh_spikes','bh_big','bh_big2','bolt','cross','crystal','whirl','mana_aura','orb_red','orb_orange','orb_blue','star_big','star_small','rocks'];
 const T = {x:517, y:340};                                    // alvo no chefe (design 1024x1536)
-const BASE = 258;                                            // linha da barra do manto dentro do sprite 209x284
+const BASE = 258, MSZ = 0.93;                                  // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
+const PS = {castdef:1.2, fire:1.2, water:1.2, air:1.2, earth:1.2};   // poses recortadas menores na folha: ajuste p/ ficarem do mesmo tamanho das outras                                            // linha da barra do manto dentro do sprite 209x284
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
 const ease = u => u < .5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2, eo = u => 1 - Math.pow(1 - u, 3), ei = u => u * u * u;
@@ -17,28 +18,29 @@ const seg = (u, a, b) => clamp((u - a) / (b - a));
 // ---- ações: steps [t, pose, {dx,dy,rot}] (interpolados) · ev [t, 'nome'|fn]
 const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
 const EL = {fire:{shot:'orb_red:.9', col:'255,110,40'}, water:{shot:'orb_blue:.9', col:'70,170,255'}, air:{shot:'orbb:1', col:'150,230,210'}, earth:{shot:'orb_orange:.9', col:'230,170,70'}};
-const elemV = e => { const {shot, col} = EL[e], o = {col}; return [
-  S(1900, [[0,'idle1'],[.1,e,{dx:-4}],[.8,e,{dx:2}],[.97,'idle1']], [[.2,'charge'],[.4,'shot:'+shot],[.5,e]], o),
-  S(2200, [[0,'idle1'],[.1,'atk1',{dx:-4}],[.28,e,{dy:-3}],[.5,e,{dy:-6}],[.62,'swingf',{dx:6}],[.88,'swingf',{dx:8}],[.98,'idle1']], [[.14,'charge'],[.3,'charge'],[.6,'shot:'+shot],[.74,e]], o),
-  S(2200, [[0,'idle1'],[.1,'castdef'],[.34,'castdef',{dy:-4}],[.5,e,{dy:-4}],[.74,e,{dy:-2}],[.98,'idle1']], [[.12,'charge'],[.3,'charge'],[.52,'shot:'+shot],[.64,e]], o),
-  S(2300, [[0,'idle1'],[.1,'atk2',{dx:-8,rot:-3}],[.3,'stars',{dy:-6}],[.46,e,{dy:-4}],[.76,e],[.98,'idle1']], [[.16,'charge'],[.34,'cheer'],[.5,'shot:'+shot],[.62,e]], o),
+const ELV = {fire:['', 'tri', 'rain', 'meteor'], water:['', 'tri', 'wave', 'ring'], air:['', 'twin', 'rise', 'tri'], earth:['', 'tri', 'sweep', 'rain']};
+const elemV = e => { const {shot, col} = EL[e], o = {col}, V = ELV[e]; return [   // 4 variações: invocação direta · projétil + 3 efeitos · projétil duplo + chuva/onda · projétil reto + o efeito maior
+  S(1900, [[0,'idle1'],[.1,e,{dx:-4}],[.8,e,{dx:2}],[.97,'idle1']], [[.2,'charge'],[.45,e+':'+V[0]]], o),
+  S(2200, [[0,'idle1'],[.1,'atk1',{dx:-4}],[.28,e,{dy:-3}],[.5,e,{dy:-6}],[.62,'swingf',{dx:6}],[.88,'swingf',{dx:8}],[.98,'idle1']], [[.14,'charge'],[.3,'charge'],[.6,'shot:'+shot],[.74,e+':'+V[1]]], o),
+  S(2300, [[0,'idle1'],[.1,'castdef'],[.34,'castdef',{dy:-4}],[.5,e,{dy:-4}],[.74,e,{dy:-2}],[.98,'idle1']], [[.12,'charge'],[.3,'charge'],[.5,'shot:'+shot+':twin'],[.66,e+':'+V[2]]], o),
+  S(2400, [[0,'idle1'],[.1,'atk2',{dx:-8,rot:-3}],[.3,'stars',{dy:-6}],[.46,e,{dy:-4}],[.76,e],[.98,'idle1']], [[.16,'charge'],[.34,'cheer'],[.5,'shot:'+shot+':flat'],[.62,e+':'+V[3]]], o),
 ]; };
 const ACT = {
   melee:[
-    S(1050, [[0,'idle1'],[.12,'atk1',{dx:-4,rot:-2}],[.3,'atk2',{dx:-8,rot:-4}],[.48,'atk3',{dx:6,dy:-6,rot:3}],[.8,'atk3',{dx:2,rot:1}],[.96,'idle1']], [[.2,'charge'],[.47,'shot:orbb:1'],[.78,'hit:small']]),
-    S(1300, [[0,'idle1'],[.14,'atk1',{dx:-6}],[.36,'swingf',{dx:-2}],[.52,'swingf',{dx:10}],[.8,'swingf',{dx:6}],[.96,'idle1']], [[.3,'charge'],[.4,'shot:orbb:1'],[.66,'hit:small']]),
-    S(1600, [[0,'idle1'],[.1,'atk1',{dx:-4}],[.26,'swingr',{dx:-4,rot:-2}],[.46,'swingl',{dx:4,rot:2}],[.72,'swingl',{dx:6}],[.96,'idle1']], [[.3,'shot:orbb:.9'],[.5,'shot:orbb:1'],[.72,'hit:small']]),
-    S(1600, [[0,'idle1'],[.12,'atk1',{dx:-4}],[.3,'spin1',{dy:-6}],[.48,'spinwide',{dy:-12,rot:3}],[.66,'stars',{dy:-4}],[.82,'stars'],[.96,'idle1']], [[.32,'cheer'],[.56,'shot:orbb:1'],[.78,'hit:small']]),
-    S(1500, [[0,'idle1'],[.14,'air',{dx:-4}],[.34,'swingf',{dx:4}],[.62,'swingf',{dx:8}],[.96,'idle1']], [[.14,'charge'],[.38,'shot:orbb:1'],[.64,'hit:small']]),
-    S(1600, [[0,'idle1'],[.12,'atk2',{dx:-8,rot:-4}],[.3,'swingr',{dx:-2}],[.5,'atk3',{dx:6,dy:-6,rot:3}],[.8,'atk3',{dx:2}],[.96,'idle1']], [[.32,'cheer'],[.52,'shot:orbb:1'],[.76,'hit:small']]),
-    S(1500, [[0,'idle1'],[.14,'earth',{dx:-4}],[.34,'swingl',{dx:2}],[.58,'swingl',{dx:8}],[.96,'idle1']], [[.16,'charge'],[.4,'shot:orbb:1'],[.64,'hit:small']]),
+    S(1050, [[0,'idle1'],[.12,'atk1',{dx:-4,rot:-2}],[.3,'atk2',{dx:-8,rot:-4}],[.48,'atk3',{dx:6,dy:-6,rot:3}],[.8,'atk3',{dx:2,rot:1}],[.96,'idle1']], [[.2,'charge'],[.47,'shot:orbb:1:'],[.78,'hit:small']]),
+    S(1300, [[0,'idle1'],[.14,'atk1',{dx:-6}],[.36,'swingf',{dx:-2}],[.52,'swingf',{dx:10}],[.8,'swingf',{dx:6}],[.96,'idle1']], [[.3,'charge'],[.4,'shot:comet:1:flat'],[.66,'hit:comet']]),
+    S(1600, [[0,'idle1'],[.1,'atk1',{dx:-4}],[.26,'swingr',{dx:-4,rot:-2}],[.46,'swingl',{dx:4,rot:2}],[.72,'swingl',{dx:6}],[.96,'idle1']], [[.3,'shot:bolt:1:zig'],[.72,'hit:bolt']]),
+    S(1600, [[0,'idle1'],[.12,'atk1',{dx:-4}],[.3,'spin1',{dy:-6}],[.48,'spinwide',{dy:-12,rot:3}],[.66,'stars',{dy:-4}],[.82,'stars'],[.96,'idle1']], [[.32,'cheer'],[.56,'shot:star_big:1:twin'],[.78,'hit:star']]),
+    S(1500, [[0,'idle1'],[.14,'air',{dx:-4}],[.34,'swingf',{dx:4}],[.62,'swingf',{dx:8}],[.96,'idle1']], [[.14,'charge'],[.38,'shot:crystal:1:'],[.64,'hit:crystal']]),
+    S(1600, [[0,'idle1'],[.12,'atk2',{dx:-8,rot:-4}],[.3,'swingr',{dx:-2}],[.5,'atk3',{dx:6,dy:-6,rot:3}],[.8,'atk3',{dx:2}],[.96,'idle1']], [[.32,'cheer'],[.52,'shot:whirl:1:flat'],[.76,'hit:whirl']]),
+    S(1500, [[0,'idle1'],[.14,'earth',{dx:-4}],[.34,'swingl',{dx:2}],[.58,'swingl',{dx:8}],[.96,'idle1']], [[.16,'charge'],[.4,'shot:cross:1:'],[.64,'hit:cross']]),
   ],
   cast:[
-    S(1700, [[0,'idle1'],[.1,'atk1',{dx:-4}],[.3,'atk2',{dx:-10,rot:-4}],[.52,'atk3',{dx:6,dy:-8,rot:3}],[.82,'atk3'],[.97,'idle1']], [[.22,'charge'],[.52,'shot:orbb:1.5'],[.8,'hit:mana']], {col:'110,170,255'}),
-    S(2000, [[0,'idle1'],[.1,'atk1',{dx:-6}],[.3,'stars',{dy:-6}],[.5,'spin1',{dy:-10}],[.68,'swingf',{dx:6}],[.9,'swingf',{dx:8}],[.98,'idle1']], [[.18,'charge'],[.34,'charge'],[.68,'shot:orbb:1.5'],[.86,'hit:mana']], {col:'110,170,255'}),
-    S(2100, [[0,'idle1'],[.1,'castdef',{dx:-2}],[.3,'castdef',{dy:-4}],[.5,'castdef',{dy:-8}],[.62,'atk3',{dx:6,dy:-8,rot:3}],[.86,'atk3'],[.98,'idle1']], [[.12,'charge'],[.3,'charge'],[.5,'charge'],[.64,'shot:orbb:1.5'],[.86,'hit:mana']], {col:'110,170,255'}),
-    S(2300, [[0,'idle1'],[.1,'castdef'],[.26,'defmana',{dy:-4}],[.56,'defmana',{dy:-8}],[.68,'atk3',{dx:6,dy:-8,rot:3}],[.88,'atk3'],[.98,'idle1']], [[.14,'charge'],[.3,'charge'],[.5,'charge'],[.7,'shot:orbb:1.6'],[.9,'hit:mana']], {col:'120,170,255'}),
-    S(1900, [[0,'idle1'],[.1,'water',{dx:-4}],[.45,'water',{dy:-5}],[.58,'atk3',{dx:6,dy:-8,rot:3}],[.86,'atk3'],[.98,'idle1']], [[.12,'charge'],[.34,'charge'],[.6,'shot:orbb:1.5'],[.84,'hit:mana']], {col:'70,170,255'}),
+    S(1700, [[0,'idle1'],[.1,'atk1',{dx:-4}],[.3,'atk2',{dx:-10,rot:-4}],[.52,'atk3',{dx:6,dy:-8,rot:3}],[.82,'atk3'],[.97,'idle1']], [[.22,'charge'],[.52,'shot:orbb:1.5:'],[.8,'hit:mana']], {col:'110,170,255'}),
+    S(2000, [[0,'idle1'],[.1,'atk1',{dx:-6}],[.3,'stars',{dy:-6}],[.5,'spin1',{dy:-10}],[.68,'swingf',{dx:6}],[.9,'swingf',{dx:8}],[.98,'idle1']], [[.18,'charge'],[.34,'charge'],[.68,'shot:comet:1.2:flat'],[.86,'hit:comet']], {col:'110,170,255'}),
+    S(2100, [[0,'idle1'],[.1,'castdef',{dx:-2}],[.3,'castdef',{dy:-4}],[.5,'castdef',{dy:-8}],[.62,'atk3',{dx:6,dy:-8,rot:3}],[.86,'atk3'],[.98,'idle1']], [[.12,'charge'],[.3,'charge'],[.5,'charge'],[.64,'shot:star_big:1.1:twin'],[.86,'hit:star']], {col:'110,170,255'}),
+    S(2300, [[0,'idle1'],[.1,'castdef'],[.26,'defmana',{dy:-4}],[.56,'defmana',{dy:-8}],[.68,'atk3',{dx:6,dy:-8,rot:3}],[.88,'atk3'],[.98,'idle1']], [[.14,'charge'],[.3,'charge'],[.5,'charge'],[.7,'shot:cross:1.2:'],[.9,'hit:cross']], {col:'120,170,255'}),
+    S(1900, [[0,'idle1'],[.1,'water',{dx:-4}],[.45,'water',{dy:-5}],[.58,'atk3',{dx:6,dy:-8,rot:3}],[.86,'atk3'],[.98,'idle1']], [[.12,'charge'],[.34,'charge'],[.6,'shot:crystal:1.3:zig'],[.84,'hit:crystal']], {col:'70,170,255'}),
   ],
   fire:elemV('fire'),
   water:elemV('water'),
@@ -89,7 +91,7 @@ function glow(g, x, y, r, col, a){
   gr.addColorStop(0, `rgba(255,255,255,${clamp(a * .6)})`); gr.addColorStop(.16, `rgba(${col},${clamp(a)})`); gr.addColorStop(.5, `rgba(${col},${clamp(a * .32)})`); gr.addColorStop(1, `rgba(${col},0)`);
   g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); g.restore();
 }
-const GLOW = {orbb:'120,180,255', orb_red:'255,110,40', orb_blue:'70,170,255', orb_orange:'255,170,60', comet:'170,140,255'};
+const GLOW = {orbb:'120,180,255', orb_red:'255,110,40', orb_blue:'70,170,255', orb_orange:'255,170,60', comet:'170,140,255', bolt:'255,240,120', crystal:'150,230,255', whirl:'150,235,210', cross:'255,230,160', star_big:'255,225,170'};
 
 function make(host){
   const {c, cv, Px, Py, W, Hh, world, layers} = host, front = layers.front, fc = front.getContext('2d');
@@ -105,18 +107,25 @@ function make(host){
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false});
   const orbPos = () => ({...orbW});
   const dir = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
-  function shot(name, size){                                          // projétil de luz: halo, rastro suave e fagulhas
-    const a = orbPos(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), d = 560 + dist * .55, ang = dir(a, b), col = GLOW[name] || '120,180,255', k = rnd(-1, 1) * 26;
-    const path = u => { const e = Math.pow(u, 1.8), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + k * w + Math.sin(u * 11) * 6 * w, y:lerp(a.y, b.y, e) - w * 46}; };
+  function shot(name, size, style = '', ko = null){                    // projétil de luz: halo, rastro suave e fagulhas. estilos: arco (padrão), flat (reto e rápido), zig (zigue-zague), twin (dois)
+    if (style === 'twin' && ko == null) { shot(name, size * .85, '', -38); shot(name, size * .85, '', 38); return; }
+    const a = orbPos(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), flat = style === 'flat', zig = style === 'zig', d = (flat ? 380 : zig ? 620 : 560) + dist * (flat ? .35 : .55), ang = dir(a, b), col = GLOW[name] || '120,180,255', k = ko != null ? ko : rnd(-1, 1) * 26, lift = flat ? 6 : 46;
+    const path = u => { const e = Math.pow(u, flat ? 1.2 : 1.8), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + k * w + Math.sin(u * 11) * 6 * w + (zig ? Math.sin(u * 22) * 46 * w : 0), y:lerp(a.y, b.y, e) - w * lift}; };
     const fade = u => u < .1 ? u / .1 : u > .94 ? (1 - u) / .06 : 1;
     E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:(70 + 22 * Math.sin(u * 28)) * size * (.6 + .6 * u), c:col, a:.85 * fade(u)}; });
-    E('fx_' + name, d, u => { const p = path(u); return {x:p.x, y:p.y, s:size * 1.5 * (.55 + .55 * Math.sin(Math.min(1, u * 1.3) * 1.57)), rot:name === 'comet' ? ang + 1.57 : Math.sin(u * 6) * .35, a:fade(u) * .95}; });
+    E('fx_' + name, d, u => { const p = path(u), q = path(Math.min(1, u + .03)); return {x:p.x, y:p.y, s:size * (name === 'orbb' || name === 'comet' ? 1.5 : 1.0) * (.55 + .55 * Math.sin(Math.min(1, u * 1.3) * 1.57)), rot:name === 'comet' ? Math.atan2(q.y - p.y, q.x - p.x) + 1.57 : name === 'bolt' ? Math.atan2(q.y - p.y, q.x - p.x) : name === 'whirl' ? u * 14 : name === 'star_big' ? u * 6 : Math.sin(u * 6) * .35, a:fade(u) * .95}; });
     for (let i = 1; i <= 11; i++) { const ut = i / 12, p = path(ut); E('glow', 520, v => ({x:p.x + Math.sin(i * 3) * 6 * v, y:p.y - 12 * v, r:(54 * size) * (1 - v * .6), c:col, a:.5 * (1 - v)}), {delay:ut * d}); }
     for (let i = 0; i < 9; i++) { const ut = (i + .5) / 9 * .95, p = path(ut), ox = rnd(-18, 18), oy = rnd(-18, 18); E('fx_star_small', 600, v => ({x:p.x + ox * v, y:p.y + oy * v - 16 * v, s:.55 * (1 - v), rot:v * 2, a:1 - v}), {delay:ut * d}); }
   }
   function hit(kind){
     const bl = (r, c, a, dl = 0, d = 650) => E('glow', d, u => ({...T, r:r * (.4 + eo(u) * .9), c, a:a * (1 - u) * (u < .08 ? u / .08 : 1)}), {delay:dl});
     if (kind === 'small') { bl(120, '140,190,255', .9); E('fx_star_big', 560, u => ({...T, s:lerp(.4, .95, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .8})); }
+    else if (kind === 'bolt') { bl(150, '255,240,120', .95, 0, 700); bl(90, '255,255,255', .9, 0, 380); for (let i = 0; i < 4; i++) E('fx_bolt', 360, u => ({x:T.x + (i - 1.5) * 26, y:T.y - 10 + (i % 2) * 18, s:lerp(.6, 1.5, eo(u)), rot:-.9 + i * .6, a:1 - u}), {delay:i * 70}); flashT = clk(); }
+    else if (kind === 'crystal') { bl(160, '150,230,255', .95, 0, 800); for (let i = 0; i < 5; i++) E('fx_crystal', 700, u => ({x:T.x + (i - 2) * 36, y:T.y + 30 - 20 * eo(u) + Math.abs(i - 2) * 8, s:lerp(.3, 1.2 - Math.abs(i - 2) * .12, eo(Math.min(1, u * 2))), rot:(i - 2) * .22, a:1 - seg(u, .5, 1)}), {delay:i * 50}); }
+    else if (kind === 'cross') { bl(170, '255,230,160', .95, 0, 800); bl(100, '255,255,255', .85, 0, 420); E('fx_cross', 720, u => ({...T, s:lerp(.4, 1.7, eo(u)), a:(1 - u) * .95})); E('fx_ring_floor', 800, u => ({x:T.x, y:T.y + 60, s:lerp(.5, 2.4, eo(u)), a:(1 - u) * .9})); }
+    else if (kind === 'whirl') { bl(150, '150,235,210', .9, 0, 800); E('fx_whirl', 800, u => ({...T, s:lerp(.4, 1.5, eo(u)), rot:u * 8, a:(1 - seg(u, .3, 1)) * .95})); E('fx_whirl', 700, u => ({...T, s:lerp(.3, 1.1, eo(u)), rot:-u * 6, a:(1 - seg(u, .3, 1)) * .8}), {delay:100}); }
+    else if (kind === 'comet') { bl(170, '170,140,255', .95, 0, 800); E('fx_comet', 520, u => ({x:T.x - 60 + 60 * u, y:lerp(T.y - 340, T.y, u * u), s:1.1, rot:.2, a:u > .93 ? (1 - u) / .07 : 1})); E('fx_star_big', 560, u => ({...T, s:lerp(.4, 1.4, eo(u)), a:1 - u}), {delay:500}); shakeT = clk() + 480; }
+    else if (kind === 'star') { bl(160, '255,225,170', .95, 0, 800); E('fx_star_big', 700, u => ({...T, s:lerp(.3, 1.6, eo(u)), rot:u * 2, a:1 - u})); E('fx_star_big', 600, u => ({...T, s:lerp(.2, 1.1, eo(u)), rot:-u * 3, a:1 - u}), {delay:120}); for (let i = 0; i < 8; i++) { const an = i * .785; E('fx_star_small', 700, u => ({x:T.x + Math.cos(an) * 120 * eo(u), y:T.y + Math.sin(an) * 90 * eo(u), s:.7 * (1 - u * .5), a:1 - u}), {delay:60}); } }
     else if (kind === 'mana') { bl(190, '120,180,255', 1, 0, 800); bl(120, '255,255,255', .8, 0, 450); E('fx_star_big', 700, u => ({...T, s:lerp(.4, 1.5, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .8})); E('fx_orb_blue', 650, u => ({...T, s:lerp(.5, 1.5, eo(u)), a:(1 - u) * .8})); E('fx_cross', 520, u => ({...T, s:lerp(.4, 1.3, eo(u)), a:(1 - u) * .8})); }
     else { bl(280, '170,140,255', 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); bl(220, '120,180,255', .7, 120, 900); E('fx_star_big', 900, u => ({...T, s:lerp(.5, 2.1, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .08, 1)) * .85})); E('fx_mana_aura', 800, u => ({...T, s:lerp(.4, 2, eo(u)), a:(1 - u) * .7})); E('fx_cross', 650, u => ({...T, s:lerp(.4, 1.9, eo(u)), a:(1 - u) * .8})); E('fx_crystal', 550, u => ({x:T.x, y:T.y - 20, s:lerp(.5, 1.7, eo(u)), a:(1 - u) * .8}), {delay:80}); shakeT = clk(); }
   }
@@ -128,10 +137,26 @@ function make(host){
       for (let i = 0; i < 8; i++) { const an = i * .79 + rnd(0, .5); E('fx_star_small', 760, u => { const r = 100 * (1 - eo(u)) + 8, o = orbPos(); return {x:o.x + Math.cos(an + u * 2) * r, y:o.y + Math.sin(an + u * 2) * r * .8, s:.6 * (.5 + u * .5), rot:u * 3, a:Math.sin(Math.PI * u)}; }, {delay:i * 70}); }
     },
     cheer(){ E('fx_star_big', 700, u => ({...orbPos(), s:lerp(.3, 1.2, eo(u)), a:1 - u})); E('fx_cross', 600, u => ({...orbPos(), s:lerp(.3, 1, eo(u)), a:1 - u})); for (let i = 0; i < 4; i++) E('fx_star_small', 800, u => ({x:orbPos().x + Math.cos(i * 1.7) * 50 * eo(u), y:orbPos().y + Math.sin(i * 1.7) * 40 * eo(u) - 20 * u, s:.7 * (1 - u), a:1 - u}), {delay:i * 90}); },
-    fire(){ E('fx_fire_fall', 760, u => ({x:T.x, y:lerp(T.y - 360, T.y + 30, ei(u)), s:lerp(1.1, 1.5, u), a:u > .94 ? (1 - u) / .06 : 1})); E('fx_orb_orange', 700, u => ({x:T.x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)), a:1 - u}), {delay:700}); E('fx_orb_red', 600, u => ({x:T.x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)), a:1 - u}), {delay:720}); shakeT = clk() + 700; },
-    water(){ E('fx_water_pillar', 1100, u => ({x:T.x, y:T.y + 90, s:1.4, sy:lerp(.15, 1, eo(Math.min(1, u * 2.2))), anchorB:1, a:u < .1 ? u / .1 : u > .7 ? (1 - u) / .3 : 1})); E('fx_orb_blue', 700, u => ({x:T.x, y:T.y - 20, s:lerp(.4, 2, eo(u)), a:1 - u}), {delay:350}); },
-    air(){ E('fx_air_swirl', 1300, u => ({x:T.x, y:T.y, s:lerp(.6, 2.1, eo(Math.min(1, u * 1.5))), rot:u * 7, a:u < .1 ? u / .1 : u > .65 ? (1 - u) / .35 : 1})); E('fx_whirl', 1200, u => ({x:T.x, y:T.y, s:lerp(.5, 1.6, eo(u)), rot:-u * 6, a:(u < .15 ? u / .15 : 1 - seg(u, .15, 1)) * .8}), {delay:100}); },
-    earth(){ E('fx_earth_spikes', 1100, u => ({x:T.x, y:T.y + 90, s:1.6, sy:lerp(.1, 1, eo(Math.min(1, u * 2.6))), anchorB:1, a:u > .72 ? (1 - u) / .28 : 1}), {add:false}); E('fx_rock', 700, u => ({x:T.x + 40, y:lerp(T.y - 300, T.y, ei(u)), s:1.6, rot:u * 5, a:u > .95 ? (1 - u) / .05 : 1}), {add:false, delay:150}); E('fx_rocks', 900, u => ({x:T.x, y:T.y + 30, s:lerp(.7, 1.6, eo(u)), a:1 - seg(u, .2, 1)}), {add:false, delay:820}); shakeT = clk() + 820; },
+    fire(k){ const fall = (x, dl, sc = 1) => { E('fx_fire_fall', 760, u => ({x:T.x + x, y:lerp(T.y - 360, T.y + 30, ei(u)), s:lerp(1.1, 1.5, u) * sc, a:u > .94 ? (1 - u) / .06 : 1}), {delay:dl}); E('fx_orb_orange', 700, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 700}); E('fx_orb_red', 600, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 720}); };
+      if (k === 'tri') { fall(-90, 0, .8); fall(90, 140, .8); fall(0, 280, 1); shakeT = clk() + 980; }
+      else if (k === 'rain') { for (let i = 0; i < 6; i++) fall(-130 + i * 52 + rnd(-10, 10), i * 130, .6); shakeT = clk() + 1300; }
+      else if (k === 'meteor') { E('fx_fire_fall', 1100, u => ({x:T.x, y:lerp(T.y - 520, T.y + 30, ei(u)), s:lerp(1.6, 2.6, u), a:u > .96 ? (1 - u) / .04 : 1})); E('glow', 800, u => ({...T, r:lerp(120, 380, eo(u)), c:'255,120,40', a:.95 * (1 - u)}), {delay:1050}); E('fx_orb_orange', 900, u => ({x:T.x, y:T.y + 20, s:lerp(.6, 2.6, eo(u)), a:1 - u}), {delay:1050}); E('fx_orb_red', 800, u => ({x:T.x, y:T.y + 20, s:lerp(.5, 2.2, eo(u)), a:1 - u}), {delay:1070}); shakeT = clk() + 1050; }
+      else { fall(0, 0); shakeT = clk() + 700; } },
+    water(k){ const pil = (x, dl, sc = 1) => { E('fx_water_pillar', 1100, u => ({x:T.x + x, y:T.y + 90, s:1.4 * sc, sy:lerp(.15, 1, eo(Math.min(1, u * 2.2))), anchorB:1, a:u < .1 ? u / .1 : u > .7 ? (1 - u) / .3 : 1}), {delay:dl}); E('fx_orb_blue', 700, u => ({x:T.x + x, y:T.y - 20, s:lerp(.4, 2, eo(u)) * sc, a:1 - u}), {delay:dl + 350}); };
+      if (k === 'tri') { pil(-95, 0, .85); pil(95, 120, .85); pil(0, 240, 1.1); }
+      else if (k === 'wave') { for (let i = 0; i < 6; i++) pil(-150 + i * 60, i * 110, .7); }
+      else if (k === 'ring') { pil(0, 0, 1.2); E('fx_ring_floor', 1000, u => ({x:T.x, y:T.y + 70, s:lerp(.5, 3.2, eo(u)), a:(1 - u) * .9}), {delay:250}); E('fx_ring_floor', 900, u => ({x:T.x, y:T.y + 70, s:lerp(.4, 2.2, eo(u)), a:(1 - u) * .8}), {delay:450}); E('glow', 800, u => ({...T, r:lerp(80, 300, eo(u)), c:'70,170,255', a:.8 * (1 - u)}), {delay:350}); }
+      else pil(0, 0); },
+    air(k){ const sw = (x, y, dl, sc = 1, dir = 1) => { E('fx_air_swirl', 1300, u => ({x:T.x + x, y:T.y + y, s:lerp(.6, 2.1, eo(Math.min(1, u * 1.5))) * sc, rot:u * 7 * dir, a:u < .1 ? u / .1 : u > .65 ? (1 - u) / .35 : 1}), {delay:dl}); E('fx_whirl', 1200, u => ({x:T.x + x, y:T.y + y, s:lerp(.5, 1.6, eo(u)) * sc, rot:-u * 6 * dir, a:(u < .15 ? u / .15 : 1 - seg(u, .15, 1)) * .8}), {delay:dl + 100}); };
+      if (k === 'twin') { sw(-90, 10, 0, .75, 1); sw(90, -10, 150, .75, -1); }
+      else if (k === 'rise') { for (let i = 0; i < 3; i++) E('fx_whirl', 1100, u => ({x:T.x, y:lerp(T.y + 120, T.y - 120, eo(u)), s:lerp(.6, 1.7, eo(u)), rot:u * 9 * (i % 2 ? -1 : 1), a:(u < .15 ? u / .15 : 1 - seg(u, .5, 1)) * .85}), {delay:i * 160}); sw(0, 0, 420, 1, 1); }
+      else if (k === 'tri') { sw(-110, 20, 0, .6); sw(110, 20, 130, .6, -1); sw(0, -20, 260, .9); }
+      else sw(0, 0, 0); },
+    earth(k){ const sp = (x, dl, sc = 1, y = 0) => { E('fx_earth_spikes', 1100, u => ({x:T.x + x, y:T.y + 90 + y, s:1.6 * sc, sy:lerp(.1, 1, eo(Math.min(1, u * 2.6))), anchorB:1, a:u > .72 ? (1 - u) / .28 : 1}), {add:false, delay:dl}); };
+      if (k === 'tri') { sp(-100, 0, .8); sp(100, 140, .8); sp(0, 280, 1.1); E('fx_rocks', 900, u => ({x:T.x, y:T.y + 30, s:lerp(.7, 1.8, eo(u)), a:1 - seg(u, .2, 1)}), {add:false, delay:900}); shakeT = clk() + 500; }
+      else if (k === 'sweep') { for (let i = 0; i < 5; i++) sp(0, i * 120, .5 + i * .12, 150 - i * 40); E('fx_rocks', 900, u => ({x:T.x, y:T.y + 30, s:lerp(.7, 1.7, eo(u)), a:1 - seg(u, .2, 1)}), {add:false, delay:640}); shakeT = clk() + 640; }
+      else if (k === 'rain') { for (let i = 0; i < 5; i++) { const x = -130 + i * 65 + rnd(-10, 10); E('fx_rock', 700, u => ({x:T.x + x, y:lerp(T.y - 340, T.y + 10, ei(u)), s:1.3, rot:u * 5 * (i % 2 ? 1 : -1), a:u > .95 ? (1 - u) / .05 : 1}), {add:false, delay:i * 150}); E('fx_rocks', 700, u => ({x:T.x + x, y:T.y + 30, s:lerp(.4, 1.0, eo(u)), a:1 - seg(u, .2, 1)}), {add:false, delay:i * 150 + 680}); } shakeT = clk() + 800; }
+      else { E('fx_earth_spikes', 1100, u => ({x:T.x, y:T.y + 90, s:1.6, sy:lerp(.1, 1, eo(Math.min(1, u * 2.6))), anchorB:1, a:u > .72 ? (1 - u) / .28 : 1}), {add:false}); E('fx_rock', 700, u => ({x:T.x + 40, y:lerp(T.y - 300, T.y, ei(u)), s:1.6, rot:u * 5, a:u > .95 ? (1 - u) / .05 : 1}), {add:false, delay:150}); E('fx_rocks', 900, u => ({x:T.x, y:T.y + 30, s:lerp(.7, 1.6, eo(u)), a:1 - seg(u, .2, 1)}), {add:false, delay:820}); shakeT = clk() + 820; } },
     bhopen(){ E('fx_bh_small', 3000, u => ({x:T.x, y:T.y, s:lerp(.12, .85, eo(Math.min(1, u * 2))), rot:u * 12, a:u < .08 ? u / .08 : u > .85 ? (1 - u) / .15 : 1})); flashT = clk(); },
     bhbig(){ E('fx_bh_big', 2300, u => ({x:T.x, y:T.y, s:lerp(.2, 1.05, eo(Math.min(1, u * 1.7))), rot:-u * 10, a:u < .1 ? u / .1 : u > .8 ? (1 - u) / .2 : 1})); E('fx_bh_spikes', 1500, u => ({x:T.x, y:T.y + 20, s:lerp(.3, 1.1, eo(Math.min(1, u * 2))), a:u < .12 ? u / .12 : 1 - seg(u, .5, 1)}), {delay:300}); shakeT = clk() + 300; },
     bhopen2(){ E('fx_bh_small', 3000, u => ({x:T.x, y:T.y, s:lerp(.1, 1, eo(Math.min(1, u * 1.6))), rot:-u * 14, a:u < .08 ? u / .08 : u > .85 ? (1 - u) / .15 : 1})); E('fx_orb_blue', 900, u => ({x:T.x, y:T.y, s:lerp(.3, 1.4, eo(u)), a:1 - u})); flashT = clk(); },
@@ -139,8 +164,8 @@ function make(host){
     bhend2(){ E('fx_bh_big', 800, u => ({x:T.x, y:T.y, s:lerp(1.05, 1.6, eo(u)), rot:-u * 8, a:1 - u})); E('fx_star_big', 800, u => ({x:T.x, y:T.y, s:lerp(.5, 2.4, eo(u)), a:1 - u})); E('fx_star_big', 700, u => ({x:T.x, y:T.y, s:lerp(.3, 1.6, eo(u)), rot:u * 2, a:1 - u}), {delay:160}); flashT = clk(); shakeT = clk(); },
     bhend(){ E('fx_bh_big2', 800, u => ({x:T.x, y:T.y, s:lerp(1.05, 1.5, eo(u)), rot:u * 6, a:1 - u})); E('fx_star_big', 800, u => ({x:T.x, y:T.y, s:lerp(.5, 2.2, eo(u)), a:1 - u})); flashT = clk(); },
   };
-  const HITD = {fire:560, water:320, air:380, earth:260};   // atraso até o efeito elemental acertar o boss
-  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) { EV[k](); if (HITD[k] != null) setTimeout(fireHit, HITD[k]); } }
+  const HITD = {fire:560, water:320, air:380, earth:260}, HITX = {tri:260, rain:600, meteor:480, wave:420, ring:80, twin:150, rise:420, sweep:340};   // atraso até o efeito elemental acertar o boss
+  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); const [,, , st] = e.split(':'); if (k === 'shot') shot(a, +b, st); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) { EV[k](a); if (HITD[k] != null) setTimeout(fireHit, HITD[k] + (HITX[a] || 0)); } }
 
   // ---- corpo
   function poseAt(a, pe){                                              // pose + transformações no instante pe
@@ -152,11 +177,11 @@ function make(host){
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1){
     const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return null;
     const br = Math.sin(tm / 1000 * 2.2), fx = Px + W / 2 + dx, fy = Py + BASE + dy;
-    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(sc * (1 - .004 * br), sc * (1 + .010 * br));
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(MSZ * (PS[name] || 1) * sc * (1 - .004 * br), MSZ * (PS[name] || 1) * sc * (1 + .010 * br));
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
-    if (m.orb) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = m.orb[0] - m.cx, oy = m.orb[1] - m.gy; return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
+    if (m.orb) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (m.orb[0] - m.cx) * MSZ * (PS[name] || 1), oy = (m.orb[1] - m.gy) * MSZ * (PS[name] || 1); return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
     return null;
   }
   function frame(){

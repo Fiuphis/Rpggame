@@ -7,7 +7,8 @@
 const POSES = ['at1','at3','stf','ult1','ult2','bp1','bp2','bp3','bg1','bg2','bg3','bg4','br1','br2','br3','br4','br5','br6','bt1','bt2','bt3','bt4','d1','d2','d3','d4'];
 const FXS = ['star1','star2','star3','ring1','ring2','ring3','pillar','lotus','burst','aura','streak1','streak2','streak3','sunstar','star4','pillar2','cross1'];
 const T = {x:517, y:340};
-const BASE = 292, SZ = 1.05, XOFF = -46;      // pés mais para a frente (baixo) e um pouco maior
+const BASE = 292, SZ = 0.88, XOFF = -46;      // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
+const PS = {ult1:1.12, ult2:1.1, at1:1.04, bp3:.96};   // poses cuja escala na folha destoa das demais      // pés mais para a frente (baixo) e um pouco maior
 const GOLD = '255,214,120';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
@@ -18,19 +19,21 @@ const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
 
 const ACT = {   // só poses de COSTAS (bp, bg, br, bt) — base: bp1
   melee:[   // cajado (at1/at3/stf) e Bíblia (bt/bg)
-    S(1300, [[0,'bp1'],[.14,'at1',{dx:-3}],[.34,'at1',{dx:-5}],[.54,'at3',{dx:4,dy:-4}],[.82,'at3',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:streak1:.9'],[.76,'hit:small']]),
-    S(1400, [[0,'bp1'],[.12,'stf',{dx:-2}],[.34,'at1',{dx:-4}],[.54,'at3',{dx:4,dy:-4}],[.82,'at3',{dx:2}],[.96,'bp1']], [[.3,'charge'],[.54,'shot:streak2:.9'],[.78,'hit:small2']]),
-    S(1500, [[0,'bp1'],[.14,'at1',{dx:-3}],[.32,'stf',{dx:-6}],[.52,'at3',{dx:6,dy:-5}],[.84,'at3',{dx:2}],[.96,'bp1']], [[.22,'charge'],[.56,'shot:streak3:1'],[.8,'hit:small3']]),
-    S(1400, [[0,'bp1'],[.14,'bg3',{dx:-3}],[.34,'bt1',{dx:-5}],[.54,'bt2',{dx:3,dy:-3}],[.82,'bt2',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:streak1:.9'],[.76,'hit:small2']]),
-    S(1500, [[0,'bp1'],[.12,'br2'],[.3,'br1',{dx:-3}],[.52,'bt1',{dx:4,dy:-3}],[.84,'bt3',{dx:2}],[.96,'bp1']], [[.26,'charge'],[.54,'shot:streak2:1'],[.8,'hit:small3']]),
+    S(1300, [[0,'bp1'],[.14,'at1',{dx:-3}],[.34,'at1',{dx:-5}],[.54,'at3',{dx:4,dy:-4}],[.82,'at3',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:streak1:.9:'],[.76,'hit:small']]),
+    S(1400, [[0,'bp1'],[.12,'stf',{dx:-2}],[.34,'at1',{dx:-4}],[.54,'at3',{dx:4,dy:-4}],[.82,'at3',{dx:2}],[.96,'bp1']], [[.3,'charge'],[.54,'shot:streak2:.9:flat'],[.78,'hit:small2']]),
+    S(1500, [[0,'bp1'],[.14,'at1',{dx:-3}],[.32,'stf',{dx:-6}],[.52,'at3',{dx:6,dy:-5}],[.84,'at3',{dx:2}],[.96,'bp1']], [[.22,'charge'],[.56,'shot:streak3:1:zig'],[.8,'hit:small3']]),
+    S(1400, [[0,'bp1'],[.14,'bg3',{dx:-3}],[.34,'bt1',{dx:-5}],[.54,'bt2',{dx:3,dy:-3}],[.82,'bt2',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:star4:.9:twin'],[.76,'hit:small4']]),
+    S(1500, [[0,'bp1'],[.12,'br2'],[.3,'br1',{dx:-3}],[.52,'bt1',{dx:4,dy:-3}],[.84,'bt3',{dx:2}],[.96,'bp1']], [[.26,'charge'],[.54,'shot:cross1:.9:flat'],[.8,'hit:small3']]),
+    S(1500, [[0,'bp1'],[.12,'stf',{dx:-2}],[.3,'at1',{dx:-4}],[.5,'at3',{dx:5,dy:-4}],[.82,'at3',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.52,'shot:sunstar:.9:twin'],[.78,'hit:small4']]),
+    S(1500, [[0,'bp1'],[.12,'bg3'],[.3,'bt1',{dx:-4}],[.5,'bt4',{dy:-4}],[.82,'bt4',{dx:2}],[.96,'bp1']], [[.24,'charge'],[.54,'shot:star4:1:zig'],[.8,'hit:small']]),
   ],
   holy:[
-    S(2300, [[0,'bp1'],[.1,'at1',{dx:-3}],[.3,'ult1',{dy:-2}],[.5,'ult2',{dy:-6}],[.8,'ult2',{dy:-4}],[.97,'bp1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:sunstar:1.3'],[.8,'hit:holy']]),
-    S(2500, [[0,'bp1'],[.1,'stf',{dx:-2}],[.28,'at3',{dy:-3}],[.48,'ult1',{dy:-3}],[.66,'ult2',{dy:-6}],[.84,'ult2',{dy:-4}],[.97,'bp1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.7,'shot:cross1:1.3'],[.92,'hit:holy2']]),
-    S(2100, [[0,'bp1'],[.1,'bp3',{dx:-3}],[.3,'bt1',{dy:-3}],[.5,'bt4',{dy:-4}],[.78,'bt4',{dx:2}],[.97,'bp1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:sunstar:1.3'],[.8,'hit:holy']]),
-    S(2400, [[0,'bp1'],[.1,'br2'],[.3,'br1',{dy:-2}],[.5,'bt2',{dx:-3}],[.64,'bt4',{dy:-4}],[.8,'bt4',{dx:3}],[.97,'bp1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.68,'shot:cross1:1.3'],[.9,'hit:holy2']]),
-    S(2600, [[0,'bp1'],[.08,'bp3'],[.2,'bt1'],[.3,'bt2'],[.4,'bt3'],[.5,'bt4',{dy:-2}],[.62,'bt4',{dy:-4}],[.78,'bt4',{dx:3}],[.97,'bp1']], [[.2,'charge'],[.36,'charge'],[.5,'charge'],[.66,'shot:star4:1.2'],[.9,'hit:holy3']]),
-    S(2600, [[0,'bp1'],[.08,'br4'],[.2,'br5'],[.34,'br3'],[.5,'bg3'],[.62,'bt1',{dy:-3}],[.76,'bt4',{dy:-4}],[.97,'bp1']], [[.2,'charge'],[.4,'charge'],[.58,'charge'],[.72,'shot:sunstar:1.5'],[.92,'hit:holy2']]),
+    S(2300, [[0,'bp1'],[.1,'at1',{dx:-3}],[.3,'ult1',{dy:-2}],[.5,'ult2',{dy:-6}],[.8,'ult2',{dy:-4}],[.97,'bp1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:sunstar:1.3:'],[.8,'hit:holy']]),
+    S(2500, [[0,'bp1'],[.1,'stf',{dx:-2}],[.28,'at3',{dy:-3}],[.48,'ult1',{dy:-3}],[.66,'ult2',{dy:-6}],[.84,'ult2',{dy:-4}],[.97,'bp1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.7,'shot:cross1:1.3:flat'],[.92,'hit:holy2']]),
+    S(2100, [[0,'bp1'],[.1,'bp3',{dx:-3}],[.3,'bt1',{dy:-3}],[.5,'bt4',{dy:-4}],[.78,'bt4',{dx:2}],[.97,'bp1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:star4:1.2:twin'],[.8,'hit:holy3']]),
+    S(2400, [[0,'bp1'],[.1,'br2'],[.3,'br1',{dy:-2}],[.5,'bt2',{dx:-3}],[.64,'bt4',{dy:-4}],[.8,'bt4',{dx:3}],[.97,'bp1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.68,'shot:cross1:1.3:zig'],[.9,'hit:holy4']]),
+    S(2600, [[0,'bp1'],[.08,'bp3'],[.2,'bt1'],[.3,'bt2'],[.4,'bt3'],[.5,'bt4',{dy:-2}],[.62,'bt4',{dy:-4}],[.78,'bt4',{dx:3}],[.97,'bp1']], [[.2,'charge'],[.36,'charge'],[.5,'charge'],[.66,'shot:sunstar:1.4:twin'],[.9,'hit:holy5']]),
+    S(2600, [[0,'bp1'],[.08,'br4'],[.2,'br5'],[.34,'br3'],[.5,'bg3'],[.62,'bt1',{dy:-3}],[.76,'bt4',{dy:-4}],[.97,'bp1']], [[.2,'charge'],[.4,'charge'],[.58,'charge'],[.72,'shot:sunstar:1.5:flat'],[.92,'hit:holy3']]),
   ],
   guard_n:[
     S(1900, [[0,'bp1'],[.14,'br1'],[.34,'br3'],[.6,'br3'],[.9,'br3'],[.98,'bp1']], [[.3,'shield']]),
@@ -107,12 +110,13 @@ function make(host){
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
   let tgt = null; const tf = () => tgt ? {x:tgt.x, y:feet().y} : feet();   // alvo da Luz Sagrada
 
-  function shot(name, size){
-    const a = orbPos(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), d = 560 + dist * .55, ang = dir(a, b), k = rnd(-1, 1) * 24;
-    const path = u => { const e = Math.pow(u, 1.8), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + k * w + Math.sin(u * 11) * 6 * w, y:lerp(a.y, b.y, e) - w * 46}; };
+  function shot(name, size, style = '', ko = null){      // estilos: arco (padrão), flat (reto e rápido), zig (zigue-zague), twin (dois)
+    if (style === 'twin' && ko == null) { shot(name, size * .85, '', -38); shot(name, size * .85, '', 38); return; }
+    const a = orbPos(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), flat = style === 'flat', zig = style === 'zig', d = (flat ? 380 : zig ? 620 : 560) + dist * (flat ? .35 : .55), ang = dir(a, b), k = ko != null ? ko : rnd(-1, 1) * 24, lift = flat ? 6 : 46;
+    const path = u => { const e = Math.pow(u, flat ? 1.2 : 1.8), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + k * w + Math.sin(u * 11) * 6 * w + (zig ? Math.sin(u * 22) * 46 * w : 0), y:lerp(a.y, b.y, e) - w * lift}; };
     const fade = u => u < .1 ? u / .1 : u > .94 ? (1 - u) / .06 : 1, streak = /^streak/.test(name);
     E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:(70 + 22 * Math.sin(u * 28)) * size * (.6 + .6 * u), c:GOLD, a:.85 * fade(u)}; });
-    E('fx_' + name, d, u => { const p = path(u), q = path(Math.min(1, u + .04)); return {x:p.x, y:p.y, s:size * (streak ? 1.1 : 1.0) * (.6 + .5 * Math.sin(Math.min(1, u * 1.3) * 1.57)), rot:streak ? Math.atan2(q.y - p.y, q.x - p.x) + 3.14 : Math.sin(u * 6) * .3, a:fade(u) * .95}; });
+    E('fx_' + name, d, u => { const p = path(u), q = path(Math.min(1, u + .04)); return {x:p.x, y:p.y, s:size * (streak ? 1.1 : 1.0) * (.6 + .5 * Math.sin(Math.min(1, u * 1.3) * 1.57)), rot:streak ? Math.atan2(q.y - p.y, q.x - p.x) + 3.14 : name === 'star4' ? u * 7 : Math.sin(u * 6) * .3, a:fade(u) * .95}; });
     for (let i = 1; i <= 11; i++) { const ut = i / 12, p = path(ut); E('glow', 520, v => ({x:p.x + Math.sin(i * 3) * 6 * v, y:p.y - 12 * v, r:(54 * size) * (1 - v * .6), c:GOLD, a:.5 * (1 - v)}), {delay:ut * d}); }
     for (let i = 0; i < 9; i++) { const ut = (i + .5) / 9 * .95, p = path(ut), ox = rnd(-18, 18), oy = rnd(-18, 18); E('fx_star' + (1 + i % 3), 600, v => ({x:p.x + ox * v, y:p.y + oy * v - 16 * v, s:.45 * (1 - v), rot:v * 2, a:1 - v}), {delay:ut * d}); }
   }
@@ -122,6 +126,9 @@ function make(host){
     else if (kind === 'small3') { bl(120, GOLD, .85); E('fx_ring3', 620, u => ({x:T.x, y:T.y + 40, s:lerp(.3, 1, eo(u)), sy:.6, a:(1 - u) * .8})); for (let i = 0; i < 5; i++) { const an = i * 1.26; E('fx_star' + (1 + i % 3), 600, u => ({x:T.x + Math.cos(an) * 70 * eo(u), y:T.y + Math.sin(an) * 60 * eo(u), s:.45 * (1 - u), a:1 - u})); } }
     else if (kind === 'holy2') { bl(260, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_cross1', 900, u => ({...T, s:lerp(.6, 1.7, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .1, 1)) * .95})); E('fx_pillar', 1000, u => ({x:T.x, y:T.y + 100, s:1.3, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:60}); shakeT = clk(); }
     else if (kind === 'holy3') { bl(280, GOLD, 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); E('fx_burst', 1000, u => ({x:T.x, y:T.y + 100, s:1.5, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)})); E('fx_ring2', 900, u => ({x:T.x, y:T.y + 80, s:lerp(.4, 1.9, eo(u)), sy:.5, a:(1 - u) * .85})); E('fx_star4', 800, u => ({...T, s:lerp(.4, 1.3, eo(u)), rot:u * 1.6, a:(1 - u) * .9})); shakeT = clk(); }
+    else if (kind === 'small4') { bl(125, GOLD, .9); E('fx_ring1', 640, u => ({x:T.x, y:T.y + 50, s:lerp(.3, 1.1, eo(u)), sy:.5, a:(1 - u) * .9})); E('fx_star4', 640, u => ({...T, s:lerp(.2, .8, eo(u)), rot:-u * 2, a:1 - u})); E('fx_pillar2', 620, u => ({x:T.x, y:T.y + 70, s:.7, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)})); }
+    else if (kind === 'holy4') { bl(270, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_lotus', 1100, u => ({x:T.x, y:T.y + 90, s:lerp(.6, 2.2, eo(Math.min(1, u * 1.5))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .4, 1)})); E('fx_ring2', 900, u => ({x:T.x, y:T.y + 80, s:lerp(.4, 2.2, eo(u)), sy:.5, a:(1 - u) * .85})); E('fx_ring2', 800, u => ({x:T.x, y:T.y + 80, s:lerp(.3, 1.5, eo(u)), sy:.5, a:(1 - u) * .8}), {delay:160}); for (let i = 0; i < 8; i++) { const an = i * .785; E('fx_star' + (1 + i % 3), 900, u => ({x:T.x + Math.cos(an) * 140 * eo(u), y:T.y + 20 + Math.sin(an) * 70 * eo(u) - 60 * u, s:.55 * (1 - u * .4), a:Math.sin(Math.PI * u)}), {delay:80}); } shakeT = clk(); }
+    else if (kind === 'holy5') { bl(290, GOLD, 1, 0, 1000); bl(170, '255,255,255', .9, 0, 520); for (let i = 0; i < 3; i++) E('fx_pillar', 1000, u => ({x:T.x + (i - 1) * 90, y:T.y + 100, s:1.0, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:i * 120}); E('fx_sunstar', 900, u => ({...T, s:lerp(.5, 2, eo(u)), rot:u, a:(u < .08 ? u / .08 : 1 - seg(u, .08, 1)) * .9}), {delay:200}); E('fx_cross1', 900, u => ({x:T.x, y:T.y - 40, s:lerp(.5, 1.6, eo(u)), a:(1 - u) * .9}), {delay:300}); shakeT = clk(); }
     else if (kind === 'small') { bl(120, GOLD, .9); E('fx_sunstar', 560, u => ({...T, s:lerp(.4, .9, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .85})); }
     else { bl(260, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_sunstar', 800, u => ({...T, s:lerp(.5, 1.7, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .08, 1)) * .9})); E('fx_pillar2', 900, u => ({x:T.x, y:T.y + 80, s:1.1, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:60}); E('fx_ring1', 800, u => ({x:T.x, y:T.y + 60, s:lerp(.5, 1.8, eo(u)), sy:.45, a:(1 - u) * .8})); shakeT = clk(); }
   }
@@ -147,7 +154,7 @@ function make(host){
     lightend2(){ const f = tf(); E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(80, 360, eo(u)), c:GOLD, a:.9 * (1 - u)})); E('fx_sunstar', 800, u => ({x:f.x, y:f.y - 140, s:lerp(.4, 2.3, eo(u)), rot:u * 2, a:1 - u})); E('fx_cross1', 900, u => ({x:f.x, y:f.y - 200 - 40 * u, s:lerp(.4, 1, eo(u)), a:Math.sin(Math.PI * u)})); if (!tgt) flashT = clk(); },
     lightend(){ const f = tf(); E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,240,200', a:.9 * (1 - u)})); E('fx_sunstar', 800, u => ({x:f.x, y:f.y - 140, s:lerp(.6, 2, eo(u)), a:1 - u})); if (!tgt) flashT = clk(); },
   };
-  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
+  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b, e.split(':')[3]); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
 
   function poseAt(a, pe){
     const st = a.steps; let i = 0; while (i < st.length - 1 && pe >= st[i + 1][0]) i++;
@@ -158,11 +165,11 @@ function make(host){
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1, br0 = 1){
     const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return null;
     const br = Math.sin(tm / 1000 * 2.2) * br0, fx = Px + W / 2 + XOFF + dx, fy = Py + BASE + dy;
-    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * sc * (1 - .004 * br), SZ * sc * (1 + .008 * br));
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * (PS[name] || 1) * sc * (1 - .004 * br), SZ * (PS[name] || 1) * sc * (1 + .008 * br));
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
-    const orbp = ORB[name]; if (orbp) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (orbp[0] - m.cx) * SZ, oy = (orbp[1] - m.gy) * SZ; return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
+    const orbp = ORB[name]; if (orbp) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (orbp[0] - m.cx) * SZ * (PS[name] || 1), oy = (orbp[1] - m.gy) * SZ * (PS[name] || 1); return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
     return null;
   }
   function frame(){
