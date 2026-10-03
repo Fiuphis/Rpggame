@@ -284,3 +284,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v70 — Queimadura do fogo
 - Fogo da Maga acertando o boss: dano 1,5x e marca QUEIMANDO por 2 perguntas — no fim de cada pergunta o boss leva 0,25x do ataque normal (`BURN_TURNS`, `BURN_MULT` em app.js). Indicador "QUEIMANDO n" no HUD e brilho laranja no boss; acertar fogo de novo renova a duração.
+
+## v71 — Guerreiro (knight.js)
+Rig novo do Guerreiro com as 3 folhas novas (tools/seg_knight.py → cut_knight.py → knight/*.png, efeitos via cut_knight_fx.py). Tamanho 272 (2º maior). 7 ataques normais, 6 pesados, 7 defesas, 6 esquivas, 5 passar a vez, 5 hurt, 5 vitórias, 4 ativações de Berserk; modo Berserk (poses vermelhas, golpes vermelhos) e modo Exausto. Sacola embaralhada, dano só no impacto, queda em 3 poses. Rochas (knight/fx_rock*) também usadas pelo Tanque (os arquivos antigos não existiam).

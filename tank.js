@@ -5,7 +5,7 @@
 (() => {
 'use strict';
 const POSES = ['n1','n2','n3','a_i1','a_i2','a_hh','a_sw','a_rd','a_cr','a_lo','a_s1','a_s2','a_bub','a_swl','a_rl1','a_rl2','a_dust','p1','tA','tB','tC','v1','v2','v3','v4','d_i1','d_i2','d_i3','d_a1','d_a2','d_a3','d_a4','d_h1','d_h2','d_h3','d_h4','d_u1','d_u2','d_p1','d_p3','d_f1','d_f2','d_f3','d_e1','d_e2','d_e3','d_e4','d_m1','d_m2','d_m3','d_m4'];
-const FXS = ['rock1','rock3','rock4','rock5','rock6'], FXD = ['bring','bspike','earth','rockburst'];
+const FXS = ['rock1','rock2','rock3','rock4'], FXD = ['bring','bspike','earth','rockburst'];
 const T = {x:517, y:340};                 // ponto de impacto no boss
 const BASE = 262, SZ = 1.2, XOFF = -18;     // SZ: o Tanque é o maior dos heróis     // pés (y) e escala do corpo
 const GOLD = '255,200,110', FIRE = '255,150,60', BLUE = '120,180,255';
@@ -120,7 +120,7 @@ function make(host){
   const cw = cv.width, ch = cv.height, OX = world.x - Px, OY = world.y - Py;
   let M = null; const img = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
-  fetch('tank/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank/${n}.png`)); FXS.concat(FXD).forEach(n => load('fx_' + n, `tank/fx_${n}.png`)); }).catch(() => {});
+  fetch('tank/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank/${n}.png`)); FXS.forEach(n => load('fx_' + n, `knight/fx_${n}.png`)); FXD.forEach(n => load('fx_' + n, `tank/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;

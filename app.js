@@ -322,7 +322,7 @@ function renderHud(){
     bars[k].mp.style.width = Math.max(0, state.heroes[k].mp / 100 * 100) + '%';
   });
   HERO_ORDER.forEach(k => A.setDead(k, state.heroes[k].hp <= 0));
-  A.setAura('mage', b.bh > 0 ? 'blue' : null); A.setAura('knight', b.bers > 0 ? 'red' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
+  A.setAura('mage', b.bh > 0 ? 'blue' : null); A.setAura('knight', b.bers > 0 ? 'red' : b.tired > 0 ? 'tired' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
   HERO_ORDER.forEach(k => bars['ult_' + k].classList.toggle('ready', !!state.ultReady[k]));
   bars.rage.querySelectorAll('.rage-seg b').forEach((el, i) => el.classList.toggle('on', i < state.rage));
   bars.rage.classList.toggle('full', state.rage >= RAGE_MAX);
@@ -755,7 +755,7 @@ function shoot(fromX, fromY, toX, toY, color, ms){
     {left:toX+'%', top:toY+'%', opacity:1, transform:'translate(-50%,-50%) scale(1.3)'}
   ], {duration:ms || 620, easing:'ease-in', fill:'forwards'}).finished.then(() => p.remove());
 }
-const RIG_HERO = k => k === 'mage' || k === 'assassin' || k === 'tank';   // têm animação própria com projétil/efeito: o dano só entra no impacto
+const RIG_HERO = k => k === 'mage' || k === 'assassin' || k === 'tank' || k === 'knight';   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
   const pl = A.play(k, an, {color:col}); if (say) A.sayRandom(k, say, .5);
   if (!RIG_HERO(k)) { await wait(an === 'heavy' ? 480 : 300); return heroAttack(k, dmg, col); }

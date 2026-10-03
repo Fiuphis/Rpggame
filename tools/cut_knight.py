@@ -1,0 +1,83 @@
+# Recorta as poses do GUERREIRO (3 folhas, fundo xadrez) usando a segmentação de seg_knight.py -> knight/*.png + knight/meta.json
+# Corpo (silhueta azul-marinho) em escala única (pose idle de referência = BODY_H), pés ancorados, borda fina escura (RING px) só no corpo.
+import numpy as np, json, os, sys, shutil, cv2
+from PIL import Image
+from scipy import ndimage as ndi
+sys.path.insert(0, os.path.dirname(__file__))
+import seg_knight as SK
+OUTD = os.environ.get('OUTD', 'knight'); BODY_H = float(os.environ.get('BODY_H', 272)); RING = 2
+NAVY = np.array([22, 14, 30], np.float32)
+S4 = ndi.generate_binary_structure(2, 1); S8 = ndi.generate_binary_structure(2, 2)
+SEG = json.load(open('/tmp/kn/seg.json'))
+IM = {n: SK.load(n) for n in SK.SHEETS}; FG = {n: SK.fgmask(IM[n]) for n in SK.SHEETS}; LAB = {n: np.load(f'/tmp/kn/lab_{n}.npy') for n in SK.SHEETS}
+REF = {'K1': 'K1_2', 'K2': 'K2_3', 'K3': 'K3_4'}
+AURA = set()
+def region(name):
+    sh, i = name.split('_'); i = int(i)
+    for r in SEG[sh]:
+        if r['id'] == i: return sh, i, r['box']
+def process(name, pad=6):
+    sh, i, (x0, y0, x1, y1) = region(name)
+    x0 = max(0, x0 - pad); y0 = max(0, y0 - pad); x1 += pad; y1 += pad
+    c = IM[sh][y0:y1, x0:x1].copy(); lab = LAB[sh][y0:y1, x0:x1]
+    mask = ndi.binary_dilation(lab == i, S8, iterations=2) & (lab == i) | (lab == i)
+    mn = c.min(2); mx = c.max(2); sat = mx - mn; r, g, b = c[..., 0], c[..., 1], c[..., 2]
+    fg = FG[sh][y0:y1, x0:x1] & mask
+    dark = fg & (mn < 110) & ~(r > b + 30)
+    dark = ndi.binary_opening(dark, S4)
+    l2, k = ndi.label(ndi.binary_dilation(dark, S8, iterations=2) & fg)
+    sz = ndi.sum(dark, l2, range(1, k + 1)); main = l2 == (int(np.argmax(sz)) + 1)
+    core = ndi.binary_fill_holes(ndi.binary_closing(main & dark, S8, iterations=2)) & fg
+    core = ndi.binary_opening(core, S4)
+    reg = fg
+    a = np.clip((250 - mn) / 65.0, 0, 1) * reg
+    lt = reg & (mn >= 140)
+    a_sat = np.clip((sat - 26) / 105.0, 0, 1)
+    a = np.where(lt, np.maximum(a_sat, a * np.clip((sat - 42) / 14.0, 0, 1)), a)
+    fxm = lt & (a > 0.02)
+    a[reg & ~core & (sat < 40) & (mn >= 170)] = 0
+    a[core] = 1.0
+    fr = ndi.binary_dilation(core, S8, iterations=2) & ~core
+    a[fr & (sat < 28) & (mn > 200)] = 0
+    rgb = np.clip((c - 255 * (1 - a[..., None])) / np.maximum(a[..., None], .08), 0, 255)
+    rgb[fxm & ~core] = np.clip(c[fxm & ~core] * (255.0 / np.maximum(mx[fxm & ~core], 1))[..., None], 0, 255)
+    rgb[a < .02] = 0
+    return rgb, a, core
+def feet_stats(a, core):
+    ys, xs = np.where(core); gy = ys.max() + 1; top = ys.min()
+    band = core[int(max(top, gy - .16 * (gy - top))):gy]; bx = np.where(band)[1]
+    return float(bx.mean()), float(gy), float(top)
+def scale_img(rgb, a, core, s):
+    h, w = a.shape; nw, nh = max(1, round(w * s)), max(1, round(h * s))
+    pm = np.dstack([rgb * a[..., None], a * 255]).astype(np.float32)
+    r = cv2.resize(pm, (nw, nh), interpolation=cv2.INTER_LANCZOS4 if s < 1 else cv2.INTER_CUBIC)
+    al = np.clip(r[..., 3], 0, 255) / 255.0
+    col = np.clip(r[..., :3] / np.maximum(al[..., None], .03), 0, 255)
+    cm = cv2.resize(core.astype(np.float32), (nw, nh), interpolation=cv2.INTER_LINEAR) > .5
+    return col, al, cm
+def outline(col, al, cm):
+    ring = ndi.binary_dilation(cm, S8, iterations=RING) & (al < .9)
+    col = col.copy(); al = al.copy(); col[ring] = NAVY; al[ring] = 1.0
+    edge = cm & ~ndi.binary_erosion(cm, S8, iterations=1); soft = edge & (al < 1)
+    col[soft] = NAVY * .5 + col[soft] * .5; al[soft] = 1
+    return col, al
+def main(only=None):
+    SC0 = {}
+    for sh, rn in REF.items():
+        ref = process(rn); cx, gy, top = feet_stats(ref[1], ref[2]); SC0[sh] = BODY_H / (gy - top); print('escala', sh, round(SC0[sh], 3), 'corpo ref', gy - top)
+    if os.path.isdir(OUTD) and not only: shutil.rmtree(OUTD)
+    os.makedirs(OUTD, exist_ok=True); meta = {'poses': {}, 'body_h': BODY_H}
+    for sh in SEG:
+        for r in SEG[sh]:
+            name = f"{sh}_{r['id']}"
+            if only and name not in only: continue
+            try: rgb, a, core = process(name)
+            except Exception as e: print('falhou', name, e); continue
+            if core.sum() < 800: print('sem corpo', name); continue
+            cx, gy, top = feet_stats(a, core); s0 = SC0[sh]
+            col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm)
+            pad = RING + 2; im = np.dstack([col, al * 255]).astype(np.uint8); im = np.pad(im, ((pad, pad), (pad, pad), (0, 0)))
+            Image.fromarray(im, 'RGBA').quantize(256, method=Image.FASTOCTREE, dither=Image.NONE).save(f'{OUTD}/{name}.png', optimize=True)
+            meta['poses'][name] = {'w': im.shape[1], 'h': im.shape[0], 'cx': cx * s0 + pad, 'gy': gy * s0 + pad, 'top': top * s0 + pad}
+    json.dump(meta, open(f'{OUTD}/meta.json', 'w')); print(len(meta['poses']), 'poses')
+if __name__ == '__main__': main(sys.argv[1:] or None)
