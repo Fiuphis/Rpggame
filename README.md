@@ -299,3 +299,6 @@ Efeitos de ataque de todos os heróis suavizados: sprites de efeito desenhados b
 
 ## v75
 Guerreiro: poses de esquiva/agachado ampliadas (escala pela área do corpo).
+
+## v76
+Guerreiro: poses de esquiva/agachado em escala igual à do corpo em pé (área do corpo ×1.25).
