@@ -402,3 +402,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v157: relâmpago mais visível (mais grosso, com ramificações, 3 clarões) e mais frequente (a cada 10–24s).
 - v158: relâmpago com clarão na sala toda (luz azulada) e brilho em volta do raio; raio continua no fundo.
 - v159: corrigido bug das nuvens mais à frente no menu/mapa ao abrir direto (a posição de repouso era calculada com as nuvens ainda ocultas); agora também reajusta ao carregar, ao mudar o layout e ao voltar pelo histórico.
+- v160: caixas do mapa (título, rosa dos ventos, legenda, frase) acima das nuvens, aparecendo depois que o mapa carrega e as nuvens densas saem (hud.js + map/ui_*.webp).

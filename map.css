@@ -65,3 +65,7 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 .q-a{margin:0;font-size:calc(var(--fs,1.3cqw)*.92);line-height:1.05;text-align:right;color:#cdbfdc}
 /* v141: mapa vivo */
 .fx{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+.hud{position:fixed;z-index:42;pointer-events:none;container-type:inline-size;opacity:0;transition:opacity 1.1s ease;left:0;top:0;width:0;height:0}
+.hud.on{opacity:1}
+.hud img{position:absolute;display:block;pointer-events:none;user-select:none}
+.hud .quote{z-index:1}

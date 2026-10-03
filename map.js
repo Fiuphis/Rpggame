@@ -45,10 +45,10 @@ function build(){
     veil.style.display = 'none'; mp.classList.add('blur'); mp.classList.add('intro');
     const base = document.querySelector('.base'); (base.decode ? base.decode().catch(() => {}) : Promise.resolve()).then(() => setTimeout(() => {
       mp.classList.remove('blur');
-      Fog.open(mp, 2600);
+      Fog.open(mp, 2600).then(() => window.HUD && HUD.show());
     }, 700));
   } else {
-    mp.classList.add('intro'); Fog.rest(mp);
+    mp.classList.add('intro'); Fog.rest(mp); setTimeout(() => window.HUD && HUD.show(), 2900);
     requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add('out')));
   }
   if (before !== done) setTimeout(() => paint(done, false), 3000);
@@ -69,7 +69,7 @@ $('#c-no').onclick = () => { $('#confirm').hidden = true; };
 $('#c-yes').onclick = () => { localStorage.removeItem(KEY); sessionStorage.removeItem('bd1_justwon'); done = []; $('#confirm').hidden = true; deselect(); paint(done, false); };
 // voltar = trocar de grupo (o progresso fica salvo no aparelho)
 let leaving = false;
-function leaveMap() { if (leaving) return; leaving = true; LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }); }
+function leaveMap() { if (leaving) return; leaving = true; window.HUD && HUD.hide(); LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }); }
 $('#back').addEventListener('click', e => { e.preventDefault(); leaveMap(); });
 // v137: o "voltar" do celular/navegador faz o mesmo que TROCAR DE GRUPO (nuvens fecham e volta ao menu)
 history.pushState({ mapa: 1 }, '');
