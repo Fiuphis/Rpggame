@@ -366,3 +366,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v121: transição lobby→mapa com nuvens densas que fecham de cima/baixo até o meio e abrem (mapa com blur → nítido) até as bordas do mapa, onde ficam como as nuvens da seleção (fog.css).
 - v122: nuvens ficam paradas no meio até a página abrir; mesmo efeito na volta mapa→seleção (fog.js).
 - v123: as mesmas nuvens são o repouso das bordas e a transição (vão ao meio e voltam exatamente ao mesmo lugar), cobrindo toda a faixa do degradê; nuvens persistentes antigas removidas.
+- v124: nuvens fechadas ficam totalmente opacas (cobrem a tela inteira, a troca não aparece).
