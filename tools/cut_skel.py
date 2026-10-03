@@ -21,6 +21,4 @@ bb=out.getbbox(); out=out.crop(bb); W,H=out.size; out=out.crop((0,0,W,H-4)); W,H
 O=os.path.join(D,'..','skel'); os.makedirs(O,exist_ok=True)
 def sv(img,n): img.save(os.path.join(O,n))
 sv(out,'skel_1.png')                                   # corpo inteiro
-sv(out.crop((0,0,W,int(H*.66))),'skel_2.png')         # busto
-sv(out.crop((int(W*.12),0,int(W*.88),int(H*.42))),'skel_3.png')  # caveira
 print(out.size)
