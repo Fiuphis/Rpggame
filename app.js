@@ -164,7 +164,7 @@ function fresh(key,ms){const n=Date.now();if(__seen[key]&&n-__seen[key]<ms)retur
 function scWrite(el, text, cls){ if (window.Paper) Paper.burst(10); el.className = el.className.split(' ')[0] + (cls ? ' ' + cls : ''); el.textContent = ''; const per = Math.max(10, Math.min(24, 1500 / Math.max(1, String(text).length)));
   [...String(text)].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch; s.style.animationDelay = (i * per) + 'ms'; el.appendChild(s); }); }
 function paperOn(){ return document.documentElement.classList.contains('paper'); }
-function fitScroll(){ const g = $('#game').getBoundingClientRect(), bh = Math.max(0, Math.round(innerHeight - g.bottom)); document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.classList.toggle('paper', bh >= 56); }
+function fitScroll(){ const g = $('#game').getBoundingClientRect(), band = Math.max(0, Math.round(innerHeight - g.bottom)), on = band >= 56, bh = on ? band + Math.round(g.height * .11) : band; document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.classList.toggle('paper', on); }
 addEventListener('resize', fitScroll); addEventListener('orientationchange', () => setTimeout(fitScroll, 300)); addEventListener('load', fitScroll); setTimeout(fitScroll, 0);
 function toast(msg){if(!fresh('t:'+msg,4000))return;if(paperOn()){const n=$('#sc-n');scWrite(n,msg);clearTimeout(window.__toast);window.__toast=setTimeout(()=>{n.textContent=''},readMs(msg)+600);return}const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),readMs(msg)+400)}
 let votes = {yes:0, no:0};

@@ -409,3 +409,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v164: papiro pixelart desgastado (paper.js): bordas rasgadas e queimadas, rolos de madeira com pontas douradas, moldura ornamentada, gemas e runas brilhando, faíscas mágicas.
 - v165: textos do papiro em fonte pixelart (Pixelify Sans, OFL); título não invade mais a moldura de cima.
 - v166: gag cômica (1x por partida): o boss tenta invocar um Dragão Esqueleto (alerta HITKILL em todos os heróis), mas vem só um goblin; ele estranha, desinvoca e desiste.
+- v167: topo todo preto (sem caveiras/luz piscando); jogo encostado no topo; papiro bem maior (cobre o rodapé do jogo) e botões de inventário/mercador mais acima; textos do papiro maiores.
