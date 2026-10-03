@@ -44,10 +44,15 @@ def process(name, pad=6):
     rgb[fxm & ~core] = np.clip(c[fxm & ~core] * (255.0 / np.maximum(mx[fxm & ~core], 1))[..., None], 0, 255)
     rgb[a < .02] = 0
     return rgb, a, core
-def feet_stats(a, core):
-    ys, xs = np.where(core); gy = ys.max() + 1; top = ys.min()
-    band = core[int(max(top, gy - .16 * (gy - top))):gy]; bx = np.where(band)[1]
-    return float(bx.mean()), float(gy), float(top)
+def feet_stats(a, core, rgb=None):
+    # âncora estável: x = centro do corpo azul (armadura/capa; ignora aura vermelha, arcos e espada); y = chão (percentil, ignora ponta de espada/poeira)
+    ys, xs = np.where(core); top = ys.min(); gy = float(np.percentile(ys, 99.7)) + 1
+    if rgb is not None:
+        r, g, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+        blue = core & (b > r + 18) & (b > g + 5)
+        by, bx = np.where(blue)
+        if len(bx) > 400: return float(np.median(bx) * .5 + bx.mean() * .5), gy, float(top)
+    return float(xs.mean()), gy, float(top)
 def scale_img(rgb, a, core, s):
     h, w = a.shape; nw, nh = max(1, round(w * s)), max(1, round(h * s))
     pm = np.dstack([rgb * a[..., None], a * 255]).astype(np.float32)
@@ -84,7 +89,7 @@ def _mult(name, core, REFS):
 def main(only=None):
     SC0 = {}
     for sh, rn in REF.items():
-        ref = process(rn); cx, gy, top = feet_stats(ref[1], ref[2]); SC0[sh] = BODY_H / (gy - top); print('escala', sh, round(SC0[sh], 3), 'corpo ref', gy - top)
+        ref = process(rn); cx, gy, top = feet_stats(ref[1], ref[2], ref[0]); SC0[sh] = BODY_H / (gy - top); print('escala', sh, round(SC0[sh], 3), 'corpo ref', gy - top)
     REFS = {}
     for sh, rn in REF.items():
         rc = process(rn)[2]; ys = np.where(rc.any(1))[0]; REFS[sh] = (ys.max() - ys.min() + 1, rc.sum())
@@ -97,7 +102,7 @@ def main(only=None):
             try: rgb, a, core = process(name)
             except Exception as e: print('falhou', name, e); continue
             if core.sum() < 800: print('sem corpo', name); continue
-            cx, gy, top = feet_stats(a, core); s0 = SC0[sh] * mult(name, core, REFS)
+            cx, gy, top = feet_stats(a, core, rgb); s0 = SC0[sh] * mult(name, core, REFS)
             col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm); col, al = fxsoft.soften(col, al, cm, RING, sigma=2.3 * s0 / 1.8)
             pad = RING + 2; im = np.dstack([col, al * 255]).astype(np.uint8); im = np.pad(im, ((pad, pad), (pad, pad), (0, 0)))
             Image.fromarray(im, 'RGBA').quantize(256, method=Image.FASTOCTREE, dither=Image.NONE).save(f'{OUTD}/{name}.png', optimize=True)

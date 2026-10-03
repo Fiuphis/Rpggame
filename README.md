@@ -305,3 +305,6 @@ Guerreiro: poses de esquiva/agachado em escala igual à do corpo em pé (área d
 
 ## v77
 Guerreiro: poses do Berserk/ult padronizadas pela altura visível (cabelo→pés), conferidas lado a lado com a idle.
+
+## v78
+Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil) para ele não 'andar' entre poses. Medido no jogo: oscilação horizontal ≤ ±8 px em todas as ativações e ataques.
