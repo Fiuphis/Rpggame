@@ -32,9 +32,10 @@ function build(){
     cv.style.cssText = `left:${(m.x - P) / 1024 * 100}%;top:${(m.y - P) / 1536 * 100}%;width:${cellW(w) / 1024 * 100}%;height:${cellH(w) / 1536 * 100}%`;
     ref.after(cv);
     const still = new Image(); still.src = `spr_${w}.webp`;
-    H[w] = {cv, c:cv.getContext('2d'), still, sheets:{}, cur:null, dead:false, idleT:null, token:0, hold:null};
+    H[w] = {who:w, cv, c:cv.getContext('2d'), still, sheets:{}, cur:null, dead:false, idleT:null, token:0, hold:null};
     drawStill(w); still.onload = () => { if (!H[w].cur) drawStill(w); };
-    if (w === 'mage' && window.MageRig) buildMage(H[w], m, P);
+    if (w === 'mage' && window.MageRig) buildMage(H[w], m, P, window.MageRig, {PX:130, PXR:340, PT:170, PB:40, orb:{x:m.x + 190, y:m.y + 45}});
+    if (w === 'assassin' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
@@ -42,14 +43,14 @@ function build(){
     for (const w of WHO) { H[w].sheets = await loadSheets(w); drawStill(w); scheduleIdle(w, rnd(800, 2500)); }
   });
 }
-function buildMage(h, m, P){
-  const PX = 130, PXR = 340, PT = 170, PB = 40, cw = m.w + PX + PXR, ch = m.h + PT + PB;
+function buildMage(h, m, P, Rig, cfg){
+  const {PX, PXR, PT, PB} = cfg, cw = m.w + PX + PXR, ch = m.h + PT + PB;
   h.cv.width = cw; h.cv.height = ch;
   h.cv.style.cssText = `left:${(m.x - PX) / 1024 * 100}%;top:${(m.y - PT) / 1536 * 100}%;width:${cw / 1024 * 100}%;height:${ch / 1536 * 100}%`;
   const mk = (cls) => { const k = document.createElement('canvas'); k.className = 'fxl ' + cls; k.width = 1024; k.height = 1536; return k; };
   const back = mk('back'), front = mk('front'); $('#game').append(back, front);
-  h.rig = window.MageRig.make({c:h.c, cv:h.cv, P, Px:PX, Py:PT, W:m.w, Hh:m.h, world:{x:m.x, y:m.y}, layers:{back, front}, orbWorld:{x:m.x + 190, y:m.y + 45},
-    shadow:c => shadow(c, 'mage'), shakeEl:$('#game')});
+  h.rig = Rig.make({c:h.c, cv:h.cv, P, Px:PX, Py:PT, W:m.w, Hh:m.h, world:{x:m.x, y:m.y}, layers:{back, front}, orbWorld:cfg.orb,
+    shadow:c => shadow(c, h.who), shakeEl:$('#game')});
   h.rig.start();
 }
 function drawStill(w){
@@ -111,6 +112,6 @@ function setAura(w, kind){
 }
 function reset(){ WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
-window.Anim = {META, play, setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
+window.Anim = {META, play, idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(build, 0)); else setTimeout(build, 0);
 })();

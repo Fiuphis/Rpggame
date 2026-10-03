@@ -195,3 +195,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 ## v46
 - Maga só tem as animações das habilidades dela: ataque de mana, elemental (4 elementos × 4 variações), escudos, esquiva, dano, vitória, ult e golpe extra. Removidos "passar a vez" e "ataque pesado" (são do Guerreiro/Tanque).
 - Defesa: o escudo da Maga não é mais cortado pela pose de dano quando o golpe do boss é defendido.
+
+## v47 — Clériga renovada
+- Novo rig `cleric.js` + poses de costas recortadas das folhas brancas (`tools/cut_cleric.py` → `clr/`), mesma escala e ancoradas no chão, manto branco preservado, contorno escuro.
+- Habilidades dela: Ataque Normal (cajado, 3 variações), Ataque Sagrado (3 variações, uma lendo/tocando a Bíblia), Defesa Normal e Sagrada (escudo de luz atrás dela), Esquiva (2), Luz Sagrada (pilar de luz), dano, vitória e morte (cai no chão).
+- Ociosa: sorteia ler a Bíblia, tocar no livro, rezar ou erguer o cajado, com pausas longas.
