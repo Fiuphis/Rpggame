@@ -38,7 +38,7 @@ const BOSS_MAX_HP = 630, HERO_MAX_HP = 100;
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
-const QUESTION_SECONDS = {1:25, 2:30, 3:35}, ACTION_SECONDS = 10;   // tempo para responder: fácil 25s, média 30s, difícil 35s
+const QUESTION_SECONDS = {1:25, 2:30, 3:35}, ACTION_SECONDS = 25;   // tempo para responder: fácil 25s, média 30s, difícil 35s
 const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
 const ULT_INFO = {mage:'3x o dano base (só nesta pergunta, sem duração)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
@@ -155,7 +155,7 @@ const wait = ms => new Promise(r=>setTimeout(r,ms));
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),1800)}
 let votes = {yes:0, no:0};
 let botTimers = [], voteTimer = null, voteEndsAt = 0;
-const VOTE_SECONDS = 10;
+const VOTE_SECONDS = 25;
 
 function renderGold(){ $('#gold-hud').textContent = state.gold; }
 
@@ -654,7 +654,7 @@ async function chooseSkill(k){
     if (sk.elem) {
       const els = ['fire','water','air','earth'];
       const r2 = await runVote({
-        menu:true, panel:'elem', title:'', text:'', seconds:8, attack:at,
+        menu:true, panel:'elem', title:'', text:'', seconds:ACTION_SECONDS, attack:at,
         options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', slot:[2, 0]}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
