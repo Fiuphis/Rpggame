@@ -188,3 +188,5 @@
 .fxl{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .fxl.back{z-index:3}
 .fxl.front{z-index:27}
+
+.hud-hero{position:absolute;z-index:8;pointer-events:none;background-size:100% 100%;background-repeat:no-repeat;image-rendering:auto}.hud-hero .hud-bar{background:#0a0c14;box-shadow:none;z-index:auto}

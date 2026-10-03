@@ -33,7 +33,7 @@ const ITEMS = {
 // ===== Configuração do combate (ajuste aqui) =====
 const HERO_ORDER = ['mage','knight','tank','assassin'];
 const HERO_COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ff3d5c'};
-const HERO_X = {mage:13.6, knight:37.6, tank:61.5, assassin:85.4};   // centro do herói (% da largura)
+const HERO_X = {mage:10.3, knight:33.2, tank:63.5, assassin:89.7};   // centro do herói (% da largura)
 const BOSS_MAX_HP = 450, HERO_MAX_HP = 100;
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
@@ -275,12 +275,15 @@ function startBots(){
 }
 
 // ===== HUD dinâmico: barras de vida/mana dos heróis, vida do boss e fúria =====
+const HUD_W = 220, HUD_Y = 722;   // barra pequena: largura (px do grid 1024) e posição vertical
+const HUD_IMG = {"mage": {"w": 1419, "h": 259, "hp": [0.2276, 0.7498, 0.3745, 0.1544], "mp": [0.2276, 0.7498, 0.6873, 0.1583]}, "knight": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.3211, 0.1626], "mp": [0.2275, 0.7493, 0.6585, 0.1585]}, "tank": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.313, 0.1585], "mp": [0.2275, 0.7493, 0.6463, 0.1585]}, "assassin": {"w": 1421, "h": 241, "hp": [0.2273, 0.7488, 0.2822, 0.1618], "mp": [0.2273, 0.7488, 0.6224, 0.1618]}};   // proporção e interior das barras (frações) de hud_<herói>.png
 const HUD = {
   boss:{x:251, y:70, w:525, h:19},
-  icons:{mage:80, knight:318, tank:562, assassin:804},
   rage:{x:300, y:100, w:424, h:17},
-  heroes:{mage:[128,766,89], knight:[367,766,87], tank:[609,766,89], assassin:[852,766,88]}   // [x, y_vida, largura]
+  icons:{}, heroes:{}
 };
+['mage', 'knight', 'tank', 'assassin'].forEach(k => { const m = HUD_IMG[k], x = Math.round(clampHud(HERO_X[k] / 100 * 1024 - HUD_W / 2)); HUD.icons[k] = x; HUD.heroes[k] = [x, HUD_Y, HUD_W, Math.round(HUD_W * m.h / m.w)]; });
+function clampHud(x){ return Math.max(6, Math.min(1024 - HUD_W - 6, x)); }
 const pctX = x => (x / 1024 * 100) + '%', pctY = y => (y / 1536 * 100) + '%';
 function mkBar(cls, x, y, w, h){
   const d = document.createElement('div'); d.className = `hud-bar ${cls}`;
@@ -291,19 +294,22 @@ const bars = {};
 function buildHud(){
   bars.boss = mkBar('boss', HUD.boss.x, HUD.boss.y, HUD.boss.w, HUD.boss.h);
   HERO_ORDER.forEach(k => {
-    const [x, y, w] = HUD.heroes[k];
-    bars[k] = {hp: mkBar('hp', x, y, w, 10), mp: mkBar('mp', x, y + 20, Math.round(w * 0.976 * 10) / 10, 9)};
+    const [x, y, w, h] = HUD.heroes[k], m = HUD_IMG[k], wrap = document.createElement('div'); wrap.className = 'hud-hero'; wrap.dataset.hero = k;
+    wrap.style.cssText = `left:${pctX(x)};top:${pctY(y)};width:${pctX(w)};height:${pctY(h)};background-image:url(hud_${k}.png)`;
+    const fill = (cls, f) => { const d = document.createElement('div'); d.className = 'hud-bar ' + cls; d.style.cssText = `left:${(f[0] + .004) * 100}%;top:${(f[2] + f[3] * .1) * 100}%;width:${(f[1] - .012) * 100}%;height:${f[3] * .8 * 100}%`; d.innerHTML = '<i></i>'; wrap.appendChild(d); return d.querySelector('i'); };
+    $('#game').appendChild(wrap); bars[k] = {hp: fill('hp', m.hp), mp: fill('mp', m.mp)};
   });
   HERO_ORDER.forEach(k => {
     const d = document.createElement('div'); d.className = 'ult-icon'; d.dataset.hero = k;
     const ix = HUD.icons[k];
-    d.style.cssText = `left:${pctX(ix)};top:${pctY(757)};width:${pctX(44)};height:${pctY(44)};background-position:${ix / (1024 - 44) * 100}% ${757 / (1536 - 44) * 100}%`;
+    const iy = HUD_Y + HUD.heroes[k][3] + 3, IS = 30, ox = {mage:80, knight:318, tank:562, assassin:804}[k];
+    d.style.cssText = `left:${pctX(ix)};top:${pctY(iy)};width:${pctX(IS)};height:${pctY(IS)};background-size:2327% auto;background-position:${ox / 980 * 100}% ${757 / 1492 * 100}%`;
     d.onclick = () => { if (k !== activeGroup || !state.ultReady[k]) return; const c = document.querySelector('#am-list .act-card.ult:not(:disabled)'); if (c) c.click(); else toast('O especial é ativado na vez do seu herói, no menu de habilidades.'); };
     $('#game').appendChild(d); bars['ult_' + k] = d;
   });
   HERO_ORDER.forEach(k => {
     const s = document.createElement('div'); s.className = 'hero-status'; s.hidden = true;
-    s.style.cssText = `left:${pctX(HUD.icons[k])};top:${pctY(800)};width:${pctX(150)}`; $('#game').appendChild(s); bars['st_' + k] = s;
+    s.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD_Y + HUD.heroes[k][3] + 8)};width:${pctX(150)}`; $('#game').appendChild(s); bars['st_' + k] = s;
   });
   const mk = document.createElement('div'); mk.className = 'boss-marks'; mk.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(122)}`; $('#game').appendChild(mk); bars.marks = mk;
   const r = document.createElement('div'); r.className = 'rage';
@@ -387,12 +393,12 @@ function showRing(hero){
   hideRing();
   const col = HERO_COLOR[hero], m = document.createElement('div'); m.id = 'turn-marker'; m.className = 'turn-marker';
   const x = HERO_X[hero];
-  const [ix] = [HUD.icons[hero]], hx = HUD.heroes[hero], fx = ix - 4, fw = hx[0] + hx[2] - ix + 8;
+  const hx = HUD.heroes[hero], fx = hx[0] - 4, fw = hx[2] + 8;
   m.style.setProperty('--col', col);
   m.innerHTML =
     `<div class="tm-beam" style="left:${x}%"></div>` +
     `<img class="tm-ring" style="left:${x}%" src="${pixRing(col)}" alt="">` +
-    `<div class="tm-frame" style="left:${pctX(fx)};top:${pctY(752)};width:${pctX(fw)};height:${pctY(40)}"></div>` +
+    `<div class="tm-frame" style="left:${pctX(fx)};top:${pctY(HUD_Y - 5)};width:${pctX(fw)};height:${pctY(hx[3] + 46)}"></div>` +
     `<img class="tm-arrow" style="left:${x}%" src="${pixIcon('arrow')}" alt="">`;
   $('#game').appendChild(m);
 }

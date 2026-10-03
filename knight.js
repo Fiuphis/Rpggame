@@ -5,7 +5,7 @@
 (() => {
 'use strict';
 const T = {x:517, y:340};                 // ponto de impacto no boss
-const BASE = 262, SZ = 1, XOFF = 0;       // pés (y) e escala (o Guerreiro é o 2º maior: Tanque 314 > Guerreiro 272 > Maga/Clériga 225)
+const BASE = 262, SZ = 1, XOFF = 0;       // pés (y) e escala (o Guerreiro é o 2º maior: Tanque 314 > Guerreiro 256 > Maga/Clériga 225)
 const BLUE = '120,180,255', ICE = '190,230,255', GOLD = '255,205,120', RED = '255,60,50', DUST = '230,205,170';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };

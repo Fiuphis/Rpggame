@@ -5,7 +5,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 sys.path.insert(0, os.path.dirname(__file__))
 import seg_knight as SK
-OUTD = os.environ.get('OUTD', 'knight'); BODY_H = float(os.environ.get('BODY_H', 272)); RING = 2
+OUTD = os.environ.get('OUTD', 'knight'); BODY_H = float(os.environ.get('BODY_H', 256)); RING = 2
 NAVY = np.array([22, 14, 30], np.float32)
 S4 = ndi.generate_binary_structure(2, 1); S8 = ndi.generate_binary_structure(2, 2)
 SEG = json.load(open('/tmp/kn/seg.json'))
@@ -61,10 +61,22 @@ def outline(col, al, cm):
     edge = cm & ~ndi.binary_erosion(cm, S8, iterations=1); soft = edge & (al < 1)
     col[soft] = NAVY * .5 + col[soft] * .5; al[soft] = 1
     return col, al
+# padronização de tamanho: as folhas desenham as poses em escalas diferentes.
+# UPRIGHT (em pé): altura do corpo = BODY_H; ROLL (rolamentos/agachados): escala base; demais (ação): pela área do corpo (limite 1.0–1.3)
+UPRIGHT = set('K1_1 K1_2 K1_44 K1_45 K1_13 K1_14 K1_15 K1_32 K1_35 K2_3 K2_4 K2_5 K2_13 K2_14 K2_15 K2_16 K2_17 K2_18 K2_19 K2_44 K3_3 K3_4 K3_5 K3_12 K3_13 K3_14 K3_15 K3_16 K3_17 K3_18 K3_39 K3_40 K3_41 K3_42 K3_43'.split())
+ROLL = set('K1_20 K1_21 K1_22 K1_46 K1_49 K2_20 K2_21 K2_22 K2_42 K2_43 K2_45 K2_46 K3_20 K3_21 K3_22 K3_23 K3_44 K3_45 K3_46 K3_47 K3_48'.split())
+def mult(name, core, REFS):
+    sh = name.split('_')[0]; rh, ra = REFS[sh]; ys = np.where(core.any(1))[0]; h = ys.max() - ys.min() + 1
+    if name in ROLL: return 1.0
+    if name in UPRIGHT: return rh / h
+    return float(np.clip(np.sqrt(ra / max(core.sum(), 1)), 1.0, 1.3))
 def main(only=None):
     SC0 = {}
     for sh, rn in REF.items():
         ref = process(rn); cx, gy, top = feet_stats(ref[1], ref[2]); SC0[sh] = BODY_H / (gy - top); print('escala', sh, round(SC0[sh], 3), 'corpo ref', gy - top)
+    REFS = {}
+    for sh, rn in REF.items():
+        rc = process(rn)[2]; ys = np.where(rc.any(1))[0]; REFS[sh] = (ys.max() - ys.min() + 1, rc.sum())
     if os.path.isdir(OUTD) and not only: shutil.rmtree(OUTD)
     os.makedirs(OUTD, exist_ok=True); meta = {'poses': {}, 'body_h': BODY_H}
     for sh in SEG:
@@ -74,7 +86,7 @@ def main(only=None):
             try: rgb, a, core = process(name)
             except Exception as e: print('falhou', name, e); continue
             if core.sum() < 800: print('sem corpo', name); continue
-            cx, gy, top = feet_stats(a, core); s0 = SC0[sh]
+            cx, gy, top = feet_stats(a, core); s0 = SC0[sh] * mult(name, core, REFS)
             col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm)
             pad = RING + 2; im = np.dstack([col, al * 255]).astype(np.uint8); im = np.pad(im, ((pad, pad), (pad, pad), (0, 0)))
             Image.fromarray(im, 'RGBA').quantize(256, method=Image.FASTOCTREE, dither=Image.NONE).save(f'{OUTD}/{name}.png', optimize=True)
