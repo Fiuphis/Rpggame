@@ -404,3 +404,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v159: corrigido bug das nuvens mais à frente no menu/mapa ao abrir direto (a posição de repouso era calculada com as nuvens ainda ocultas); agora também reajusta ao carregar, ao mudar o layout e ao voltar pelo histórico.
 - v160: caixas do mapa (título, rosa dos ventos, legenda, frase) acima das nuvens, aparecendo depois que o mapa carrega e as nuvens densas saem (hud.js + map/ui_*.webp).
 - v161: caixa 'Jornada dos Heróis' acima das nuvens sem o brasão do Castelo (o brasão fica com o mapa).
+- v162: avisos de combate bem menores; aviso de moedas virou '+N' animado abaixo do contador (que atualiza logo depois).

@@ -167,6 +167,9 @@ let botTimers = [], voteTimer = null, voteEndsAt = 0;
 const VOTE_SECONDS = 25;
 
 function renderGold(){ $('#gold-hud').textContent = state.gold; }
+function goldGain(n){ const g = $('#game'), p = document.createElement('div'); p.className = 'gold-plus'; p.textContent = '+' + n; g.appendChild(p);
+  setTimeout(() => { renderGold(); const h = $('#gold-hud'); h.classList.remove('bump'); void h.offsetWidth; h.classList.add('bump'); }, 650);
+  setTimeout(() => { p.remove(); $('#gold-hud').classList.remove('bump'); }, 1400); }
 
 // Quantas pessoas estão no grupo agora (mínimo 1) e quantos votos formam maioria.
 function groupMembers(){ return Math.max(1, LOBBY.counts()[activeGroup] || 0); }
@@ -712,7 +715,7 @@ async function playRound(){
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
-  if (correct[activeGroup]) { state.gold += meta.reward; persist(); renderGold(); toast(`Seu grupo acertou! +${meta.reward} moeda${meta.reward > 1 ? 's' : ''}.`); }
+  if (correct[activeGroup]) { state.gold += meta.reward; persist(); goldGain(meta.reward); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
   if (q.difficulty === 3) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma difícil inteira
   await wait(1500);
