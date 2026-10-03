@@ -175,6 +175,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Animações: 4 idles aleatórios, ataque, magia, sagrado, pesado, ultimate, defesa (anel), esquiva (rastro), dano, passar, vitória, morte/reviver.
 - Os outros personagens seguem estáticos (ou com sheets, como em v38).
 
-## v41 — Maga com as folhas novas (giro de cajado, golpes, elementos, buraco negro)
-- `tools/recorta_folha3.py` separa personagem e efeitos do fundo em degradê das folhas e grava `mage2/` (p_ = poses, e_/g_ = efeitos, `meta.json`).
-- `mage.js` monta cada ação com os quadros da folha + efeitos originais: parada (3 poses), ataque mana, fogo/água/ar/terra, golpe de cajado, giro de cajado (vitória), defesas por elemento e de mana, esquiva com rastro, Buraco Negro. Sem partículas desenhadas por código.
+## v42 — Maga refeita com a folha de fundo branco
+- `tools/cut_white.py` recorta a folha branca (poses de costas + efeitos) em `mage3/`: todas as poses na **mesma escala** (corpo = 190 px) e ancoradas pelo mesmo ponto no chão; borda limpa, sem halo.
+- `mage.js` anima por interpolação (deslocar, inclinar, respirar, rastro na esquiva) com cross-fade curto entre quadros reais; efeitos originais da folha (cometa, fogo caindo, pilar de água, redemoinho, espinhos e pedras, Buraco Negro). Nenhuma partícula desenhada por código.
