@@ -348,3 +348,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v101: texto SIM/NÃO mais acima (ajuste fino).
 - v102: névoa branca suave animada nas áreas de degradê (lobby e jogo).
 - v103: nuvens mais cheias andando esquerda→direita, só na seleção de grupo (removidas do jogo).
+- v104: nuvens densas que atravessam a borda do menu de seleção (só lobby).
