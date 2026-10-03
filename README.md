@@ -240,3 +240,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v58
 - Maga: contorno padronizado e fino (2px) em todas as poses do corpo (tools/thin_outline.py); poses das folhas ampliadas (giros/golpes) e idle3/dodge3 estavam com contorno de 5-8px.
+
+## v59
+- Maga: recorte refeito nas 6 poses da folha em degradê (giro, estrelas, golpes laterais/frontal) com tools/retrace.py — o contorno escuro original delimita o personagem, o halo azul de sobra é descartado e efeitos (arcos, orbe) ficam intactos; borda fina refeita por cima.
