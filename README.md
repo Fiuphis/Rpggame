@@ -383,3 +383,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v138: citação do canto do mapa agora roda frases (lore, dicas, falas de personagens com nome), troca a cada 9s ou ao tocar; texto original apagado da arte.
 - v139: quadro de frases centralizado na moldura (mesma distância nos 4 lados) e letra se ajusta pra nunca cortar.
 - v140: todas as frases reescritas curtas (até 2 linhas + nome), no padrão do Guarda do Portão.
+- v141: mapa vivo (mapfx.js): água com brilhos e ondas, 3 barcos vagando, peixes pulando, pedras caindo das falésias, barbatana, serpente, tentáculos, olhos e sereia. Máscara de água em map/water.png (tools/build_water.py).
