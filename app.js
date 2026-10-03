@@ -754,7 +754,7 @@ async function bossCounter(hero, dmg, defended){
   const r = routeHit(hero, dmg), t = r.to;
   await shoot(50, 26, HERO_X[t], 60, '#ff2d4d', 560);
   flashHit();
-  state.heroes[t].hp = Math.max(0, state.heroes[t].hp - r.dmg); A.play(t, 'hurt'); A.sayRandom(t, 'hurt', .35);
+  state.heroes[t].hp = Math.max(0, state.heroes[t].hp - r.dmg); if (!(defended && t === hero)) A.play(t, 'hurt'); A.sayRandom(t, 'hurt', .35);
   floatText(HERO_X[t], 56, `-${r.dmg}${defended ? ' (defesa)' : ''}${r.note}`, '#ff6b81');
   renderHud(); await wait(500);
 }

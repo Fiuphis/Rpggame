@@ -16,6 +16,13 @@ const seg = (u, a, b) => clamp((u - a) / (b - a));
 
 // ---- ações: steps [t, pose, {dx,dy,rot}] (interpolados) · ev [t, 'nome'|fn]
 const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
+const EL = {fire:{shot:'orb_red:.9', col:'255,110,40'}, water:{shot:'orb_blue:.9', col:'70,170,255'}, air:{shot:'orbb:1', col:'150,230,210'}, earth:{shot:'orb_orange:.9', col:'230,170,70'}};
+const elemV = e => { const {shot, col} = EL[e], o = {col}; return [
+  S(1900, [[0,'idle1'],[.1,e,{dx:-4}],[.8,e,{dx:2}],[.97,'idle1']], [[.2,'charge'],[.4,'shot:'+shot],[.5,e]], o),
+  S(2200, [[0,'idle1'],[.1,'atk1',{dx:-4}],[.28,e,{dy:-3}],[.5,e,{dy:-6}],[.62,'swingf',{dx:6}],[.88,'swingf',{dx:8}],[.98,'idle1']], [[.14,'charge'],[.3,'charge'],[.6,'shot:'+shot],[.74,e]], o),
+  S(2200, [[0,'idle1'],[.1,'castdef'],[.34,'castdef',{dy:-4}],[.5,e,{dy:-4}],[.74,e,{dy:-2}],[.98,'idle1']], [[.12,'charge'],[.3,'charge'],[.52,'shot:'+shot],[.64,e]], o),
+  S(2300, [[0,'idle1'],[.1,'atk2',{dx:-8,rot:-3}],[.3,'stars',{dy:-6}],[.46,e,{dy:-4}],[.76,e],[.98,'idle1']], [[.16,'charge'],[.34,'cheer'],[.5,'shot:'+shot],[.62,e]], o),
+]; };
 const ACT = {
   melee:[
     S(1050, [[0,'idle1'],[.12,'atk1',{dx:-4,rot:-2}],[.3,'atk2',{dx:-8,rot:-4}],[.48,'atk3',{dx:6,dy:-6,rot:3}],[.8,'atk3',{dx:2,rot:1}],[.96,'idle1']], [[.2,'charge'],[.47,'shot:orbb:1'],[.78,'hit:small']]),
@@ -33,16 +40,10 @@ const ACT = {
     S(2300, [[0,'idle1'],[.1,'castdef'],[.26,'defmana',{dy:-4}],[.56,'defmana',{dy:-8}],[.68,'atk3',{dx:6,dy:-8,rot:3}],[.88,'atk3'],[.98,'idle1']], [[.14,'charge'],[.3,'charge'],[.5,'charge'],[.7,'shot:orbb:1.6'],[.9,'hit:mana']], {col:'120,170,255'}),
     S(1900, [[0,'idle1'],[.1,'water',{dx:-4}],[.45,'water',{dy:-5}],[.58,'atk3',{dx:6,dy:-8,rot:3}],[.86,'atk3'],[.98,'idle1']], [[.12,'charge'],[.34,'charge'],[.6,'shot:orbb:1.5'],[.84,'hit:mana']], {col:'70,170,255'}),
   ],
-  heavy:[
-    S(2300, [[0,'idle1'],[.1,'atk1',{dx:-6}],[.35,'atk2',{dx:-14,rot:-5}],[.55,'atk3',{dx:8,dy:-10,rot:4}],[.86,'atk3',{dx:2}],[.98,'idle1']], [[.15,'charge'],[.3,'charge'],[.56,'shot:comet:1.9'],[.82,'hit:big']], {col:'160,140,255'}),
-    S(2600, [[0,'idle1'],[.08,'atk1',{dx:-6}],[.22,'spin1',{dy:-8}],[.36,'spinwide',{dy:-16,rot:-3}],[.5,'stars',{dy:-12}],[.64,'swingr',{dx:4,dy:-6}],[.9,'swingr',{dx:8}],[.98,'idle1']], [[.14,'charge'],[.3,'charge'],[.46,'charge'],[.64,'shot:comet:1.9'],[.82,'hit:big']], {col:'160,140,255'}),
-    S(2700, [[0,'idle1'],[.08,'castdef'],[.24,'defmana',{dy:-4}],[.5,'defmana',{dy:-10}],[.62,'atk2',{dx:-8,rot:-4}],[.74,'atk3',{dx:8,dy:-10,rot:4}],[.92,'atk3'],[.98,'idle1']], [[.1,'charge'],[.26,'charge'],[.42,'charge'],[.56,'charge'],[.74,'shot:comet:2'],[.9,'hit:big']], {col:'160,140,255'}),
-    S(2500, [[0,'idle1'],[.1,'fire',{dx:-4}],[.4,'fire',{dy:-6}],[.55,'swingf',{dx:2}],[.72,'swingf',{dx:10}],[.92,'swingf',{dx:6}],[.98,'idle1']], [[.12,'charge'],[.3,'charge'],[.5,'charge'],[.7,'shot:comet:1.9'],[.88,'hit:big']], {col:'255,130,60'}),
-  ],
-  fire:S(1900, [[0,'idle1'],[.1,'fire',{dx:-4}],[.8,'fire',{dx:2}],[.97,'idle1']], [[.2,'charge'],[.4,'shot:orb_red:.9'],[.5,'fire']], {col:'255,110,40'}),
-  water:S(1900, [[0,'idle1'],[.1,'water',{dx:-4}],[.8,'water',{dx:2}],[.97,'idle1']], [[.2,'charge'],[.4,'shot:orb_blue:.9'],[.5,'water']], {col:'70,170,255'}),
-  air:S(1900, [[0,'idle1'],[.1,'air',{dx:-4}],[.8,'air',{dx:2}],[.97,'idle1']], [[.2,'charge'],[.4,'shot:orbb:1'],[.5,'air']], {col:'150,230,210'}),
-  earth:S(1900, [[0,'idle1'],[.1,'earth',{dx:-4}],[.8,'earth',{dx:2}],[.97,'idle1']], [[.2,'charge'],[.4,'shot:orb_orange:.9'],[.5,'earth']], {col:'230,170,70'}),
+  fire:elemV('fire'),
+  water:elemV('water'),
+  air:elemV('air'),
+  earth:elemV('earth'),
   ult:S(5200, [[0,'idle1'],[.06,'atk1',{dx:-4}],[.14,'stars',{dy:-6}],[.22,'spin1',{dy:-10}],[.3,'bh1',{dy:-8,rot:-2}],[.38,'bh2',{dy:-12,rot:2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.16,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
   dodge:[
     S(1050, [[0,'idle1'],[.08,'dodge1',{dx:-6}],[.26,'dodge2',{dx:-40,dy:-4}],[.46,'dodge3',{dx:-56,dy:2}],[.66,'dodge4',{dx:-30}],[.88,'idle1']], [], {ghost:true}),
@@ -52,19 +53,13 @@ const ACT = {
     S(750, [[0,'idle1'],[.1,'idle3',{dx:-10,rot:-7}],[.32,'idle3',{dx:6,rot:-3}],[.55,'idle3',{dx:-2}],[.9,'idle1']], [], {tint:true}),
     S(850, [[0,'idle1'],[.12,'dodge3',{dx:-12,rot:-8}],[.34,'dodge3',{dx:4,rot:-3}],[.6,'dodge4',{dx:-2}],[.92,'idle1']], [], {tint:true}),
   ],
-  pass:[
-    S(1600, [[0,'idle1'],[.25,'idle2'],[.75,'idle3',{dy:2}],[.96,'idle1']]),
-    S(1900, [[0,'idle1'],[.2,'atk1'],[.45,'stars',{dy:-4}],[.8,'stars'],[.96,'idle1']]),
-    S(1700, [[0,'idle1'],[.25,'idle4',{dx:3}],[.7,'idle2',{dx:-3}],[.96,'idle1']]),
-    S(2000, [[0,'idle1'],[.2,'castdef'],[.55,'castdef',{dy:-3}],[.96,'idle1']], [[.3,'charge']], {col:'110,170,255'}),
-  ],
   victory:[
     S(2800, [[0,'idle1'],[.1,'atk1'],[.26,'atk3',{dy:-12,rot:2}],[.4,'atk2',{dy:-3}],[.56,'atk3',{dy:-14,rot:-2}],[.8,'atk3',{dy:-4}],[.96,'idle1']], [[.28,'cheer'],[.58,'cheer']]),
     S(3200, [[0,'idle1'],[.1,'atk1'],[.22,'spin1',{dy:-6}],[.36,'spinwide',{dy:-14,rot:3}],[.5,'stars',{dy:-8}],[.66,'swingr',{dy:-6}],[.8,'atk3',{dy:-10}],[.96,'idle1']], [[.24,'cheer'],[.4,'cheer'],[.56,'cheer'],[.8,'cheer']]),
   ],
   guard:S(1900, []),
 };
-ACT.holy = ACT.cast; ACT.super = ACT.heavy; ACT.aoe = ACT.heavy;
+ACT.holy = ACT.cast;
 let lastV = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; const prevI = lastV.get(v) ?? -1; let i; do { i = Math.floor(Math.random() * v.length); } while (v.length > 1 && i === prevI); lastV.set(v, i); return v[i]; };
 const ELEM = {'#ff7a2e':'fire', '#3db4ff':'water', '#9fe8d0':'air', '#c19a52':'earth'};

@@ -191,3 +191,7 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 ## v45
 - Poses de giro/balanço do cajado reescaladas (estavam ~20% menores) — Maga mantém o mesmo tamanho em todas as animações.
 - Borda branca/cinza removida: post_outline.py agora limpa franjas claras, halos cinza e fundo plano antes do contorno escuro.
+
+## v46
+- Maga só tem as animações das habilidades dela: ataque de mana, elemental (4 elementos × 4 variações), escudos, esquiva, dano, vitória, ult e golpe extra. Removidos "passar a vez" e "ataque pesado" (são do Guerreiro/Tanque).
+- Defesa: o escudo da Maga não é mais cortado pela pose de dano quando o golpe do boss é defendido.
