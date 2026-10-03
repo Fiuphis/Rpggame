@@ -58,6 +58,7 @@ const ELEMENTS = {
 };
 // Boss: fraco a FOGO e a SAGRADO (1,5x). Água, ar e terra: imune (a Maga faz o ataque só pelo efeito, dano 0). Sem marcas/reações; escudos só ganham bônus contra o que o fere.
 const BOSS = {weak:['holy','fire'], immune:['water','air','earth']};
+const BURN_TURNS = 2, BURN_MULT = .25;   // fogo marca o boss: dano contínuo de 0,25x do dano normal por 2 perguntas
 const BOSS_WEAK_MULT = 1.5;   // fogo e sagrado ferem o boss em dobro-ish (1,5x); água, ar e terra: só o efeito visual, dano 0
 const BOSS_FAMILY = 'DEMONÍACO';   // o boss é demônio/vampiro: todo dano dele é demoníaco
 const BOSS_ATTACK = {tipo:'FÍSICO', attr:'demon'};   // o boss ataca fisicamente, com atributo demoníaco/vampírico
@@ -68,7 +69,7 @@ const BOSS_ATTACK = {tipo:'FÍSICO', attr:'demon'};   // o boss ataca fisicament
 const SKILLS = {
   mage:[
     {id:'mana_atk', kind:'atk', name:'Ataque de Mana', desc:'Raio de mana. Dano normal.', mana:10, cd:0, mult:1},
-    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. O boss é fraco a FOGO (1,5x); água, ar e terra ele ignora (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
+    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. O boss é fraco a FOGO (1,5x e queima por 2 perguntas); água, ar e terra ele ignora (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
     {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 50% do dano.', mana:10, cd:0, reduce:.5},
     {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento. Só ganha bônus contra o elemento certo.', mana:20, cd:1, reduce:.5, bonus:.65, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
@@ -135,7 +136,7 @@ const state = {
   // todos começam com vida e mana cheias
   heroes:Object.fromEntries(['mage','knight','tank','assassin'].map(k => [k, {hp:100, mp:100}])),
   bossHp:450, rage:0, hardNext:false, over:false,
-  cd:{mage:{},knight:{},tank:{},assassin:{}}, marks:[], buff:{bh:0, bers:0, tired:0, taunt:0}, guardFor:null,         // recarga das habilidades (perguntas restantes)
+  cd:{mage:{},knight:{},tank:{},assassin:{}}, marks:[], burn:0, buff:{bh:0, bers:0, tired:0, taunt:0}, guardFor:null,         // recarga das habilidades (perguntas restantes)
   curAttack:BOSS_ATTACK,
   ultReady:{mage:false,knight:false,tank:false,assassin:false},   // carrega ao acertar pergunta difícil
   curQ:null, lastQ:{1:-1,2:-1,3:-1}
@@ -313,7 +314,8 @@ function buildHud(){
 function renderHud(){
   const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x2' : '', knight: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', assassin: ''};
   HERO_ORDER.forEach(k => { const el = bars['st_' + k]; if (!el) return; el.textContent = st[k]; el.hidden = !st[k]; el.classList.toggle('bad', k === 'knight' && b.tired > 0); });
-  const mk = bars.marks; if (mk) mk.innerHTML = state.marks.length ? '<span>MARCAS</span>' + state.marks.map(e => `<img src="${pixIcon({fire:'fire',water:'drop',air:'wind',earth:'rock'}[e])}" alt="${ELEMENTS[e].name}">`).join('') : '';
+  A.setAura('boss', state.burn > 0 ? 'orange' : null);
+  const mk = bars.marks; if (mk && state.burn > 0) mk.innerHTML = `<span>QUEIMANDO ${state.burn}</span><img src="${pixIcon('fire')}" alt="Fogo">`; else if (mk) mk.innerHTML = state.marks.length ? '<span>MARCAS</span>' + state.marks.map(e => `<img src="${pixIcon({fire:'fire',water:'drop',air:'wind',earth:'rock'}[e])}" alt="${ELEMENTS[e].name}">`).join('') : '';
   bars.boss.style.width = Math.max(0, state.bossHp / BOSS_MAX_HP * 100) + '%';
   HERO_ORDER.forEach(k => {
     bars[k].hp.style.width = Math.max(0, state.heroes[k].hp / HERO_MAX_HP * 100) + '%';
@@ -590,7 +592,7 @@ async function chooseSkill(k){
       const els = ['fire','water','air','earth'];
       const r2 = await runVote({
         menu:true, title:sk.name.toUpperCase(), text:'Escolham o elemento', seconds:8, attack:at,
-        options: els.map(e => ({label:ELEMENTS[e].name, desc:'', kind:'elem', icon:{fire:'fire',water:'drop',air:'wind',earth:'rock'}[e], color:ELEMENTS[e].color, chips: BOSS.immune.includes(e) ? '<span class="tag block">BOSS IMUNE</span>' : '<span class="tag attr holy">BOSS FRACO 1,5x</span>'}))
+        options: els.map(e => ({label:ELEMENTS[e].name, desc:'', kind:'elem', icon:{fire:'fire',water:'drop',air:'wind',earth:'rock'}[e], color:ELEMENTS[e].color, chips: BOSS.immune.includes(e) ? '<span class="tag block">BOSS IMUNE</span>' : '<span class="tag attr holy">BOSS FRACO 1,5x + QUEIMA</span>'}))
           .concat([{label:'VOLTAR', desc:'Escolher outra habilidade', kind:'back', icon:'back', chips:''}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
@@ -682,7 +684,7 @@ async function playRound(){
         if (ok || bers) {
           dmg = Math.round(ATTACK_DAMAGE * sk.mult); sub = ok ? 'acertou e atacou!' : 'errou, mas o Berserk atacou!';
           if (sk.elem && el && BOSS.immune.includes(el)) { dmg = 0; sub = `${ELEMENTS[el].name}: o boss é IMUNE!`; }
-          else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x`; }
+          else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); state.burn = BURN_TURNS; sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x e fica QUEIMANDO por ${BURN_TURNS} perguntas.`; }
           else if (sk.elem && el) { const r = applyMark(el); if (r) { dmg += r.dmg; sub += ` ${r.name}! +${r.dmg}`; if (r.rage) state.rage = Math.max(0, state.rage + r.rage); } else sub += ` Marca de ${ELEMENTS[el].name.toLowerCase()}.`; }
           if (bers) { dmg = Math.round(dmg * 1.5); sub += ' Berserk 1,5x!'; }
           if (dmg > 0 && k === 'mage' && state.buff.bh > 0) { dmg *= 2; sub += ' Buraco Negro x2!'; }
@@ -724,6 +726,11 @@ async function playRound(){
     } }
 
   // ---- 4) fim da rodada: recargas, mana, fúria e duração dos efeitos
+  if (state.burn > 0) {   // fogo: dano contínuo no boss (0,25x do ataque normal) por 2 perguntas
+    const bd = Math.max(1, Math.round(ATTACK_DAMAGE * BURN_MULT)); state.burn--;
+    state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} 🔥`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
+    if (state.bossHp <= 0) return endGame(true);
+  }
   { const b = state.buff;
     b.bh = 0; state.guardFor = null;
     if (b.bers > 0) { b.bers--; if (b.bers === 0) b.tired = 1; } else if (b.tired > 0) b.tired--;
@@ -792,7 +799,7 @@ function restartRun(){
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; });
-  state.marks = []; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
+  state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
   $('#end-screen').hidden = true; renderHud(); turnTimer = setTimeout(playRound, 800);
 }
 

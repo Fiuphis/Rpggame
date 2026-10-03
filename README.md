@@ -281,3 +281,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v69 — Boss fraco a fogo
 - Ataque elemental da Maga: fogo agora fere o boss (1,5x sobre o 1,3x do ataque); água/ar/terra continuam a mostrar o ataque no boss com dano 0 (IMUNE!). Menu de elementos mostra "BOSS FRACO 1,5x" no fogo e "BOSS IMUNE" nos outros.
+
+## v70 — Queimadura do fogo
+- Fogo da Maga acertando o boss: dano 1,5x e marca QUEIMANDO por 2 perguntas — no fim de cada pergunta o boss leva 0,25x do ataque normal (`BURN_TURNS`, `BURN_MULT` em app.js). Indicador "QUEIMANDO n" no HUD e brilho laranja no boss; acertar fogo de novo renova a duração.
