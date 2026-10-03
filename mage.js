@@ -66,8 +66,8 @@ const ACT = {
   guard:[S(1900, [], []), S(1900, [], [[.1,'charge'],[.5,'cheer']]), S(1900, [], [[.08,'cheer'],[.45,'charge']])],
 };
 ACT.holy = ACT.cast;
-let lastV = new WeakMap();
-const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; const prevI = lastV.get(v) ?? -1; let i; do { i = Math.floor(Math.random() * v.length); } while (v.length > 1 && i === prevI); lastV.set(v, i); return v[i]; };
+const bags = new WeakMap();
+const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };   // sacola embaralhada: nunca repete a mesma variação em seguida, e usa todas antes de repetir
 const ELEM = {'#ff7a2e':'fire', '#3db4ff':'water', '#9fe8d0':'air', '#c19a52':'earth'};
 const GUARD = {fire:'deffire', water:'defwater', air:'defair', earth:'defearth', mana:'defmana'};
 const IDLE_CYCLE = [['idle1', 1000]];
@@ -93,7 +93,7 @@ function make(host){
   let M = null; const img = {}, fxm = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
   fetch('mage3/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `mage3/${n}.png`)); FXS.forEach(n => load('fx_' + n, `mage3/fx_${n}.png`)); }).catch(() => {});
-  let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
+  let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let dead = 0, deadTarget = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 60};
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
 
@@ -132,7 +132,8 @@ function make(host){
     bhbig(){ E('fx_bh_big', 2300, u => ({x:T.x, y:T.y, s:lerp(.2, 1.05, eo(Math.min(1, u * 1.7))), rot:-u * 10, a:u < .1 ? u / .1 : u > .8 ? (1 - u) / .2 : 1})); E('fx_bh_spikes', 1500, u => ({x:T.x, y:T.y + 20, s:lerp(.3, 1.1, eo(Math.min(1, u * 2))), a:u < .12 ? u / .12 : 1 - seg(u, .5, 1)}), {delay:300}); shakeT = clk() + 300; },
     bhend(){ E('fx_bh_big2', 800, u => ({x:T.x, y:T.y, s:lerp(1.05, 1.5, eo(u)), rot:u * 6, a:1 - u})); E('fx_star_big', 800, u => ({x:T.x, y:T.y, s:lerp(.5, 2.2, eo(u)), a:1 - u})); flashT = clk(); },
   };
-  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b); else if (k === 'hit') hit(a); else if (EV[k]) EV[k](); }
+  const HITD = {fire:560, water:320, air:380, earth:260};   // atraso até o efeito elemental acertar o boss
+  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) { EV[k](); if (HITD[k] != null) setTimeout(fireHit, HITD[k]); } }
 
   // ---- corpo
   function poseAt(a, pe){                                              // pose + transformações no instante pe
@@ -200,10 +201,11 @@ function make(host){
     start(){ if (!running) { running = true; requestAnimationFrame(frame); } },
     play(name, o = {}){
       if (dead > .05) return Promise.resolve(false);
-      if (name === 'cast' || name === 'holy') { const e = ELEM[(o.color || '').toLowerCase()]; return run(variant(ACT[e || 'cast'])); }
-      if (name === 'guard') { const gi = Math.floor(Math.random() * ACT.guard.length); return run(ACT.guard[window.__vi != null ? window.__vi % ACT.guard.length : gi], {gv:window.__vi != null ? window.__vi % 3 : gi, guard: GUARD[ELEM[(o.color || '').toLowerCase()] || 'mana']}); }
-      const a = variant(ACT[name]); return a ? run(a) : Promise.resolve(false);
+      if (name === 'cast' || name === 'holy') { const e = ELEM[(o.color || '').toLowerCase()]; const p = run(variant(ACT[e || 'cast'])); p.then(fireHit); return p; }
+      if (name === 'guard') { const ga = variant(ACT.guard), gi = ACT.guard.indexOf(ga); return run(ga, {gv:gi, guard: GUARD[ELEM[(o.color || '').toLowerCase()] || 'mana']}); }
+      const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a); p.then(fireHit); return p;
     },
+    nextHit(){ return new Promise(r => hitW.push(r)); },
     idle(){ if (cur) return Promise.resolve(false); return run(variant(IDLES)); },
     has: n => !!ACT[n],
     setDead(d){ deadTarget = d ? 1 : 0; if (d) { if (cur) cur.done(false); cur = null; } else flashT = clk(); },

@@ -112,6 +112,6 @@ function setAura(w, kind){
 }
 function reset(){ WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
-window.Anim = {META, play, idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
+window.Anim = {META, play, hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(build, 0)); else setTimeout(build, 0);
 })();

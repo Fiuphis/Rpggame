@@ -515,23 +515,30 @@ const healTargets = () => HERO_ORDER.map(h => { const hp = state.heroes[h].hp;
        : {hero:h, desc:'Vida cheia', block:'VIDA CHEIA'}; });
 function ultUsable(k){ return k !== 'assassin' || healTargets().some(t => !t.block); }
 async function activateUlt(k){
+  const b = state.buff; let note = ULT_INFO[k], cleTarget = null;
+  if (k === 'assassin') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
+    const list = healTargets(), valid = list.filter(t => !t.block);
+    if (k === activeGroup && state.heroes[k].hp > 0) {
+      const r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null); await closePanel();
+      if (!r || !valid.some(v => v.hero === r)) { toast('Tempo esgotado: a Luz Sagrada não foi usada e continua disponível.'); return false; }
+      cleTarget = r;
+    } else cleTarget = valid.slice().sort((x, y) => state.heroes[x.hero].hp - state.heroes[y.hero].hp)[0].hero;
+  }
   state.ultReady[k] = false;
-  const b = state.buff; let note = ULT_INFO[k];
-  showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note); const ultPl = A.play(k, 'ult'); A.sayRandom(k, 'ult', 1);
+  showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
+  const tx = cleTarget ? HERO_X[cleTarget] / 100 * 1024 : null;
+  const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:1098} : {}); A.sayRandom(k, 'ult', 1);
   if (k === 'mage') b.bh = 1;
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
-    const list = healTargets(), valid = list.filter(t => !t.block);
-    let t;
-    if (k === activeGroup && state.heroes[k].hp > 0) { hideBanner(); t = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, valid[0].hero); await closePanel(); }
-    else t = valid.slice().sort((x, y) => state.heroes[x.hero].hp - state.heroes[y.hero].hp)[0].hero;
+    const t = cleTarget; await wait(2500);   // a luz desce sobre o alvo e só então a vida muda
     const h = state.heroes[t];
     if (h.hp <= 0) { h.hp = REVIVE_HP; floatText(HERO_X[t], 56, 'REVIVEU!', '#ffe08a'); }
     else { h.hp = Math.min(HERO_MAX_HP, h.hp + HEAL_AMOUNT); floatText(HERO_X[t], 56, `+${HEAL_AMOUNT}`, '#9fe3a8'); }
-    showBanner(`Luz Sagrada: ${GROUPS[t]}`, h.hp === REVIVE_HP ? 'voltou à luta!' : 'vida restaurada'); 
+    showBanner(`Luz Sagrada: ${GROUPS[t]}`, h.hp === REVIVE_HP ? 'voltou à luta!' : 'vida restaurada');
   }
-  renderHud(); await Promise.all([wait(1200), ultPl]); hideBanner();
+  renderHud(); await Promise.all([wait(1200), ultPl]); hideBanner(); return true;
 }
 function applyMark(el){
   const m = state.marks;
@@ -664,7 +671,7 @@ async function playRound(){
         const t = act.target; sub = `passou a vez para ${GROUPS[t]}`;
         showBanner(`${nm}: ${sk.name}`, sub); await wait(1100);
         A.play(k, 'pass'); A.sayRandom(k, 'pass', .6);
-        if (correct[t] && state.heroes[t].hp > 0) { showRing(t); A.play(t, 'melee'); await wait(300); await heroAttack(t, Math.round(ATTACK_DAMAGE * 1.5)); } else floatText(HERO_X[t], 56, 'ERROU!', '#ff6b81');
+        if (correct[t] && state.heroes[t].hp > 0) { showRing(t); await doAttack(t, 'melee', null, Math.round(ATTACK_DAMAGE * 1.5)); } else floatText(HERO_X[t], 56, 'ERROU!', '#ff6b81');
         renderHud(); await wait(700); hideBanner(); hideRing();
         if (state.bossHp <= 0) return endGame(true);
         continue;
@@ -695,7 +702,7 @@ async function playRound(){
     const col = el ? ELEMENTS[el].color : null;
     showBanner(`${nm}: ${sk ? sk.name : 'sem ação'}${el ? ' · ' + ELEMENTS[el].name : ''}`, sub); await wait(1100);
     if (sk && sk.id === 'guard') { A.play(k, 'guard', {color:'#ff9d3d'}); A.sayRandom(k, 'guard', .6); }
-    if (dmg > 0) { const an = skAnim(k, sk); A.play(k, an, {color:col}); A.sayRandom(k, skSay(k, sk), .5); await wait(an === 'heavy' ? 480 : 300); await heroAttack(k, dmg, col); }
+    if (dmg > 0) { await doAttack(k, skAnim(k, sk), col, dmg, skSay(k, sk)); }
     else if (hurt > 0) { if (defended) { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .5); await wait(250); } await bossCounter(k, hurt, defended); }
     else if (sk && sk.kind === 'dodge') { A.play(k, 'dodge'); A.sayRandom(k, 'dodge', .55); if (!ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8'); }
     else if (sk && sk.kind === 'def') { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .4); }
@@ -740,11 +747,21 @@ function shoot(fromX, fromY, toX, toY, color, ms){
     {left:toX+'%', top:toY+'%', opacity:1, transform:'translate(-50%,-50%) scale(1.3)'}
   ], {duration:ms || 620, easing:'ease-in', fill:'forwards'}).finished.then(() => p.remove());
 }
-async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null){
+const RIG_HERO = k => k === 'mage' || k === 'assassin';   // têm animação própria com projétil/efeito: o dano só entra no impacto
+async function doAttack(k, an, col, dmg, say){
+  const pl = A.play(k, an, {color:col}); if (say) A.sayRandom(k, say, .5);
+  if (!RIG_HERO(k)) { await wait(an === 'heavy' ? 480 : 300); return heroAttack(k, dmg, col); }
+  await Promise.race([A.hit(k), wait(4500)]);
+  await heroAttack(k, dmg, col, true);
+  await Promise.race([pl, wait(3500)]);
+}
+async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed = false){
   const col = colOverride || HERO_COLOR[hero], game = $('#game');
-  await shoot(HERO_X[hero], 61, 50, 24, col);
-  const imp = $('#boss-impact'); imp.style.background = `radial-gradient(circle,#fff,${col} 35%,transparent 68%)`;
-  imp.classList.remove('active'); void imp.offsetWidth; imp.classList.add('active');
+  if (!landed) {
+    await shoot(HERO_X[hero], 61, 50, 24, col);
+    const imp = $('#boss-impact'); imp.style.background = `radial-gradient(circle,#fff,${col} 35%,transparent 68%)`;
+    imp.classList.remove('active'); void imp.offsetWidth; imp.classList.add('active');
+  }
   game.classList.remove('boss-hit'); void game.offsetWidth; game.classList.add('boss-hit');
   state.bossHp = Math.max(0, state.bossHp - dmg); A.play('boss', 'hurt'); A.sayRandom('boss', 'hurt', .3);
   floatText(50, 17, `-${dmg}`, col === '#d9e6ff' ? '#ffffff' : col);

@@ -4,7 +4,7 @@
    Ociosa: lê a Bíblia, toca no livro, reza — sorteado, sem ficar se mexendo o tempo todo. */
 (() => {
 'use strict';
-const POSES = ['bp1','bp2','bp3','bg1','bg2','bg3','bg4','br1','br2','br3','br4','br5','br6','bt1','bt2','bt3','bt4','d1','d2','d3','d4'];
+const POSES = ['at1','at3','stf','ult1','ult2','bp1','bp2','bp3','bg1','bg2','bg3','bg4','br1','br2','br3','br4','br5','br6','bt1','bt2','bt3','bt4','d1','d2','d3','d4'];
 const FXS = ['star1','star2','star3','ring1','ring2','ring3','pillar','lotus','burst','aura','streak1','streak2','streak3','sunstar','star4','pillar2','cross1'];
 const T = {x:517, y:340};
 const BASE = 292, SZ = 1.05, XOFF = -46;      // pés mais para a frente (baixo) e um pouco maior
@@ -17,13 +17,16 @@ const seg = (u, a, b) => clamp((u - a) / (b - a));
 const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
 
 const ACT = {   // só poses de COSTAS (bp, bg, br, bt) — base: bp1
-  melee:[
-    S(1300, [[0,'bp1'],[.14,'bg3',{dx:-3}],[.34,'bt1',{dx:-5}],[.54,'bt2',{dx:3,dy:-3}],[.82,'bt2',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:streak1:.9'],[.76,'hit:small']]),
-    S(1400, [[0,'bp1'],[.12,'bp2',{dx:-2}],[.34,'bt3',{dx:-5}],[.54,'bt2',{dx:3,dy:-3}],[.82,'bt3',{dx:2}],[.96,'bp1']], [[.3,'charge'],[.54,'shot:streak2:.9'],[.78,'hit:small2']]),
-    S(1400, [[0,'bp1'],[.14,'bg1',{dx:-3}],[.34,'bg3',{dx:-4}],[.54,'bt1',{dx:4,dy:-4}],[.82,'bt1',{dx:2}],[.96,'bp1']], [[.22,'charge'],[.56,'shot:streak3:.9'],[.8,'hit:small3']]),
-    S(1500, [[0,'bp1'],[.12,'br2'],[.3,'br1',{dx:-3}],[.52,'bt1',{dx:4,dy:-3}],[.84,'bt3',{dx:2}],[.96,'bp1']], [[.26,'charge'],[.54,'shot:streak1:1'],[.8,'hit:small2']]),
+  melee:[   // cajado (at1/at3/stf) e Bíblia (bt/bg)
+    S(1300, [[0,'bp1'],[.14,'at1',{dx:-3}],[.34,'at1',{dx:-5}],[.54,'at3',{dx:4,dy:-4}],[.82,'at3',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:streak1:.9'],[.76,'hit:small']]),
+    S(1400, [[0,'bp1'],[.12,'stf',{dx:-2}],[.34,'at1',{dx:-4}],[.54,'at3',{dx:4,dy:-4}],[.82,'at3',{dx:2}],[.96,'bp1']], [[.3,'charge'],[.54,'shot:streak2:.9'],[.78,'hit:small2']]),
+    S(1500, [[0,'bp1'],[.14,'at1',{dx:-3}],[.32,'stf',{dx:-6}],[.52,'at3',{dx:6,dy:-5}],[.84,'at3',{dx:2}],[.96,'bp1']], [[.22,'charge'],[.56,'shot:streak3:1'],[.8,'hit:small3']]),
+    S(1400, [[0,'bp1'],[.14,'bg3',{dx:-3}],[.34,'bt1',{dx:-5}],[.54,'bt2',{dx:3,dy:-3}],[.82,'bt2',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:streak1:.9'],[.76,'hit:small2']]),
+    S(1500, [[0,'bp1'],[.12,'br2'],[.3,'br1',{dx:-3}],[.52,'bt1',{dx:4,dy:-3}],[.84,'bt3',{dx:2}],[.96,'bp1']], [[.26,'charge'],[.54,'shot:streak2:1'],[.8,'hit:small3']]),
   ],
   holy:[
+    S(2300, [[0,'bp1'],[.1,'at1',{dx:-3}],[.3,'ult1',{dy:-2}],[.5,'ult2',{dy:-6}],[.8,'ult2',{dy:-4}],[.97,'bp1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:sunstar:1.3'],[.8,'hit:holy']]),
+    S(2500, [[0,'bp1'],[.1,'stf',{dx:-2}],[.28,'at3',{dy:-3}],[.48,'ult1',{dy:-3}],[.66,'ult2',{dy:-6}],[.84,'ult2',{dy:-4}],[.97,'bp1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.7,'shot:cross1:1.3'],[.92,'hit:holy2']]),
     S(2100, [[0,'bp1'],[.1,'bp3',{dx:-3}],[.3,'bt1',{dy:-3}],[.5,'bt4',{dy:-4}],[.78,'bt4',{dx:2}],[.97,'bp1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:sunstar:1.3'],[.8,'hit:holy']]),
     S(2400, [[0,'bp1'],[.1,'br2'],[.3,'br1',{dy:-2}],[.5,'bt2',{dx:-3}],[.64,'bt4',{dy:-4}],[.8,'bt4',{dx:3}],[.97,'bp1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.68,'shot:cross1:1.3'],[.9,'hit:holy2']]),
     S(2600, [[0,'bp1'],[.08,'bp3'],[.2,'bt1'],[.3,'bt2'],[.4,'bt3'],[.5,'bt4',{dy:-2}],[.62,'bt4',{dy:-4}],[.78,'bt4',{dx:3}],[.97,'bp1']], [[.2,'charge'],[.36,'charge'],[.5,'charge'],[.66,'shot:star4:1.2'],[.9,'hit:holy3']]),
@@ -33,15 +36,18 @@ const ACT = {   // só poses de COSTAS (bp, bg, br, bt) — base: bp1
     S(1900, [[0,'bp1'],[.14,'br1'],[.34,'br3'],[.6,'br3'],[.9,'br3'],[.98,'bp1']], [[.3,'shield']]),
     S(1900, [[0,'bp1'],[.14,'bp2'],[.34,'br2'],[.6,'br2',{dy:-2}],[.9,'br2'],[.98,'bp1']], [[.3,'shield:n2']]),
     S(1900, [[0,'bp1'],[.14,'bg2'],[.34,'br1'],[.6,'br1',{dy:-2}],[.9,'br1'],[.98,'bp1']], [[.3,'shield:n3']]),
+    S(1900, [[0,'bp1'],[.14,'stf'],[.34,'at1'],[.6,'at1',{dy:-2}],[.9,'at1'],[.98,'bp1']], [[.3,'shield:n2']]),
   ],
   guard_h:[
     S(1900, [[0,'bp1'],[.14,'bp3'],[.3,'bt4'],[.9,'bt4',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy']]),
     S(1900, [[0,'bp1'],[.12,'br2'],[.3,'bt2'],[.9,'bt2',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy2']]),
     S(1900, [[0,'bp1'],[.12,'bg3'],[.3,'bt1'],[.9,'bt1',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy3']]),
+    S(1900, [[0,'bp1'],[.12,'at1'],[.3,'ult1'],[.9,'ult1',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy2']]),
   ],
   ult:[
     S(5200, [[0,'bp1'],[.08,'br1'],[.16,'bp3'],[.26,'bt1',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
     S(5200, [[0,'bp1'],[.08,'br2'],[.16,'br1'],[.26,'bt2',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar2'],[.62,'lightpillar'],[.78,'lightend']]),
+    S(5200, [[0,'bp1'],[.08,'stf'],[.16,'at1'],[.26,'ult1',{dy:-2}],[.42,'ult2',{dy:-6}],[.82,'ult2',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
   ],
   dodge:[
     S(1050, [[0,'bp1'],[.1,'bg1',{dx:-6}],[.3,'bg2',{dx:-34,dy:-2}],[.52,'bg2',{dx:-50}],[.72,'bg1',{dx:-30}],[.9,'bp1']], [], {ghost:true}),
@@ -54,6 +60,7 @@ const ACT = {   // só poses de COSTAS (bp, bg, br, bt) — base: bp1
     S(800, [[0,'bp1'],[.12,'bg4',{dx:-6,dy:2,rot:-5}],[.36,'bg4',{dx:3,rot:-2}],[.62,'bg4'],[.92,'bp1']], [], {tint:true}),
   ],
   victory:[
+    S(2800, [[0,'bp1'],[.12,'at1',{dy:-2}],[.34,'ult1',{dy:-4}],[.56,'ult2',{dy:-6}],[.8,'ult2',{dy:-5}],[.96,'bp1']], [[.14,'cheer'],[.36,'cheer:cross'],[.6,'cheer'],[.82,'cheer:rise']]),
     S(2800, [[0,'bp1'],[.12,'bp3',{dy:-2}],[.34,'bt4',{dy:-6}],[.56,'bt1',{dy:-4}],[.8,'bt4',{dy:-6}],[.96,'bp1']], [[.14,'cheer'],[.36,'cheer:cross'],[.6,'cheer'],[.82,'cheer:cross']]),
     S(3000, [[0,'bp1'],[.14,'br2'],[.3,'br1',{dy:-4}],[.5,'bt2',{dy:-4}],[.7,'bt4',{dy:-6}],[.96,'bp1']], [[.3,'cheer'],[.52,'cheer:rise'],[.72,'cheer:cross']]),
     S(3000, [[0,'bp1'],[.14,'bg3'],[.3,'bt3',{dy:-3}],[.5,'bt4',{dy:-6}],[.74,'bt4',{dy:-5}],[.96,'bp1']], [[.3,'cheer:rise'],[.52,'cheer'],[.76,'cheer:cross']]),
@@ -68,10 +75,10 @@ const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
   S(2800, [[0,'bp1'],[.2,'bg1'],[.5,'bg2'],[.75,'bg1'],[.97,'bp1']]),
   S(2600, [[0,'bp1'],[.2,'bg4'],[.7,'bg4'],[.97,'bp1']]),
 ];
-const ORB = {bt1:[155,72], bt2:[140,50], bt3:[130,80], bt4:[127,35], bp3:[120,100], bg3:[120,90], br1:[120,55], br2:[20,40]};   // ponto de luz (cruz/estrela) em cada pose
+const ORB = {at1:[125,40], at3:[85,35], stf:[165,35], ult1:[90,60], ult2:[45,70], bt1:[155,72], bt2:[140,50], bt3:[130,80], bt4:[127,35], bp3:[120,100], bg3:[120,90], br1:[120,55], br2:[20,40]};   // ponto de luz (cruz/estrela) em cada pose
 IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.7); });      // movimentos de ociosa mais lentos
-const lastV = new WeakMap();
-const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; const p = lastV.get(v) ?? -1; let i; do { i = Math.floor(Math.random() * v.length); } while (v.length > 1 && i === p); lastV.set(v, i); return v[i]; };
+const bags = new WeakMap();
+const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };   // sacola embaralhada: nunca repete a mesma variação em seguida, e usa todas antes de repetir
 const DEATH = [[0,'d1'],[.3,'d2'],[.58,'d3'],[.82,'d4']];
 
 function glow(g, x, y, r, col, a){
@@ -87,13 +94,14 @@ function make(host){
   let M = null; const img = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
   fetch('clr/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `clr/${n}.png`)); FXS.forEach(n => load('fx_' + n, `clr/fx_${n}.png`)); }).catch(() => {});
-  let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
+  let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let dead = 0, deadTarget = 0, deadT = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 40}, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const orbPos = () => ({...orbW});
   const dir = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
+  let tgt = null; const tf = () => tgt ? {x:tgt.x, y:feet().y} : feet();   // alvo da Luz Sagrada
 
   function shot(name, size){
     const a = orbPos(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), d = 560 + dist * .55, ang = dir(a, b), k = rnd(-1, 1) * 24;
@@ -128,12 +136,12 @@ function make(host){
       E('fx_aura', 1700, u => ({x:f.x, y:f.y - 120, s:lerp(.75, .95, eo(u)), a:(u < .12 ? u / .12 : u > .8 ? (1 - u) / .2 : 1) * (h ? .55 : .3)}), {back:true});
       E('fx_ring1', 1500, u => ({x:f.x, y:f.y - 6, s:lerp(.6, 1.1, eo(u)), sy:.3, a:(h ? .8 : .45) * Math.sin(Math.PI * u)}));
       for (let i = 0; i < (h ? 7 : 4); i++) { const an = i * .9; E('fx_star' + (1 + i % 3), 1100, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 40 - 150 * u + Math.sin(an) * 20, s:.4, a:Math.sin(Math.PI * u)}), {delay:i * 180}); } },
-    lightup(){ const f = feet(); flashT = clk(); E('fx_ring2', 2600, u => ({x:f.x, y:f.y - 4, s:lerp(.5, 1.3, eo(u)), sy:.32, rot:0, a:u < .1 ? u / .1 : 1 - seg(u, .6, 1)})); E('fx_lotus', 2400, u => ({x:f.x, y:f.y + 6, s:lerp(.5, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .12 ? u / .12 : 1 - seg(u, .55, 1)})); },
-    lightpillar(){ const f = feet(); E('fx_pillar', 2400, u => ({x:f.x, y:f.y + 4, s:1.5, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .5, 1)}), {back:true}); E('glow', 2400, u => ({x:f.x, y:f.y - 140, r:lerp(60, 230, eo(Math.min(1, u * 1.6))), c:GOLD, a:.8 * Math.sin(Math.PI * u)})); },
-    lightpillar2(){ const f = feet(); E('fx_burst', 1800, u => ({x:f.x, y:f.y + 4, s:1.7, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .4, 1)}), {back:true}); for (let i = 0; i < 10; i++) { const an = i * .63; E('fx_star' + (1 + i % 3), 1400, u => ({x:f.x + Math.cos(an) * 80 * eo(u), y:f.y - 60 - 160 * u + Math.sin(an) * 30, s:.5 * (1 - u * .4), a:Math.sin(Math.PI * u)}), {delay:i * 110}); } },
-    lightend(){ const f = feet(); E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,240,200', a:.9 * (1 - u)})); E('fx_sunstar', 800, u => ({x:f.x, y:f.y - 140, s:lerp(.6, 2, eo(u)), a:1 - u})); flashT = clk(); },
+    lightup(){ const f = tf(); flashT = clk(); E('fx_ring2', 2600, u => ({x:f.x, y:f.y - 4, s:lerp(.5, 1.3, eo(u)), sy:.32, rot:0, a:u < .1 ? u / .1 : 1 - seg(u, .6, 1)})); E('fx_lotus', 2400, u => ({x:f.x, y:f.y + 6, s:lerp(.5, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .12 ? u / .12 : 1 - seg(u, .55, 1)})); },
+    lightpillar(){ const f = tf(); E('fx_pillar', 2400, u => ({x:f.x, y:f.y + 4, s:1.5, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .5, 1)}), {back:true}); E('glow', 2400, u => ({x:f.x, y:f.y - 140, r:lerp(60, 230, eo(Math.min(1, u * 1.6))), c:GOLD, a:.8 * Math.sin(Math.PI * u)})); },
+    lightpillar2(){ const f = tf(); E('fx_burst', 1800, u => ({x:f.x, y:f.y + 4, s:1.7, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .4, 1)}), {back:true}); for (let i = 0; i < 10; i++) { const an = i * .63; E('fx_star' + (1 + i % 3), 1400, u => ({x:f.x + Math.cos(an) * 80 * eo(u), y:f.y - 60 - 160 * u + Math.sin(an) * 30, s:.5 * (1 - u * .4), a:Math.sin(Math.PI * u)}), {delay:i * 110}); } },
+    lightend(){ const f = tf(); E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,240,200', a:.9 * (1 - u)})); E('fx_sunstar', 800, u => ({x:f.x, y:f.y - 140, s:lerp(.6, 2, eo(u)), a:1 - u})); flashT = clk(); },
   };
-  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b); else if (k === 'hit') hit(a); else if (EV[k]) EV[k](a); }
+  function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
 
   function poseAt(a, pe){
     const st = a.steps; let i = 0; while (i < st.length - 1 && pe >= st[i + 1][0]) i++;
@@ -192,10 +200,12 @@ function make(host){
     start(){ if (!running) { running = true; requestAnimationFrame(frame); } },
     play(name, o = {}){
       if (deadTarget) return Promise.resolve(false);
+      tgt = name === 'ult' && o.tx != null ? {x:o.tx} : null;
       if (name === 'guard') return run(variant(/ffe08a/i.test(o.color || '') ? ACT.guard_h : ACT.guard_n));
       if (name === 'cast') name = 'holy';
-      const a = variant(ACT[name]); return a ? run(a) : Promise.resolve(false);
+      const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a); p.then(fireHit); return p;
     },
+    nextHit(){ return new Promise(r => hitW.push(r)); },
     idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(IDLES)); },
     has: n => !!ACT[n] || n === 'guard' || n === 'cast',
     setDead(d){ if (d) { if (cur) cur.done(false); cur = null; deadTarget = 1; deadT = clk(); } else { deadTarget = 0; flashT = clk(); } },
