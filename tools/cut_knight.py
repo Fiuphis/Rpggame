@@ -71,8 +71,11 @@ SHEETFIX = {'K1': 1.0, 'K2': 1.03, 'K3': 1.10}
 POSEFIX = {'K3_12':1.35,'K3_13':1.15,'K3_14':1.25,'K3_15':1.10,'K3_16':1.10,'K3_17':1.08,'K3_18':1.12,'K3_39':1.16,'K3_40':1.14,'K3_41':1.2,'K3_42':1.2,'K3_43':1.05,
  'K3_3':1.12,'K3_4':1.12,'K3_5':1.12,'K1_13':1.2,'K1_14':1.25,'K1_15':1.02,'K1_32':1.15,'K1_35':1.15,'K2_13':1.1,'K2_16':1.12,'K2_17':1.05,'K2_18':1.05,'K2_19':1.06,
  'K2_44':1.05,'K1_44':1.03,'K1_45':1.05,'K2_38':1.16,'K2_39':1.16,'K2_3':1.04,'K2_4':1.04,'K2_5':1.04}
+# poses do BERSERK/aura: ajuste fino pela altura visível (cabelo→pés) comparada à idle (~290)
+BFIX = {'K1_27':0.92,'K1_26':0.966,'K1_30':0.927,'K1_29':1.04,'K2_32':1.082,'K2_37':1.07,'K2_33':1.08,'K2_35':1.166,'K2_25':1.188,'K3_26':1.03,'K3_24':1.06,'K3_25':1.124,
+ 'K3_28':1.06,'K3_27':1.144,'K1_24':1.03,'K1_28':1.05,'K1_25':1.144,'K2_23':1.21,'K2_24':1.134,'K2_28':1.144,'K2_26':1.166}
 def mult(name, core, REFS):
-    return _mult(name, core, REFS) * POSEFIX.get(name, SHEETFIX[name.split('_')[0]])
+    return _mult(name, core, REFS) * POSEFIX.get(name, SHEETFIX[name.split('_')[0]]) * BFIX.get(name, 1.0)
 def _mult(name, core, REFS):
     sh = name.split('_')[0]; rh, ra = REFS[sh]; ys = np.where(core.any(1))[0]; h = ys.max() - ys.min() + 1
     if name in ROLL: return float(np.clip(np.sqrt(1.25 * ra / max(core.sum(), 1)), 1.0, 2.3))

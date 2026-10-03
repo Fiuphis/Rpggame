@@ -302,3 +302,6 @@ Guerreiro: poses de esquiva/agachado ampliadas (escala pela área do corpo).
 
 ## v76
 Guerreiro: poses de esquiva/agachado em escala igual à do corpo em pé (área do corpo ×1.25).
+
+## v77
+Guerreiro: poses do Berserk/ult padronizadas pela altura visível (cabelo→pés), conferidas lado a lado com a idle.
