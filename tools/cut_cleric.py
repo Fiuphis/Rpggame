@@ -59,11 +59,17 @@ def outline(I):
     if k: sz = ndi.sum(a > 200, l, range(1, k + 1)); main = np.isin(l, [i + 1 for i, v in enumerate(sz) if v >= .15 * sz.max()])
     else: main = body
     rgb = im[..., :3].astype(int); light = (rgb.min(2) > 150) & ((rgb.max(2) - rgb.min(2)) < 60)
-    near = ndi.binary_dilation(main, iterations=3) & ~main & (a < 200) & (a > 0) & (rgb.min(2) > 135) & ((rgb.max(2) - rgb.min(2)) < 90)
+    near = ndi.binary_dilation(main, iterations=5) & ~main & (a > 0) & (rgb.min(2) > 110) & ((rgb.max(2) - rgb.min(2)) < 115)
+    near |= ndi.binary_dilation(main, iterations=2) & ~main & (a < 255)
     im[..., 3][near] = 0
-    light2 = (rgb.min(2) > 118) & ((rgb.max(2) - rgb.min(2)) < 75)
-    inner = main & ~ndi.binary_erosion(main, iterations=2) & light2
+    light2 = (rgb.min(2) > 108) & ((rgb.max(2) - rgb.min(2)) < 85)
+    inner = main & ~ndi.binary_erosion(main, iterations=3) & light2
+    inner |= main & ~ndi.binary_erosion(main, iterations=1) & (im[..., 3] < 255)
     im[..., :3][inner] = (46, 28, 34)
+    band = main & ~ndi.binary_erosion(main, iterations=7) & (rgb.min(2) > 232) & ((rgb.max(2) - rgb.min(2)) < 26)
+    im[..., :3][band] = (206, 190, 196)
+    gray2 = main & ~ndi.binary_erosion(main, iterations=2) & ((rgb.max(2) - rgb.min(2)) < 62) & (rgb.mean(2) > 70)
+    im[..., :3][gray2] = (46, 28, 34)
     ring = ndi.binary_dilation(main, iterations=1) & ~main
     im[..., :3][ring] = (46, 28, 34); im[..., 3][ring] = 255
     return Image.fromarray(im)

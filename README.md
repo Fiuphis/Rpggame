@@ -206,3 +206,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v49
 - Clériga mais à frente (pés ~16px mais baixos, 5% maior) e ociosa bem mais calma: movimentos extras a cada 11–22 s (9–16 s após uma ação) e 1,7x mais lentos.
+
+## v50
+- Clériga ~46px mais perto do Tanque; limpeza extra de pixels claros na borda (cut_cleric.py: faixa de 3px, brancos puros e cinzas viram a cor do contorno).
