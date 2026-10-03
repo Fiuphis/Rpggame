@@ -44,20 +44,26 @@ const ACT = {
   water:elemV('water'),
   air:elemV('air'),
   earth:elemV('earth'),
-  ult:S(5200, [[0,'idle1'],[.06,'atk1',{dx:-4}],[.14,'stars',{dy:-6}],[.22,'spin1',{dy:-10}],[.3,'bh1',{dy:-8,rot:-2}],[.38,'bh2',{dy:-12,rot:2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.16,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
+  ult:[
+    S(5200, [[0,'idle1'],[.06,'atk1',{dx:-4}],[.14,'stars',{dy:-6}],[.22,'spin1',{dy:-10}],[.3,'bh1',{dy:-8,rot:-2}],[.38,'bh2',{dy:-12,rot:2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.16,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
+    S(5200, [[0,'idle1'],[.06,'atk2',{dx:-6}],[.14,'castdef',{dy:-4}],[.22,'swingf',{dx:4}],[.3,'bh1',{dy:-8,rot:2}],[.38,'bh2',{dy:-12,rot:-2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.14,'cheer'],[.22,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
+  ],
   dodge:[
     S(1050, [[0,'idle1'],[.08,'dodge1',{dx:-6}],[.26,'dodge2',{dx:-40,dy:-4}],[.46,'dodge3',{dx:-56,dy:2}],[.66,'dodge4',{dx:-30}],[.88,'idle1']], [], {ghost:true}),
     S(1050, [[0,'idle1'],[.08,'dodge1',{dx:6}],[.26,'dodge2',{dx:40,dy:-4}],[.46,'dodge3',{dx:56,dy:2}],[.66,'dodge4',{dx:30}],[.88,'idle1']], [], {ghost:true, gdir:-1}),
+    S(1100, [[0,'idle1'],[.08,'dodge1',{dx:-4}],[.26,'dodge2',{dx:-24,dy:-14}],[.46,'dodge3',{dx:-44,dy:-8}],[.68,'dodge4',{dx:-22,dy:-2}],[.9,'idle1']], [[.3,'cheer']], {ghost:true}),
   ],
   hurt:[
     S(750, [[0,'idle1'],[.1,'idle3',{dx:-10,rot:-7}],[.32,'idle3',{dx:6,rot:-3}],[.55,'idle3',{dx:-2}],[.9,'idle1']], [], {tint:true}),
+    S(800, [[0,'idle1'],[.1,'idle2',{dx:-9,dy:2,rot:-6}],[.34,'idle2',{dx:4,rot:-2}],[.6,'idle4',{dx:-2}],[.9,'idle1']], [], {tint:true}),
     S(850, [[0,'idle1'],[.12,'dodge3',{dx:-12,rot:-8}],[.34,'dodge3',{dx:4,rot:-3}],[.6,'dodge4',{dx:-2}],[.92,'idle1']], [], {tint:true}),
   ],
   victory:[
     S(2800, [[0,'idle1'],[.1,'atk1'],[.26,'atk3',{dy:-12,rot:2}],[.4,'atk2',{dy:-3}],[.56,'atk3',{dy:-14,rot:-2}],[.8,'atk3',{dy:-4}],[.96,'idle1']], [[.28,'cheer'],[.58,'cheer']]),
     S(3200, [[0,'idle1'],[.1,'atk1'],[.22,'spin1',{dy:-6}],[.36,'spinwide',{dy:-14,rot:3}],[.5,'stars',{dy:-8}],[.66,'swingr',{dy:-6}],[.8,'atk3',{dy:-10}],[.96,'idle1']], [[.24,'cheer'],[.4,'cheer'],[.56,'cheer'],[.8,'cheer']]),
+    S(3000, [[0,'idle1'],[.1,'atk2'],[.28,'stars',{dy:-10}],[.46,'swingl',{dy:-4}],[.64,'spin1',{dy:-8}],[.82,'atk3',{dy:-8}],[.96,'idle1']], [[.3,'cheer'],[.5,'charge'],[.66,'cheer'],[.84,'cheer']]),
   ],
-  guard:S(1900, []),
+  guard:[S(1900, [], []), S(1900, [], [[.1,'charge'],[.5,'cheer']]), S(1900, [], [[.08,'cheer'],[.45,'charge']])],
 };
 ACT.holy = ACT.cast;
 let lastV = new WeakMap();
@@ -152,7 +158,7 @@ function make(host){
     const tm = now - t0; let st, a = cur && cur.a, pe = 0, guard = cur && cur.guard;
     if (cur) {
       pe = (now - cur.start) / a.dur;
-      if (guard) { const k = pe; st = {pose:k < .16 ? 'castdef' : guard, dx:0, dy:0, rot:0, since:(k < .16 ? k : k - .16) * a.dur, u:1}; if (k < .16 && guard !== 'defmana') st.pose = 'castdef'; }
+      if (guard) { const k = pe; st = {pose:k < .16 ? (['castdef','atk1','stars'][cur.gv || 0]) : guard, dx:0, dy:0, rot:0, since:(k < .16 ? k : k - .16) * a.dur, u:1}; }
       else st = poseAt(a, clamp(pe));
       const ev = a.ev || []; while (cur.fired < ev.length && pe >= ev[cur.fired][0]) runEv(ev[cur.fired++][1]);
       if (pe >= 1) { const d = cur; cur = null; d.done(); }
@@ -195,7 +201,7 @@ function make(host){
     play(name, o = {}){
       if (dead > .05) return Promise.resolve(false);
       if (name === 'cast' || name === 'holy') { const e = ELEM[(o.color || '').toLowerCase()]; return run(variant(ACT[e || 'cast'])); }
-      if (name === 'guard') return run(ACT.guard, {guard: GUARD[ELEM[(o.color || '').toLowerCase()] || 'mana']});
+      if (name === 'guard') { const gi = Math.floor(Math.random() * ACT.guard.length); return run(ACT.guard[window.__vi != null ? window.__vi % ACT.guard.length : gi], {gv:window.__vi != null ? window.__vi % 3 : gi, guard: GUARD[ELEM[(o.color || '').toLowerCase()] || 'mana']}); }
       const a = variant(ACT[name]); return a ? run(a) : Promise.resolve(false);
     },
     idle(){ if (cur) return Promise.resolve(false); return run(variant(IDLES)); },

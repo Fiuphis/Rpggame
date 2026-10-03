@@ -223,3 +223,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Heróis na mesma linha (pés em y=1098) e espaçamento igual (~247px); anel/feixe/seta seguem HERO_X novo.
 - Corrigido deslocamento horizontal do #game (overflow:clip) que empurrava os heróis para a esquerda após cliques.
 - Clériga: só poses de costas (bp/bg/br/bt), 3-4 variações de efeito por habilidade (golpe, sagrado, defesa, esquiva, dano, vitória, Luz Sagrada).
+
+## v55
+- Maga: variações igualadas às da Clériga — Escudo 3, Buraco Negro 2, Esquiva 3, Dano 3, Vitória 3 (ataques já tinham 7 normais, 5 de mana e 4 por elemento).
