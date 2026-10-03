@@ -330,3 +330,9 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 ## v86 — tamanhos padronizados por herói
 - Alturas (cabeça→pés, escala do jogo): Tanque ~309 > Guerreiro ~250 (SZ 0,9) > Maga ≈ Clériga ~225 (MSZ 0,91 / SZ 0,82).
 - Tabelas `PM` (tank.js, knight.js) e `PS` (mage.js, cleric.js): multiplicador por pose, calculado pela altura da cabeça e pela área do corpo (sem os efeitos) em relação à pose ociosa de referência (`a_i1`, `K2_3`, `idle1`, `at1`).
+
+## v87 — Boss animado e novas habilidades
+- `boss.js` (BossRig) + `boss/B_1..12.png` (tools/cut_boss.py): idle, Golpe Horizontal (fácil, 18), Golpe Vertical (média, 32), Invocação Demoníaca (difícil, 50), Estocada, Onda Sombria (AoE 3/5/9), Enfurecer, Preparando Habilidade, Teleporte, dano, morte, risada. Dano só entra quando o golpe chega (A.hit('boss')).
+- Regras (app.js): Preparando Habilidade (20%/rodada; rodada de aviso sem golpe único, próxima +50%); Teleporte (>rodada 4, 1/6, 20 de dano no mais fraco; ESQUIVA anula e atordoa: +25% de dano no boss); Estocada (24, só com Provocação/Proteção ativas, ignora o redirecionamento); Enfurecer = Onda +2.
+- Vida do boss 450 → 590 (tools/sim_boss.py: grupo de 60% vence ~53%, ~13 rodadas).
+- Teste: ?teste=1&grupo=x; window.__force='prep'|'tele' força o evento.

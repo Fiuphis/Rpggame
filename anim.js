@@ -37,6 +37,7 @@ function build(){
     if (w === 'mage' && window.MageRig) buildMage(H[w], m, P, window.MageRig, {PX:130, PXR:340, PT:170, PB:40, orb:{x:m.x + 190, y:m.y + 45}});
     if (w === 'tank' && window.TankRig) buildMage(H[w], m, P, window.TankRig, {PX:200, PXR:200, PT:280, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'knight' && window.KnightRig) buildMage(H[w], m, P, window.KnightRig, {PX:230, PXR:250, PT:230, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
+    if (w === 'boss' && window.BossRig) buildMage(H[w], m, P, window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
     if (w === 'assassin' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
@@ -110,11 +111,11 @@ function setDead(w, dead){
   else { h.token++; h.cur = null; const r = resolve(w, 'revive'); if (r) playSheet(w, r.s).then(() => scheduleIdle(w, 1500)); else { drawStill(w); scheduleIdle(w, 1500); } }
 }
 function setAura(w, kind){
-  const h = H[w]; if (!h) return; if (h.rig && h.rig.setMode) { h.rig.setMode(kind === 'red' ? 'bers' : kind); return; }   // Guerreiro: o modo troca as poses (aura já desenhada)
+  const h = H[w]; if (!h) return; if (h.rig && h.rig.setMode) { h.rig.setMode(kind === 'red' && w !== 'boss' ? 'bers' : kind); return; }   // Guerreiro: o modo troca as poses (aura já desenhada)
   ['red', 'blue', 'orange', 'gold'].forEach(c => h.cv.classList.toggle('aura-' + c, c === kind));
 }
 function reset(){ WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
-window.Anim = {META, play, hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
+window.Anim = {META, play, fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(build, 0)); else setTimeout(build, 0);
 })();
