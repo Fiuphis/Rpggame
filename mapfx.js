@@ -192,7 +192,7 @@ const frame = now => {
   if (acc < 50) return; acc = 0;                       // ~20 quadros/s
   g.clearRect(0, 0, W, H); g.globalAlpha = 1; g2.clearRect(0, 0, W, H); ctx = g;
   const s = now / 1000;
-  drawWater(.05, s); drawBoats(.05, s);
+  drawWater(.05, s);
   for (let i = ev.length - 1; i >= 0; i--) { const e = ev[i], t = (now - e.born) / e.dur; if (t >= 1) { ev.splice(i, 1); continue; } e.draw(t, s); }
   ctx = g2; for (let i = fl.length - 1; i >= 0; i--) { const e = fl[i], t = (now - e.born) / e.dur; if (t >= 1) { fl.splice(i, 1); continue; } e.draw(t, s); }
   ctx = g; g.globalAlpha = 1; g2.globalAlpha = 1;
@@ -212,8 +212,8 @@ img.onload = () => {
     if (wat(xx, y + 1) && wat(xx, y + 2) && !wat(xx, y) && !wat(xx, y - 3) && !wat(xx, y - 6) && wat(xx - 1, y + 2) && wat(xx + 1, y + 2)) shores.push({ x: xx, y0: y - 6, y1: y + 1 });
   }
   if (!pts.length) return;
-  initWater(pts); initBoats(pts);
+  initWater(pts);
   run = true; last = performance.now(); nextSpawn = last + 900; nextFly = last + 2500; requestAnimationFrame(frame);
-  window.MAPFX = { spawn, spawnFly, fl, ev, pts: pts.length, shores: shores.length, boats: boats.length };
+  window.MAPFX = { spawn, spawnFly, fl, ev, pts: pts.length, shores: shores.length, boats: 0 };
 };
 })();
