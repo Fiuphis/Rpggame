@@ -6,9 +6,11 @@ const $ = s => document.querySelector(s);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), seg = (t, a, b) => clamp((t - a) / (b - a));
 const eio = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, eo = t => 1 - Math.pow(1 - t, 3);
 const lerp = (a, b, t) => a + (b - a) * t;
-const T = {fadeIn:[900, 2000], push:[2000, 8700], pull:[8700, 12500], crossA:[8900, 10900], hold:12500, smoke:26000, black:[26800, 27600], reveal:27600, end:28600};
-// falas do boss: [início, fim, texto]
-const LINES = [[2600, 8700, 'Quem ousa invadir o meu castelo?'], [9000, 15600, 'Estes insetos estão com interesse em morrer, huh?!'], [15900, 21300, 'Muito bem...'], [21600, 27600, 'Espero que consigam me entreter!']];   // cada fala: digitando + ~5 s parada
+// falas do boss: o tempo de cada uma = digitação (32 ms/letra) + pausa de leitura (1,5 s + 60 ms/letra) → proporcional ao tamanho do texto
+const TXT = ['Quem ousa invadir o meu castelo?', 'Estes insetos estão com interesse em morrer, huh?!', 'Muito bem...', 'Espero que consigam me entreter!'];
+let _c = 2600; const LINES = TXT.map(s => { const a = _c, b = a + s.length * 32 + 1500 + s.length * 60; _c = b + 300; return [a, b, s]; });   // [início, fim, texto]
+const L1 = LINES[0][1], L4 = LINES[3][1];
+const T = {fadeIn:[900, 2000], push:[2000, L1], pull:[L1, L1 + 3900], crossA:[L1 + 200, L1 + 2200], hold:L1 + 3900, smoke:L4 - 1100, black:[L4, L4 + 800], reveal:L4 + 800, end:L4 + 1800};
 const BOSS_CLOSE = [.5, .47], BOSS_FAR = [.5, .31], EYES = [.50, .295];   // posições (fração da imagem)
 
 function load(src){ return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }

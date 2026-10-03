@@ -360,3 +360,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v113: reação dos 4 heróis na abertura (rostos recortados das folhas de personagem, em intro/f_*.webp), olhando em volta assustados após a 1ª fala do boss.
 - v114: abertura ~16s (mais lenta), caixa de fala do boss, recortes de rosto melhores (tools/cut_heads.py), fumaça centrada no trono.
 - v115: cada fala fica ~5s após digitar (abertura ~29s); removidas as reações dos heróis.
+- v116: pausa de leitura de cada fala proporcional ao texto (1,5 s + 60 ms/letra); abertura ~23 s.
