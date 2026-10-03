@@ -296,3 +296,6 @@ Guerreiro: tamanhos das poses reajustados pela altura visível (incluindo cabelo
 
 ## v74
 Efeitos de ataque de todos os heróis suavizados: sprites de efeito desenhados borrados/aditivos/mais translúcidos (fxsoft.js); efeitos embutidos nas poses do Guerreiro e do Tanque suavizados no recorte (tools/fxsoft.py); anéis mais macios.
+
+## v75
+Guerreiro: poses de esquiva/agachado ampliadas (escala pela área do corpo).

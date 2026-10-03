@@ -75,7 +75,7 @@ def mult(name, core, REFS):
     return _mult(name, core, REFS) * POSEFIX.get(name, SHEETFIX[name.split('_')[0]])
 def _mult(name, core, REFS):
     sh = name.split('_')[0]; rh, ra = REFS[sh]; ys = np.where(core.any(1))[0]; h = ys.max() - ys.min() + 1
-    if name in ROLL: return 1.0
+    if name in ROLL: return float(np.clip(np.sqrt(0.85 * ra / max(core.sum(), 1)), 1.0, 1.8))
     if name in UPRIGHT: return rh / h
     return float(np.clip(np.sqrt(ra / max(core.sum(), 1)), 1.0, 1.3))
 def main(only=None):
