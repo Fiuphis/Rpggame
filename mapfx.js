@@ -93,25 +93,29 @@ const E = {
   fish() { const p = pick(0, 2); if (!p) return; const dir = Math.random() < .5 ? 1 : -1, L = RI(7, 11), top = RI(5, 8);
     return { dur: 1100, draw(t, a) { const x = p.x + dir * L * t, y = p.y - 4 * top * t * (1 - t); spr(FISH, x - 2, y - 1, dir < 0, 1); if (t < .2) ring(p.x, p.y, 2 + t * 14, .6 - t * 3); if (t > .8) { ring(p.x + dir * L, p.y, 2 + (t - .8) * 30, .6 - (t - .8) * 3); } } }; },
   fin() { const p = pick(0, 2); if (!p) return; const dir = Math.random() < .5 ? 1 : -1, L = RI(14, 24); if (!path(p, dir, L, 2)) return;
-    return { dur: 6500, draw(t, a) { const env = Math.min(1, t * 5, (1 - t) * 5), x = p.x + dir * L * t, y = p.y;
+    return { dur: 6500, draw(t, a) { const env = Math.min(1, t * 5, (1 - t) * 5), x = p.x + dir * L * t, y = p.y; this.pos = { x, y: y - 3 };
       for (let k = 1; k < 9; k++) px(x - dir * k * 2, y + 1 + (k % 2), 'w', env * (.5 - k * .05));
       for (let r = 0; r < 5; r++) for (let c = 0; c <= (r >> 1) + (r > 3 ? 1 : 0); c++) px(x - dir * c, y - 5 + r, c === 0 ? 'b' : 'k', env); } }; },
   serpent() { const p = pick(0, 3); if (!p) return; const dir = Math.random() < .5 ? 1 : -1, L = RI(18, 28); if (!path(p, dir, L, 3)) return;
-    return { dur: 9000, draw(t, now) { const env = Math.min(1, t * 6, (1 - t) * 6), hx = p.x + dir * L * t, y = p.y;
+    return { dur: 9000, draw(t, now) { const env = Math.min(1, t * 6, (1 - t) * 6), hx = p.x + dir * L * t, y = p.y; this.pos = { x: hx, y: y - 4 };
       for (let i = 0; i < 3; i++) { const cx = hx - dir * (i * 9 + 8), h = Math.max(0, 3.6 * (.55 + .45 * Math.sin(now * 3 + i * 1.7))) * env;
         for (let dx = -3; dx <= 3; dx++) { const hh = Math.round(Math.sqrt(Math.max(0, 9 - dx * dx)) * h / 3); for (let k = 0; k < hh; k++) px(cx + dx, y - k, k === hh - 1 ? 'G' : 'g'); } }
       const hh = Math.round(7 * env); for (let k = 0; k < hh; k++) { px(hx, y - k, 'g'); px(hx + dir, y - k, k > hh - 3 ? 'G' : 'g'); }
       if (hh > 4) { px(hx + dir * 2, y - hh + 2, 'g'); px(hx + dir * 2, y - hh + 3, 'g'); px(hx + dir, y - hh + 2, 'e'); px(hx - dir, y - hh - 1, 'r'); px(hx + dir * 2, y - hh, 'G'); } } }; },
-  tentacle() { const p = pick(0, 3); if (!p) return; const n = RI(2, 3);
-    return { dur: 6000, draw(t, now) { const env = Math.min(1, t * 4, (1 - t) * 4), a = ease(env);
+  tentacle(at) { const p = at || pick(0, 3); if (!p) return; const n = RI(2, 3);
+    const ts = Array.from({ length: n }, (_, j) => ({ bx: p.x + (j - (n - 1) / 2) * 7, j, tip: null, pull: 0, victim: null, dead: false, env: 0 }));
+    return { dur: 6000, ts, p, draw(t, now) { const ms = performance.now(), env0 = Math.min(1, t * 4, (1 - t) * 4);
       ring(p.x, p.y, 3 + 9 * t, .5 * Math.sin(t * Math.PI)); ring(p.x, p.y, 2 + 6 * ((t * 1.7) % 1), .3);
-      for (let j = 0; j < n; j++) { const bx = p.x + (j - (n - 1) / 2) * 7, hgt = Math.round((11 + j % 2 * 4) * a), sw = now * 2.2 + j * 1.3;
+      for (const T of ts) { if (T.dead) { T.tip = null; continue; }
+        let e = env0; if (T.pull) e = Math.min(e, Math.max(0, 1 - (ms - T.pull) / 1000)); T.env = e;
+        const a = ease(e), hgt = Math.round((11 + T.j % 2 * 4) * a), sw = now * 2.2 + T.j * 1.3, bx = T.bx;
         for (let k = 0; k < hgt; k++) { const o = Math.sin(sw + k * .45) * (k * .22), w = k > hgt * .7 ? 2 : 3, x = bx + o;
           for (let c = 0; c < w; c++) px(x + c - 1, p.y - k, c === w - 1 ? 'p' : 'P');
-          if (k % 3 === 2 && k < hgt - 2) px(x - 1 + 0, p.y - k, 'w', .7); }
-        if (hgt > 3) { const o = Math.sin(sw + hgt * .45) * (hgt * .22); px(bx + o, p.y - hgt, 'P'); px(bx + o + 1, p.y - hgt, 'p'); } } } }; },
+          if (k % 3 === 2 && k < hgt - 2) px(x - 1, p.y - k, 'w', .7); }
+        if (hgt > 3) { const o = Math.sin(sw + hgt * .45) * (hgt * .22); px(bx + o, p.y - hgt, 'P'); px(bx + o + 1, p.y - hgt, 'p'); T.tip = { x: bx + o + .5, y: p.y - hgt }; } else T.tip = null;
+        if (T.victim && (e < .08 || !T.tip)) { const v = T.victim; T.victim = null; v.dead = true; gulp(bx, p.y); } } } }; },
   eyes() { const p = pick(0, 3); if (!p) return;
-    return { dur: 4200, draw(t, now) { const env = Math.min(1, t * 6, (1 - t) * 6), blink = (t > .4 && t < .46) || (t > .7 && t < .75);
+    return { dur: 4200, draw(t, now) { this.pos = { x: p.x, y: p.y - 1 }; const env = Math.min(1, t * 6, (1 - t) * 6), blink = (t > .4 && t < .46) || (t > .7 && t < .75);
       ring(p.x, p.y + 3, 2 + env * 5, .35 * env);
       if (!blink) { for (const dx of [-3, 3]) { px(p.x + dx, p.y, 'e', env); px(p.x + dx + 1, p.y, 'e', env); px(p.x + dx, p.y - 1, 'r', env * .8); px(p.x + dx + 1, p.y - 1, 'r', env * .8); } } else { px(p.x - 3, p.y, 'k', env); px(p.x + 3, p.y, 'k', env); } } }; },
   rock() { const c = shore(); if (!c) return; const n = RI(1, 3);
@@ -128,14 +132,11 @@ const path = (p, dir, L, r) => { for (let k = 0; k <= L; k += 5) if (!free(p.x +
 const shore = () => PICK(shores);
 
 
-/* ---------- voadores: bandos de pássaros, morcegos e wyverns cruzando o mapa em direções aleatórias ---------- */
+/* ---------- voadores como agentes (pássaros, morcegos, wyvern): interagem com clima e criaturas ---------- */
 COL.c = '#f1ecdc'; COL.d = '#a79f8a'; COL.v = '#b58cff'; COL.V = '#6a3fb0'; COL.R = '#d8483a'; COL.q = '#8e2a2a'; COL.O = '#f0a14a';
-const fl = [];
-const route = (speed, jitter = 70) => {          // reta de uma borda a outra, em direção aleatória
-  const ang = R(0, 6.2832), dx = Math.cos(ang), dy = Math.sin(ang), off = R(-jitter, jitter), R0 = 150;
-  const sx = W / 2 - dx * R0 - dy * off, sy = H / 2 - dy * R0 + dx * off;
-  return { dx, dy, sx, sy, dur: (2 * R0) / speed * 1000 };
-};
+const agents = [], groups = [], parts = [], flashes = [];
+const ASH = ['#5d5955', '#8c867e', '#c9c3b8', '#e8e2d4'], EMBER = ['O', 'R', 'e', '#ffb04a'], SPLASH = ['w', 'b', '#cfe6ff'];
+const dust = (x, y, n, cols, spread = 3, up = 6) => { for (let i = 0; i < n; i++) parts.push({ x: x + R(-spread, spread), y: y + R(-spread, spread), vx: R(-7, 7), vy: R(-up, 2), t: 0, life: R(.7, 1.5), col: PICK(cols) }); };
 const tri = (ax, ay, bx, by, cx, cy, c) => {
   const x0 = Math.floor(Math.min(ax, bx, cx)), x1 = Math.ceil(Math.max(ax, bx, cx)), y0 = Math.floor(Math.min(ay, by, cy)), y1 = Math.ceil(Math.max(ay, by, cy));
   const d = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy); if (!d) return;
@@ -144,32 +145,117 @@ const tri = (ax, ay, bx, by, cx, cy, c) => {
     if (l1 >= 0 && l2 >= 0 && l1 + l2 <= 1) px(x, y, c);
   }
 };
-const F = {
-  birds() { const n = RI(5, 9), sp = R(15, 22), r = route(sp), ph = R(0, 6);
-    return { dur: r.dur, draw(t, now) { const bx = r.sx + r.dx * 2 * 150 * t, by = r.sy + r.dy * 2 * 150 * t, px_ = -r.dy, py_ = r.dx;
-      for (let i = 0; i < n; i++) { const k = i === 0 ? 0 : (i + 1) >> 1, side = i === 0 ? 0 : (i % 2 ? 1 : -1);   // formação em V
-        const x = bx - r.dx * k * 6 + px_ * side * k * 4 + Math.sin(now + i) * .6, y = by - r.dy * k * 6 + py_ * side * k * 4 + Math.cos(now * 1.3 + i) * .6;
-        const up = Math.sin(now * 9 + ph + i * .7) > 0; px(x, y, 'c'); px(x - 1, y + (up ? -1 : 1), 'c'); px(x + 1, y + (up ? -1 : 1), 'c'); px(x - 2, y + (up ? -1 : 0), 'd'); px(x + 2, y + (up ? -1 : 0), 'd'); } } }; },
-  bats() { const n = RI(4, 7), sp = R(18, 26), r = route(sp, 60), bats = Array.from({ length: n }, () => ({ o: R(0, 6), ox: R(-10, 10), oy: R(-10, 10), f: R(8, 13) }));
-    return { dur: r.dur, draw(t, now) { const bx = r.sx + r.dx * 2 * 150 * t, by = r.sy + r.dy * 2 * 150 * t;
-      for (const b of bats) { const x = bx + b.ox + Math.sin(now * 2.1 + b.o) * 7, y = by + b.oy + Math.cos(now * 2.7 + b.o * 2) * 6, up = Math.sin(now * b.f + b.o) > 0;
-        px(x, y, 'v'); px(x - 1, y + (up ? -1 : 1), 'V'); px(x + 1, y + (up ? -1 : 1), 'V'); px(x - 2, y + (up ? -1 : 0), 'V'); px(x + 2, y + (up ? -1 : 0), 'V'); px(x, y - 1, 'R', .8); } } }; },
-  wyvern() { const sp = R(13, 19), r = route(sp, 50), f = r.dx >= 0 ? 1 : -1, ph = R(0, 6);
-    return { dur: r.dur, draw(t, now) { const x = r.sx + r.dx * 2 * 150 * t, y = r.sy + r.dy * 2 * 150 * t + Math.sin(now * 2) * 1.2, a = Math.sin(now * 6 + ph), h = a * 7;
-      // asa (atrás do corpo), cauda ondulando, corpo, pescoço e cabeça
-      tri(x + f * 2, y - 1, x - f * 3, y - 1, x - f * 3 - f * 3, y - 1 - h, 'q'); tri(x + f * 2, y - 1, x - f * 3, y - 1, x + f * 0, y - 1 - h * 1.15, 'q');
-      px(x - f * 3, y - 1 - h, 'O'); px(x, y - 1 - h * 1.15, 'O');
-      for (let i = 1; i <= 8; i++) { const ty = y + Math.round(Math.sin(now * 5 - i * .7) * 1.4); px(x - f * (3 + i), ty, 'R'); if (i < 5) px(x - f * (3 + i), ty + 1, 'O'); }
-      px(x - f * 11, y + Math.round(Math.sin(now * 5 - 6.3) * 1.4), 'O');
-      for (let i = -3; i <= 3; i++) { px(x + f * i, y, 'R'); px(x + f * i, y + 1, i > -3 && i < 3 ? 'O' : 'R'); }
-      px(x + f * 4, y - 1, 'R'); px(x + f * 4, y, 'R'); px(x + f * 5, y - 2, 'R'); px(x + f * 6, y - 2, 'R'); px(x + f * 7, y - 2, 'R'); px(x + f * 6, y - 3, 'k'); px(x + f * 5, y - 3, 'R'); px(x + f * 6, y - 1, 'O'); px(x + f * 6, y - 2, 'e'); } }; }
+const mk = (kind, x, y, vx, vy) => { const a = { kind, g: null, x, y, vx, vy, st: 'free', seen: true, panic: 0, burnT: 0, ph: R(0, 6), cool: R(.3, 1), fl: null, holder: null, age: 0, ox: 0, oy: 0, fq: R(8, 13) }; agents.push(a); return a; };
+const newGroup = (kind, n, speed, start, d) => {
+  const grp = { lx: start.x, ly: start.y, dx: d.dx, dy: d.dy, sp: speed, kind }; groups.push(grp);
+  for (let i = 0; i < n; i++) { const a = mk(kind, start.x, start.y, d.dx * speed, d.dy * speed); a.g = grp; a.st = 'form'; a.seen = false;
+    if (kind === 'bird') { const k = i === 0 ? 0 : (i + 1) >> 1, side = i === 0 ? 0 : (i % 2 ? 1 : -1); a.ox = -d.dx * k * 6 - d.dy * side * k * 4; a.oy = -d.dy * k * 6 + d.dx * side * k * 4; }
+    else if (kind === 'bat') { a.ox = R(-10, 10); a.oy = R(-10, 10); } }
+  return grp;
+};
+const randRoute = () => { const ang = R(0, 6.2832), off = R(-70, 70); return { start: { x: W / 2 - Math.cos(ang) * 150 - Math.sin(ang) * off, y: H / 2 - Math.sin(ang) * 150 + Math.cos(ang) * off }, d: { dx: Math.cos(ang), dy: Math.sin(ang) } }; };
+// rota que passa por um alvo (função do tempo) daqui a T segundos, começando fora da tela
+const aimed = (speed, at, T0, T1) => { for (let k = 0; k < 90; k++) { const ang = R(0, 6.2832), T = R(T0, T1), tp = at(T); if (!tp || tp.x < 8 || tp.x > W - 8 || tp.y < 8 || tp.y > H - 8) continue;
+  const dx = Math.cos(ang), dy = Math.sin(ang), sx = tp.x - dx * speed * T, sy = tp.y - dy * speed * T; if (sx > -18 && sx < W + 18 && sy > -18 && sy < H + 18) continue; return { start: { x: sx, y: sy }, d: { dx, dy } }; } return null; };
+const ambush = grp => {   // às vezes um tentáculo sobe no caminho do bando
+  const T = R(4, 8), lp = { x: grp.lx + grp.dx * grp.sp * T, y: grp.ly + grp.dy * grp.sp * T }; if (lp.x < 14 || lp.x > W - 14 || lp.y < 14 || lp.y > H - 14) return;
+  const c = pts.filter(q => Math.abs(q.x - lp.x) < 10 && q.y > lp.y + 3 && q.y < lp.y + 14 && free(q.x, q.y, 3)); if (!c.length) return; const p = PICK(c);
+  setTimeout(() => { const o = E.tentacle(p); if (o) { o.born = performance.now(); o.name = 'tentacle'; o.p = p; ev.push(o); } }, Math.max(0, (T - 1.7) * 1000));
 };
 const FW = [['birds', 3], ['bats', 2], ['wyvern', 1.6]];
-const spawnFly = force => {
-  if (!force && fl.length >= 2) return;
-  let r = Math.random() * FW.reduce((s, w) => s + w[1], 0), name = FW[0][0];
-  for (const [n, w] of FW) { if ((r -= w) <= 0) { name = n; break; } }
-  const o = F[force || name](); o.born = performance.now(); o.name = force || name; fl.push(o);
+const spawnFly = (force, opts = {}) => {
+  if (!force && groups.length >= 3) return null;
+  let r0 = Math.random() * FW.reduce((s, w) => s + w[1], 0), name = FW[0][0]; for (const [n, w] of FW) { if ((r0 -= w) <= 0) { name = n; break; } }
+  name = force || name; const kind = name === 'birds' ? 'bird' : name === 'bats' ? 'bat' : 'wyv';
+  const speed = kind === 'bird' ? R(15, 22) : kind === 'bat' ? R(18, 26) : R(13, 19), n = kind === 'bird' ? RI(5, 9) : kind === 'bat' ? RI(4, 7) : 1;
+  let rt = null; const r = Math.random();
+  if (!opts.noaim) {
+    const wy = agents.find(a => a.kind === 'wyv' && a.st === 'form'), cyc = cells.find(c => c.mood === 'cyclone' && c.cyc && c.k > .5);
+    if (kind !== 'wyv') { if (wy && r < .5) rt = aimed(speed, T => ({ x: wy.x + wy.vx * T, y: wy.y + wy.vy * T }), 3, 9); else if (cyc && r < .6) rt = aimed(speed, () => ({ x: cyc.cyc.x, y: cyc.cyc.y }), 4, 10); }
+    else { const fb = agents.find(a => (a.kind === 'bird' || a.kind === 'bat') && a.st === 'form'); if (fb && r < .55) rt = aimed(speed, T => ({ x: fb.x + fb.vx * T, y: fb.y + fb.vy * T }), 3, 9); }
+  }
+  if (!rt) rt = randRoute();
+  const grp = newGroup(kind, n, speed, rt.start, rt.d);
+  if (kind !== 'wyv' && !opts.noaim && Math.random() < .4) ambush(grp);
+  return grp;
+};
+
+/* movimento */
+const stepAgents = (dt, nowS) => {
+  for (const g_ of groups) { g_.lx += g_.dx * g_.sp * dt; g_.ly += g_.dy * g_.sp * dt; }
+  for (const a of agents) {
+    a.age += dt; a.cool -= dt;
+    if (a.st === 'form') { const gp = a.g; let tx = gp.lx + a.ox, ty = gp.ly + a.oy;
+      if (a.kind === 'bird') { tx += Math.sin(nowS + a.ph) * .6; ty += Math.cos(nowS * 1.3 + a.ph) * .6; } else if (a.kind === 'bat') { tx += Math.sin(nowS * 2.1 + a.ph) * 7; ty += Math.cos(nowS * 2.7 + a.ph * 2) * 6; } else ty += Math.sin(nowS * 2) * 1.2;
+      a.vx = gp.dx * gp.sp; a.vy = gp.dy * gp.sp; a.x = tx; a.y = ty; }
+    else if (a.st === 'free') { if (a.panic > 0) { a.panic -= dt; a.vx += R(-40, 40) * dt * 3; a.vy += R(-40, 40) * dt * 3; }
+      const sp = Math.hypot(a.vx, a.vy), mx = a.panic > 0 ? 58 : 42; if (sp > mx) { a.vx *= mx / sp; a.vy *= mx / sp; } a.x += a.vx * dt; a.y += a.vy * dt; }
+    else if (a.st === 'burn') { a.burnT += dt; a.vy += 38 * dt; a.x += a.vx * dt; a.y += a.vy * dt; if (Math.random() < .8) dust(a.x, a.y, 1, EMBER, 1, 2); if (a.burnT > 1.1) { dust(a.x, a.y, 10, ASH, 2, 4); a.dead = true; } }
+    else if (a.st === 'held') { const h = a.holder; if (h && h.tip && h.victim === a) { a.x = h.tip.x + R(-.7, .7); a.y = h.tip.y - 1 + R(-.7, .7); } else { a.st = 'free'; a.holder = null; a.vy = 8; } }
+    if (!a.seen && a.x > 0 && a.x < W && a.y > 0 && a.y < H) a.seen = true;
+    if ((a.seen && (a.x < -45 || a.x > W + 45 || a.y < -45 || a.y > H + 45)) || a.age > 90) a.dead = true;
+  }
+};
+const toFree = a => { if (a.st === 'form') { a.st = 'free'; a.vx = a.g.dx * a.g.sp; a.vy = a.g.dy * a.g.sp; } };
+const scare = (from, who, ms_) => { for (const o of agents) if (o !== who && o.kind === who.kind && (o.st === 'form' || o.st === 'free') && Math.hypot(o.x - from.x, o.y - from.y) < 38) {
+  toFree(o); const dx = o.x - from.x, dy = o.y - from.y, d = Math.hypot(dx, dy) || 1; o.vx = dx / d * 40 + o.vx * .3; o.vy = dy / d * 40 + o.vy * .3; o.panic = 2.6; } };
+const gulp = (x, y) => { ring(x, y, 3, .8); ring(x, y, 6, .5); dust(x, y - 2, 7, SPLASH, 2, 9); };
+
+/* interações */
+const interact = (dt, ms) => {
+  // ciclone: puxa e faz girar quem chega perto; quem chega no olho cai na água
+  for (const c of cells) if (c.mood === 'cyclone' && c.cyc && c.k > .4) { const cx = c.cyc.cx === undefined ? c.cyc.x : c.cyc.cx, cy = c.cyc.cy === undefined ? c.cyc.y : c.cyc.cy;
+    for (const a of agents) { if (a.dead || a.st === 'held' || a.st === 'burn') continue; const dx = cx - a.x, dy = cy - a.y, d = Math.hypot(dx, dy); if (d > 27) continue;
+      toFree(a); const w = (a.kind === 'wyv' ? .45 : 1) * (1 - d / 27) * c.k, ux = dx / (d || 1), uy = dy / (d || 1);
+      a.vx += (ux * 70 - uy * 60) * w * dt * 2; a.vy += (uy * 70 + ux * 60) * w * dt * 2; a.panic = Math.max(a.panic, .3);
+      if (d < 4.5) { gulp(a.x, a.y); a.dead = true; } } }
+  // wyvern: queima morcegos e pássaros que passam perto
+  for (const w of agents) if (w.kind === 'wyv' && !w.dead && (w.st === 'form' || w.st === 'free')) {
+    if (w.fl) { w.fl.t -= dt; if (w.fl.t <= 0 || w.fl.v.dead) w.fl = null; }
+    if (w.cool <= 0) { let best = null, bd = 22; for (const v of agents) if ((v.kind === 'bird' || v.kind === 'bat') && (v.st === 'form' || v.st === 'free')) { const d = Math.hypot(v.x - w.x, v.y - w.y); if (d < bd) { bd = d; best = v; } }
+      if (best) { toFree(best); best.st = 'burn'; best.burnT = 0; best.vx = w.vx * .4; best.vy = -6; w.fl = { v: best, t: .45 }; w.cool = 1; dust(best.x, best.y, 6, EMBER, 2, 4); scare(best, best, ms); } } }
+  // tentáculos: cada um agarra um e arrasta pra água; os outros fogem apavorados
+  for (const e of ev) if (e.name === 'tentacle' && e.ts) for (const T of e.ts) { if (T.dead || T.pull || !T.tip || T.env < .5) continue;
+    let best = null, bd = 9; for (const v of agents) if ((v.kind === 'bird' || v.kind === 'bat') && (v.st === 'form' || v.st === 'free')) { const d = Math.hypot(v.x - T.tip.x, v.y - T.tip.y); if (d < bd) { bd = d; best = v; } }
+    if (best) { toFree(best); best.st = 'held'; best.holder = T; T.victim = best; T.pull = ms; scare(T.tip, best, ms); } }
+};
+const cleanup = () => { for (let i = agents.length - 1; i >= 0; i--) { const a = agents[i]; if (!a.dead) continue; if (a.holder && a.holder.victim === a) a.holder.victim = null; agents.splice(i, 1); }
+  for (let i = groups.length - 1; i >= 0; i--) if (!agents.some(a => a.g === groups[i])) groups.splice(i, 1); };
+
+/* raios: fritam o que estiver no caminho (viram pó no ar) */
+const segDist = (x, y, x0, y0, x1, y1) => { const dx = x1 - x0, dy = y1 - y0, l = dx * dx + dy * dy || 1; let t = ((x - x0) * dx + (y - y0) * dy) / l; t = Math.max(0, Math.min(1, t)); return Math.hypot(x - (x0 + t * dx), y - (y0 + t * dy)); };
+const polyDist = (poly, x, y) => { let m = 1e9; for (let i = 0; i < poly.length - 1; i++) m = Math.min(m, segDist(x, y, poly[i][0], poly[i][1], poly[i + 1][0], poly[i + 1][1])); return m; };
+const fry = a => { dust(a.x, a.y, a.kind === 'wyv' ? 44 : 16, ASH, a.kind === 'wyv' ? 6 : 3, 10); flashes.push({ x: a.x, y: a.y, t: 0 }); if (a.holder && a.holder.victim === a) a.holder.victim = null; a.dead = true; };
+const strike = poly => {
+  for (const a of agents) if (!a.dead && polyDist(poly, a.x, a.y) < (a.kind === 'wyv' ? 9 : 6)) fry(a);
+  for (const e of ev) {
+    if (e.name === 'tentacle' && e.ts) { for (const T of e.ts) if (!T.dead && T.tip && (polyDist(poly, T.tip.x, T.tip.y) < 7 || polyDist(poly, T.bx, e.p.y - 5) < 6)) { T.dead = true; dust(T.tip.x, T.tip.y, 12, ['P', 'p', 'w', '#c9b6ff'], 3, 6); flashes.push({ x: T.tip.x, y: T.tip.y, t: 0 }); if (T.victim) fry(T.victim); } }
+    else if (e.pos && polyDist(poly, e.pos.x, e.pos.y) < 9) { dust(e.pos.x, e.pos.y, 12, ['#9ad7b0', '#2e6b5a', 'w'], 3, 6); flashes.push({ x: e.pos.x, y: e.pos.y, t: 0 }); e.born = -1e9; }
+  }
+};
+
+/* desenho */
+const drawAgent = (a, nowS) => {
+  const f = a.vx >= 0 ? 1 : -1, pan = (a.panic > 0 || a.st === 'held') ? 1.8 : 1;
+  if (a.kind === 'wyv') { const x = a.x, y = a.y, h = Math.sin(nowS * 6 + a.ph) * 7;
+    tri(x + f * 2, y - 1, x - f * 3, y - 1, x - f * 6, y - 1 - h, 'q'); tri(x + f * 2, y - 1, x - f * 3, y - 1, x, y - 1 - h * 1.15, 'q');
+    px(x - f * 6, y - 1 - h, 'O'); px(x, y - 1 - h * 1.15, 'O');
+    for (let i = 1; i <= 8; i++) { const ty = y + Math.round(Math.sin(nowS * 5 - i * .7) * 1.4); px(x - f * (3 + i), ty, 'R'); if (i < 5) px(x - f * (3 + i), ty + 1, 'O'); }
+    px(x - f * 11, y + Math.round(Math.sin(nowS * 5 - 6.3) * 1.4), 'O');
+    for (let i = -3; i <= 3; i++) { px(x + f * i, y, 'R'); px(x + f * i, y + 1, i > -3 && i < 3 ? 'O' : 'R'); }
+    px(x + f * 4, y - 1, 'R'); px(x + f * 4, y, 'R'); px(x + f * 5, y - 2, 'R'); px(x + f * 6, y - 2, 'R'); px(x + f * 7, y - 2, 'R'); px(x + f * 6, y - 3, 'k'); px(x + f * 5, y - 3, 'R'); px(x + f * 6, y - 1, 'O'); px(x + f * 6, y - 2, 'e');
+    if (a.fl) { const mx = x + f * 8, my = y - 2, tx = a.fl.v.x, ty = a.fl.v.y, n = Math.max(1, Math.hypot(tx - mx, ty - my)); for (let s = 0; s <= n; s++) { const t = s / n; px(mx + (tx - mx) * t + R(-1, 1) * t * 1.6, my + (ty - my) * t + R(-1, 1) * t * 1.6, PICK(['O', 'e', 'R']), .95 - t * .3); if (s % 2 === 0) px(mx + (tx - mx) * t + R(-2, 2) * t * 2, my + (ty - my) * t + R(-2, 2) * t * 2, 'O', .6); } }
+    return; }
+  const up = Math.sin(nowS * (a.kind === 'bat' ? a.fq : 9) * pan + a.ph) > 0, burn = a.st === 'burn';
+  const c1 = burn ? PICK(['O', 'R']) : a.kind === 'bird' ? 'c' : 'v', c2 = burn ? 'R' : a.kind === 'bird' ? 'd' : 'V', x = a.x, y = a.y;
+  px(x, y, c1); px(x - 1, y + (up ? -1 : 1), c1); px(x + 1, y + (up ? -1 : 1), c1); px(x - 2, y + (up ? -1 : 0), c2); px(x + 2, y + (up ? -1 : 0), c2);
+  if (a.kind === 'bat' && !burn) px(x, y - 1, 'R', .8);
+  if (burn) { px(x, y - 2, 'e', .9); px(x + R(-1, 1), y - 3, 'O', .7); }
+};
+const drawFliers = (dt, nowS) => {
+  for (const a of agents) if (!a.dead) drawAgent(a, nowS);
+  for (let i = parts.length - 1; i >= 0; i--) { const p = parts[i]; p.t += dt; if (p.t > p.life) { parts.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 9 * dt; px(p.x, p.y, p.col, (1 - p.t / p.life) * .95); }
+  for (let i = flashes.length - 1; i >= 0; i--) { const f = flashes[i]; f.t += dt; if (f.t > .3) { flashes.splice(i, 1); continue; } const al = 1 - f.t / .3, r = 1 + Math.round(f.t * 14); for (let q = -r; q <= r; q++) { px(f.x + q, f.y, 'w', al); px(f.x, f.y + q, 'w', al * .8); } }
 };
 
 /* ---------- clima por região: calmo / ventando / ondas grandes / tempestade / ciclone (raro), mais nuvens raras ---------- */
@@ -211,14 +297,17 @@ const drawWeather = (dt, now) => {
       const gr = ctx.createRadialGradient(c.cx, c.cy, 4, c.cx, c.cy, 76); gr.addColorStop(0, 'rgba(6,9,26,' + (.5 * k) + ')'); gr.addColorStop(1, 'rgba(6,9,26,0)');
       ctx.globalAlpha = 1; ctx.fillStyle = gr; ctx.fillRect(c.cx - 78, c.cy - 78, 156, 156);
       for (let n = 0; n < 130 * k; n++) { const a = R(0, 6.28), r = Math.sqrt(Math.random()) * 70, x = c.cx + Math.cos(a) * r, y = c.cy + Math.sin(a) * r * .9, al = .85 * (1 - r / 80); px(x, y, '#cfe6ff', al); px(x - 1, y - 2, '#cfe6ff', al * .8); px(x - 2, y - 4, '#9fc4e8', al * .5); }
-      if (ms > c.nextFlash && k > .6) { c.flash = 1; c.nextFlash = ms + R(2200, 6000); const tp = PICK(pts); const pp = pts.filter(q => Math.hypot(q.x - c.cx, q.y - c.cy) < 45); const t = pp.length ? PICK(pp) : tp; c.bolt = { pts: bolt(t.x + RI(-10, 10), c.cy - 52, t.x, t.y), t: ms, tx: t.x, ty: t.y }; }
+      if (ms > c.nextFlash && k > .6) { c.flash = 1; c.nextFlash = ms + R(2200, 6000); const cand = []; for (const a of agents) if (!a.dead && Math.hypot(a.x - c.cx, a.y - c.cy) < 66) cand.push({ x: a.x, y: a.y });
+        for (const e of ev) { if (e.name === 'tentacle' && e.ts) { for (const T of e.ts) if (!T.dead && T.tip && Math.hypot(T.tip.x - c.cx, T.tip.y - c.cy) < 66) cand.push(T.tip); } else if (e.pos && Math.hypot(e.pos.x - c.cx, e.pos.y - c.cy) < 66) cand.push(e.pos); }
+        let t; if (cand.length && Math.random() < .85) { const q = PICK(cand); t = { x: q.x, y: q.y }; } else { const pp = pts.filter(q => Math.hypot(q.x - c.cx, q.y - c.cy) < 45); t = pp.length ? PICK(pp) : PICK(pts); }
+        c.bolt = { pts: bolt(t.x + RI(-8, 8), Math.min(c.cy - 52, t.y - 36), t.x, t.y), t: ms, tx: t.x, ty: t.y }; strike(c.bolt.pts); }
       if (c.flash > 0) { const fg = ctx.createRadialGradient(c.cx, c.cy, 2, c.cx, c.cy, 70); fg.addColorStop(0, 'rgba(235,240,255,' + (.7 * c.flash) + ')'); fg.addColorStop(1, 'rgba(235,240,255,0)'); ctx.globalAlpha = 1; ctx.fillStyle = fg; ctx.fillRect(c.cx - 72, c.cy - 72, 144, 144); c.flash = Math.max(0, c.flash - dt * 7); }
       if (c.bolt && ms - c.bolt.t < 220) { const b = c.bolt.pts, vis = ms - c.bolt.t < 70 || Math.floor((ms - c.bolt.t) / 45) % 2 === 0;
         if (vis) { for (let q = 0; q < b.length - 1; q++) { const [x0, y0] = b[q], [x1, y1] = b[q + 1], n = Math.max(1, Math.abs(y1 - y0)); for (let s = 0; s <= n; s++) { const x = x0 + (x1 - x0) * s / n, y = y0 + (y1 - y0) * s / n; px(x, y, 'w'); px(x + 1, y, 'w'); px(x - 1, y, '#9fb4ff', .6); px(x + 2, y, '#9fb4ff', .35); } } ring(c.bolt.tx, c.bolt.ty, 3 + (ms - c.bolt.t) / 25, .7); } }
     }
     // ciclone: braços em espiral girando sobre a água
     if (c.mood === 'cyclone' && c.cyc && k > 0) {
-      c.cyc.x += wmul(c.cyc.x, c.cyc.y) * .0; const cx = c.cyc.x + Math.sin(nowS * .3) * 2, cy = c.cyc.y, Rr = 22 * Math.min(1, k * 1.3);
+      const cx = c.cyc.x + Math.sin(nowS * .3) * 2, cy = c.cyc.y; c.cyc.cx = cx; c.cyc.cy = cy; const Rr = 22 * Math.min(1, k * 1.3);
       for (let arm = 0; arm < 3; arm++) for (let r = 1.5; r < Rr; r += .55) { const a = nowS * 3.2 + r * .36 + arm * 2.094, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r * .5, al = (.95 - r / Rr * .5) * k, cc = r < Rr * .5 ? 'w' : 'b'; px(x, y, cc, al); px(x + 1, y, cc, al * .9); px(x, y + 1, 'B', al * .7); }
       ring(cx, cy, 2 + (nowS * 5 % 5), .5 * k); ring(cx, cy, 8 + (nowS * 4 % 6), .3 * k); for (let q = 0; q < 3; q++) px(cx + R(-8, 8), cy - R(1, 7), 'w', .8 * k);
     }
@@ -265,7 +354,8 @@ const frame = now => {
   drawWater(.05, s); drawWeather(.05, s);
   for (let i = ev.length - 1; i >= 0; i--) { const e = ev[i], t = (now - e.born) / e.dur; if (t >= 1) { ev.splice(i, 1); continue; } e.draw(t, s); }
   drawClouds(.05, s);
-  ctx = g2; for (let i = fl.length - 1; i >= 0; i--) { const e = fl[i], t = (now - e.born) / e.dur; if (t >= 1) { fl.splice(i, 1); continue; } e.draw(t, s); }
+  stepAgents(.05, s); interact(.05, now); cleanup();
+  ctx = g2; drawFliers(.05, s);
   ctx = g; g.globalAlpha = 1; g2.globalAlpha = 1;
   if (now > nextCloud) { if (!clouds.length) spawnCloud(); nextCloud = now + R(22000, 45000); }
   if (now > nextFly) { spawnFly(); nextFly = now + R(5000, 11000); }
@@ -287,6 +377,6 @@ img.onload = () => {
   initWater(pts);
   run = true; last = performance.now(); nextSpawn = last + 900; nextFly = last + 2500; nextCloud = last + 6000; for (const s of shores) shoresBy[cellOf(s.x, s.y1)].push(s);
   cells.forEach(c => { c.mood = PICK(['calm', 'calm', 'windy', 'waves']); c.state = 'on'; c.k = 1; c.until = performance.now() + R(5000, 22000); }); requestAnimationFrame(frame);
-  window.MAPFX = { spawn, spawnFly, fl, cells, wavesL, clouds, spawnCloud, pickMood, ev, pts: pts.length, shores: shores.length, boats: 0 };
+  window.MAPFX = { ptsArr: pts, E, ev, spawn, spawnFly, agents, groups, mk, strike, interact, parts, cells, wavesL, clouds, spawnCloud, pickMood, ev, pts: pts.length, shores: shores.length, boats: 0 };
 };
 })();
