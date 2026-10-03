@@ -85,13 +85,14 @@ function fog(dt) {
 }
 
 /* relâmpago raro no céu */
-let nextBolt = performance.now() + 12000, boltT = -1e9, boltPts = [];
-function bolt(now) { boltT = now; boltPts = [[R(104, 150), 4]]; let x = boltPts[0][0], y = 4; while (y < 56) { x += R(-6, 6); y += R(5, 9); boltPts.push([x, y]); } roar(0); lit = 1; }
+let nextBolt = performance.now() + 7000, boltT = -1e9, boltPts = [], boltBr = [];
+function bolt(now) { boltT = now; const sd = Math.random() < .5 ? 1 : 0, x0 = sd ? R(155, 168) : R(88, 100); boltPts = [[x0, 12]]; let x = x0, y = 12; while (y < 76) { x += R(-5, 5) + (sd ? -.8 : .8); y += R(5, 9); boltPts.push([x, y]); } boltBr = []; for (let k = 1; k < boltPts.length - 2; k += 2) { let bx = boltPts[k][0], by = boltPts[k][1]; const dir = Math.random() < .5 ? -1 : 1, br = [[bx, by]]; for (let q = 0; q < 3; q++) { bx += dir * R(3, 6); by += R(3, 6); br.push([bx, by]); } boltBr.push(br); } roar(0); lit = 1; }
 function lightning(now) {
-  if (now > nextBolt) { bolt(now); nextBolt = now + R(18000, 42000); }
-  const d = (now - boltT) / 1000; if (d > 1) return 0; const f = Math.max(0, d < .08 ? 1 : d < .16 ? .15 : d < .24 ? .9 : Math.max(0, .5 - (d - .24) * 1.4));
-  g = gb; g.globalCompositeOperation = 'lighter'; g.globalAlpha = 1; g.save(); g.beginPath(); g.rect(84, 2, 90, 60); g.clip();
-  if (d < .3) for (let i = 0; i < boltPts.length - 1; i++) { const [x0, y0] = boltPts[i], [x1, y1] = boltPts[i + 1]; for (let k = 0; k <= 6; k++) rect(x0 + (x1 - x0) * k / 6, y0 + (y1 - y0) * k / 6, 1, 1, '#fff', 1); } g.restore();
+  if (now > nextBolt) { bolt(now); nextBolt = now + R(10000, 24000); }
+  const d = (now - boltT) / 1000; if (d > 1) return 0; const f = Math.max(0, d < .12 ? 1 : d < .22 ? .25 : d < .34 ? 1 : d < .42 ? .3 : Math.max(0, .9 - (d - .42) * 1.5));
+  if (d < .8 && f > .1) { g = gb; g.globalCompositeOperation = 'lighter'; const al = Math.min(1, f);
+    const line = (pts, w, a) => { for (let i = 0; i < pts.length - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.ceil(Math.hypot(x1 - x0, y1 - y0)); for (let k = 0; k <= n; k++) { const x = x0 + (x1 - x0) * k / n, y = y0 + (y1 - y0) * k / n; rect(x - w - 2, y, w * 2 + 5, 1, '#6f8fff', a * .16); rect(x - w - 1, y, w * 2 + 3, 1, '#cfe0ff', a * .3); rect(x - (w > 0 ? 0 : 0), y, w, 1, '#fff', a); } } };
+    line(boltPts, 1, al); for (const br of boltBr) line(br, 0, al * .8); }
   return f;
 }
 
