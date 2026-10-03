@@ -5,6 +5,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 sys.path.insert(0, os.path.dirname(__file__))
 import seg_knight as SK
+import fxsoft
 OUTD = os.environ.get('OUTD', 'knight'); BODY_H = float(os.environ.get('BODY_H', 256)); RING = 2
 NAVY = np.array([22, 14, 30], np.float32)
 S4 = ndi.generate_binary_structure(2, 1); S8 = ndi.generate_binary_structure(2, 2)
@@ -94,7 +95,7 @@ def main(only=None):
             except Exception as e: print('falhou', name, e); continue
             if core.sum() < 800: print('sem corpo', name); continue
             cx, gy, top = feet_stats(a, core); s0 = SC0[sh] * mult(name, core, REFS)
-            col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm)
+            col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm); col, al = fxsoft.soften(col, al, cm, RING, sigma=2.3 * s0 / 1.8)
             pad = RING + 2; im = np.dstack([col, al * 255]).astype(np.uint8); im = np.pad(im, ((pad, pad), (pad, pad), (0, 0)))
             Image.fromarray(im, 'RGBA').quantize(256, method=Image.FASTOCTREE, dither=Image.NONE).save(f'{OUTD}/{name}.png', optimize=True)
             meta['poses'][name] = {'w': im.shape[1], 'h': im.shape[0], 'cx': cx * s0 + pad, 'gy': gy * s0 + pad, 'top': top * s0 + pad}

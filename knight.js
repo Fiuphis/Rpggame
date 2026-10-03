@@ -254,10 +254,10 @@ function make(host){
       if (!s) return true;
       if (e.name === 'glow') { glow(g, s.x, s.y, s.r, s.c, s.a); return true; }
       if (e.name === 'streak') { streak(g, s.x, s.y, s.ang, s.len, s.th, s.c, s.a); return true; }
-      if (e.name === 'ring') { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 7; g.strokeStyle = `rgba(${s.c},${clamp(s.a)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 14; g.beginPath(); g.arc(0, 0, s.r, 0, 6.2832); g.stroke(); g.restore(); return true; }
+      if (e.name === 'ring') { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 10; g.strokeStyle = `rgba(${s.c},${clamp(s.a * .7)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 30; g.beginPath(); g.arc(0, 0, s.r, 0, 6.2832); g.stroke(); g.restore(); return true; }
       if (!ready(e.name)) return true;
       const w = im.naturalWidth * (s.s || 1), h = im.naturalHeight * (s.s || 1), bot = /^fx_(ice|rocksA)$/.test(e.name);
-      g.save(); g.globalAlpha = clamp(s.a == null ? 1 : s.a); g.translate(s.x, s.y); if (s.rot) g.rotate(s.rot); g.drawImage(im, -w / 2, bot ? -h : -h / 2, w, h); g.restore(); return true;
+      g.save(); g.globalAlpha = clamp(s.a == null ? 1 : s.a); g.translate(s.x, s.y); if (s.rot) g.rotate(s.rot); FXSoft.draw(g, im, -w / 2, bot ? -h : -h / 2, w, h, 1); g.restore(); return true;
     });
     if (shakeT && now >= shakeT) { const u = (now - shakeT) / 450, g = host.shakeEl; if (g) g.style.transform = u < 1 ? `translate(${Math.sin(u * 60) * 1 * (1 - u)}px,${Math.cos(u * 50) * .8 * (1 - u)}px)` : ''; if (u >= 1) shakeT = 0; }
   }

@@ -293,3 +293,6 @@ Guerreiro menor (256) e poses padronizadas (escala por altura nas poses em pé, 
 
 ## v73
 Guerreiro: tamanhos das poses reajustados pela altura visível (incluindo cabelo): fator por pose e por folha em tools/cut_knight.py.
+
+## v74
+Efeitos de ataque de todos os heróis suavizados: sprites de efeito desenhados borrados/aditivos/mais translúcidos (fxsoft.js); efeitos embutidos nas poses do Guerreiro e do Tanque suavizados no recorte (tools/fxsoft.py); anéis mais macios.

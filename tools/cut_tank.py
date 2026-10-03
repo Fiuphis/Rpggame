@@ -5,6 +5,7 @@ from PIL import Image
 from scipy import ndimage as ndi
 sys.path.insert(0, os.path.dirname(__file__))
 import boxes_tank as B
+import fxsoft
 UP = '/root/.claude/uploads/3a96d84d-702c-52a6-9324-e85ba38ea593/'
 SRC = {'a':UP + 'a4b6b1ee-image.png', 'b':UP + '3e1f2dc4-image.png', 'c':UP + 'e49fa76c-image.png', 'd':UP + 'd6884b1c-image.png'}
 REF = {'a':'a_i1', 'b':'v1', 'c':'i1', 'd':'d_i1'}      # pose neutra de cada folha (corpo = BODY_H)
@@ -113,7 +114,7 @@ def main(only=None):
     for name in BOX:
         if (only and name not in only) or name in SKIP: continue
         rgb, a, core = process(name); cx, gy, top = feet_stats(a, core); s0 = SC0[BOX[name][0]]
-        col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm)
+        col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm); col, al = fxsoft.soften(col, al, cm, RING, sigma=2.3 * s0 / 1.8)
         pad = RING + 2
         im = np.dstack([col, al * 255]).astype(np.uint8); im = np.pad(im, ((pad, pad), (pad, pad), (0, 0)))
         Image.fromarray(im, 'RGBA').save(f'{OUTD}/{name}.png')
