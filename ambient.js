@@ -37,17 +37,16 @@ const bats = [];
 function spawnBat() {
   const near = Math.random() < .55, side = Math.random() < .5 ? -1 : 1, n = near ? 1 : RI(1, 3), gid = Math.random();
   for (let k = 0; k < n; k++) {
-    if (near) { const x0 = side < 0 ? R(-20, 40) : R(215, 276), y0 = R(205, 300); bats.push({ t0: performance.now() + k * 350, dur: R(5200, 7200), x0, y0, x1: R(105, 150) + R(-12, 12), y1: R(78, 118), s0: R(2.6, 3.3), s1: R(.3, .45), fl: R(15, 20), ph: R(0, 6.28), wob: R(6, 12), near: true }); }
-    else { const y = R(26, 150) + k * R(4, 9); bats.push({ t0: performance.now() + k * 420, dur: R(7500, 12000), x0: side < 0 ? -12 : W + 12, y0: y, x1: side < 0 ? W + 12 : -12, y1: y + R(-30, 30), s0: R(.45, .8), s1: R(.45, .8), fl: R(15, 20), ph: R(0, 6.28), wob: R(2, 5), near: false }); }
+    if (near) { const x0 = side < 0 ? R(-20, 40) : R(215, 276), y0 = R(55, 115); bats.push({ t0: performance.now() + k * 350, dur: R(5200, 7200), x0, y0, x1: (side < 0 ? R(150, 215) : R(40, 106)), y1: R(16, 48), s0: R(2.6, 3.3), s1: R(.3, .45), fl: R(15, 20), ph: R(0, 6.28), wob: R(6, 12), near: true }); }
+    else { const y = R(18, 105) + k * R(4, 9); bats.push({ t0: performance.now() + k * 420, dur: R(7500, 12000), x0: side < 0 ? -12 : W + 12, y0: y, x1: side < 0 ? W + 12 : -12, y1: y + R(-18, 18), s0: R(.45, .8), s1: R(.45, .8), fl: R(15, 20), ph: R(0, 6.28), wob: R(2, 5), near: false }); }
   }
 }
 function drawBat(b, now, tm) {
   const u = (now - b.t0) / b.dur; if (u < 0 || u > 1) return u > 1;
   const e = b.near ? u * u * (3 - 2 * u) * .4 + u * .6 : u, s = b.s0 + (b.s1 - b.s0) * e, x = b.x0 + (b.x1 - b.x0) * e + Math.sin(u * 14 + b.ph) * b.wob * s * .5, y = b.y0 + (b.y1 - b.y0) * e + Math.sin(u * 23 + b.ph) * 3 * s;
-  g = (b.near && s > .95) ? gf : gb; g.globalCompositeOperation = 'source-over';
+  g = gb; g.globalCompositeOperation = 'source-over';
   const fa = Math.sin(tm * b.fl + b.ph), tip = fa * 5.2 * s - .6 * s, tr = 2.4 * s * (1 - .25 * fa), al = Math.min(1, u * 8, (1 - u) * 6) * (b.near ? 1 : .85);
-  if (b.near && s > 1.1) { for (let dy = -1; dy <= 1; dy++) rect(x - 7 * s * (1 - Math.abs(dy) * .35), y + 17 * s + dy * 1.4 * s, Math.round(14 * s * (1 - Math.abs(dy) * .35)), Math.max(1, Math.round(s)), '#000', .13 * al); }
-  for (const d of [-1, 1]) {
+    for (const d of [-1, 1]) {
     poly([[x + d * 1 * s, y - .5 * s], [x + d * 4.5 * s, y - 2.2 * s + tip * .35], [x + d * 8.6 * s, y + tip], [x + d * 6.4 * s, y + tip + 1.4 * s], [x + d * 4.4 * s, y + tr * .7 + tip * .3], [x + d * 2.4 * s, y + tr + .4 * s], [x + d * 1 * s, y + 1.6 * s]], '#080714', .96 * al);
     if (s > .9) poly([[x + d * 4.5 * s, y - 2.2 * s + tip * .35], [x + d * 8.6 * s, y + tip], [x + d * 8 * s, y + tip + .35 * s], [x + d * 4.4 * s, y - 1.6 * s + tip * .35]], '#6a55b8', .75 * al);
   }
