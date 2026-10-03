@@ -215,3 +215,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v52
 - Maga: borda voltou à versão fina (1px por fora). Clériga: removida a linha clara que ficava entre o corpo e o contorno (pixels claros até 6px da beirada viram a cor do contorno).
+
+## v53
+- Clériga centralizada no círculo da vez (HERO_X.assassin 81%, anel um pouco mais baixo).
