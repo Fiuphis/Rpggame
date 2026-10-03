@@ -47,6 +47,7 @@ const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não vol
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
+const BH_PARTS = [1.5, 2.5];   // Buraco Negro: dois estouros na animação (1,5x + 2,5x = 4x o dano base da Maga = 56)
 const BH_MULT = 4;   // Buraco Negro: dano próprio de 4x o dano base da Maga (56)
 const THRUST_CD = 3, TELE_CD = 2;   // recarga em perguntas (contando a do uso): Estocada fica 2 perguntas sem sair, Teleporte 1
 const THRUST_DMG = 24, ENRAGE_AOE = 2;                  // Estocada (ignora Provocação/Proteção); Enfurecer: Onda Sombria +2
@@ -591,7 +592,7 @@ async function activateUlt(k){
   showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
   const tx = cleTarget ? HERO_X[cleTarget] / 100 * 1024 : null;
   const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:1098} : {}); A.sayRandom(k, 'ult', 1);
-  if (k === 'mage') { await wait(3000); await heroAttack(k, Math.round(HERO_BASE.mage * BH_MULT), '#b36bff', true); state.ultCd.mage = 1; }
+  if (k === 'mage') { await wait(3000); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true); await wait(550); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', true); state.ultCd.mage = 1; }   // 1º estouro 1,5x + 2º estouro 2,5x = 4x
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
