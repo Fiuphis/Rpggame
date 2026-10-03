@@ -452,8 +452,9 @@ function flashHit(){
 
 // Votação genérica dentro do grupo: mostra contagem ao vivo (o grupo vê entre si), decide por maioria.
 // Empate entre as mais votadas = sorteio; ninguém votou = null. O painel continua aberto ao terminar.
-function runVote({type, text, options, seconds, side, menu, title, attack, panel}){
+function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd}){
   return new Promise(resolve => {
+    const endsAt = fixedEnd || Date.now() + seconds * 1000; seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
     const voters = groupMembers(), need = majorityOf(voters);
     const sv = options.map(() => 0); let my = null, locked = false, timer = null, bots = [];
     let list, M = null;
@@ -505,10 +506,10 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     }
     panel ? openSkillMenu() : menu ? openMenu() : openPanel();
     fitText();
-    const endsAt = Date.now() + seconds * 1000;
+    const timerEl = () => $(panel ? '#skm-layer' : menu ? '#am-timer' : '#dq-layer').querySelector('#vote-timer');   // cada painel tem o seu (o id repetido pegava o da pergunta, escondido)
     const tick = () => {
       const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
-      const el = $('#vote-timer'); if (el) { el.textContent = left + 's'; el.classList.toggle('urgent', left <= 3); }
+      const el = timerEl(); if (el) { el.textContent = left + 's'; el.classList.toggle('urgent', left <= 3); }
       if (left <= 0 && !locked) { clearInterval(timer); const {m, c} = top(); if (m === 0) finish(null, false); else finish(c[Math.floor(Math.random() * c.length)], c.length > 1); }
     };
     tick(); timer = setInterval(tick, 250);
@@ -641,20 +642,22 @@ const SLOT = {   // posição [linha, coluna] de cada habilidade no quadro do he
 };
 async function chooseSkill(k){
   const at = state.curAttack, list = SKILLS[k];
+  let endsAt = null;   // o relógio da vez é um só: continua descendo ao escolher o elemento e ao voltar
   for (;;) {
+    if (!endsAt) endsAt = Date.now() + ACTION_SECONDS * 1000;
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta difícil
     opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : 'ACERTE UMA DIFÍCIL')});
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], disabled:!!b, block:b}); });
-    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, attack:at, options:opts});
+    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts});
     if (r.idx === null) return null;
-    if (r.idx === 0) { await closePanel(); await activateUlt(k); continue; }   // ultimate ativado: o efeito começa a contar agora
+    if (r.idx === 0) { await closePanel(); await activateUlt(k); endsAt = null; continue; }   // ultimate ativado: o efeito começa a contar agora
     const sk = list[r.idx - 1]; let element = null;
     if (sk.elem) {
       const els = ['fire','water','air','earth'];
       const r2 = await runVote({
-        menu:true, panel:'elem', title:'', text:'', seconds:ACTION_SECONDS, attack:at,
+        menu:true, panel:'elem', title:'', text:'', seconds:ACTION_SECONDS, endsAt, attack:at,
         options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', slot:[2, 0]}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
