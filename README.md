@@ -395,3 +395,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v150: avisos do combate (banner + toast) movidos para a faixa de baixo, abaixo dos heróis, sem cobrir o boss; visual novo (cores por tipo, losangos); anti-repetição e toast de Fúria redundante removido.
 - v151: avisos ficam o tempo de leitura proporcional ao tamanho do texto (0,9s + 50ms/caractere, máx. 6s); mensagens curtas idem.
 - v152: cenário do boss vivo (ambient.js): chamas animadas nas tochas, luz/sombra pulsando, brasas, reflexos no chão, nuvens no céu, poeira e morcegos em perspectiva (perto→longe e no fundo).
+- v153: cenário do boss: relâmpago raro, névoa no chão, raios de luar, olhos do boss brilham com a Fúria, runas no chão, estandartes balançando, teias, sombras dos heróis tremendo, tochas apagam/reacendem quando o boss ruge, corvos nos pilares.

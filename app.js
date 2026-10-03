@@ -537,6 +537,7 @@ function pickQuestion(diff){
   state.lastQ[diff] = c.i; return c.q;
 }
 if (TEST_MODE) window.__bd = {state};
+window.BD_RAGE = () => state.rage / RAGE_MAX;
 const aliveHeroes = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 
 async function bossIntro(ev = {}){
