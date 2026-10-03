@@ -290,3 +290,6 @@ Rig novo do Guerreiro com as 3 folhas novas (tools/seg_knight.py → cut_knight.
 
 ## v72
 Guerreiro menor (256) e poses padronizadas (escala por altura nas poses em pé, por área nas de ação); heróis mais afastados (META/HERO_X); barras de vida/mana trocadas pelas da imagem nova (hud_*.png + game_nohud.png, pequenas, sobre cada herói; ícone do especial logo abaixo).
+
+## v73
+Guerreiro: tamanhos das poses reajustados pela altura visível (incluindo cabelo): fator por pose e por folha em tools/cut_knight.py.

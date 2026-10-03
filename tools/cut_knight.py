@@ -65,7 +65,14 @@ def outline(col, al, cm):
 # UPRIGHT (em pé): altura do corpo = BODY_H; ROLL (rolamentos/agachados): escala base; demais (ação): pela área do corpo (limite 1.0–1.3)
 UPRIGHT = set('K1_1 K1_2 K1_44 K1_45 K1_13 K1_14 K1_15 K1_32 K1_35 K2_3 K2_4 K2_5 K2_13 K2_14 K2_15 K2_16 K2_17 K2_18 K2_19 K2_44 K3_3 K3_4 K3_5 K3_12 K3_13 K3_14 K3_15 K3_16 K3_17 K3_18 K3_39 K3_40 K3_41 K3_42 K3_43'.split())
 ROLL = set('K1_20 K1_21 K1_22 K1_46 K1_49 K2_20 K2_21 K2_22 K2_42 K2_43 K2_45 K2_46 K3_20 K3_21 K3_22 K3_23 K3_44 K3_45 K3_46 K3_47 K3_48'.split())
+# correção visual (altura incluindo cabelo, medida contra a idle da folha 1): fator final por pose + padrão por folha
+SHEETFIX = {'K1': 1.0, 'K2': 1.03, 'K3': 1.10}
+POSEFIX = {'K3_12':1.35,'K3_13':1.15,'K3_14':1.25,'K3_15':1.10,'K3_16':1.10,'K3_17':1.08,'K3_18':1.12,'K3_39':1.16,'K3_40':1.14,'K3_41':1.2,'K3_42':1.2,'K3_43':1.05,
+ 'K3_3':1.12,'K3_4':1.12,'K3_5':1.12,'K1_13':1.2,'K1_14':1.25,'K1_15':1.02,'K1_32':1.15,'K1_35':1.15,'K2_13':1.1,'K2_16':1.12,'K2_17':1.05,'K2_18':1.05,'K2_19':1.06,
+ 'K2_44':1.05,'K1_44':1.03,'K1_45':1.05,'K2_38':1.16,'K2_39':1.16,'K2_3':1.04,'K2_4':1.04,'K2_5':1.04}
 def mult(name, core, REFS):
+    return _mult(name, core, REFS) * POSEFIX.get(name, SHEETFIX[name.split('_')[0]])
+def _mult(name, core, REFS):
     sh = name.split('_')[0]; rh, ra = REFS[sh]; ys = np.where(core.any(1))[0]; h = ys.max() - ys.min() + 1
     if name in ROLL: return 1.0
     if name in UPRIGHT: return rh / h
