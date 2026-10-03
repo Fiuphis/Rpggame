@@ -94,14 +94,14 @@ const SKILLS = {
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de martelo. Dano normal.', mana:0, cd:0, mult:1},
     {id:'super', kind:'atk', name:'Ataque Super Pesado', desc:'2x o dano normal e deixa o boss desnorteado na pergunta seguinte (+25% de dano nele, sem habilidades especiais).', mana:20, cd:3, mult:2},
     {id:'guard', kind:'util', name:'Proteção Específica', desc:'Escudo sobre 1 herói: o dano dele vai para o Tanque, com 40% a menos.', mana:20, cd:2, target:true},
-    {id:'def', kind:'def', name:'Defesa', desc:'Ergue o escudo. Corta 65% do dano.', mana:0, cd:0, reduce:.65},
+    {id:'def', kind:'def', name:'Defesa', desc:'Ergue o escudo. Corta 75% do dano.', mana:0, cd:0, reduce:.75},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
   assassin:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de cajado. Dano normal.', mana:0, cd:0, mult:1},
     {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'1,5x de dano em demônios, como o boss.', mana:20, cd:1, mult:1.5},
     {id:'def', kind:'def', name:'Defesa Normal', desc:'Ergue as mãos. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
-    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'1,5x de defesa contra demônios.', mana:20, cd:1, reduce:.5, bonus:.75, holy:true},
+    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'1,5x de defesa contra demônios.', mana:20, cd:1, reduce:.5, bonus:.65, holy:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ]
 };

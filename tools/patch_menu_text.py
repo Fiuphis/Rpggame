@@ -27,3 +27,5 @@ patch('mage', (795, 454, 1140, 477), 'Barreira de mana. Corta 35% dano.', 17)
 patch('tank', (270, 596, 620, 620), 'Ergue o escudo. Corta 65% do dano.', 16)
 patch('tank', (270, 446, 600, 468), '2x o dano; desnorteia o boss.', 16)
 patch('tank', (468, 490, 550, 506), 'RECARGA 3', 14, center=True)
+patch('tank', (270, 596, 620, 620), 'Ergue o escudo. Corta 75% do dano.', 16)   # v94
+patch('assassin', (280, 568, 600, 592), '1,3x de defesa contra demônios.', 16)   # v94

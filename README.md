@@ -338,3 +338,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v92: Buraco Negro = ataque próprio de 3,5x o dano base (49), recarga: pula a próxima pergunta difícil; tempo esgotado no menu de elementos = sem ação; vida do boss 650.
 - Teste: ?teste=1&grupo=x; window.__force='prep'|'tele' força o evento.
 - v93: dano base por herói (Clériga 10, Maga/Tanque 14, Guerreiro 21; Buraco Negro 4x = 56), defesa Maga 35% / Guerreiro e Clériga 50% / Tanque 65%; vida do boss 700; textos dos menus regravados (tools/patch_menu_text.py).
+- v94: Defesa Sagrada 65%, Defesa do Tanque 75%.

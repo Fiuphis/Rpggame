@@ -5,8 +5,8 @@ DIFF = {1:(18,3), 2:(32,5), 3:(50,9)}
 SK = {
  'mage':[('mana_atk','atk',10,0,1),('elem_atk','atk',20,1,1.3),('mana_def','def',10,0,.35),('elem_def','def',20,1,.55),('dodge','dodge',0,1,0)],
  'knight':[('atk','atk',0,0,1),('heavy','atk',15,1,1.5),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
- 'tank':[('atk','atk',0,0,1),('super','atk',20,3,2),('guard','util',20,2,0),('def','def',0,0,.65),('dodge','dodge',0,1,0)],
- 'assassin':[('atk','atk',0,0,1),('holy_atk','atk',20,1,1.5),('def','def',0,0,.5),('holy_def','def',20,1,.75),('dodge','dodge',0,1,0)],
+ 'tank':[('atk','atk',0,0,1),('super','atk',20,3,2),('guard','util',20,2,0),('def','def',0,0,.75),('dodge','dodge',0,1,0)],
+ 'assassin':[('atk','atk',0,0,1),('holy_atk','atk',20,1,1.5),('def','def',0,0,.5),('holy_def','def',20,1,.65),('dodge','dodge',0,1,0)],
 }
 BASE = {'mage':14,'knight':21,'tank':14,'assassin':10}
 ORDER = ['mage','knight','tank','assassin']
