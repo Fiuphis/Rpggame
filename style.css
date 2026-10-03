@@ -303,3 +303,6 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .in-cap.done::after{opacity:1;animation:capBlink .9s steps(2,jump-none) infinite}
 @keyframes capBlink{from{opacity:1}to{opacity:.15}}
 .end-box button+button{margin-left:2cqw;background:#120f20;color:#fff0ff;border-color:#6f6385}
+
+.amb{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}.amb.b{z-index:2}.amb.f{z-index:5}
+.game.boss-attack .amb.b{animation:boss-rumble 1s linear both}.game.boss-hit .amb.b{animation:boss-rumble .38s linear}
