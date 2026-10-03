@@ -35,6 +35,7 @@ function build(){
     H[w] = {who:w, cv, c:cv.getContext('2d'), still, sheets:{}, cur:null, dead:false, idleT:null, token:0, hold:null};
     drawStill(w); still.onload = () => { if (!H[w].cur) drawStill(w); };
     if (w === 'mage' && window.MageRig) buildMage(H[w], m, P, window.MageRig, {PX:130, PXR:340, PT:170, PB:40, orb:{x:m.x + 190, y:m.y + 45}});
+    if (w === 'tank' && window.TankRig) buildMage(H[w], m, P, window.TankRig, {PX:200, PXR:200, PT:280, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'assassin' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {

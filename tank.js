@@ -1,0 +1,212 @@
+/* Banco de Dados I — RPG · Tanque (v61)
+   Poses de COSTAS recortadas da folha nova (tank/*.png, tools/cut_tank.py): mesma escala, ancoradas pelo centro dos pés, borda fina.
+   Habilidades: ataque normal (martelo), ataque super pesado, proteção específica (escudo sobre o aliado), defesa, esquiva, provocação (ult).
+   Cada uso sorteia uma variação diferente da anterior (sacola embaralhada). O dano só entra quando o golpe acerta (fireHit). */
+(() => {
+'use strict';
+const POSES = ['i1','i2','i3','n1','n2','n3','n4','h1','h2','h3','h4','p1','p2','p3','p4','f1','f2','f3','e1','e2','e3','e4','t1','t2','t3','t4','t5','t6','u1','u2','u4','x1','x2','s1','s2','s3','s4','b1','b2','b3','r1','r2','r3'];
+const FXS = ['rock1','rock3','rock4','rock5','rock6'];
+const T = {x:517, y:340};                 // ponto de impacto no boss
+const BASE = 262, SZ = 1.0, XOFF = -18;     // pés (y) e escala do corpo
+const GOLD = '255,200,110', FIRE = '255,150,60';
+let _c = 0, _p = performance.now();
+const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
+const ease = u => u < .5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2, eo = u => 1 - Math.pow(1 - u, 3);
+const clamp = (v, a=0, b=1) => Math.max(a, Math.min(b, v)), lerp = (a, b, u) => a + (b - a) * u, rnd = (a, b) => a + Math.random() * (b - a);
+const seg = (u, a, b) => clamp((u - a) / (b - a));
+const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
+
+// ---- animações (passos [t, pose, {dx,dy,rot,sc}], eventos [t, 'nome:arg']) ----
+const ACT = {
+  melee:[   // golpe de martelo: 5 variações
+    S(1500, [[0,'i1'],[.12,'n1',{dx:-4}],[.3,'n2',{dx:-6}],[.46,'n3',{dx:2}],[.58,'n4',{dx:8}],[.86,'n4',{dx:4}],[.97,'i1']], [[.3,'wind'],[.52,'swing:1'],[.62,'hit:small']]),
+    S(1450, [[0,'i2'],[.14,'n1',{dx:-3}],[.34,'n2',{dx:-6}],[.5,'n4',{dx:8,dy:-2}],[.84,'n4',{dx:4}],[.97,'i1']], [[.34,'wind'],[.5,'swing:2'],[.6,'hit:small2']]),
+    S(1600, [[0,'i3'],[.12,'n1'],[.3,'n3',{dx:-2}],[.44,'n3',{dx:2,dy:-3}],[.56,'n4',{dx:8}],[.88,'n4',{dx:3}],[.97,'i1']], [[.32,'wind'],[.52,'swing:1'],[.62,'hit:small3']]),
+    S(1700, [[0,'r2'],[.12,'n1',{dx:-4}],[.28,'n2',{dx:-8}],[.44,'n3',{dx:-2}],[.58,'n4',{dx:10}],[.8,'n4',{dx:6}],[.9,'r3'],[.98,'i1']], [[.28,'wind'],[.52,'swing:2'],[.64,'hit:small']]),
+    S(1700, [[0,'i1'],[.1,'n1',{dx:-3}],[.26,'h1',{dx:-4,dy:-2}],[.42,'n2',{dx:-4}],[.54,'n3',{dx:2}],[.64,'n4',{dx:8}],[.88,'n4',{dx:3}],[.97,'i1']], [[.26,'wind'],[.5,'swing:3'],[.66,'hit:small2']]),
+  ],
+  heavy:[   // ataque super pesado (2x dano): 4 variações
+    S(2300, [[0,'i1'],[.1,'n1',{dx:-4}],[.24,'h1',{dx:-6,dy:-3}],[.42,'h2',{dx:-4,dy:-4}],[.56,'h3',{dy:4}],[.7,'h4',{dy:2}],[.9,'h4'],[.98,'i1']], [[.22,'wind'],[.4,'wind'],[.54,'swing:4'],[.66,'hit:big']]),
+    S(2400, [[0,'i2'],[.1,'n1'],[.24,'h1',{dx:-6,dy:-2}],[.4,'h2',{dx:-4,dy:-4}],[.56,'x1',{dy:6}],[.76,'h4'],[.92,'r3'],[.98,'i1']], [[.22,'wind'],[.4,'wind'],[.54,'swing:4'],[.66,'hit:big2']]),
+    S(2400, [[0,'i3'],[.1,'n2',{dx:-6}],[.26,'h1',{dx:-6,dy:-3}],[.44,'h2',{dx:-4,dy:-5}],[.58,'h3',{dy:4}],[.74,'x2',{dy:6}],[.92,'h4'],[.98,'i1']], [[.24,'wind'],[.42,'wind'],[.56,'swing:4'],[.7,'hit:big3']]),
+    S(2500, [[0,'r3'],[.1,'t1',{dx:-4}],[.28,'h1',{dx:-6,dy:-3}],[.46,'h2',{dx:-4,dy:-5}],[.6,'x1',{dy:6}],[.78,'h3',{dy:3}],[.93,'h4'],[.98,'i1']], [[.26,'wind'],[.44,'wind'],[.58,'swing:4'],[.7,'hit:big']]),
+  ],
+  guard_p:[ // proteção específica (escudo sobre o aliado): 4 variações
+    S(2000, [[0,'i1'],[.14,'p1'],[.34,'p3',{dy:-2}],[.8,'p3'],[.96,'i1']], [[.3,'shield:p1']]),
+    S(2000, [[0,'i2'],[.14,'p2'],[.34,'p4'],[.8,'p4'],[.96,'i1']], [[.3,'shield:p2']]),
+    S(2100, [[0,'i1'],[.12,'p2'],[.3,'b1',{dx:-3}],[.8,'b1'],[.96,'i1']], [[.28,'shield:p3']]),
+    S(2100, [[0,'i3'],[.14,'p1'],[.3,'b2',{dy:-2}],[.8,'b3'],[.96,'i1']], [[.3,'shield:p4']]),
+  ],
+  guard_d:[ // defesa com escudo: 4 variações
+    S(1900, [[0,'i1'],[.12,'f1'],[.3,'f2'],[.88,'f2'],[.98,'i1']], [[.26,'shield:d1']]),
+    S(1900, [[0,'i2'],[.12,'f1'],[.3,'f3'],[.88,'f3'],[.98,'i1']], [[.26,'shield:d2']]),
+    S(1900, [[0,'i1'],[.12,'p1'],[.3,'b1'],[.88,'b1'],[.98,'i1']], [[.26,'shield:d3']]),
+    S(2000, [[0,'i3'],[.12,'f3'],[.3,'b2'],[.6,'b3'],[.88,'b3'],[.98,'i1']], [[.26,'shield:d4']]),
+  ],
+  dodge:[   // esquiva: rolamentos com poeira e vento
+    S(1100, [[0,'i1'],[.12,'f1',{dx:-6}],[.3,'e1',{dx:-34,dy:-2}],[.5,'e2',{dx:-60}],[.72,'e4',{dx:-40}],[.9,'r1',{dx:-8}],[.98,'i1']], [], {ghost:true}),
+    S(1100, [[0,'i2'],[.12,'f3',{dx:6}],[.3,'e4',{dx:34,dy:-2}],[.5,'e3',{dx:60}],[.72,'e2',{dx:36}],[.9,'r1',{dx:6}],[.98,'i1']], [], {ghost:true, gdir:-1}),
+    S(1100, [[0,'i1'],[.12,'s1',{dx:-8}],[.34,'s2',{dx:-40,dy:-4}],[.54,'s4',{dx:-58,dy:-2}],[.78,'s3',{dx:-30}],[.92,'r1'],[.98,'i1']], [], {ghost:true}),
+    S(1100, [[0,'i3'],[.12,'s3',{dx:8}],[.34,'s4',{dx:40,dy:-4}],[.54,'s2',{dx:58,dy:-2}],[.78,'s1',{dx:30}],[.92,'r1'],[.98,'i1']], [], {ghost:true, gdir:-1}),
+  ],
+  hurt:[
+    S(850, [[0,'i1'],[.1,'f1',{dx:-8,rot:-3}],[.34,'f1',{dx:3}],[.62,'f1'],[.92,'i1']], [], {tint:true}),
+    S(850, [[0,'i2'],[.1,'r1',{dx:-8,rot:-4}],[.34,'r1',{dx:3}],[.62,'r2'],[.92,'i1']], [], {tint:true}),
+    S(850, [[0,'i3'],[.12,'r2',{dx:-6,dy:2,rot:-3}],[.36,'r2',{dx:3}],[.64,'r2'],[.92,'i1']], [], {tint:true}),
+  ],
+  victory:[
+    S(3000, [[0,'i1'],[.12,'n1'],[.3,'t1',{dy:-2}],[.52,'t3',{dy:-4}],[.8,'t3',{dy:-3}],[.96,'i1']], [[.32,'cheer'],[.54,'cheer:rise'],[.8,'cheer']]),
+    S(3000, [[0,'i2'],[.14,'h1',{dy:-2}],[.4,'t1',{dy:-4}],[.64,'t2'],[.82,'t2'],[.96,'i1']], [[.4,'cheer'],[.6,'cheer:rise'],[.82,'cheer']]),
+    S(3200, [[0,'i3'],[.14,'t4'],[.34,'t5'],[.56,'t4'],[.78,'t5'],[.96,'i1']], [[.36,'cheer:rise'],[.58,'cheer'],[.8,'cheer:rise']]),
+    S(3200, [[0,'i1'],[.14,'p1'],[.3,'u4'],[.58,'u4'],[.78,'u1'],[.96,'i1']], [[.32,'cheer'],[.6,'cheer:rise'],[.8,'cheer']]),
+  ],
+  ult:[     // provocação: aura dourada ao redor dele
+    S(3600, [[0,'i1'],[.1,'n1'],[.24,'t1',{dy:-3}],[.42,'t3',{dy:-5}],[.7,'t3',{dy:-4}],[.82,'t4'],[.96,'i1']], [[.14,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.66,'taunt:3']]),
+    S(3600, [[0,'i2'],[.1,'p1'],[.24,'t2'],[.42,'u2',{dy:-4}],[.68,'t4'],[.84,'t5'],[.96,'i1']], [[.14,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.66,'taunt:3']]),
+    S(3600, [[0,'i3'],[.1,'h1',{dx:-4}],[.26,'t1',{dy:-3}],[.44,'u1',{dy:-4}],[.66,'t5'],[.84,'t3'],[.96,'i1']], [[.14,'wind'],[.28,'taunt'],[.46,'taunt:2'],[.68,'taunt:3']]),
+  ],
+};
+const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
+  S(4200, [[0,'i1'],[.2,'i2'],[.5,'i3'],[.8,'i2'],[.98,'i1']]),
+  S(3600, [[0,'i1'],[.25,'r2'],[.6,'r3'],[.85,'r2'],[.98,'i1']]),
+  S(3000, [[0,'i1'],[.3,'i3'],[.75,'i3'],[.98,'i1']]),
+  S(3400, [[0,'i1'],[.25,'f1'],[.6,'f1'],[.98,'i1']]),
+  S(3600, [[0,'i1'],[.2,'r3'],[.5,'n1'],[.8,'r3'],[.98,'i1']]),
+];
+IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.5); });
+const bags = new WeakMap();
+const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };
+const DEATH = [[0,'f1'],[.28,'e1'],[.55,'e2'],[.8,'e4']];
+
+function glow(g, x, y, r, col, a){
+  if (a <= 0.005 || r <= 1) return; const gr = g.createRadialGradient(x, y, 0, x, y, r);
+  gr.addColorStop(0, `rgba(255,248,225,${clamp(a * .6)})`); gr.addColorStop(.16, `rgba(${col},${clamp(a)})`); gr.addColorStop(.5, `rgba(${col},${clamp(a * .3)})`); gr.addColorStop(1, `rgba(${col},0)`);
+  g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); g.restore();
+}
+function streak(g, x, y, ang, len, th, col, a){      // brilho esticado na direção do golpe (onda de impacto)
+  if (a <= .005) return; g.save(); g.translate(x, y); g.rotate(ang); g.scale(len / th, 1);
+  const gr = g.createRadialGradient(0, 0, 0, 0, 0, th); gr.addColorStop(0, `rgba(255,248,225,${clamp(a * .7)})`); gr.addColorStop(.3, `rgba(${col},${clamp(a)})`); gr.addColorStop(1, `rgba(${col},0)`);
+  g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(-th, -th, th * 2, th * 2); g.restore();
+}
+const hex2rgb = h => { const m = /^#?([0-9a-f]{6})$/i.exec(h || ''); if (!m) return null; const n = parseInt(m[1], 16); return `${n >> 16},${n >> 8 & 255},${n & 255}`; };
+
+function make(host){
+  const {c, cv, Px, Py, W, Hh, world, layers} = host, front = layers.front, fc = front.getContext('2d'), back = layers.back, bc = back.getContext('2d');
+  let backUsed = false;
+  const cw = cv.width, ch = cv.height, OX = world.x - Px, OY = world.y - Py;
+  let M = null; const img = {};
+  const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
+  fetch('tank/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank/${n}.png`)); FXS.forEach(n => load('fx_' + n, `tank/fx_${n}.png`)); }).catch(() => {});
+  let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
+  let fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
+  let deadTarget = 0, deadT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;
+  const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
+  const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
+  const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
+  const hand = () => { const f = feet(); return {x:f.x + 60, y:f.y - 170}; };
+
+  function swing(k){      // onda de impacto: sai do martelo e voa até o boss
+    const a = hand(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), d = 420 + dist * .35, ang = Math.atan2(b.y - a.y, b.x - a.x), kk = rnd(-1, 1) * 18, sz = k === 4 ? 1.4 : k === 3 ? 1.1 : 1;
+    const path = u => { const e = Math.pow(u, 1.6), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + kk * w, y:lerp(a.y, b.y, e) - w * 30}; };
+    const fd = u => u < .1 ? u / .1 : u > .92 ? (1 - u) / .08 : 1;
+    E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:(54 + 14 * Math.sin(u * 22)) * sz * (.6 + .5 * u), c:GOLD, a:.8 * fd(u)}; });
+    E('streak', d, u => { const p = path(u), q = path(Math.min(1, u + .04)); return {x:p.x, y:p.y, ang:Math.atan2(q.y - p.y, q.x - p.x), len:120 * sz, th:26 * sz, c:FIRE, a:.8 * fd(u)}; });
+    for (let i = 1; i <= 9; i++) { const ut = i / 10, p = path(ut), rr = FXS[i % FXS.length]; E('glow', 480, v => ({x:p.x, y:p.y + 10 * v, r:46 * sz * (1 - v * .6), c:FIRE, a:.45 * (1 - v)}), {delay:ut * d});
+      E('fx_' + rr, 640, v => ({x:p.x + Math.sin(i * 3) * 24 * v, y:p.y + 10 + 60 * v * v - 26 * v, s:.55 * (1 - v * .3), rot:v * 5 * (i % 2 ? 1 : -1), a:1 - seg(v, .55, 1)}), {delay:ut * d * .9}); }
+  }
+  function hit(kind){
+    const bl = (r, col, a, dl = 0, d = 650) => E('glow', d, u => ({...T, r:r * (.4 + eo(u) * .9), c:col, a:a * (1 - u) * (u < .08 ? u / .08 : 1)}), {delay:dl});
+    const rocks = (n, spread, up, big) => { for (let i = 0; i < n; i++) { const an = -Math.PI / 2 + rnd(-1.25, 1.25), sp = rnd(.5, 1) * spread, rr = FXS[i % FXS.length], rot = rnd(-6, 6);
+      E('fx_' + rr, 900, u => ({x:T.x + Math.cos(an) * sp * u, y:T.y + Math.sin(an) * sp * u + 260 * u * u - up * Math.sin(Math.PI * Math.min(1, u * 1.1)), s:big ? .9 : .65, rot:rot * u, a:1 - seg(u, .7, 1)}), {delay:i * 15}); } };
+    const ring = (r, d, col, a, dl = 0) => E('ring', d, u => ({x:T.x, y:T.y + 50, r:lerp(r * .3, r, eo(u)), c:col, a:a * (1 - u)}), {delay:dl});
+    if (kind === 'small') { bl(120, GOLD, .9); bl(70, '255,255,255', .8, 0, 380); rocks(4, 90, 60); ring(90, 520, GOLD, .8); }
+    else if (kind === 'small2') { bl(130, FIRE, .9); bl(80, '255,255,255', .8, 0, 380); rocks(5, 110, 70); ring(110, 560, FIRE, .8); }
+    else if (kind === 'small3') { bl(125, GOLD, .9); rocks(4, 100, 80); ring(100, 520, GOLD, .8); ring(60, 420, '255,255,255', .6, 80); }
+    else if (kind === 'big') { bl(260, FIRE, 1, 0, 950); bl(150, '255,255,255', .9, 0, 520); rocks(10, 180, 110, true); ring(190, 760, FIRE, .9); ring(110, 560, GOLD, .8, 100); shakeT = clk(); }
+    else if (kind === 'big2') { bl(280, GOLD, 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); rocks(12, 210, 130, true); ring(220, 820, GOLD, .9); ring(130, 600, FIRE, .8, 120); shakeT = clk(); }
+    else { bl(270, FIRE, 1, 0, 1000); bl(170, '255,255,255', .9, 0, 520); rocks(11, 200, 120, true); ring(200, 800, FIRE, .9); ring(120, 600, GOLD, .8, 90); ring(70, 440, '255,255,255', .7, 160); shakeT = clk(); }
+  }
+  const EV = {
+    wind(){ const f = feet(); for (let i = 0; i < 6; i++) { const an = rnd(0, 6.28); E('glow', 700, u => ({x:f.x + Math.cos(an) * 60 * eo(u), y:f.y - 10 + Math.sin(an) * 10, r:34 * (1 - u * .4), c:'255,230,190', a:.28 * Math.sin(Math.PI * u)}), {delay:i * 60}); }
+      E('ring', 800, u => ({x:f.x, y:f.y - 4, r:lerp(40, 110, eo(u)), c:GOLD, a:.5 * Math.sin(Math.PI * u)})); },
+    cheer(k){ const f = feet(); if (k === 'rise') { E('glow', 1200, u => ({x:f.x, y:f.y - 130, r:lerp(60, 170, eo(u)), c:GOLD, a:.5 * Math.sin(Math.PI * u)}), {back:true}); return; }
+      E('glow', 700, u => ({x:f.x, y:f.y - 140, r:lerp(40, 150, eo(u)), c:GOLD, a:.55 * (1 - u)})); E('ring', 800, u => ({x:f.x, y:f.y - 4, r:lerp(40, 120, eo(u)), c:GOLD, a:.6 * (1 - u)})); },
+    taunt(k){ const f = feet(), n = +k || 1;
+      E('ring', 1100, u => ({x:f.x, y:f.y - 6, r:lerp(50, 150 + 40 * n, eo(u)), c:n === 2 ? FIRE : GOLD, a:.85 * (1 - u)}));
+      E('glow', 1300, u => ({x:f.x, y:f.y - 130, r:lerp(70, 190 + 30 * n, eo(u)), c:GOLD, a:.55 * Math.sin(Math.PI * u)}), {back:true});
+      if (n === 3) { E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,236,200', a:.7 * (1 - u)})); shakeT = clk(); } },
+    shield(k){ const f = feet(), cs = hex2rgb(col), p = /^p/.test(k || ''), cc = cs || (p ? '255,170,80' : '120,180,255');
+      E('glow', 1700, u => ({x:f.x, y:f.y - 125, r:p ? 190 : 160, c:cc, a:(p ? .5 : .4) * Math.sin(Math.PI * u)}), {back:true});
+      E('ring', 1500, u => ({x:f.x, y:f.y - 6, r:lerp(50, p ? 150 : 120, eo(u)), c:cc, a:.7 * Math.sin(Math.PI * u)}));
+      if (k === 'p2' || k === 'p4' || k === 'd2' || k === 'd4') E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:cc, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
+      for (let i = 0; i < (p ? 6 : 3); i++) { const an = i * 1.1; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:16, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
+  };
+  function runEv(e){ const [k, a] = e.split(':'); if (k === 'swing') swing(+a); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
+
+  function poseAt(a, pe){
+    const st = a.steps; let i = 0; while (i < st.length - 1 && pe >= st[i + 1][0]) i++;
+    const A = st[i], B = st[Math.min(i + 1, st.length - 1)], u = A === B ? 1 : ease(clamp((pe - A[0]) / (B[0] - A[0])));
+    const ta = A[2] || {}, tb = B[2] || {};
+    return {pose:A[1], dx:lerp(ta.dx || 0, tb.dx || 0, u), dy:lerp(ta.dy || 0, tb.dy || 0, u), rot:lerp(ta.rot || 0, tb.rot || 0, u), sc:1};
+  }
+  function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1, br0 = 1){
+    const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return;
+    const br = Math.sin(tm / 1000 * 2.0) * br0, fx = Px + W / 2 + XOFF + dx, fy = Py + BASE + dy;
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * sc * (1 - .004 * br), SZ * sc * (1 + .008 * br));
+    c.drawImage(im, -m.cx, -m.gy);
+    if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
+    c.restore();
+  }
+  function frame(){
+    if (!running) return; requestAnimationFrame(frame); const now = clk();
+    if (document.hidden || now - last < 16) return; last = now;
+    if (!M) return;
+    const tm = now - t0; let st, a = cur && cur.a, pe = 0;
+    if (deadTarget) { const k = clamp((now - deadT) / 900); st = poseAt({steps:DEATH, dur:900}, k); }
+    else if (cur) {
+      pe = (now - cur.start) / a.dur; st = poseAt(a, clamp(pe));
+      const ev = a.ev || []; while (cur.fired < ev.length && pe >= ev[cur.fired][0]) runEv(ev[cur.fired++][1]);
+      if (pe >= 1) { const d = cur; cur = null; d.done(); }
+    } else st = {pose:'i1', dx:0, dy:0, rot:0, sc:1};
+    if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
+    lastT = st;
+    const f = clamp((now - cur_t) / fade);
+    c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P, Py - host.P + (BASE - 266)); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = true;
+    const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 * (cur && cur.light ? .6 : 1) : 0;
+    if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
+    if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);
+    drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
+    fc.clearRect(0, 0, front.width, front.height);
+    if (backUsed) { bc.clearRect(0, 0, back.width, back.height); backUsed = false; }
+    fxl = fxl.filter(e => {
+      const u = (now - e.t0) / e.d; if (u < 0) return true; if (u >= 1) return false;
+      const s = e.f(u), im = img[e.name], g = e.bk ? bc : fc; if (e.bk) backUsed = true;
+      if (!s) return true;
+      if (e.name === 'glow') { glow(g, s.x, s.y, s.r, s.c, s.a); return true; }
+      if (e.name === 'streak') { streak(g, s.x, s.y, s.ang, s.len, s.th, s.c, s.a); return true; }
+      if (e.name === 'ring') { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 7; g.strokeStyle = `rgba(${s.c},${clamp(s.a)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 14; g.beginPath(); g.arc(0, 0, s.r, 0, 6.2832); g.stroke(); g.restore(); return true; }
+      if (!ready(e.name)) return true;
+      const w = im.naturalWidth * (s.s || 1), h = im.naturalHeight * (s.s || 1);
+      g.save(); g.globalAlpha = clamp(s.a == null ? 1 : s.a); g.translate(s.x, s.y); if (s.rot) g.rotate(s.rot); g.drawImage(im, -w / 2, -h / 2, w, h); g.restore(); return true;
+    });
+    if (shakeT && now >= shakeT) { const u = (now - shakeT) / 450, g = host.shakeEl; if (g) g.style.transform = u < 1 ? `translate(${Math.sin(u * 60) * 1 * (1 - u)}px,${Math.cos(u * 50) * .8 * (1 - u)}px)` : ''; if (u >= 1) shakeT = 0; }
+  }
+  const run = (a, extra) => new Promise(res => { if (cur) cur.done(false); cur = {a, start: clk(), fired: 0, done: ok => res(ok !== false), ...extra}; });
+  return {
+    start(){ if (!running) { running = true; requestAnimationFrame(frame); } },
+    play(name, o = {}){
+      if (deadTarget) return Promise.resolve(false);
+      col = o.color || null;
+      if (name === 'guard') { const prot = /ff9d3d/i.test(o.color || ''); return run(variant(prot ? ACT.guard_p : ACT.guard_d)); }
+      if (name === 'cast') name = 'melee';
+      const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a, {light:!!o.light}); p.then(fireHit); return p;
+    },
+    nextHit(){ return new Promise(r => hitW.push(r)); },
+    idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(IDLES)); },
+    has: n => !!ACT[n] || n === 'guard' || n === 'cast',
+    setDead(d){ if (d) { if (cur) cur.done(false); cur = null; deadTarget = 1; deadT = clk(); } else { deadTarget = 0; flashT = clk(); } },
+    reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; },
+  };
+}
+window.TankRig = {make};
+})();

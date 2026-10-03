@@ -248,3 +248,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Causa do "sobra": o recorte antigo (`recorta_folha3.body_mask`) engrossava a máscara com a sombra escura do fundo (tom parecido com o manto). Agora a máscara é só a área fechada pelo contorno escuro do personagem (contorno relativo ao fundo local); sem engrossar com a sombra. `bake_grad.py` → `retrace.py` (borda fina nova).
 - Corrigido o agrupamento: a pose "swingl" trazia o mago em pé junto (duas figuras na mesma imagem); agora cada pose tem só uma figura (a do mago em pé foi separada e não é usada).
 - Clériga: Luz Sagrada não brilha mais nela (sem carga/brilho do orbe e sem flash de tela quando há alvo); a luz fica só no alvo escolhido.
+
+## v61 — Tanque novo (de costas o tempo todo)
+- Personagem trocado pelas folhas novas: `tools/cut_tank.py` (poses, escala única, ancoradas nos pés, borda fina só no corpo) + `tools/cut_tank_fx.py` (pedras) → `tank/*.png`; caixas de recorte em `tools/boxes_tank.py`.
+- Novo rig `tank.js`: ataque normal (5 variações), super pesado (4), proteção específica (4), defesa (4), esquiva (4), dor (3), vitória (4), provocação/ult (3), ociosa (5). Sacola embaralhada: nunca repete a mesma variação em seguida.
+- Brilho nos golpes: onda dourada sai do martelo até o boss; o dano só entra quando ela acerta (fireHit), com clarão, pedras e anéis no impacto (`RIG_HERO` inclui o tanque).

@@ -746,7 +746,7 @@ function shoot(fromX, fromY, toX, toY, color, ms){
     {left:toX+'%', top:toY+'%', opacity:1, transform:'translate(-50%,-50%) scale(1.3)'}
   ], {duration:ms || 620, easing:'ease-in', fill:'forwards'}).finished.then(() => p.remove());
 }
-const RIG_HERO = k => k === 'mage' || k === 'assassin';   // têm animação própria com projétil/efeito: o dano só entra no impacto
+const RIG_HERO = k => k === 'mage' || k === 'assassin' || k === 'tank';   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
   const pl = A.play(k, an, {color:col}); if (say) A.sayRandom(k, say, .5);
   if (!RIG_HERO(k)) { await wait(an === 'heavy' ? 480 : 300); return heroAttack(k, dmg, col); }
