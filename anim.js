@@ -3,7 +3,7 @@
    Configuração em anim/manifest.json (veja ANIMACOES.md). API usada pelo app.js: Anim.play / setDead / setAura / reset (+ say/sfx vazios). */
 (() => {
 'use strict';
-const META = {"mage":{"x":32,"y":806,"w":209,"h":284},"knight":{"x":268,"y":838,"w":210,"h":262},"tank":{"x":531,"y":834,"w":244,"h":264},"assassin":{"x":772,"y":830,"w":196,"h":282},"boss":{"x":93,"y":111,"w":848,"h":589}};
+const META = {"mage":{"x":39,"y":839,"w":209,"h":284},"knight":{"x":270,"y":838,"w":210,"h":262},"tank":{"x":519,"y":836,"w":244,"h":264},"assassin":{"x":824,"y":803,"w":196,"h":282},"boss":{"x":93,"y":111,"w":848,"h":589}};
 const WHO = Object.keys(META);
 const FALLBACK = {heavy:['melee'], holy:['cast', 'melee'], cast:['melee'], super:['heavy', 'melee'], aoe:['attack'], enrage:['attack'], laugh:['idle'], die:['death', 'hurt']};
 const $ = s => document.querySelector(s), rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];

@@ -33,7 +33,7 @@ const ITEMS = {
 // ===== Configuração do combate (ajuste aqui) =====
 const HERO_ORDER = ['mage','knight','tank','assassin'];
 const HERO_COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ff3d5c'};
-const HERO_X = {mage:12.2, knight:36.1, tank:63.3, assassin:81};   // centro do herói (% da largura)
+const HERO_X = {mage:13.6, knight:37.6, tank:61.5, assassin:85.4};   // centro do herói (% da largura)
 const BOSS_MAX_HP = 450, HERO_MAX_HP = 100;
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
@@ -388,7 +388,7 @@ function showRing(hero){
   m.style.setProperty('--col', col);
   m.innerHTML =
     `<div class="tm-beam" style="left:${x}%"></div>` +
-    `<img class="tm-ring" style="left:${x}%${hero === 'assassin' ? ';top:69.1%' : ''}" src="${pixRing(col)}" alt="">` +
+    `<img class="tm-ring" style="left:${x}%" src="${pixRing(col)}" alt="">` +
     `<div class="tm-frame" style="left:${pctX(fx)};top:${pctY(752)};width:${pctX(fw)};height:${pctY(40)}"></div>` +
     `<img class="tm-arrow" style="left:${x}%" src="${pixIcon('arrow')}" alt="">`;
   $('#game').appendChild(m);

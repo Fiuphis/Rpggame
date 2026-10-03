@@ -4,7 +4,7 @@
    Ociosa: lê a Bíblia, toca no livro, reza — sorteado, sem ficar se mexendo o tempo todo. */
 (() => {
 'use strict';
-const POSES = ['at1','at2','at3','at3','at2','dn1','dn2','dn2','dn1','dg1','dg2','dg3','idle1','stf','pr1','pr2','ex1','v1','v2','d1','d2','d3','d4','ult1','ult2','bt1','bt2','bt3','bt4','bp1','bp2','bp3','br1','br2','br3','br4','br5','br6','bg1','bg2','bg3','bg4'];
+const POSES = ['bp1','bp2','bp3','bg1','bg2','bg3','bg4','br1','br2','br3','br4','br5','br6','bt1','bt2','bt3','bt4','d1','d2','d3','d4'];
 const FXS = ['star1','star2','star3','ring1','ring2','ring3','pillar','lotus','burst','aura','streak1','streak2','streak3','sunstar','star4','pillar2','cross1'];
 const T = {x:517, y:340};
 const BASE = 292, SZ = 1.05, XOFF = -46;      // pés mais para a frente (baixo) e um pouco maior
@@ -16,48 +16,59 @@ const clamp = (v, a=0, b=1) => Math.max(a, Math.min(b, v)), lerp = (a, b, u) => 
 const seg = (u, a, b) => clamp((u - a) / (b - a));
 const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
 
-const ACT = {
+const ACT = {   // só poses de COSTAS (bp, bg, br, bt) — base: bp1
   melee:[
-    S(1200, [[0,'idle1'],[.14,'at1',{dx:-3}],[.32,'at2',{dx:-6}],[.52,'at3',{dx:4,dy:-4}],[.8,'at3',{dx:2}],[.96,'idle1']], [[.2,'charge'],[.5,'shot:streak1:.9'],[.76,'hit:small']]),
-    S(1300, [[0,'idle1'],[.12,'stf',{dx:-2}],[.34,'at1',{dx:-4}],[.54,'at3',{dx:4,dy:-4}],[.82,'at3',{dx:2}],[.96,'idle1']], [[.3,'charge'],[.54,'shot:streak2:.9'],[.78,'hit:small']]),
-    S(1400, [[0,'idle1'],[.14,'dn1',{dx:-3}],[.34,'at2',{dx:-4}],[.54,'at2',{dx:3}],[.82,'at2',{dx:2}],[.96,'idle1']], [[.22,'charge'],[.56,'shot:streak3:.9'],[.8,'hit:small']]),
+    S(1300, [[0,'bp1'],[.14,'bg3',{dx:-3}],[.34,'bt1',{dx:-5}],[.54,'bt2',{dx:3,dy:-3}],[.82,'bt2',{dx:2}],[.96,'bp1']], [[.2,'charge'],[.5,'shot:streak1:.9'],[.76,'hit:small']]),
+    S(1400, [[0,'bp1'],[.12,'bp2',{dx:-2}],[.34,'bt3',{dx:-5}],[.54,'bt2',{dx:3,dy:-3}],[.82,'bt3',{dx:2}],[.96,'bp1']], [[.3,'charge'],[.54,'shot:streak2:.9'],[.78,'hit:small2']]),
+    S(1400, [[0,'bp1'],[.14,'bg1',{dx:-3}],[.34,'bg3',{dx:-4}],[.54,'bt1',{dx:4,dy:-4}],[.82,'bt1',{dx:2}],[.96,'bp1']], [[.22,'charge'],[.56,'shot:streak3:.9'],[.8,'hit:small3']]),
+    S(1500, [[0,'bp1'],[.12,'br2'],[.3,'br1',{dx:-3}],[.52,'bt1',{dx:4,dy:-3}],[.84,'bt3',{dx:2}],[.96,'bp1']], [[.26,'charge'],[.54,'shot:streak1:1'],[.8,'hit:small2']]),
   ],
   holy:[
-    S(2000, [[0,'idle1'],[.1,'at1',{dx:-3}],[.3,'at3',{dy:-4}],[.5,'at3',{dx:3}],[.78,'at2',{dx:2}],[.97,'idle1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:sunstar:1.3'],[.8,'hit:holy']]),
-    S(2300, [[0,'idle1'],[.1,'pr1'],[.34,'pr2',{dy:-2}],[.5,'at1',{dx:-3}],[.62,'at3',{dy:-4}],[.78,'at3',{dx:3}],[.97,'idle1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.68,'shot:sunstar:1.4'],[.9,'hit:holy']]),
-    S(2600, [[0,'idle1'],[.08,'bp3'],[.2,'bt1'],[.3,'bt2'],[.4,'bt3'],[.5,'bt4',{dy:-2}],[.62,'at3',{dy:-4}],[.78,'at3',{dx:3}],[.97,'idle1']], [[.2,'charge'],[.36,'charge'],[.5,'charge'],[.66,'shot:sunstar:1.4'],[.9,'hit:holy']]),
+    S(2100, [[0,'bp1'],[.1,'bp3',{dx:-3}],[.3,'bt1',{dy:-3}],[.5,'bt4',{dy:-4}],[.78,'bt4',{dx:2}],[.97,'bp1']], [[.14,'charge'],[.3,'charge'],[.52,'shot:sunstar:1.3'],[.8,'hit:holy']]),
+    S(2400, [[0,'bp1'],[.1,'br2'],[.3,'br1',{dy:-2}],[.5,'bt2',{dx:-3}],[.64,'bt4',{dy:-4}],[.8,'bt4',{dx:3}],[.97,'bp1']], [[.14,'charge'],[.32,'charge'],[.5,'charge'],[.68,'shot:cross1:1.3'],[.9,'hit:holy2']]),
+    S(2600, [[0,'bp1'],[.08,'bp3'],[.2,'bt1'],[.3,'bt2'],[.4,'bt3'],[.5,'bt4',{dy:-2}],[.62,'bt4',{dy:-4}],[.78,'bt4',{dx:3}],[.97,'bp1']], [[.2,'charge'],[.36,'charge'],[.5,'charge'],[.66,'shot:star4:1.2'],[.9,'hit:holy3']]),
+    S(2600, [[0,'bp1'],[.08,'br4'],[.2,'br5'],[.34,'br3'],[.5,'bg3'],[.62,'bt1',{dy:-3}],[.76,'bt4',{dy:-4}],[.97,'bp1']], [[.2,'charge'],[.4,'charge'],[.58,'charge'],[.72,'shot:sunstar:1.5'],[.92,'hit:holy2']]),
   ],
   guard_n:[
-    S(1900, [[0,'idle1'],[.14,'dn1'],[.34,'dn2'],[.6,'dn2'],[.9,'dn2'],[.98,'idle1']], [[.3,'shield']]),
-    S(1900, [[0,'idle1'],[.14,'dn2'],[.34,'dn1'],[.6,'dn2',{dy:-2}],[.9,'dn2'],[.98,'idle1']], [[.3,'shield']]),
+    S(1900, [[0,'bp1'],[.14,'br1'],[.34,'br3'],[.6,'br3'],[.9,'br3'],[.98,'bp1']], [[.3,'shield']]),
+    S(1900, [[0,'bp1'],[.14,'bp2'],[.34,'br2'],[.6,'br2',{dy:-2}],[.9,'br2'],[.98,'bp1']], [[.3,'shield:n2']]),
+    S(1900, [[0,'bp1'],[.14,'bg2'],[.34,'br1'],[.6,'br1',{dy:-2}],[.9,'br1'],[.98,'bp1']], [[.3,'shield:n3']]),
   ],
   guard_h:[
-    S(1900, [[0,'idle1'],[.14,'dn1'],[.3,'dn1'],[.9,'dn1',{dy:-2}],[.98,'idle1']], [[.26,'shield:holy']]),
-    S(1900, [[0,'idle1'],[.12,'pr1'],[.3,'dn1'],[.9,'dn1',{dy:-2}],[.98,'idle1']], [[.26,'shield:holy']]),
+    S(1900, [[0,'bp1'],[.14,'bp3'],[.3,'bt4'],[.9,'bt4',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy']]),
+    S(1900, [[0,'bp1'],[.12,'br2'],[.3,'bt2'],[.9,'bt2',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy2']]),
+    S(1900, [[0,'bp1'],[.12,'bg3'],[.3,'bt1'],[.9,'bt1',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy3']]),
   ],
-  ult:S(5200, [[0,'idle1'],[.08,'pr1'],[.16,'pr2'],[.26,'ult1',{dy:-2}],[.42,'ult2',{dy:-6}],[.82,'ult2',{dy:-4}],[.96,'idle1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
+  ult:[
+    S(5200, [[0,'bp1'],[.08,'br1'],[.16,'bp3'],[.26,'bt1',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
+    S(5200, [[0,'bp1'],[.08,'br2'],[.16,'br1'],[.26,'bt2',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar2'],[.62,'lightpillar'],[.78,'lightend']]),
+  ],
   dodge:[
-    S(1050, [[0,'idle1'],[.1,'dg1',{dx:-6}],[.3,'dg2',{dx:-34,dy:-2}],[.52,'dg3',{dx:-50}],[.72,'dg3',{dx:-30}],[.9,'idle1']], [], {ghost:true}),
-    S(1050, [[0,'idle1'],[.1,'dg1',{dx:6}],[.3,'dg2',{dx:30,dy:-2}],[.52,'dg3',{dx:44}],[.72,'dg3',{dx:26}],[.9,'idle1']], [], {ghost:true, gdir:-1}),
+    S(1050, [[0,'bp1'],[.1,'bg1',{dx:-6}],[.3,'bg2',{dx:-34,dy:-2}],[.52,'bg2',{dx:-50}],[.72,'bg1',{dx:-30}],[.9,'bp1']], [], {ghost:true}),
+    S(1050, [[0,'bp1'],[.1,'bg1',{dx:6}],[.3,'bg4',{dx:30,dy:-2}],[.52,'bg4',{dx:44}],[.72,'bg2',{dx:26}],[.9,'bp1']], [], {ghost:true, gdir:-1}),
+    S(1050, [[0,'bp1'],[.1,'bp2',{dx:-4}],[.3,'bg4',{dx:-24,dy:-8}],[.5,'bg4',{dx:-40,dy:-2}],[.72,'bp2',{dx:-20}],[.9,'bp1']], [], {ghost:true}),
   ],
   hurt:[
-    S(800, [[0,'idle1'],[.1,'dg3',{dx:-8,rot:-4}],[.34,'dg3',{dx:4,rot:-2}],[.6,'dg3',{dx:-2}],[.92,'idle1']], [], {tint:true}),
-    S(800, [[0,'idle1'],[.12,'ex1',{dx:-8,rot:-6}],[.36,'ex1',{dx:4,rot:-2}],[.62,'ex1'],[.92,'idle1']], [], {tint:true}),
+    S(800, [[0,'bp1'],[.1,'bp2',{dx:-8,rot:-4}],[.34,'bp2',{dx:4,rot:-2}],[.6,'bp2',{dx:-2}],[.92,'bp1']], [], {tint:true}),
+    S(800, [[0,'bp1'],[.12,'bg2',{dx:-8,rot:-6}],[.36,'bg2',{dx:4,rot:-2}],[.62,'bg2'],[.92,'bp1']], [], {tint:true}),
+    S(800, [[0,'bp1'],[.12,'bg4',{dx:-6,dy:2,rot:-5}],[.36,'bg4',{dx:3,rot:-2}],[.62,'bg4'],[.92,'bp1']], [], {tint:true}),
   ],
   victory:[
-    S(2800, [[0,'idle1'],[.12,'v1',{dy:-2}],[.34,'v2',{dy:-6}],[.56,'v1',{dy:-4}],[.8,'v2',{dy:-6}],[.96,'idle1']], [[.14,'cheer'],[.36,'cheer'],[.6,'cheer']]),
-    S(3000, [[0,'idle1'],[.14,'at1'],[.3,'v1',{dy:-4}],[.5,'ult1',{dy:-4}],[.7,'v2',{dy:-6}],[.96,'idle1']], [[.3,'cheer'],[.52,'cheer'],[.72,'cheer']]),
+    S(2800, [[0,'bp1'],[.12,'bp3',{dy:-2}],[.34,'bt4',{dy:-6}],[.56,'bt1',{dy:-4}],[.8,'bt4',{dy:-6}],[.96,'bp1']], [[.14,'cheer'],[.36,'cheer:cross'],[.6,'cheer'],[.82,'cheer:cross']]),
+    S(3000, [[0,'bp1'],[.14,'br2'],[.3,'br1',{dy:-4}],[.5,'bt2',{dy:-4}],[.7,'bt4',{dy:-6}],[.96,'bp1']], [[.3,'cheer'],[.52,'cheer:rise'],[.72,'cheer:cross']]),
+    S(3000, [[0,'bp1'],[.14,'bg3'],[.3,'bt3',{dy:-3}],[.5,'bt4',{dy:-6}],[.74,'bt4',{dy:-5}],[.96,'bp1']], [[.3,'cheer:rise'],[.52,'cheer'],[.76,'cheer:cross']]),
   ],
 };
-const BIBLE = [[0,'idle1'],[.05,'bp1'],[.1,'bp2'],[.15,'bp3'],[.21,'br1'],[.27,'br2'],[.33,'br3'],[.4,'br4'],[.5,'br5'],[.62,'br6'],[.72,'br5'],[.78,'bg1'],[.84,'bg2'],[.9,'bg3'],[.95,'bg4'],[.98,'idle1']];
+const BIBLE = [[0,'bp1'],[.05,'bp2'],[.1,'bg3'],[.15,'bt1'],[.21,'br1'],[.27,'br2'],[.33,'br3'],[.4,'br4'],[.5,'br5'],[.62,'br6'],[.72,'br5'],[.78,'bg1'],[.84,'bg2'],[.9,'bg3'],[.95,'bg4'],[.98,'bp1']];
 const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
   S(7500, BIBLE),
-  S(7000, BIBLE.map(([t, p]) => [t, p])),
-  S(3600, [[0,'idle1'],[.1,'bp1'],[.2,'bp2'],[.3,'bt1'],[.45,'bt2'],[.6,'bt3'],[.75,'bt4'],[.88,'bg2'],[.97,'idle1']], [[.3,'sparkle'],[.62,'sparkle']]),
-  S(3200, [[0,'idle1'],[.18,'pr1'],[.4,'pr2'],[.8,'pr1'],[.97,'idle1']], [[.4,'sparkle']]),
-  S(2800, [[0,'idle1'],[.2,'stf',{dx:-2}],[.75,'stf',{dx:-2}],[.97,'idle1']]),
-  S(2600, [[0,'idle1'],[.2,'pr2'],[.7,'pr2'],[.97,'idle1']]),
+  S(7000, [[0,'bp1'],[.08,'bp2'],[.16,'br1'],[.28,'br3'],[.42,'br4'],[.58,'br5'],[.7,'br6'],[.82,'br2'],[.92,'bg4'],[.98,'bp1']]),
+  S(3600, [[0,'bp1'],[.1,'bp2'],[.2,'bg3'],[.3,'bt1'],[.45,'bt2'],[.6,'bt3'],[.75,'bt4'],[.88,'bg2'],[.97,'bp1']], [[.3,'sparkle'],[.62,'sparkle']]),
+  S(3200, [[0,'bp1'],[.18,'bp3'],[.4,'bt4'],[.8,'bt1'],[.97,'bp1']], [[.4,'sparkle']]),
+  S(2800, [[0,'bp1'],[.2,'bg1'],[.5,'bg2'],[.75,'bg1'],[.97,'bp1']]),
+  S(2600, [[0,'bp1'],[.2,'bg4'],[.7,'bg4'],[.97,'bp1']]),
 ];
+const ORB = {bt1:[155,72], bt2:[140,50], bt3:[130,80], bt4:[127,35], bp3:[120,100], bg3:[120,90], br1:[120,55], br2:[20,40]};   // ponto de luz (cruz/estrela) em cada pose
 IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.7); });      // movimentos de ociosa mais lentos
 const lastV = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; const p = lastV.get(v) ?? -1; let i; do { i = Math.floor(Math.random() * v.length); } while (v.length > 1 && i === p); lastV.set(v, i); return v[i]; };
@@ -95,7 +106,11 @@ function make(host){
   }
   function hit(kind){
     const bl = (r, col, a, dl = 0, d = 650) => E('glow', d, u => ({...T, r:r * (.4 + eo(u) * .9), c:col, a:a * (1 - u) * (u < .08 ? u / .08 : 1)}), {delay:dl});
-    if (kind === 'small') { bl(120, GOLD, .9); E('fx_sunstar', 560, u => ({...T, s:lerp(.4, .9, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .85})); }
+    if (kind === 'small2') { bl(110, GOLD, .9); bl(70, '255,255,255', .8, 0, 420); E('fx_cross1', 640, u => ({...T, s:lerp(.35, .8, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .9})); E('fx_star4', 520, u => ({...T, s:lerp(.2, .55, eo(u)), rot:u * 1.2, a:1 - u})); }
+    else if (kind === 'small3') { bl(120, GOLD, .85); E('fx_ring3', 620, u => ({x:T.x, y:T.y + 40, s:lerp(.3, 1, eo(u)), sy:.6, a:(1 - u) * .8})); for (let i = 0; i < 5; i++) { const an = i * 1.26; E('fx_star' + (1 + i % 3), 600, u => ({x:T.x + Math.cos(an) * 70 * eo(u), y:T.y + Math.sin(an) * 60 * eo(u), s:.45 * (1 - u), a:1 - u})); } }
+    else if (kind === 'holy2') { bl(260, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_cross1', 900, u => ({...T, s:lerp(.6, 1.7, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .1, 1)) * .95})); E('fx_pillar', 1000, u => ({x:T.x, y:T.y + 100, s:1.3, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:60}); shakeT = clk(); }
+    else if (kind === 'holy3') { bl(280, GOLD, 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); E('fx_burst', 1000, u => ({x:T.x, y:T.y + 100, s:1.5, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)})); E('fx_ring2', 900, u => ({x:T.x, y:T.y + 80, s:lerp(.4, 1.9, eo(u)), sy:.5, a:(1 - u) * .85})); E('fx_star4', 800, u => ({...T, s:lerp(.4, 1.3, eo(u)), rot:u * 1.6, a:(1 - u) * .9})); shakeT = clk(); }
+    else if (kind === 'small') { bl(120, GOLD, .9); E('fx_sunstar', 560, u => ({...T, s:lerp(.4, .9, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .85})); }
     else { bl(260, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_sunstar', 800, u => ({...T, s:lerp(.5, 1.7, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .08, 1)) * .9})); E('fx_pillar2', 900, u => ({x:T.x, y:T.y + 80, s:1.1, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:60}); E('fx_ring1', 800, u => ({x:T.x, y:T.y + 60, s:lerp(.5, 1.8, eo(u)), sy:.45, a:(1 - u) * .8})); shakeT = clk(); }
   }
   const EV = {
@@ -103,8 +118,12 @@ function make(host){
       E('fx_ring3', 1100, u => ({x:feet().x, y:feet().y - 4, s:lerp(.6, .9, u), sy:.3, a:.5 * Math.sin(Math.PI * u)}));
       for (let i = 0; i < 8; i++) { const an = i * .79 + rnd(0, .5); E('fx_star' + (1 + i % 3), 760, u => { const r = 100 * (1 - eo(u)) + 8, o = orbPos(); return {x:o.x + Math.cos(an + u * 2) * r, y:o.y + Math.sin(an + u * 2) * r * .8, s:.4 * (.5 + u * .5), rot:u * 3, a:Math.sin(Math.PI * u)}; }, {delay:i * 70}); } },
     sparkle(){ const o = orbPos(), f = feet(); for (let i = 0; i < 6; i++) { const an = rnd(0, 6.28); E('fx_star' + (1 + i % 3), 900, u => ({x:f.x + Math.cos(an) * 40 * eo(u), y:f.y - 110 - 40 * u + Math.sin(an) * 30 * eo(u), s:.4 * (1 - u * .5), a:Math.sin(Math.PI * u)}), {delay:i * 120}); } },
-    cheer(){ const f = feet(); E('glow', 700, u => ({x:f.x, y:f.y - 120, r:lerp(40, 140, eo(u)), c:GOLD, a:.6 * (1 - u)})); for (let i = 0; i < 5; i++) { const an = i * 1.3; E('fx_star' + (1 + i % 3), 800, u => ({x:f.x + Math.cos(an) * 70 * eo(u), y:f.y - 130 + Math.sin(an) * 50 * eo(u) - 24 * u, s:.5 * (1 - u), a:1 - u}), {delay:i * 90}); } },
-    shield(k){ const f = feet(), h = k === 'holy';
+    cheer(k){ const f = feet(); if (k === 'cross') { E('fx_cross1', 900, u => ({x:f.x, y:f.y - 250 - 20 * u, s:lerp(.4, .8, eo(u)), a:Math.sin(Math.PI * u)})); E('glow', 800, u => ({x:f.x, y:f.y - 250, r:lerp(40, 120, eo(u)), c:GOLD, a:.6 * (1 - u)})); return; } if (k === 'rise') { E('fx_pillar', 1200, u => ({x:f.x, y:f.y + 4, s:1, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:.7 * Math.sin(Math.PI * u)}), {back:true}); return; } E('glow', 700, u => ({x:f.x, y:f.y - 120, r:lerp(40, 140, eo(u)), c:GOLD, a:.6 * (1 - u)})); for (let i = 0; i < 5; i++) { const an = i * 1.3; E('fx_star' + (1 + i % 3), 800, u => ({x:f.x + Math.cos(an) * 70 * eo(u), y:f.y - 130 + Math.sin(an) * 50 * eo(u) - 24 * u, s:.5 * (1 - u), a:1 - u}), {delay:i * 90}); } },
+    shield(k){ const f = feet(), h = /^holy/.test(k || '');
+      if (k === 'n2') { for (let i = 0; i < 3; i++) E('fx_ring1', 1500, u => ({x:f.x, y:f.y - 6 - 60 * i * u, s:lerp(.5, 1, eo(u)), sy:.3, a:.5 * Math.sin(Math.PI * u)}), {delay:i * 260}); E('glow', 1700, u => ({x:f.x, y:f.y - 100, r:130, c:'255,236,190', a:.3 * Math.sin(Math.PI * u)}), {back:true}); return; }
+      if (k === 'n3') { E('fx_pillar', 1700, u => ({x:f.x, y:f.y + 4, s:1.1, sy:1, anchorB:1, a:.35 * Math.sin(Math.PI * u)}), {back:true}); for (let i = 0; i < 6; i++) { const an = i * 1.05; E('fx_star' + (1 + i % 3), 1200, u => ({x:f.x + Math.cos(an) * 60, y:f.y - 30 - 160 * u, s:.4, a:Math.sin(Math.PI * u)}), {delay:i * 160}); } return; }
+      if (k === 'holy2') { E('fx_lotus', 1700, u => ({x:f.x, y:f.y + 6, s:lerp(.5, .8, eo(u)), anchorB:1, a:.8 * Math.sin(Math.PI * u)})); E('fx_aura', 1700, u => ({x:f.x, y:f.y - 120, s:.95, a:.5 * Math.sin(Math.PI * u)}), {back:true}); E('glow', 1700, u => ({x:f.x, y:f.y - 115, r:170, c:GOLD, a:.5 * Math.sin(Math.PI * u)}), {back:true}); return; }
+      if (k === 'holy3') { E('fx_cross1', 1700, u => ({x:f.x, y:f.y - 250, s:.6, a:.9 * Math.sin(Math.PI * u)})); E('fx_ring2', 1600, u => ({x:f.x, y:f.y - 6, s:lerp(.5, 1.2, eo(u)), sy:.3, a:.8 * Math.sin(Math.PI * u)})); E('fx_aura', 1700, u => ({x:f.x, y:f.y - 120, s:1, a:.45 * Math.sin(Math.PI * u)}), {back:true}); for (let i = 0; i < 8; i++) { const an = i * .8; E('fx_star' + (1 + i % 3), 1100, u => ({x:f.x + Math.cos(an) * 75, y:f.y - 30 - 170 * u, s:.45, a:Math.sin(Math.PI * u)}), {delay:i * 150}); } return; }
       E('glow', 1700, u => ({x:f.x, y:f.y - 115, r:h ? 175 : 140, c:h ? GOLD : '255,236,190', a:(h ? .55 : .38) * Math.sin(Math.PI * u)}), {back:true});
       E('fx_aura', 1700, u => ({x:f.x, y:f.y - 120, s:lerp(.75, .95, eo(u)), a:(u < .12 ? u / .12 : u > .8 ? (1 - u) / .2 : 1) * (h ? .55 : .3)}), {back:true});
       E('fx_ring1', 1500, u => ({x:f.x, y:f.y - 6, s:lerp(.6, 1.1, eo(u)), sy:.3, a:(h ? .8 : .45) * Math.sin(Math.PI * u)}));
@@ -129,7 +148,7 @@ function make(host){
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
-    if (m.orb) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (m.orb[0] - m.cx) * SZ, oy = (m.orb[1] - m.gy) * SZ; return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
+    const orbp = ORB[name]; if (orbp) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (orbp[0] - m.cx) * SZ, oy = (orbp[1] - m.gy) * SZ; return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
     return null;
   }
   function frame(){
@@ -142,7 +161,7 @@ function make(host){
       pe = (now - cur.start) / a.dur; st = poseAt(a, clamp(pe));
       const ev = a.ev || []; while (cur.fired < ev.length && pe >= ev[cur.fired][0]) runEv(ev[cur.fired++][1]);
       if (pe >= 1) { const d = cur; cur = null; d.done(); }
-    } else st = {pose:'idle1', dx:0, dy:0, rot:0, sc:1};
+    } else st = {pose:'bp1', dx:0, dy:0, rot:0, sc:1};
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
     lastT = st;
     const f = clamp((now - cur_t) / fade);

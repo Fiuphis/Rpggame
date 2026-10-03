@@ -218,3 +218,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v53
 - Clériga centralizada no círculo da vez (HERO_X.assassin 81%, anel um pouco mais baixo).
+
+## v54
+- Heróis na mesma linha (pés em y=1098) e espaçamento igual (~247px); anel/feixe/seta seguem HERO_X novo.
+- Corrigido deslocamento horizontal do #game (overflow:clip) que empurrava os heróis para a esquerda após cliques.
+- Clériga: só poses de costas (bp/bg/br/bt), 3-4 variações de efeito por habilidade (golpe, sagrado, defesa, esquiva, dano, vitória, Luz Sagrada).
