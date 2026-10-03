@@ -243,3 +243,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v59
 - Maga: recorte refeito nas 6 poses da folha em degradê (giro, estrelas, golpes laterais/frontal) com tools/retrace.py — o contorno escuro original delimita o personagem, o halo azul de sobra é descartado e efeitos (arcos, orbe) ficam intactos; borda fina refeita por cima.
+
+## v60 — recorte da Maga refeito direto da folha original
+- Causa do "sobra": o recorte antigo (`recorta_folha3.body_mask`) engrossava a máscara com a sombra escura do fundo (tom parecido com o manto). Agora a máscara é só a área fechada pelo contorno escuro do personagem (contorno relativo ao fundo local); sem engrossar com a sombra. `bake_grad.py` → `retrace.py` (borda fina nova).
+- Corrigido o agrupamento: a pose "swingl" trazia o mago em pé junto (duas figuras na mesma imagem); agora cada pose tem só uma figura (a do mago em pé foi separada e não é usada).
+- Clériga: Luz Sagrada não brilha mais nela (sem carga/brilho do orbe e sem flash de tela quando há alvo); a luz fica só no alvo escolhido.

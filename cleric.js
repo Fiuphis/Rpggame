@@ -45,9 +45,9 @@ const ACT = {   // só poses de COSTAS (bp, bg, br, bt) — base: bp1
     S(1900, [[0,'bp1'],[.12,'at1'],[.3,'ult1'],[.9,'ult1',{dy:-2}],[.98,'bp1']], [[.26,'shield:holy2']]),
   ],
   ult:[
-    S(5200, [[0,'bp1'],[.08,'br1'],[.16,'bp3'],[.26,'bt1',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
-    S(5200, [[0,'bp1'],[.08,'br2'],[.16,'br1'],[.26,'bt2',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar2'],[.62,'lightpillar'],[.78,'lightend']]),
-    S(5200, [[0,'bp1'],[.08,'stf'],[.16,'at1'],[.26,'ult1',{dy:-2}],[.42,'ult2',{dy:-6}],[.82,'ult2',{dy:-4}],[.96,'bp1']], [[.08,'charge'],[.18,'charge'],[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
+    S(5200, [[0,'bp1'],[.08,'br1'],[.16,'bp3'],[.26,'bt1',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
+    S(5200, [[0,'bp1'],[.08,'br2'],[.16,'br1'],[.26,'bt2',{dy:-2}],[.42,'bt4',{dy:-6}],[.82,'bt4',{dy:-4}],[.96,'bp1']], [[.3,'lightup'],[.46,'lightpillar2'],[.62,'lightpillar'],[.78,'lightend']]),
+    S(5200, [[0,'bp1'],[.08,'stf'],[.16,'at1'],[.26,'ult1',{dy:-2}],[.42,'ult2',{dy:-6}],[.82,'ult2',{dy:-4}],[.96,'bp1']], [[.3,'lightup'],[.46,'lightpillar'],[.62,'lightpillar2'],[.78,'lightend']]),
   ],
   dodge:[
     S(1050, [[0,'bp1'],[.1,'bg1',{dx:-6}],[.3,'bg2',{dx:-34,dy:-2}],[.52,'bg2',{dx:-50}],[.72,'bg1',{dx:-30}],[.9,'bp1']], [], {ghost:true}),
@@ -136,10 +136,10 @@ function make(host){
       E('fx_aura', 1700, u => ({x:f.x, y:f.y - 120, s:lerp(.75, .95, eo(u)), a:(u < .12 ? u / .12 : u > .8 ? (1 - u) / .2 : 1) * (h ? .55 : .3)}), {back:true});
       E('fx_ring1', 1500, u => ({x:f.x, y:f.y - 6, s:lerp(.6, 1.1, eo(u)), sy:.3, a:(h ? .8 : .45) * Math.sin(Math.PI * u)}));
       for (let i = 0; i < (h ? 7 : 4); i++) { const an = i * .9; E('fx_star' + (1 + i % 3), 1100, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 40 - 150 * u + Math.sin(an) * 20, s:.4, a:Math.sin(Math.PI * u)}), {delay:i * 180}); } },
-    lightup(){ const f = tf(); flashT = clk(); E('fx_ring2', 2600, u => ({x:f.x, y:f.y - 4, s:lerp(.5, 1.3, eo(u)), sy:.32, rot:0, a:u < .1 ? u / .1 : 1 - seg(u, .6, 1)})); E('fx_lotus', 2400, u => ({x:f.x, y:f.y + 6, s:lerp(.5, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .12 ? u / .12 : 1 - seg(u, .55, 1)})); },
+    lightup(){ const f = tf(); if (!tgt) flashT = clk(); E('fx_ring2', 2600, u => ({x:f.x, y:f.y - 4, s:lerp(.5, 1.3, eo(u)), sy:.32, rot:0, a:u < .1 ? u / .1 : 1 - seg(u, .6, 1)})); E('fx_lotus', 2400, u => ({x:f.x, y:f.y + 6, s:lerp(.5, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .12 ? u / .12 : 1 - seg(u, .55, 1)})); },
     lightpillar(){ const f = tf(); E('fx_pillar', 2400, u => ({x:f.x, y:f.y + 4, s:1.5, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .5, 1)}), {back:true}); E('glow', 2400, u => ({x:f.x, y:f.y - 140, r:lerp(60, 230, eo(Math.min(1, u * 1.6))), c:GOLD, a:.8 * Math.sin(Math.PI * u)})); },
     lightpillar2(){ const f = tf(); E('fx_burst', 1800, u => ({x:f.x, y:f.y + 4, s:1.7, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .4, 1)}), {back:true}); for (let i = 0; i < 10; i++) { const an = i * .63; E('fx_star' + (1 + i % 3), 1400, u => ({x:f.x + Math.cos(an) * 80 * eo(u), y:f.y - 60 - 160 * u + Math.sin(an) * 30, s:.5 * (1 - u * .4), a:Math.sin(Math.PI * u)}), {delay:i * 110}); } },
-    lightend(){ const f = tf(); E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,240,200', a:.9 * (1 - u)})); E('fx_sunstar', 800, u => ({x:f.x, y:f.y - 140, s:lerp(.6, 2, eo(u)), a:1 - u})); flashT = clk(); },
+    lightend(){ const f = tf(); E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,240,200', a:.9 * (1 - u)})); E('fx_sunstar', 800, u => ({x:f.x, y:f.y - 140, s:lerp(.6, 2, eo(u)), a:1 - u})); if (!tgt) flashT = clk(); },
   };
   function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); if (k === 'shot') shot(a, +b); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
 
@@ -180,7 +180,7 @@ function make(host){
     const o = drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
     if (o) orbW = o; orbVis += ((o && !deadTarget ? 1 : 0) - orbVis) * .18;
     fc.clearRect(0, 0, front.width, front.height);
-    if (orbVis > .02) { const cb = Math.max(0, 1 - (now - chargeT) / 1100), pulse = .5 + .5 * Math.sin(tm / 330);
+    if (orbVis > .02 && !(cur && cur.noGlow)) { const cb = Math.max(0, 1 - (now - chargeT) / 1100), pulse = .5 + .5 * Math.sin(tm / 330);
       glow(fc, orbW.x, orbW.y, (22 + 6 * pulse + 40 * cb) * (cur ? 1.15 : 1), GOLD, orbVis * (.3 + .15 * pulse + .35 * cb)); }
     if (backUsed) { bc.clearRect(0, 0, back.width, back.height); backUsed = false; }
     fxl = fxl.filter(e => {
@@ -203,7 +203,7 @@ function make(host){
       tgt = name === 'ult' && o.tx != null ? {x:o.tx} : null;
       if (name === 'guard') return run(variant(/ffe08a/i.test(o.color || '') ? ACT.guard_h : ACT.guard_n));
       if (name === 'cast') name = 'holy';
-      const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a); p.then(fireHit); return p;
+      const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a, name === 'ult' ? {noGlow:true} : undefined); p.then(fireHit); return p;
     },
     nextHit(){ return new Promise(r => hitW.push(r)); },
     idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(IDLES)); },

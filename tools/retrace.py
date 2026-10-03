@@ -6,7 +6,7 @@ import numpy as np, json, sys
 from PIL import Image
 from scipy import ndimage as ndi
 RAW, OUT = sys.argv[1], sys.argv[2]; P = 3; CAP = 7
-POSES = ['spin1','stars','spinwide','swingf','swingl','swingr']   # só as poses da folha em degradê têm halo; as da folha branca já saem limpas
+POSES = ['spin1','stars','spinwide','swingf','swingl','swingu','swingr']   # só as poses da folha em degradê têm halo; as da folha branca já saem limpas
 NAVY = np.array([14, 12, 42], np.uint8)
 raw = json.load(open(f'{RAW}/meta.json'))['poses']; M = json.load(open(f'{OUT}/meta.json'))
 S4 = ndi.generate_binary_structure(2, 1)
