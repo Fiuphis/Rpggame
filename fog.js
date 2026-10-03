@@ -2,9 +2,9 @@
    Fog.rest(el)  → em repouso, cobrindo as faixas acima/abaixo de `el` (com um pouco de sobreposição) e à deriva
    Fog.close(el) → vão das bordas até o meio da tela     Fog.open(el) → o caminho inverso, voltando exatamente ao repouso */
 (() => {
-const REST = .5;
+const REST = .45;
 const banks = () => [document.getElementById('fogT'), document.getElementById('fogB')];
-const edge = el => { const [t] = banks(), bh = t.getBoundingClientRect().height || innerHeight * .54, top = Math.max(0, (innerHeight - el.offsetHeight) / 2); return -(bh - top - bh * .02); };
+const edge = el => { const [t] = banks(), bh = t.getBoundingClientRect().height || innerHeight * .54, top = Math.max(0, (innerHeight - el.offsetHeight) / 2); return -(bh - top - bh * -.06); };
 const cancel = () => banks().forEach(x => x.getAnimations().forEach(a => a.cancel()));
 const put = (el, e, op) => { const [t, b] = banks(); t.style.display = b.style.display = 'block'; t.style.transform = `translateY(${e}px)`; b.style.transform = `translateY(${-e}px)`; t.style.opacity = b.style.opacity = op; };
 const run = (el, from, to, ms, ease) => { const e = edge(el), [t, b] = banks(); t.style.display = b.style.display = 'block'; cancel();

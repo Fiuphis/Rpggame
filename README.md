@@ -372,3 +372,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v127: botão TROCAR DE GRUPO fica atrás das nuvens (não aparece durante a transição).
 - v128: painel do boss (botão ENTRAR) e modal de reiniciar ficam acima das nuvens.
 - v129: nuvens de repouso entram menos no mapa/menu (sobreposição 14%→2%, opacidade .62→.5).
+- v130: brilho das nuvens não invade mais o conteúdo (sobreposição -6%, opacidade .45).
