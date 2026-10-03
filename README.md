@@ -232,3 +232,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Clériga volta a usar o cajado (at1/at3/stf/ult1/ult2, de costas) além da Bíblia; mais variações com cajado em ataque, sagrado, defesa, Luz Sagrada e vitória.
 - Dano ao boss só entra no impacto do efeito (evento hit/elemento) para Maga e Clériga; removida a bola de projétil antiga delas.
 - Luz Sagrada: escolhe o alvo ANTES; os efeitos (círculo, pilar, luz) caem no alvo e a vida só muda quando a luz chega. Sem escolha no tempo = não usa e continua disponível.
+
+## v57
+- Mana não regenera mais: só sobe com Poção de Mana.
+- Cenário trocado (salão do trono novo); HUD (boss, moedas, cartões dos heróis, painel) preservado.
+- Tremor do cenário reduzido a quase nada (±1px).

@@ -102,7 +102,7 @@ const SKILL_META = {
   assassin:{atk:['FÍSICO',null,'staff'], holy_atk:['FÍSICO','SAGRADO','cross'], def:['FÍSICO',null,'shield'], holy_def:['FÍSICO','SAGRADO','cross'], dodge:[null,null,'dodge']}
 };
 Object.keys(SKILLS).forEach(k => SKILLS[k].forEach(s => { const m = SKILL_META[k][s.id] || []; s.tipo = m[0]; s.attr = m[1]; s.icon = m[2]; }));
-const MANA_REGEN = 8;   // mana recuperada por pergunta
+// mana NÃO regenera: só sobe com Poção de Mana
 const KIND_LABEL = {atk:'ATAQUE', def:'DEFESA', dodge:'ESQUIVA', util:'TÁTICA'};
 
 const GROUPS = {mage:'MAGO', knight:'GUERREIRO', tank:'TANQUE', assassin:'CLÉRIGA'};
@@ -729,7 +729,6 @@ async function playRound(){
   HERO_ORDER.forEach(k => {
     Object.keys(state.cd[k]).forEach(id => { state.cd[k][id] = Math.max(0, state.cd[k][id] - 1); });
     const act = actions[k]; if (act && act.skill.cd > 0) state.cd[k][act.skill.id] = act.skill.cd;
-    if (state.heroes[k].hp > 0) state.heroes[k].mp = Math.min(100, state.heroes[k].mp + MANA_REGEN);
   });
   renderHud();
   if (state.rage >= RAGE_MAX) { state.hardNext = true; state.forceHard = true; toast('Fúria no máximo! A próxima pergunta será difícil.'); }

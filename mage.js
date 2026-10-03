@@ -193,7 +193,7 @@ function make(host){
       fc.drawImage(im, -w / 2, s.anchorB ? -h : -h / 2, w, h); fc.restore(); return true;
     });
     if (flashT && now >= flashT) { const u = (now - flashT) / 420; if (u < 1) { fc.save(); fc.fillStyle = `rgba(150,160,255,${.5 * (1 - u)})`; fc.fillRect(0, 0, front.width, front.height); fc.restore(); } else flashT = 0; }
-    if (shakeT && now >= shakeT) { const u = (now - shakeT) / 450, g = host.shakeEl; if (g) g.style.transform = u < 1 ? `translate(${Math.sin(u * 60) * 4 * (1 - u)}px,${Math.cos(u * 50) * 3 * (1 - u)}px)` : ''; if (u >= 1) shakeT = 0; }
+    if (shakeT && now >= shakeT) { const u = (now - shakeT) / 450, g = host.shakeEl; if (g) g.style.transform = u < 1 ? `translate(${Math.sin(u * 60) * 1 * (1 - u)}px,${Math.cos(u * 50) * .8 * (1 - u)}px)` : ''; if (u >= 1) shakeT = 0; }
   }
   let lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
   const run = (a, extra) => new Promise(res => { if (cur) cur.done(false); cur = {a, start: clk(), fired: 0, done: ok => res(ok !== false), ...extra}; });

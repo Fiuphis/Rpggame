@@ -58,9 +58,9 @@
 .damage-flash.active{animation:damage-flash .45s ease-out}
 .game.hit-shake{animation:hit-shake .4s linear}
 @keyframes boss-charge{0%{opacity:0;transform:scale(.9)}60%{opacity:1;transform:scale(1.04)}100%{opacity:.55;transform:scale(1)}}
-@keyframes boss-rumble{0%,100%{transform:translate(0,0)}15%{transform:translate(-2px,1px)}30%{transform:translate(2px,-1px)}45%{transform:translate(-1px,-1px)}60%{transform:translate(1px,1px)}75%{transform:translate(-1px,0)}}
+@keyframes boss-rumble{0%,100%{transform:translate(0,0)}25%{transform:translate(-.5px,.3px)}50%{transform:translate(.5px,-.3px)}75%{transform:translate(-.3px,.3px)}}
 @keyframes damage-flash{0%{opacity:0}20%{opacity:.4}100%{opacity:0}}
-@keyframes hit-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+@keyframes hit-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-1px)}50%{transform:translateX(1px)}75%{transform:translateX(-.5px)}}
 
 /* ===== Fase de ataque dos heróis ===== */
 .dq-answer .label{flex:1;min-width:0}
