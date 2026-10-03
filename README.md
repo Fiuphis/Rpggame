@@ -362,3 +362,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v115: cada fala fica ~5s após digitar (abertura ~29s); removidas as reações dos heróis.
 - v116: pausa de leitura de cada fala proporcional ao texto (1,5 s + 60 ms/letra); abertura ~23 s.
 - v117: mapa Jornada dos Heróis (map.html/js/css, tools/build_map.py): lobby → mapa → voto para entrar → abertura; vitória marca o boss como concluído e libera o próximo. Progresso em localStorage bd1_progress (?resetmapa=1 zera).
+- v118: mapa: botão REINICIAR (com confirmação) perto da bússola, nós selecionáveis (tocar de novo desmarca), rejogar boss concluído, 'trocar de grupo' sem perder progresso.

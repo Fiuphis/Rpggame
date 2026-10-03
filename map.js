@@ -16,7 +16,7 @@ const BOSSES = {   // ordem da jornada: 0 → 1 → 2 → 5 → 4 → 3 (ids = r
 const ORDER = [0, 1, 2, 5, 4, 3], KEY = 'bd1_progress';
 const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.done)) return d.done; } catch {} return []; };
 if (P.get('resetmapa')) localStorage.removeItem(KEY);
-const done = load();
+let done = load();
 const stateOf = (done, id) => done.includes(id) ? 'done' : (ORDER.find(b => !done.includes(b)) === id ? 'next' : 'locked');
 let meta = null, selected = null, yes = 0, mine = false, bots = [];
 const pct = (v, t) => (v / t * 100) + '%';
@@ -42,32 +42,39 @@ function build(){
   $('#map').classList.add('intro');
   requestAnimationFrame(() => requestAnimationFrame(() => $('#veil').classList.add('out')));
   if (before !== done) setTimeout(() => paint(done, false), 3000);
-  else setTimeout(() => { const nx = ORDER.find(b => !done.includes(b)); if (nx !== undefined && BOSSES[nx].play) select(nx); }, 2800);
 }
 function paint(dn, instant){
   for (const id in meta.nodes) {
     const st = stateOf(dn, +id), ic = $('#ic' + id), gr = $('#gray' + id), nd = $('#nd' + id);
     ic.src = st === 'done' ? 'map/ic_done.webp' : st === 'next' ? 'map/ic_next.webp' : 'map/ic_lock.webp'; ic.className = 'ic ' + st;
     gr.classList.toggle('off', st !== 'locked');
-    nd.classList.toggle('ok', st === 'next' && BOSSES[id].play);
+    nd.classList.toggle('ok', (st === 'next' || st === 'done') && BOSSES[id].play);
     const h = $('#halo' + id); if (h) h.style.opacity = (id === '0' && st === 'next') || (id === '1' && st === 'done') ? 1 : 0;
     if (instant) { gr.style.transition = 'none'; void gr.offsetWidth; gr.style.transition = ''; }
   }
 }
+// reiniciar progresso (botão perto da bússola)
+$('#reset').onclick = () => { $('#confirm').hidden = false; };
+$('#c-no').onclick = () => { $('#confirm').hidden = true; };
+$('#c-yes').onclick = () => { localStorage.removeItem(KEY); sessionStorage.removeItem('bd1_justwon'); done = []; $('#confirm').hidden = true; deselect(); paint(done, false); };
+// voltar = trocar de grupo (o progresso fica salvo no aparelho)
+$('#back').addEventListener('click', () => { LOBBY.leave(); });
 function voters(){ return Math.max(1, LOBBY.counts()[grp] || 0); }
+function deselect(){ selected = null; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false; $('#panel').hidden = true; document.querySelectorAll('.node').forEach(e => e.classList.remove('sel')); }
 function select(id){
+  if (selected === id) return deselect();   // tocar de novo tira a seleção
   const st = stateOf(done, id), B = BOSSES[id];
   selected = id; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false;
   document.querySelectorAll('.node').forEach(e => e.classList.toggle('sel', e.id === 'nd' + id));
   $('#panel').hidden = false; $('#p-title').textContent = B.name;
   const go = $('#p-go'); const n = voters(), need = Math.floor(n / 2) + 1;
-  if (st === 'next' && B.play) {
-    $('#p-sub').textContent = B.sub + ' · o grupo vota para entrar'; go.disabled = false; go.className = 'p-go'; go.innerHTML = `ENTRAR <b>0/${need}</b>`;
+  if ((st === 'next' || st === 'done') && B.play) {
+    const again = st === 'done'; $('#p-sub').textContent = (again ? 'Concluído · jogar de novo com outro grupo ou o mesmo' : B.sub) + ' · o grupo vota para entrar'; go.disabled = false; go.className = 'p-go'; go.innerHTML = `${again ? 'REJOGAR' : 'ENTRAR'} <b>0/${need}</b>`;
     go.onclick = () => { mine = !mine; yes += mine ? 1 : -1; upd(need); if (yes >= need) enter(); };
     if (TEST) for (let i = 0; i < n - 1; i++) bots.push(setTimeout(() => { if (selected !== id) return; if (Math.random() < .6) { yes++; upd(need); if (yes >= need) enter(); } }, 1200 + i * 800));
   } else { $('#p-sub').textContent = st === 'done' ? 'Concluído · este guardião já foi derrotado' : st === 'next' ? 'Em breve' : 'Bloqueado · derrote o guardião anterior'; go.disabled = true; go.innerHTML = 'INDISPONÍVEL'; go.onclick = null; }
 }
-function upd(need){ const go = $('#p-go'); go.innerHTML = `ENTRAR <b>${yes}/${need}</b>`; go.classList.toggle('selected', mine); }
+function upd(need){ const go = $('#p-go'); go.innerHTML = `${stateOf(done, selected) === 'done' ? 'REJOGAR' : 'ENTRAR'} <b>${yes}/${need}</b>`; go.classList.toggle('selected', mine); }
 function enter(){
   bots.forEach(clearTimeout); const v = $('#veil'); v.classList.remove('out'); $('#map').style.transition = 'transform 1.2s ease-in'; $('#map').style.transform = 'scale(1.5)';
   setTimeout(() => { location.href = 'game.html' + location.search; }, 1300);
