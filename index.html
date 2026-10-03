@@ -91,7 +91,15 @@ confirmBtn.onclick=()=>{
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search});
 };
-document.getElementById('upd-btn').onclick=async function(){this.textContent='ATUALIZANDO…';this.disabled=true;try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}}catch(e){}location.reload()};
+(()=>{const V='v134',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
+b.onclick=async function(){b.disabled=true;b.textContent='ATUALIZANDO…';
+try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}
+if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}
+const t=await (await fetch('sw.js',{cache:'reload'})).text();const m=t.match(/const CACHE='([^']+)'/);
+const fs=[...new Set((t.match(/'\.\/[^']+\.(?:html|js|css|json|webmanifest)'/g)||[]).map(s=>s.slice(1,-1)))].concat(['./','./sw.js']);
+await Promise.all(fs.map(f=>fetch(f,{cache:'reload'}).catch(()=>0)));
+b.textContent='OK · '+(m?m[1].replace('bd1-rpg-',''):'')}catch(e){b.textContent='ERRO · TENTE DE NOVO'}
+setTimeout(()=>location.replace(location.pathname+location.search),500)}})();
 testBtn.onclick=()=>{LOBBY.setTest(!LOBBY.testMode);location.href='index.html'};
 render();
 const _st=document.getElementById('stage');

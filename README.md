@@ -376,3 +376,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v131: nuvens encostam na borda do menu/mapa; brilho invade só um pouco (sobreposição +1%, opacidade .48).
 - v132: botão de atualizar versão saiu do jogo e foi pro canto superior direito do menu de seleção de grupo (↻ ATUALIZAR: limpa cache e recarrega).
 - v133: estilo do botão ATUALIZAR vai inline no index.html (não depende do cache do lobby.css).
+- v134: ATUALIZAR baixa os arquivos ignorando o cache HTTP e mostra a versão no botão.
