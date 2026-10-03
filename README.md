@@ -386,3 +386,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v141: mapa vivo (mapfx.js): água com brilhos e ondas, 3 barcos vagando, peixes pulando, pedras caindo das falésias, barbatana, serpente, tentáculos, olhos e sereia. Máscara de água em map/water.png (tools/build_water.py).
 - v142: sereia removida; entram voadores: bandos de pássaros em V, morcegos e wyverns cruzando o mapa em direções aleatórias.
 - v143: barcos removidos do mapa.
+- v144: clima por região (calmo/vento/ondas grandes/tempestade com raios e chuva/ciclone raro, trocando sozinho) e nuvens raras passando.

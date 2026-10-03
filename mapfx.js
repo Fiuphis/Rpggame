@@ -52,7 +52,7 @@ const initWater = pts => {
 };
 const drawWater = (dt, now) => {
   for (const d of dashes) {
-    d.x += d.v * dt; d.y += Math.sin(now * .7 + d.ph) * .02;
+    d.x += d.v * dt * wmul(d.x, d.y); d.y += Math.sin(now * .7 + d.ph) * .02;
     if (d.x > W) d.x = -d.l;
     const a = .16 + .16 * Math.sin(now * d.s + d.ph);
     for (let i = 0; i < d.l; i++) if (wat(d.x + i, d.y)) px(d.x + i, d.y, 'b', Math.max(0, a));
@@ -172,6 +172,76 @@ const spawnFly = force => {
   const o = F[force || name](); o.born = performance.now(); o.name = force || name; fl.push(o);
 };
 
+/* ---------- clima por região: calmo / ventando / ondas grandes / tempestade / ciclone (raro), mais nuvens raras ---------- */
+const CW = W / 3, CH = H / 2, cellOf = (x, y) => Math.min(2, Math.max(0, Math.floor(x / CW))) + 3 * Math.min(1, Math.max(0, Math.floor(y / CH)));
+const MOODS = [['calm', 4], ['windy', 3], ['waves', 2.5], ['storm', 2], ['cyclone', .6]];
+const cells = Array.from({ length: 6 }, (_, i) => ({ mood: 'calm', k: 0, state: 'in', until: 0, cx: CW * (i % 3 + .5) + R(-12, 12), cy: CH * (Math.floor(i / 3) + .5) + R(-12, 12), flash: 0, nextFlash: 0, bolt: null, cyc: null, nextWave: 0, born: 0 }));
+const MULT = { calm: 0, windy: 2.2, waves: .8, storm: 3, cyclone: 2 };
+const wmul = (x, y) => { const c = cells[cellOf(x, y)]; return 1 + MULT[c.mood] * c.k; };
+const pickMood = (c, i, now) => {
+  const stormN = cells.filter(o => o.mood === 'storm' && o !== c).length, cycN = cells.filter(o => o.mood === 'cyclone' && o !== c).length;
+  let opts = MOODS.filter(([n]) => (n !== 'storm' || stormN < 2) && (n !== 'cyclone' || cycN < 1) && n !== c.mood);
+  let r = Math.random() * opts.reduce((s, o) => s + o[1], 0), name = opts[0][0];
+  for (const [n, w] of opts) { if ((r -= w) <= 0) { name = n; break; } }
+  c.cyc = null;
+  if (name === 'cyclone') {                              // precisa de um trecho de água largo na região
+    for (let k = 0; k < 60 && !c.cyc; k++) { const p = PICK(pts); if (cellOf(p.x, p.y) === i && free(p.x, p.y, 6)) c.cyc = { x: p.x, y: p.y }; }
+    if (!c.cyc) name = 'windy';
+  }
+  c.mood = name; c.state = 'in'; c.born = now;
+  c.until = now + (name === 'cyclone' ? R(9000, 14000) : name === 'storm' ? R(14000, 24000) : R(18000, 38000));
+  c.nextFlash = now + R(800, 2500); c.nextWave = now + R(500, 2000);
+};
+const wavesL = [], flecks = [], clouds = [];
+const shoresBy = [[], [], [], [], [], []];
+const bolt = (x0, y0, x1, y1) => { const pts_ = [[x0, y0]]; let x = x0, y = y0; while (y < y1) { y += RI(3, 6); x += RI(-3, 3) + (x1 - x) * .15; pts_.push([x, Math.min(y, y1)]); } return pts_; };
+const drawWeather = (dt, now) => {
+  const nowS = now / 1000, ms = performance.now();
+  cells.forEach((c, i) => {
+    if (c.state === 'in') { c.k = Math.min(1, c.k + dt / 3); if (c.k >= 1) c.state = 'on'; }
+    else if (c.state === 'on' && ms > c.until) c.state = 'out';
+    else if (c.state === 'out') { c.k = Math.max(0, c.k - dt / 3); if (c.k <= 0) pickMood(c, i, ms); }
+    const k = c.k, ix = i % 3, iy = Math.floor(i / 3);
+    // vento: flecos brancos rasgando a água
+    if ((c.mood === 'windy' || c.mood === 'storm' || c.mood === 'cyclone') && k > .3 && flecks.length < 110 && Math.random() < 1.6 * k) {
+      const p = PICK(pts); if (cellOf(p.x, p.y) === i) flecks.push({ x: p.x, y: p.y, l: RI(6, 12), v: R(26, 44) * (c.mood === 'storm' ? 1.4 : 1), life: R(.35, .8), t: 0 });
+    }
+    // tempestade: escurece, chove, relâmpagos
+    if (c.mood === 'storm' && k > 0) {
+      const gr = ctx.createRadialGradient(c.cx, c.cy, 4, c.cx, c.cy, 76); gr.addColorStop(0, 'rgba(6,9,26,' + (.5 * k) + ')'); gr.addColorStop(1, 'rgba(6,9,26,0)');
+      ctx.globalAlpha = 1; ctx.fillStyle = gr; ctx.fillRect(c.cx - 78, c.cy - 78, 156, 156);
+      for (let n = 0; n < 130 * k; n++) { const a = R(0, 6.28), r = Math.sqrt(Math.random()) * 70, x = c.cx + Math.cos(a) * r, y = c.cy + Math.sin(a) * r * .9, al = .85 * (1 - r / 80); px(x, y, '#cfe6ff', al); px(x - 1, y - 2, '#cfe6ff', al * .8); px(x - 2, y - 4, '#9fc4e8', al * .5); }
+      if (ms > c.nextFlash && k > .6) { c.flash = 1; c.nextFlash = ms + R(2200, 6000); const tp = PICK(pts); const pp = pts.filter(q => Math.hypot(q.x - c.cx, q.y - c.cy) < 45); const t = pp.length ? PICK(pp) : tp; c.bolt = { pts: bolt(t.x + RI(-10, 10), c.cy - 52, t.x, t.y), t: ms, tx: t.x, ty: t.y }; }
+      if (c.flash > 0) { const fg = ctx.createRadialGradient(c.cx, c.cy, 2, c.cx, c.cy, 70); fg.addColorStop(0, 'rgba(235,240,255,' + (.7 * c.flash) + ')'); fg.addColorStop(1, 'rgba(235,240,255,0)'); ctx.globalAlpha = 1; ctx.fillStyle = fg; ctx.fillRect(c.cx - 72, c.cy - 72, 144, 144); c.flash = Math.max(0, c.flash - dt * 7); }
+      if (c.bolt && ms - c.bolt.t < 220) { const b = c.bolt.pts, vis = ms - c.bolt.t < 70 || Math.floor((ms - c.bolt.t) / 45) % 2 === 0;
+        if (vis) { for (let q = 0; q < b.length - 1; q++) { const [x0, y0] = b[q], [x1, y1] = b[q + 1], n = Math.max(1, Math.abs(y1 - y0)); for (let s = 0; s <= n; s++) { const x = x0 + (x1 - x0) * s / n, y = y0 + (y1 - y0) * s / n; px(x, y, 'w'); px(x + 1, y, 'w'); px(x - 1, y, '#9fb4ff', .6); px(x + 2, y, '#9fb4ff', .35); } } ring(c.bolt.tx, c.bolt.ty, 3 + (ms - c.bolt.t) / 25, .7); } }
+    }
+    // ciclone: braços em espiral girando sobre a água
+    if (c.mood === 'cyclone' && c.cyc && k > 0) {
+      c.cyc.x += wmul(c.cyc.x, c.cyc.y) * .0; const cx = c.cyc.x + Math.sin(nowS * .3) * 2, cy = c.cyc.y, Rr = 22 * Math.min(1, k * 1.3);
+      for (let arm = 0; arm < 3; arm++) for (let r = 1.5; r < Rr; r += .55) { const a = nowS * 3.2 + r * .36 + arm * 2.094, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r * .5, al = (.95 - r / Rr * .5) * k, cc = r < Rr * .5 ? 'w' : 'b'; px(x, y, cc, al); px(x + 1, y, cc, al * .9); px(x, y + 1, 'B', al * .7); }
+      ring(cx, cy, 2 + (nowS * 5 % 5), .5 * k); ring(cx, cy, 8 + (nowS * 4 % 6), .3 * k); for (let q = 0; q < 3; q++) px(cx + R(-8, 8), cy - R(1, 7), 'w', .8 * k);
+    }
+    // ondas grandes batendo na costa
+    const waveEvery = c.mood === 'waves' ? [1100, 2200] : c.mood === 'storm' ? [1500, 3000] : [9000, 16000];
+    if (ms > c.nextWave && shoresBy[i].length && wavesL.length < 6) { const s = PICK(shoresBy[i]); wavesL.push({ x: s.x, y1: s.y1, t: ms, w: RI(16, 26) }); c.nextWave = ms + R(waveEvery[0], waveEvery[1]) * (c.state === 'on' ? 1 : 2); }
+  });
+  for (let i = flecks.length - 1; i >= 0; i--) { const f = flecks[i]; f.t += dt; f.x += f.v * dt; if (f.t > f.life) { flecks.splice(i, 1); continue; } const a = Math.sin(f.t / f.life * Math.PI) * .8; for (let q = 0; q < f.l; q++) if (wat(f.x - q, f.y)) px(f.x - q, f.y, 'w', a * (1 - q / f.l * .6)); }
+  for (let i = wavesL.length - 1; i >= 0; i--) { const wv = wavesL[i], u = (ms - wv.t) / 2300; if (u >= 1) { wavesL.splice(i, 1); continue; }
+    if (u < .7) { const e = ease(u / .7), y = wv.y1 + 14 * (1 - e), w = wv.w * (.55 + .45 * e);
+      for (let dx = -w / 2; dx <= w / 2; dx++) { const arc = Math.round(dx * dx / (w * 1.1)); if (wat(wv.x + dx, y + arc)) { px(wv.x + dx, y + arc - 1, 'w', .95); px(wv.x + dx, y + arc, 'w', .9); px(wv.x + dx, y + arc + 1, 'b', .75); px(wv.x + dx, y + arc + 2, 'B', .55); } } }
+    else { const s = (u - .7) / .3; drops(wv.x - 5, wv.y1 + 1, s, 8, 1); drops(wv.x, wv.y1 + 1, s, 8, 1); drops(wv.x + 5, wv.y1 + 1, s, 8, 1); for (let dx = -wv.w / 2; dx <= wv.w / 2; dx++) if (wat(wv.x + dx, wv.y1 + 2)) { px(wv.x + dx, wv.y1 + 2, 'w', (1 - s) * .9); px(wv.x + dx, wv.y1 + 3, 'w', (1 - s) * .5); } } }
+};
+const drawClouds = (dt, now) => {
+  for (let i = clouds.length - 1; i >= 0; i--) { const c = clouds[i]; c.x += c.vx * dt; c.y += c.vy * dt; if (c.x > W + 40 || c.x < -50 || c.y > H + 30 || c.y < -30) { clouds.splice(i, 1); continue; }
+    for (const [ctxx, off, col, al] of [[g, 8, 'rgba(0,0,12,1)', .13], [g2, 0, 'rgba(236,241,255,1)', .3]]) { ctx = ctxx; ctx.globalAlpha = al; ctx.fillStyle = col;
+      for (const b of c.blobs) for (let dy = -b.r; dy <= b.r; dy++) { const hw = Math.round(Math.sqrt(b.r * b.r - dy * dy) * 1.45); ctx.fillRect(Math.round(c.x + b.x - hw), Math.round(c.y + b.y + dy + off), hw * 2, 1); } } }
+  ctx = g;
+};
+let nextCloud = 0;
+const spawnCloud = () => { const ang = R(-.5, .5) + (Math.random() < .25 ? Math.PI : 0), sp = R(2.5, 5), nb = RI(6, 9), blobs = Array.from({ length: nb }, (_, i) => { const m = Math.sin((i + .5) / nb * Math.PI); return { x: i * 3.4 + R(-1.5, 1.5), y: R(-2, 2) - m * 2, r: Math.max(2, Math.round(2 + m * 4 + R(0, 1.5))) }; });
+  const sx = Math.cos(ang) > 0 ? -35 : W + 15; clouds.push({ x: sx, y: R(20, H - 20), vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp * .6, blobs }); };
+
 const WEIGHTS = [['fish', 3], ['rock', 2.5], ['fin', 2], ['eyes', 1.5], ['tentacle', 1.5], ['serpent', 1]];
 const spawn = force => {
   if (!force && ev.length >= 3) return;
@@ -192,10 +262,12 @@ const frame = now => {
   if (acc < 50) return; acc = 0;                       // ~20 quadros/s
   g.clearRect(0, 0, W, H); g.globalAlpha = 1; g2.clearRect(0, 0, W, H); ctx = g;
   const s = now / 1000;
-  drawWater(.05, s);
+  drawWater(.05, s); drawWeather(.05, s);
   for (let i = ev.length - 1; i >= 0; i--) { const e = ev[i], t = (now - e.born) / e.dur; if (t >= 1) { ev.splice(i, 1); continue; } e.draw(t, s); }
+  drawClouds(.05, s);
   ctx = g2; for (let i = fl.length - 1; i >= 0; i--) { const e = fl[i], t = (now - e.born) / e.dur; if (t >= 1) { fl.splice(i, 1); continue; } e.draw(t, s); }
   ctx = g; g.globalAlpha = 1; g2.globalAlpha = 1;
+  if (now > nextCloud) { if (!clouds.length) spawnCloud(); nextCloud = now + R(22000, 45000); }
   if (now > nextFly) { spawnFly(); nextFly = now + R(5000, 11000); }
   if (now > nextSpawn) { spawn(); nextSpawn = now + R(1800, 4200); }
 };
@@ -213,7 +285,8 @@ img.onload = () => {
   }
   if (!pts.length) return;
   initWater(pts);
-  run = true; last = performance.now(); nextSpawn = last + 900; nextFly = last + 2500; requestAnimationFrame(frame);
-  window.MAPFX = { spawn, spawnFly, fl, ev, pts: pts.length, shores: shores.length, boats: 0 };
+  run = true; last = performance.now(); nextSpawn = last + 900; nextFly = last + 2500; nextCloud = last + 6000; for (const s of shores) shoresBy[cellOf(s.x, s.y1)].push(s);
+  cells.forEach(c => { c.mood = PICK(['calm', 'calm', 'windy', 'waves']); c.state = 'on'; c.k = 1; c.until = performance.now() + R(5000, 22000); }); requestAnimationFrame(frame);
+  window.MAPFX = { spawn, spawnFly, fl, cells, wavesL, clouds, spawnCloud, pickMood, ev, pts: pts.length, shores: shores.length, boats: 0 };
 };
 })();
