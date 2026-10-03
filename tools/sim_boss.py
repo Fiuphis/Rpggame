@@ -1,18 +1,18 @@
 # Simulador Monte-Carlo do combate (espelha as regras de app.js). Uso: python3 tools/sim_boss.py [N]
 import random, sys, statistics as st
-P = dict(boss_hp=590, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20, stun=1.25, thrust=24, enr_aoe=2, new=True, hard_acc=-.2, easy_acc=.12)
+P = dict(boss_hp=630, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20, stun=1.25, thrust=24, enr_aoe=2, new=True, hard_acc=-.2, easy_acc=.12)
 DIFF = {1:(18,3), 2:(32,5), 3:(50,9)}
 SK = {
  'mage':[('mana_atk','atk',10,0,1),('elem_atk','atk',20,1,1.3),('mana_def','def',10,0,.5),('elem_def','def',20,1,.5),('dodge','dodge',0,1,0)],
  'knight':[('atk','atk',0,0,1),('heavy','atk',15,1,1.5),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
- 'tank':[('atk','atk',0,0,1),('super','atk',20,2,2),('guard','util',20,2,0),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
+ 'tank':[('atk','atk',0,0,1),('super','atk',20,3,2),('guard','util',20,2,0),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
  'assassin':[('atk','atk',0,0,1),('holy_atk','atk',20,1,1.5),('def','def',0,0,.5),('holy_def','def',20,1,.75),('dodge','dodge',0,1,0)],
 }
 ORDER = ['mage','knight','tank','assassin']
 def game(acc, rng, policy, p=P):
     hp = {k:100 for k in ORDER}; mp = {k:100 for k in ORDER}; cd = {k:{} for k in ORDER}
     boss = p['boss_hp']; rage = 0; hardNext = False; since = 0; ult = {k:False for k in ORDER}
-    bh = bers = tired = taunt = 0; burn = 0; prepNext = False; rnd = 0; falls = {k:0 for k in ORDER}
+    bh = bers = tired = taunt = 0; burn = 0; prepNext = False; dazed = False; rnd = 0; tcd = 0; ecd = 0; falls = {k:0 for k in ORDER}
     def alive(): return [k for k in ORDER if hp[k] > 0]
     def hit(k, d):
         nonlocal hp
@@ -20,10 +20,10 @@ def game(acc, rng, policy, p=P):
         hp[k] -= d
         if hp[k] <= 0: hp[k] = 0; falls[k] += 1
     while rnd < 80:
-        rnd += 1; enrag = hardNext; empow = prepNext and not enrag; warn = False; tele = None
-        if not empow and not enrag and p['new'] and rnd >= 2 and rng.random() < p['prep']: warn = True
-        if p['new'] and not empow and not warn and not enrag and rnd > p['tele_from'] and rng.random() < p['tele']:
-            tele = min(alive(), key=lambda k: hp[k])
+        rnd += 1; dz = dazed; dazed = False; enrag = hardNext; empow = prepNext and not enrag; warn = False; tele = None
+        if not dz and not empow and not enrag and p['new'] and rnd >= 2 and rng.random() < p['prep']: warn = True
+        if p['new'] and not dz and not empow and not warn and not enrag and rnd > p['tele_from'] and tcd <= 0 and rng.random() < p['tele']:
+            tele = min(alive(), key=lambda k: hp[k]); tcd = 2
         if warn: prepNext = True
         since += 1
         if enrag or since >= 5: d = 3
@@ -69,7 +69,7 @@ def game(acc, rng, policy, p=P):
         guard = None
         if policy == 'smart' and 'tank' in act and ok['tank'] is False and False: pass
         # teleporte
-        stun = False
+        stun = dz
         if tele and hp[tele] > 0:
             s = act.get(tele)
             if s and s[1] == 'dodge': stun = True
@@ -92,8 +92,9 @@ def game(acc, rng, policy, p=P):
                             e = rng.random()
                             if e < .25: dealt *= 1.5; burn = 2
                             elif e < .75: dealt = 0
+                    if k == 'tank' and s[0] == 'super': dazed = True
                     if k == 'knight' and bers > 0: dealt *= 1.5
-                    if k == 'mage' and bh: dealt *= 2
+                    if k == 'mage' and bh: dealt *= 3
                 if not ok[k]: hurt = base
             elif s[1] == 'def':
                 if ok[k]: rage = min(5, rage + 5)
@@ -110,9 +111,10 @@ def game(acc, rng, policy, p=P):
             if boss <= 0: return True, rnd, falls
             if not alive(): return False, rnd, falls
         # estocada
-        if p['new'] and hp['tank'] > 0 and taunt > 0:
+        if p['new'] and hp['tank'] > 0 and taunt > 0 and ecd <= 0 and not dz:
             c = [k for k in alive() if k != 'tank']
             if c:
+                ecd = 3
                 t = rng.choice(c); s = act.get(t)
                 if not (s and s[1] == 'dodge'): hit(t, round(p['thrust'] * (1 - (s[4] if s and s[1] == 'def' else 0))))
         # onda
@@ -122,7 +124,7 @@ def game(acc, rng, policy, p=P):
         if not alive(): return False, rnd, falls
         if burn > 0: burn -= 1; boss -= 3.5
         if boss <= 0: return True, rnd, falls
-        bh = 0
+        bh = max(0, bh - 1); tcd = max(0, tcd - 1); ecd = max(0, ecd - 1)
         if bers > 0:
             bers -= 1
             if bers == 0: tired = 1

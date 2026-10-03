@@ -34,17 +34,18 @@ const ITEMS = {
 const HERO_ORDER = ['mage','knight','tank','assassin'];
 const HERO_COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ff3d5c'};
 const HERO_X = {mage:10.3, knight:33.2, tank:63.5, assassin:89.7};   // centro do herói (% da largura)
-const BOSS_MAX_HP = 590, HERO_MAX_HP = 100;
+const BOSS_MAX_HP = 630, HERO_MAX_HP = 100;
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
 const QUESTION_SECONDS = 15, ACTION_SECONDS = 10;
 const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
-const ULT_INFO = {mage:'dano em dobro nesta pergunta', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
+const ULT_INFO = {mage:'3x o dano base (só nesta pergunta, sem duração)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
+const THRUST_CD = 3, TELE_CD = 2;   // recarga em perguntas (contando a do uso): Estocada fica 2 perguntas sem sair, Teleporte 1
 const THRUST_DMG = 24, ENRAGE_AOE = 2;                  // Estocada (ignora Provocação/Proteção); Enfurecer: Onda Sombria +2
 const HERO_WX = k => HERO_X[k] * 10.24;                 // x do herói no mundo 1024x1536
 const HARD_EVERY = 5;   // a cada 5 perguntas sem difícil, a próxima é difícil
@@ -88,7 +89,7 @@ const SKILLS = {
   ],
   tank:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de martelo. Dano normal.', mana:0, cd:0, mult:1},
-    {id:'super', kind:'atk', name:'Ataque Super Pesado', desc:'2x o dano normal.', mana:20, cd:2, mult:2},
+    {id:'super', kind:'atk', name:'Ataque Super Pesado', desc:'2x o dano normal e deixa o boss desnorteado na pergunta seguinte (+25% de dano nele, sem habilidades especiais).', mana:20, cd:3, mult:2},
     {id:'guard', kind:'util', name:'Proteção Específica', desc:'Escudo sobre 1 herói: o dano dele vai para o Tanque, com 40% a menos.', mana:20, cd:2, target:true},
     {id:'def', kind:'def', name:'Defesa', desc:'Ergue o escudo. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
@@ -145,7 +146,7 @@ const state = {
   curAttack:BOSS_ATTACK,
   ultReady:{mage:false,knight:false,tank:false,assassin:false},   // carrega ao acertar pergunta difícil
   curQ:null, lastQ:{1:-1,2:-1,3:-1},
-  round:0, prepNext:false, stun:false, enraged:false
+  round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false
 };
 function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify({v:2, gold:state.gold, inventory:state.inventory})); }
 
@@ -324,7 +325,7 @@ function buildHud(){
   $('#game').appendChild(r); bars.rage = r;
 }
 function renderHud(){
-  const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x2' : '', knight: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', assassin: ''};
+  const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x3' : '', knight: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', assassin: ''};
   HERO_ORDER.forEach(k => { const el = bars['st_' + k]; if (!el) return; el.textContent = st[k]; el.hidden = !st[k]; el.classList.toggle('bad', k === 'knight' && b.tired > 0); });
   A.setAura('boss', state.burn > 0 ? 'orange' : state.prepNext ? 'charge' : (state.rage >= RAGE_MAX || state.hardNext) ? 'rage' : null);
   const mk = bars.marks; if (mk && state.burn > 0) mk.innerHTML = `<span>QUEIMANDO ${state.burn}</span><img src="${pixIcon('fire')}" alt="Fogo">`; else if (mk) mk.innerHTML = state.marks.length ? '<span>MARCAS</span>' + state.marks.map(e => `<img src="${pixIcon({fire:'fire',water:'drop',air:'wind',earth:'rock'}[e])}" alt="${ELEMENTS[e].name}">`).join('') : '';
@@ -543,6 +544,7 @@ async function bossIntro(ev = {}){
     const t = ev.tele; showBanner('TELEPORTE!', `o boss sumiu… vai surgir atrás de ${GROUPS[t]}! Use ESQUIVA!`);
     A.play('boss', 'tpOut'); A.fx('boss', 'mark', {x:HERO_WX(t), y:1085}); A.sayRandom('boss', 'laugh', .5); await wait(1900); hideBanner(); return;
   }
+  if (ev.dazed) { showBanner('BOSS DESNORTEADO!', 'o Super Pesado do Tanque o atordoou: +25% de dano nele e sem habilidades especiais'); A.play('boss', 'hurt'); floatText(50, 17, 'DESNORTEADO!', '#ffd34d'); await wait(1600); hideBanner(); return; }
   if (ev.empowered) { showBanner('GOLPE REFORÇADO!', 'dano +50% nesta rodada — defender corta pela metade'); flashHit(); await wait(900); hideBanner(); }
   game.classList.add('boss-attack'); A.play('boss', 'attack'); A.sayRandom('boss', 'intro', .5); await wait(1000); game.classList.remove('boss-attack');
 }
@@ -666,13 +668,14 @@ async function playRound(){
   if (state.over) return;
   state.round++;
   const enragedNow = state.hardNext, empowered = state.prepNext && !enragedNow;
+  const dazed = state.dazedNext; state.dazedNext = false; if (dazed) state.stun = true;
   let prepWarn = false, tele = null;
-  if (!empowered && !enragedNow && state.round >= 2 && Math.random() < PREP_CHANCE) prepWarn = true;
-  if (!empowered && !prepWarn && !enragedNow && state.round > TELE_FROM && Math.random() < TELE_CHANCE) { const al = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp); tele = al[0] || null; }
+  if (!dazed && !empowered && !enragedNow && state.round >= 2 && Math.random() < PREP_CHANCE) prepWarn = true;
+  if (!dazed && !empowered && !prepWarn && !enragedNow && state.round > TELE_FROM && state.teleCd <= 0 && Math.random() < TELE_CHANCE) { const al = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp); tele = al[0] || null; if (tele) state.teleCd = TELE_CD; }
   const FORCE = TEST_MODE ? window.__force : null;   // só em ?teste=1: força um evento do boss (verificação)
   if (FORCE === 'prep' && !empowered && !enragedNow) { prepWarn = true; tele = null; }
   if (FORCE === 'tele' && !empowered && !enragedNow) { prepWarn = false; tele = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp)[0] || null; }
-  await bossIntro({prep:prepWarn, tele, empowered});
+  await bossIntro({prep:prepWarn, tele, empowered, dazed});
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta difícil garantida: mantém os ultimates aparecendo
   const q = pickQuestion(state.forceHard ? 3 : (Math.random() < 0.55 ? 1 : 2));
@@ -776,7 +779,8 @@ async function playRound(){
           else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); state.burn = BURN_TURNS; sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x e fica QUEIMANDO por ${BURN_TURNS} perguntas.`; }
           else if (sk.elem && el) { const r = applyMark(el); if (r) { dmg += r.dmg; sub += ` ${r.name}! +${r.dmg}`; if (r.rage) state.rage = Math.max(0, state.rage + r.rage); } else sub += ` Marca de ${ELEMENTS[el].name.toLowerCase()}.`; }
           if (bers) { dmg = Math.round(dmg * 1.5); sub += ' Berserk 1,5x!'; }
-          if (dmg > 0 && k === 'mage' && state.buff.bh > 0) { dmg *= 2; sub += ' Buraco Negro x2!'; }
+          if (dmg > 0 && k === 'tank' && sk.id === 'super') state.dazedNext = true;
+          if (dmg > 0 && k === 'mage' && state.buff.bh > 0) { dmg *= 3; sub += ' Buraco Negro x3!'; }
         } else sub = 'errou: o ataque falhou';
         if (!ok) hurt = dmgBase;
       } else if (sk.kind === 'util') {
@@ -807,9 +811,11 @@ async function playRound(){
 
   // ---- 3b) estocada: só quando o Tanque está com Provocação/Proteção; atravessa a guarda e fere um aliado
   { const tankUp = state.heroes.tank.hp > 0; let tt = null, why = '';
-    if (!state.over && tankUp && state.buff.taunt > 0) { const al = aliveHeroes().filter(h => h !== 'tank'); tt = al[Math.floor(Math.random() * al.length)] || null; why = 'ignora a Provocação'; }
+    if (state.thrustCd > 0 || dazed) { /* em recarga ou desnorteado */ }
+    else if (!state.over && tankUp && state.buff.taunt > 0) { const al = aliveHeroes().filter(h => h !== 'tank'); tt = al[Math.floor(Math.random() * al.length)] || null; why = 'ignora a Provocação'; }
     else if (!state.over && tankUp && state.guardFor && state.heroes[state.guardFor].hp > 0) { tt = state.guardFor; why = 'ignora a Proteção'; }
     if (tt) {
+      state.thrustCd = THRUST_CD;
       const sk = kindOf(tt), dodged = !!sk && sk.kind === 'dodge', red = sk && sk.kind === 'def' ? sk.reduce : 0, d = Math.round(THRUST_DMG * (1 - red));
       showBanner('ESTOCADA!', `${why}: vai em ${GROUPS[tt]} (ESQUIVA anula, defesa reduz)`); showRing(tt); await wait(700);
       A.play('boss', 'thrust', {tx:HERO_WX(tt), ty:1010}); await Promise.race([A.hit('boss'), wait(3000)]);
@@ -835,7 +841,7 @@ async function playRound(){
     if (state.bossHp <= 0) return endGame(true);
   }
   { const b = state.buff;
-    b.bh = 0; state.guardFor = null; state.stun = false; state.enraged = false; if (empowered) state.prepNext = false;
+    if (b.bh > 0) b.bh--; state.guardFor = null; state.thrustCd = Math.max(0, state.thrustCd - 1); state.teleCd = Math.max(0, state.teleCd - 1); state.stun = false; state.enraged = false; if (empowered) state.prepNext = false;
     if (b.bers > 0) { b.bers--; if (b.bers === 0) b.tired = 1; } else if (b.tired > 0) b.tired--;
     if (b.taunt > 0) b.taunt = state.heroes.tank.hp > 0 ? b.taunt - 1 : 0; }
   HERO_ORDER.forEach(k => {
@@ -903,7 +909,7 @@ function endGame(win){
 function restartRun(){
   A.reset();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
-  Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, prepNext:false, stun:false, enraged:false});
+  Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; });
   state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
   $('#end-screen').hidden = true; renderHud(); turnTimer = setTimeout(playRound, 800);

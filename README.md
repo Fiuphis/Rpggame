@@ -334,5 +334,5 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 ## v87 — Boss animado e novas habilidades
 - `boss.js` (BossRig) + `boss/B_1..12.png` (tools/cut_boss.py): idle, Golpe Horizontal (fácil, 18), Golpe Vertical (média, 32), Invocação Demoníaca (difícil, 50), Estocada, Onda Sombria (AoE 3/5/9), Enfurecer, Preparando Habilidade, Teleporte, dano, morte, risada. Dano só entra quando o golpe chega (A.hit('boss')).
 - Regras (app.js): Preparando Habilidade (20%/rodada; rodada de aviso sem golpe único, próxima +50%); Teleporte (>rodada 4, 1/6, 20 de dano no mais fraco; ESQUIVA anula e atordoa: +25% de dano no boss); Estocada (24, só com Provocação/Proteção ativas, ignora o redirecionamento); Enfurecer = Onda +2.
-- Vida do boss 450 → 590 (tools/sim_boss.py: grupo de 60% vence ~53%, ~13 rodadas).
+- v88: Estocada com recarga de 2 perguntas, Teleporte 1; Buraco Negro = 3x o dano base (sem duração); Super Pesado do Tanque (recarga 3) desnorteia o boss na pergunta seguinte (+25% de dano nele, sem habilidades especiais). Vida do boss 630 (tools/sim_boss.py: grupo de 60% vence ~57%, ~13 rodadas).
 - Teste: ?teste=1&grupo=x; window.__force='prep'|'tele' força o evento.
