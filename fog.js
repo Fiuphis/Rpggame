@@ -4,14 +4,18 @@
 (() => {
 const REST = .62;
 const banks = () => [document.getElementById('fogT'), document.getElementById('fogB')];
-const edge = el => { const [t] = banks(), bh = t.getBoundingClientRect().height || innerHeight * .54, top = Math.max(0, (innerHeight - el.offsetHeight) / 2); return -(bh - top - bh * .14); };
+const edge = el => { const [t, b] = banks(); t.style.display = b.style.display = 'block'; const bh = t.getBoundingClientRect().height || innerHeight * .6, top = Math.max(0, (innerHeight - el.offsetHeight) / 2); return -(bh - top - bh * .14); };
 const cancel = () => banks().forEach(x => x.getAnimations().forEach(a => a.cancel()));
 const put = (el, e, op) => { const [t, b] = banks(); t.style.display = b.style.display = 'block'; t.style.transform = `translateY(${e}px)`; b.style.transform = `translateY(${-e}px)`; t.style.opacity = b.style.opacity = op; };
-const run = (el, from, to, ms, ease) => { const e = edge(el), [t, b] = banks(); t.style.display = b.style.display = 'block'; cancel();
+const run = (el, from, to, ms, ease) => { atRest = false; const e = edge(el), [t, b] = banks(); t.style.display = b.style.display = 'block'; cancel();
   const kf = s => [{transform:`translateY(${s * e * from}px)`, opacity:from ? REST : 1}, {transform:`translateY(${s * e * to}px)`, opacity:to ? REST : 1}];
   const o = {duration:ms, easing:ease, fill:'forwards'}; t.animate(kf(1), o); b.animate(kf(-1), o); return new Promise(r => setTimeout(r, ms + 30)); };
+let cur = null, atRest = false, ro = null;
+const refit = () => { if (atRest && cur && !document.documentElement.classList.contains('fogin')) put(cur, edge(cur), REST); };
+addEventListener('resize', refit); addEventListener('load', refit); addEventListener('pageshow', e => { if (e.persisted && cur) { document.body.classList.remove('leaving'); window.Fog.rest(cur); } });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
 window.Fog = {
-  rest(el){ cancel(); put(el, edge(el), REST); banks().forEach(x => x.classList.add('drift')); document.documentElement.classList.remove('fogin'); },
+  rest(el){ cancel(); cur = el; atRest = true; if (window.ResizeObserver && !ro) { ro = new ResizeObserver(refit); ro.observe(el); } put(el, edge(el), REST); banks().forEach(x => x.classList.add('drift')); document.documentElement.classList.remove('fogin'); },
   close(el, ms = 1000){ banks().forEach(x => x.classList.add('drift')); return run(el, 1, 0, ms, 'cubic-bezier(.4,0,.2,1)'); },
   open(el, ms = 2600){ return run(el, 0, 1, ms, 'cubic-bezier(.45,0,.2,1)').then(() => Fog.rest(el)); }
 };
