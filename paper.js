@@ -37,7 +37,7 @@ function draw() {
     for (let y = -10; y <= 10; y++) for (let x = -10; x <= 10; x++) { const dd = Math.hypot(x, y) * (.8 + vn((cx + x) * .5, (cy + y) * .5) * .5); if (dd < r && dd > r * .62 && px(cx + x, cy + y) !== null) put(cx + x, cy + y, '#bd9d66'); else if (dd <= r * .62 && (x + y & 1) && px(cx + x, cy + y) !== null && r > 6) put(cx + x, cy + y, '#d3b97f'); } }
   for (let k = 0; k < 14; k++) { const x = Math.floor(L + 6 + rd() * (cw - 2 * L - 12)), y = Math.floor(R + 3 + rd() * (ch - 2 * R - 6)); if (px(x, y) !== null) { put(x, y, '#8a6034'); if (rd() < .3) put(x + 1, y, '#a98650'); } }
   // moldura (régua dupla) e ornamentos
-  const m = 5, x0 = L + 4 + m, x1 = cw - L - 5 - m, y0 = R + m, y1 = ch - R - 1 - m;
+  const m = 3, x0 = L + 4 + m, x1 = cw - L - 5 - m, y0 = R + m, y1 = ch - R - 1 - m;
   const line = (xa, ya, xb, yb, c) => { for (let y = ya; y <= yb; y++) for (let x = xa; x <= xb; x++) put(x, y, c); };
   if (y1 - y0 > 14) { line(x0 + 3, y0, x1 - 3, y0, '#6a4524'); line(x0 + 3, y1, x1 - 3, y1, '#6a4524'); line(x0, y0 + 3, x0, y1 - 3, '#6a4524'); line(x1, y0 + 3, x1, y1 - 3, '#6a4524');
     line(x0 + 3, y0 + 1, x1 - 3, y0 + 1, '#e6cf98'); line(x0 + 3, y1 - 1, x1 - 3, y1 - 1, '#e6cf98');

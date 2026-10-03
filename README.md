@@ -407,3 +407,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v162: avisos de combate bem menores; aviso de moedas virou '+N' animado abaixo do contador (que atualiza logo depois).
 - v163: avisos de combate escritos num papiro que cobre a faixa de baixo (no lugar dos esqueletos); em telas sem faixa, mantém os avisos pequenos sobre o jogo.
 - v164: papiro pixelart desgastado (paper.js): bordas rasgadas e queimadas, rolos de madeira com pontas douradas, moldura ornamentada, gemas e runas brilhando, faíscas mágicas.
+- v165: textos do papiro em fonte pixelart (Pixelify Sans, OFL); título não invade mais a moldura de cima.
