@@ -157,7 +157,9 @@ function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify({v:2, gold:sta
 
 const $ = s => document.querySelector(s);
 const wait = ms => new Promise(r=>setTimeout(r,ms));
-function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),1800)}
+const __seen={};
+function fresh(key,ms){const n=Date.now();if(__seen[key]&&n-__seen[key]<ms)return false;__seen[key]=n;return true}
+function toast(msg){if(!fresh('t:'+msg,4000))return;const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),2200)}
 let votes = {yes:0, no:0};
 let botTimers = [], voteTimer = null, voteEndsAt = 0;
 const VOTE_SECONDS = 25;
@@ -443,8 +445,9 @@ function showRing(hero){
   $('#game').appendChild(m);
 }
 function hideRing(){ const m = $('#turn-marker'); if (m) m.remove(); }
-function showBanner(t, sub){ const b=$('#turn-banner'); b.innerHTML=`${t}<small>${sub||''}</small>`; b.classList.add('show'); }
-function hideBanner(){ $('#turn-banner').classList.remove('show'); }
+function bannerKind(t){t=String(t).toUpperCase();if(/ULTIMATE/.test(t))return 'ult';if(/LUZ SAGRADA|ESQUIVOU|DESNORTEADO/.test(t))return 'good';if(/BOSS|ONDA|ESTOCADA|TELEPORTE|GOLPE|PREPARANDO/.test(t))return 'bad';return ''}
+function showBanner(t, sub){ const b=$('#turn-banner'); const key=t+'|'+(sub||''); if(b.classList.contains('show')&&b.dataset.k===key)return; b.dataset.k=key; b.className='turn-banner show '+bannerKind(t); b.innerHTML=`${t}${sub?`<small>${sub}</small>`:''}`; }
+function hideBanner(){ const b=$('#turn-banner'); b.classList.remove('show'); b.dataset.k=''; }
 function floatText(xPct, yPct, text, color){
   const d = document.createElement('div'); d.className = 'dmg-float'; d.textContent = text;
   d.style.left = xPct + '%'; d.style.top = yPct + '%'; d.style.color = color || '#ffd24d';
@@ -858,7 +861,7 @@ async function playRound(){
     const act = actions[k]; if (act && act.skill.cd > 0) state.cd[k][act.skill.id] = act.skill.cd;
   });
   renderHud();
-  if (state.rage >= RAGE_MAX) { state.hardNext = true; state.forceHard = true; toast('Fúria no máximo! A próxima pergunta será difícil.'); }
+  if (state.rage >= RAGE_MAX) { state.hardNext = true; state.forceHard = true; }
   turnTimer = setTimeout(playRound, 900);
 }
 let turnTimer = null;

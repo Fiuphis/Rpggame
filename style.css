@@ -17,7 +17,7 @@
 .inv-icon{height:66%;image-rendering:pixelated;pointer-events:none}
 
 
-#toast{position:absolute;z-index:60;left:20%;right:20%;bottom:24%;padding:1.2%;text-align:center;background:#0d0b1c;border:1px solid #ffc449;color:#ffc449;font:clamp(7px,1vw,12px) monospace;opacity:0;transform:translateY(8px);transition:.18s;pointer-events:none}#toast.show{opacity:1;transform:none}
+#toast{position:absolute;z-index:46;left:50%;top:86%;width:max-content;max-width:88%;box-sizing:border-box;padding:1cqw 3cqw;text-align:center;font:bold 2.3cqw/1.25 monospace;letter-spacing:.1cqw;color:#f1e3b4;background:linear-gradient(180deg,rgba(26,18,44,.94),rgba(9,6,20,.96));border:1px solid #b8923a;border-radius:1.2cqw;box-shadow:0 0 0 1px #05050b,0 .6cqw 1.6cqw rgba(0,0,0,.6);opacity:0;transform:translate(-50%,6px);transition:opacity .2s,transform .2s;pointer-events:none}#toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-aspect-ratio:2/3){.game{width:100vw;height:auto}}@media(min-aspect-ratio:2/3){.game{height:100vh;width:auto}}
 
 
@@ -44,9 +44,12 @@
 @keyframes hit-shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-1px)}50%{transform:translateX(1px)}75%{transform:translateX(-.5px)}}
 
 /* ===== Fase de ataque dos heróis ===== */
-.turn-banner{position:absolute;z-index:45;left:50%;top:11.5%;transform:translate(-50%,-6px);padding:1.4cqw 3.2cqw;text-align:center;font:bold 3cqw monospace;letter-spacing:.3cqw;color:#ffc54e;background:rgba(5,5,14,.92);border:1px solid #ffc54e;box-shadow:0 0 0 2px #05050b;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s;white-space:nowrap}
+.turn-banner{--c:#ffc54e;--c2:#7a5a1c;position:absolute;z-index:45;left:50%;top:72.5%;width:max-content;max-width:90%;box-sizing:border-box;transform:translate(-50%,8px);padding:1.5cqw 5cqw 1.6cqw;text-align:center;font:bold 3.1cqw/1.2 monospace;letter-spacing:.35cqw;color:var(--c);text-shadow:0 0 1.4cqw color-mix(in srgb,var(--c) 45%,transparent),0 .25cqw 0 #000;background:radial-gradient(120% 140% at 50% 0,rgba(52,34,74,.96),rgba(10,7,22,.97) 70%);border:1px solid var(--c);border-radius:1.4cqw;box-shadow:0 0 0 1px #05050b,0 0 0 2.2px var(--c2),0 .8cqw 2.2cqw rgba(0,0,0,.65),inset 0 0 2.4cqw rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:normal}
+.turn-banner::before,.turn-banner::after{content:"";position:absolute;top:50%;width:1.7cqw;height:1.7cqw;background:var(--c);border:1px solid #05050b;transform:translateY(-50%) rotate(45deg);box-shadow:0 0 1.2cqw var(--c)}
+.turn-banner::before{left:1.6cqw}.turn-banner::after{right:1.6cqw}
 .turn-banner.show{opacity:1;transform:translate(-50%,0)}
-.turn-banner small{display:block;margin-top:.5cqw;font-size:1.9cqw;font-weight:normal;letter-spacing:0;color:#c8bde0}
+.turn-banner.bad{--c:#ff7a5c;--c2:#6b2418}.turn-banner.good{--c:#8ff0a4;--c2:#1f5a30}.turn-banner.ult{--c:#c9a6ff;--c2:#4a2a7a}
+.turn-banner small{display:block;margin-top:.8cqw;font-size:2.25cqw;font-weight:normal;letter-spacing:.05cqw;line-height:1.3;color:#d6cdec;text-shadow:0 .2cqw 0 #000}
 .turn-ring{position:absolute;z-index:9;top:68.6%;width:20%;height:3.4%;border:2px solid #ffc54e;border-radius:50%;box-shadow:0 0 12px rgba(255,197,78,.7),inset 0 0 10px rgba(255,197,78,.4);pointer-events:none;animation:ring-pulse 1s ease-in-out infinite}
 .turn-ring[hidden]{display:none}
 .proj{position:absolute;z-index:30;width:6%;aspect-ratio:1;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
