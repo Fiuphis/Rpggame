@@ -38,7 +38,7 @@ const BOSS_MAX_HP = 630, HERO_MAX_HP = 100;
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
-const QUESTION_SECONDS = 15, ACTION_SECONDS = 10;
+const QUESTION_SECONDS = {1:25, 2:30, 3:35}, ACTION_SECONDS = 10;   // tempo para responder: fácil 25s, média 30s, difícil 35s
 const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
 const ULT_INFO = {mage:'3x o dano base (só nesta pergunta, sem duração)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
@@ -686,7 +686,7 @@ async function playRound(){
 
   // ---- 1) pergunta: o grupo vota na alternativa (contagem visível só para o próprio grupo)
   const res = await runVote({
-    attack: state.curAttack, text: q.text, seconds: QUESTION_SECONDS,
+    attack: state.curAttack, text: q.text, seconds: QUESTION_SECONDS[q.difficulty],
     options: q.answers.map(label => ({label})),
     side: {reward:meta.reward, label:meta.label, d:q.difficulty}
   });
