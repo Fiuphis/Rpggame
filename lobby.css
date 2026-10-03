@@ -46,3 +46,9 @@ body::after{z-index:5;background-image:radial-gradient(22% 6.5% at 22% 15.7%,rgb
 html::after{z-index:-1;background-image:radial-gradient(24% 7% at 24% 8.7%,rgba(228,236,255,0.55),transparent 72%),radial-gradient(22% 6.5% at 56% 8.7%,rgba(255,255,255,0.50),transparent 72%),radial-gradient(20% 6.5% at 84% 8.7%,rgba(228,236,255,0.46),transparent 72%),radial-gradient(20% 6% at 10% 2.6999999999999993%,rgba(255,255,255,0.40),transparent 72%),radial-gradient(22% 6% at 42% 2.6999999999999993%,rgba(228,236,255,0.40),transparent 72%),radial-gradient(20% 6% at 72% 2.6999999999999993%,rgba(255,255,255,0.38),transparent 72%),radial-gradient(24% 7% at 24% 91.3%,rgba(228,236,255,0.55),transparent 72%),radial-gradient(22% 6.5% at 56% 91.3%,rgba(255,255,255,0.50),transparent 72%),radial-gradient(20% 6.5% at 84% 91.3%,rgba(228,236,255,0.46),transparent 72%),radial-gradient(20% 6% at 10% 97.3%,rgba(255,255,255,0.40),transparent 72%),radial-gradient(22% 6% at 42% 97.3%,rgba(228,236,255,0.40),transparent 72%),radial-gradient(20% 6% at 72% 97.3%,rgba(255,255,255,0.38),transparent 72%);filter:blur(16px);opacity:.9;animation:cloudsR 130s linear infinite}
 @keyframes cloudsR{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 @media (prefers-reduced-motion:reduce){body::after,html::after{animation:none}}
+
+/* v117: transição lobby → mapa (escurece e aproxima) */
+body::after{transition:opacity .6s}
+.stage{transition:transform .75s ease-in,opacity .75s ease-in}
+body.leaving .stage{transform:scale(1.12);opacity:0}
+body.leaving::before{filter:blur(22px) brightness(.15)}

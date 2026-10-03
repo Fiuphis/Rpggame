@@ -80,7 +80,7 @@ confirmBtn.onclick=()=>{
   if(!selected)return;
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
-  location.href='game.html';
+  document.body.classList.add('leaving');setTimeout(()=>{location.href='map.html'+location.search},750);
 };
 testBtn.onclick=()=>{LOBBY.setTest(!LOBBY.testMode);location.href='index.html'};
 render();

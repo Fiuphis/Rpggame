@@ -299,3 +299,4 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .in-cap::after{content:"▼";position:absolute;right:12px;bottom:6px;font-size:11px;color:#ffc54e;opacity:0}
 .in-cap.done::after{opacity:1;animation:capBlink .9s steps(2,jump-none) infinite}
 @keyframes capBlink{from{opacity:1}to{opacity:.15}}
+.end-box button+button{margin-left:2cqw;background:#120f20;color:#fff0ff;border-color:#6f6385}

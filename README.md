@@ -361,3 +361,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v114: abertura ~16s (mais lenta), caixa de fala do boss, recortes de rosto melhores (tools/cut_heads.py), fumaça centrada no trono.
 - v115: cada fala fica ~5s após digitar (abertura ~29s); removidas as reações dos heróis.
 - v116: pausa de leitura de cada fala proporcional ao texto (1,5 s + 60 ms/letra); abertura ~23 s.
+- v117: mapa Jornada dos Heróis (map.html/js/css, tools/build_map.py): lobby → mapa → voto para entrar → abertura; vitória marca o boss como concluído e libera o próximo. Progresso em localStorage bd1_progress (?resetmapa=1 zera).

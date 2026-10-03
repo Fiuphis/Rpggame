@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="map.css">
+<title>Jornada dos Heróis</title>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true"></div>
+<main class="map" id="map">
+  <img class="base" src="map/base.webp" alt="Jornada dos Heróis" draggable="false">
+  <div class="layer" id="grays"></div>
+  <div class="layer" id="nodes"></div>
+</main>
+<a class="back" id="back" href="index.html">◂ GRUPOS</a>
+<section class="panel" id="panel" hidden>
+  <div class="p-title" id="p-title"></div>
+  <div class="p-sub" id="p-sub"></div>
+  <button class="p-go" id="p-go" type="button">ENTRAR <b>0/1</b></button>
+</section>
+<div class="veil" id="veil"></div>
+<script src="lobby.js"></script>
+<script src="map.js"></script>
+</body>
+</html>

@@ -913,6 +913,8 @@ function endGame(win){
   else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
   const o = $('#end-screen'); o.querySelector('h2').textContent = win ? 'VITÓRIA!' : 'DERROTA';
   o.querySelector('p').textContent = win ? 'O Lorde das Trevas foi derrotado.' : 'Todos os heróis caíram.';
+  if (win) { try { const d = JSON.parse(localStorage.getItem('bd1_progress')) || {done:[]}; if (!d.done.includes(0)) d.done.push(0); localStorage.setItem('bd1_progress', JSON.stringify(d)); sessionStorage.setItem('bd1_justwon', '0'); } catch {} }
+  $('#to-map').textContent = win ? 'VOLTAR AO MAPA' : 'MAPA';
   o.classList.toggle('win', win); o.hidden = false;
 }
 // Abertura da batalha (intro.js). Em ?teste=1 fica desligada, a menos que ?intro=1; ?intro=0 sempre desliga.
@@ -975,6 +977,7 @@ $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote
 
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
 $('#restart').addEventListener('click',restartRun);
+$('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;location.href='map.html'+location.search});
 beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
 if('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('message', e => {
