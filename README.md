@@ -324,3 +324,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v82: botão do inventário/mercador usa a arte nova (`bag_button.png`).
 - v83: recorte do botão refeito (tudo dentro da borda dourada preservado, fora removido).
 - v84: recorte do botão inclui o contorno preto e o topo do capuz do mercador.
+- v84: botão do inventário com a borda escura externa preservada.
