@@ -343,3 +343,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v97: aba de votação do mercador remedida sobre a arte (SIM/NÃO e contadores centralizados, nada encosta na moldura).
 - v98: texto SIM/NÃO centralizado na vertical e botões afastados da moldura.
 - v99: botões SIM/NÃO um pouco mais para baixo.
+- v99: texto SIM/NÃO um pouco mais baixo.
