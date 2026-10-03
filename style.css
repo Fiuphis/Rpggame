@@ -1,11 +1,8 @@
 *{-webkit-tap-highlight-color:transparent}button{outline:none}button:focus,button:focus-visible,button:active{outline:none}::selection{background:transparent}img{-webkit-touch-callout:none}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#050711;overflow:hidden}body{display:grid;place-items:center}.game{position:relative;width:min(100vw,66.6666667vh);height:min(100vh,150vw);aspect-ratio:2/3;overflow:hidden;overflow:clip;background:#050711;touch-action:manipulation;user-select:none;-webkit-user-select:none}.game #reference{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;image-rendering:pixelated;display:block;-webkit-user-drag:none;user-select:none}.hit,.vote-choice{appearance:none;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;outline:none;box-shadow:none}.hit{position:absolute;border:0;background:transparent;padding:0;margin:0;cursor:pointer;touch-action:manipulation;z-index:20}.hit:focus,.hit:active{outline:none;background:transparent;box-shadow:none}.hit:focus-visible{outline:1px solid rgba(255,211,77,.0)}
 /* All hitboxes use the source image coordinate system: x/1024 and y/1536. */
-.shop{top:85.10%;height:9.35%;width:7.55%}.shop.hp1{left:57.55%}.shop.hp2{left:65.43%}.shop.mana1{left:73.05%}.shop.mana2{left:81.15%}
-#inventory-hits{position:absolute;inset:0;z-index:21;pointer-events:none}.inventory-hit{position:absolute;border:0;background:transparent;appearance:none;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;outline:none}.inventory-hit:focus,.inventory-hit:active{outline:none;background:transparent}.inventory-hit:nth-child(1){left:5.75%;top:76.15%;width:12.65%;height:8.55%}.inventory-hit:nth-child(2){left:21.45%;top:76.15%;width:12.65%;height:8.55%}.inventory-hit:nth-child(3){left:37.15%;top:76.15%;width:12.65%;height:8.55%}.inventory-hit:nth-child(4){left:5.75%;top:86.05%;width:12.65%;height:8.55%}.inventory-hit:nth-child(5){left:21.45%;top:86.05%;width:12.65%;height:8.55%}.inventory-hit:nth-child(6){left:37.15%;top:86.05%;width:12.65%;height:8.55%}
 /* Painel do Mercador: cobre só o texto antigo; retrato e moldura da arte ficam intactos. */
 .game{container-type:inline-size}
-.merchant-vote{position:absolute;z-index:26;left:75.7%;top:76%;width:17.3%;height:6.2%;padding:.5cqw .8cqw;background:#05050e;color:#eee5f7;font-family:monospace;display:flex;flex-direction:column;gap:.5cqw;overflow:hidden}
 .merchant-title{font-size:1.75cqw;line-height:1.1;color:#e3a948;display:flex;justify-content:space-between;align-items:center}.merchant-title b{color:#9fe3a8;font-size:1.6cqw}.merchant-vote.urgent .merchant-title b{color:#ff536b}
 .merchant-body{display:none;flex:1;min-height:0;flex-direction:column;gap:.5cqw}
 .merchant-vote.open .merchant-body{display:flex}
@@ -134,10 +131,8 @@
 .action-menu::before{left:-2px;top:-2px;border-right:0;border-bottom:0}.action-menu::after{right:-2px;bottom:-2px;border-left:0;border-top:0}
 /* ===== Marcador da vez do herói (pixel art) ===== */
 .turn-marker{position:absolute;inset:0;z-index:12;pointer-events:none}
-.tm-arrow{position:absolute;top:45.6%;width:5.6cqw;margin-left:-2.8cqw;image-rendering:pixelated;animation:tm-bob .7s steps(2) infinite;filter:drop-shadow(0 0 3px rgba(255,197,78,.8))}
-.tm-ring{position:absolute;top:67.6%;width:19cqw;margin-left:-9.5cqw;image-rendering:pixelated;animation:tm-ring .8s steps(2) infinite}
+.tm-arrow{position:absolute;top:46.2%;width:3.4cqw;margin-left:-1.7cqw;image-rendering:pixelated;animation:tm-bob .7s steps(2) infinite;filter:drop-shadow(0 0 3px rgba(255,197,78,.8))}
 .tm-beam{position:absolute;top:49.5%;height:19%;width:9cqw;margin-left:-4.5cqw;background:repeating-linear-gradient(0deg,rgba(255,240,190,.0) 0 .6cqw,color-mix(in srgb,var(--col) 40%,transparent) .6cqw 1.2cqw);-webkit-mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent),linear-gradient(0deg,#000,transparent);mask:linear-gradient(90deg,transparent,#000 30%,#000 70%,transparent);opacity:.55;animation:tm-beam 1s steps(4) infinite}
-.tm-frame{position:absolute;border:2px solid #ffc54e;box-shadow:0 0 0 2px #05040a,0 0 8px 2px rgba(255,197,78,.6);animation:tm-blink .9s steps(2) infinite}
 @keyframes tm-bob{0%{transform:translateY(0)}100%{transform:translateY(-1.4cqw)}}
 @keyframes tm-ring{0%{opacity:1;transform:scale(1)}100%{opacity:.7;transform:scale(1.06)}}
 @keyframes tm-beam{0%{background-position:0 0}100%{background-position:0 -1.2cqw}}
@@ -188,7 +183,7 @@
 .dq-answer.wrong::after{box-shadow:inset 0 0 0 .35cqw #ff536b,0 0 1.4cqw rgba(255,83,107,.5);background:rgba(255,83,107,.16)}
 .dq-answer:disabled{cursor:default}
 /* ===== Menu de habilidades (arte por herói) ===== */
-.skm{position:absolute;z-index:28;left:4%;width:92%;top:10.5%;pointer-events:auto;container-type:inline-size;font-family:monospace;animation:dq-in .34s ease-out both}
+.skm{position:absolute;z-index:28;left:16%;width:68%;top:13%;pointer-events:auto;container-type:inline-size;font-family:monospace;animation:dq-in .34s ease-out both}
 .skm.exiting{animation:dq-out .36s ease-in both;pointer-events:none}
 .skm-frame{display:block;width:100%;height:auto;pointer-events:none}
 .skm-layer{position:absolute;inset:0}
@@ -214,3 +209,29 @@
 .dq-val.sm{font-size:1.4cqw}
 .dq-val .dq-dot{position:static;width:1.1cqw;height:1.1cqw;margin-right:.7cqw;flex:none}
 #dq-text{padding:0 6% 0 1.2cqw}
+
+/* ===== Inventário + Mercador escondidos ===== */
+.bag-toggle{position:absolute;z-index:30;left:50%;bottom:1.2%;transform:translateX(-50%);display:flex;align-items:center;gap:1.2cqw;padding:.9cqw 1.6cqw;background:linear-gradient(#17122b,#0a0816);border:2px solid #b8893a;border-radius:1.2cqw;box-shadow:0 0 0 2px #05040a,0 0 1.6cqw rgba(255,197,78,.35);cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0}
+.bag-toggle img{height:6.2cqw;width:auto;image-rendering:pixelated;display:block}.bag-toggle .bt-m{height:6.2cqw;border:1px solid #6b5a2e;image-rendering:auto}
+.bag-toggle[aria-expanded=true]{border-color:#ffe08a;box-shadow:0 0 0 2px #05040a,0 0 2.4cqw rgba(255,224,138,.7)}
+.bag-back{position:absolute;inset:0;z-index:26;background:rgba(2,2,10,.45)}
+.bag-panel{position:absolute;z-index:29;left:3%;width:94%;bottom:11%;aspect-ratio:1913/743;container-type:inline-size;animation:dq-in .25s ease-out both}
+.bag-panel>img{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+#inventory-hits{position:absolute;inset:0;pointer-events:none}
+.inventory-hit{position:absolute;border:0;background:transparent;appearance:none;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;outline:none}.inventory-hit:focus,.inventory-hit:active{outline:none;background:transparent}
+.inventory-hit:nth-child(1){left:9.30%;top:25.03%;width:11.87%;height:26.92%}
+.inventory-hit:nth-child(2){left:22.90%;top:25.03%;width:12.02%;height:26.92%}
+.inventory-hit:nth-child(3){left:36.49%;top:25.03%;width:11.87%;height:26.92%}
+.inventory-hit:nth-child(4){left:9.30%;top:55.99%;width:11.87%;height:26.92%}
+.inventory-hit:nth-child(5){left:22.90%;top:55.99%;width:12.02%;height:26.92%}
+.inventory-hit:nth-child(6){left:36.49%;top:55.99%;width:11.87%;height:26.92%}
+.bag-panel .shop.hp1{left:52.01%;top:49.93%;width:9.67%;height:34.99%}
+.bag-panel .shop.hp2{left:62.99%;top:49.93%;width:9.41%;height:34.99%}
+.bag-panel .shop.mana1{left:73.44%;top:49.93%;width:8.89%;height:34.99%}
+.bag-panel .shop.mana2{left:83.01%;top:49.93%;width:8.73%;height:34.99%}
+.bag-panel .hit{position:absolute;border:0;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0;padding:0}
+.bag-panel .hit:active{background:rgba(255,224,138,.18)}
+.merchant-vote{position:absolute;left:74.23%;top:29.88%;width:17.51%;height:14.27%;padding:0;color:#eee5f7;font-family:monospace;display:flex;flex-direction:column;gap:.4cqw;overflow:hidden}
+.merchant-vote .merchant-title{font-size:1.2cqw;justify-content:flex-end;min-height:1.3cqw}
+.bag-panel .merchant-question{font-size:1.15cqw}
+.bag-panel .vote-choice{font-size:1.2cqw;padding:.35cqw .6cqw}

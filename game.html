@@ -24,30 +24,11 @@
 
   <!-- Pixel-accurate transparent hit map. Coordinates are in the source image's 1024x1536 grid. -->
   <div id="hitmap" aria-label="Controles do jogo">
-
-
-    <button class="hit shop hp1" data-action="buy" data-item="hp" aria-label="Comprar poção de HP"></button>
-    <button class="hit shop hp2" data-action="buy" data-item="hp" aria-label="Comprar poção de HP"></button>
-    <button class="hit shop mana1" data-action="buy" data-item="mana" aria-label="Comprar poção de mana"></button>
-    <button class="hit shop mana2" data-action="buy" data-item="mana" aria-label="Comprar poção de mana"></button>
-
-    <div id="inventory-hits"></div>
   </div>
 
   <!-- Moedas do grupo (cobre o número fixo da arte). -->
   <div id="gold-hud" class="gold-hud" aria-label="Moedas do grupo">10</div>
 
-  <!-- Painel do Mercador: vazio (só "Mercador:") até abrir uma votação. -->
-  <section id="merchant-vote" class="merchant-vote" aria-label="Mercador">
-    <div class="merchant-title"><span>Mercador:</span><b id="merchant-timer"></b></div>
-    <div class="merchant-body">
-      <div id="merchant-question" class="merchant-question"></div>
-      <div class="vote-row">
-        <button class="vote-choice" data-action="vote" data-vote="yes"><span>SIM</span><b id="yes-count">0</b></button>
-        <button class="vote-choice" data-action="vote" data-vote="no"><span>NÃO</span><b id="no-count">0</b></button>
-      </div>
-    </div>
-  </section>
 
   <!-- Pergunta = ataque do boss. Só existe na tela durante o ataque. -->
   <section id="dynamic-ui" hidden>
@@ -69,6 +50,28 @@
     </header>
     <div id="am-list" class="am-list"></div>
   </section>
+
+  <!-- Inventário + Mercador: escondido; abre ao clicar no botão da borda inferior. -->
+  <div id="bag-back" class="bag-back" hidden></div>
+  <section id="bag-panel" class="bag-panel" hidden aria-label="Inventário e Mercador">
+    <img src="bag_panel.png" alt="" draggable="false">
+    <div id="inventory-hits"></div>
+    <button class="hit shop hp1" data-action="buy" data-item="hp" aria-label="Comprar poção de HP"></button>
+    <button class="hit shop hp2" data-action="buy" data-item="hp" aria-label="Comprar poção de HP"></button>
+    <button class="hit shop mana1" data-action="buy" data-item="mana" aria-label="Comprar poção de mana"></button>
+    <button class="hit shop mana2" data-action="buy" data-item="mana" aria-label="Comprar poção de mana"></button>
+    <div id="merchant-vote" class="merchant-vote" aria-label="Mercador">
+      <div class="merchant-title"><span></span><b id="merchant-timer"></b></div>
+      <div class="merchant-body">
+        <div id="merchant-question" class="merchant-question"></div>
+        <div class="vote-row">
+          <button class="vote-choice" data-action="vote" data-vote="yes"><span>SIM</span><b id="yes-count">0</b></button>
+          <button class="vote-choice" data-action="vote" data-vote="no"><span>NÃO</span><b id="no-count">0</b></button>
+        </div>
+      </div>
+    </div>
+  </section>
+  <button id="bag-toggle" class="bag-toggle" type="button" aria-label="Inventário e Mercador" aria-expanded="false"><img src="bag_icon.png" alt=""><img class="bt-m" src="bag_merchant.png" alt=""></button>
 
   <button id="back-lobby" class="back-lobby" type="button" aria-label="Trocar de grupo">◀ GRUPOS</button>
 

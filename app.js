@@ -171,7 +171,7 @@ function openMerchantVote(text, action){
   state.pendingAction = action; state.myVote = null; state.voteLocked = false;
   state.voters = groupMembers(); state.need = majorityOf(state.voters);
   showMerchantText(text);
-  $('#merchant-vote').classList.add('open');
+  $('#merchant-vote').classList.add('open'); setBag(true);
   updateVoteUI();
   startVoteTimer();
   if (TEST_MODE) startBots();
@@ -427,8 +427,6 @@ function showRing(hero){
   m.style.setProperty('--col', col);
   m.innerHTML =
     `<div class="tm-beam" style="left:${x}%"></div>` +
-    `<img class="tm-ring" style="left:${x}%" src="${pixRing(col)}" alt="">` +
-    `<div class="tm-frame" style="left:${pctX(fx)};top:${pctY(HUD_Y - 5)};width:${pctX(fw)};height:${pctY(hx[3] + 46)}"></div>` +
     `<img class="tm-arrow" style="left:${x}%" src="${pixIcon('arrow')}" alt="">`;
   $('#game').appendChild(m);
 }
@@ -879,6 +877,10 @@ $('#hitmap').addEventListener('click',e=>{
   const action=b.dataset.action;
   if(action==='buy')requestBuy(b.dataset.item);
 });
+function setBag(on){ $('#bag-panel').hidden = !on; $('#bag-back').hidden = !on; $('#bag-toggle').setAttribute('aria-expanded', on); }
+$('#bag-toggle').addEventListener('click', () => setBag($('#bag-panel').hidden));
+$('#bag-back').addEventListener('click', () => setBag(false));
+$('#bag-panel').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.action === 'buy') requestBuy(b.dataset.item); });
 $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote-choice');if(b)vote(b.dataset.vote)});
 
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();

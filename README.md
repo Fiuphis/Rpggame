@@ -317,3 +317,7 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - MAGO → MAGA em todo o jogo. Ataque Super Pesado do Tanque custa 20 de mana (como no quadro). Escolha de alvo (Passar a Vez, Proteção, Luz Sagrada) segue no menu simples antigo.
 
 ## v80 — Guerreiro: rolamento/esquiva/dano menores (escala da família ROLL ~0,8x em `tools/cut_knight.py`, ancoragem mantida).
+
+## v81 — menu menor, marcador de vez só com seta, inventário/mercador escondidos
+- Menu de habilidades a 68% da largura. Marcador de vez: sem retângulo amarelo e sem círculo no chão; só a seta (menor).
+- Inventário + Mercador: arte nova (`bag_panel.png`), escondida; botão com mochila + mercador no centro da borda inferior (`#bag-toggle`) abre/fecha. Abre sozinho quando começa uma votação de compra. Fundo do rodapé (`game_nohud.png`) estendido com chão.
