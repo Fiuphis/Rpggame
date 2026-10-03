@@ -323,3 +323,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - Inventário + Mercador: arte nova (`bag_panel.png`), escondida; botão com mochila + mercador no centro da borda inferior (`#bag-toggle`) abre/fecha. Abre sozinho quando começa uma votação de compra. Fundo do rodapé (`game_nohud.png`) estendido com chão.
 - v82: botão do inventário/mercador usa a arte nova (`bag_button.png`).
 - v83: recorte do botão refeito (tudo dentro da borda dourada preservado, fora removido).
+- v84: recorte do botão inclui o contorno preto e o topo do capuz do mercador.
