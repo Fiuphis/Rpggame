@@ -7,7 +7,7 @@
 const POSES = ['n1','n2','n3','a_i1','a_i2','a_hh','a_sw','a_rd','a_cr','a_lo','a_s1','a_s2','a_bub','a_swl','a_rl1','a_rl2','a_dust','p1','tA','tB','tC','v1','v2','v3','v4','d_i1','d_i2','d_i3','d_a1','d_a2','d_a3','d_a4','d_h1','d_h2','d_h3','d_h4','d_u1','d_u2','d_p1','d_p3','d_f1','d_f2','d_f3','d_e1','d_e2','d_e3','d_e4','d_m1','d_m2','d_m3','d_m4'];
 const FXS = ['rock1','rock3','rock4','rock5','rock6'], FXD = ['bring','bspike','earth','rockburst'];
 const T = {x:517, y:340};                 // ponto de impacto no boss
-const BASE = 262, SZ = 1.0, XOFF = -18;     // pés (y) e escala do corpo
+const BASE = 262, SZ = 1.2, XOFF = -18;     // SZ: o Tanque é o maior dos heróis     // pés (y) e escala do corpo
 const GOLD = '255,200,110', FIRE = '255,150,60', BLUE = '120,180,255';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
@@ -127,7 +127,7 @@ function make(host){
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
-  const hand = () => { const f = feet(); return {x:f.x + 60, y:f.y - 170}; };
+  const hand = () => { const f = feet(); return {x:f.x + 60 * SZ, y:f.y - 170 * SZ}; };
 
   function swing(k, style, side = 0, delay = 0){      // onda de impacto: sai do martelo e voa até o boss (devolve a duração do voo)
     const h0 = hand(), b = T, sz = k === 4 ? 1.4 : k === 3 ? 1.1 : 1;
@@ -216,7 +216,7 @@ function make(host){
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
     lastT = st;
     const f = clamp((now - cur_t) / fade);
-    c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P, Py - host.P + (BASE - 266)); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = true;
+    c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P, Py - host.P + (BASE - 266)); c.translate(host.P + W / 2 + XOFF, 0); c.scale(SZ, 1); c.translate(-(host.P + W / 2 + XOFF), 0); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = true;
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 * (cur && cur.light ? .6 : 1) : 0;
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);

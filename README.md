@@ -270,3 +270,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - `tools/cut_tank.py` ganhou a folha d (poses `d_*`) e `tools/cut_tank_fx_d.py` recorta os efeitos extras (`fx_bring`, `fx_bspike`, `fx_earth`, `fx_rockburst`).
 - Sem mais martelo largado no chão: removidas a_bi, h3/h4 (folha c), x1 e as poses de folha c que não seguravam o martelo. Super pesado = d_h1→d_h2 (martelo no alto)→d_h3/d_h4 (explosão de pedras).
 - Ataque normal 10, super pesado 7, proteção 6, defesa 6, esquiva 6, dor 5, vitória 5, provocação 6; ondas azuis (d_a3/d_m1) e douradas (a_sw/n3); novos impactos `spike`, `quake`, `burst`.
+
+## v66 — Tanque maior
+- Escala única de todas as poses do Tanque (`SZ = 1.2` em tank.js): corpo ~314px, contra 262–284 dos outros heróis; sombra e ponto de saída da onda acompanham a escala.
