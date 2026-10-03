@@ -373,3 +373,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v128: painel do boss (botão ENTRAR) e modal de reiniciar ficam acima das nuvens.
 - v129: nuvens de repouso entram menos no mapa/menu (sobreposição 14%→2%, opacidade .62→.5).
 - v130: brilho das nuvens não invade mais o conteúdo (sobreposição -6%, opacidade .45).
+- v131: nuvens encostam na borda do menu/mapa; brilho invade só um pouco (sobreposição +1%, opacidade .48).
