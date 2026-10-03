@@ -26,6 +26,9 @@ const ACT = {
     S(2000, [[0,'B_1'],[.12,'B_8'],[.3,'B_4',{dy:-5}],[.46,'B_4',{dy:-10}],[.54,'B_3',{dy:3}],[.76,'B_1'],[.95,'B_2']], [[.4,'wave:v:2']]),
   ],
   summon:[S(2400, [[0,'B_1'],[.16,'B_6'],[.5,'B_6',{dy:-4}],[.6,'B_6',{dy:-2}],[.8,'B_2'],[.96,'B_1']], [[.16,'orb'],[.52,'orbThrow']])],
+  gagCast:[S(3600, [[0,'B_1'],[.1,'B_6'],[.3,'B_6',{dy:-5}],[.4,'B_6',{dy:-1}],[.5,'B_6',{dy:-6}],[.6,'B_6',{dy:-1}],[.7,'B_6',{dy:-7}],[.8,'B_6',{dy:-2}],[.95,'B_6',{dy:-4}]], [[.1,'orb'],[.4,'ring'],[.62,'ring'],[.8,'orb']])],
+  gagLook:[S(2600, [[0,'B_6',{dy:-3}],[.12,'B_2',{dx:12,rot:2.5}],[.3,'B_2',{dx:14,rot:3}],[.38,'B_2',{dx:11,rot:2}],[.46,'B_2',{dx:14,rot:3}],[.8,'B_2',{dx:12,rot:2.5}],[.97,'B_2']])],
+  gagDismiss:[S(2000, [[0,'B_2'],[.18,'B_6'],[.55,'B_6',{dy:-3}],[.7,'B_2'],[.95,'B_1']], [[.18,'ring']])],
   thrust:[S(1700, [[0,'B_1'],[.14,'B_8'],[.32,'B_5',{dx:-14}],[.55,'B_5',{dx:-8}],[.78,'B_2'],[.96,'B_1']], [[.3,'lance']])],
   aoe:[S(2500, [[0,'B_1'],[.14,'B_8'],[.28,'B_7'],[.6,'B_7',{dy:-3}],[.82,'B_8'],[.97,'B_1']], [[.14,'charge'],[.26,'nova']])],
   enrage:[S(2800, [[0,'B_1'],[.14,'B_8'],[.3,'B_11'],[.48,'B_12',{dy:-4}],[.8,'B_12'],[.96,'B_11']], [[.1,'charge'],[.34,'roar'],[.55,'roar:2']])],
@@ -129,6 +132,7 @@ function make(host){
       for (let i = 0; i < 10; i++) { const ox = rnd(-240, 240); E('glow', 1000, u => ({x:f.x + ox, y:f.y - 30 - 400 * eo(u), r:18, c:'255,90,60', a:.8 * Math.sin(Math.PI * u)}), {delay:i * 60}); }
       shakeT = clk(); if (n === 2) setTimeout(fireHit, 200 / tsc()); },
     sigil(){ const f = feet(); E('sigil', 2400, u => ({x:f.x, y:f.y - 6, r:lerp(120, 300, eo(Math.min(1, u * 2))), rot:u * 2, a:Math.sin(Math.PI * Math.min(1, u * 1.05)) * .85}), {back:true}); },
+    ring(){ const h = hand(); E('ring', 900, u => ({x:h.x, y:h.y + 40, r:lerp(30, 150, eo(u)), c:VIO, a:.65 * (1 - u)})); },
     smoke(){ const f = feet(); for (let i = 0; i < 16; i++) { const ox = rnd(-190, 190), oy = rnd(-520, -40), sp = rnd(.6, 1.3); E('smoke', 1300, u => ({x:f.x + ox * (.4 + u * .8), y:f.y + oy - 70 * u * sp, r:lerp(70, 150, eo(u)) * sp, a:.85 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 35}); }
       E('glow', 900, u => ({x:f.x, y:f.y - 280, r:lerp(120, 300, eo(u)), c:VIO, a:.45 * Math.sin(Math.PI * u)})); },
     smokeT(){ const b = tgt; for (let i = 0; i < 12; i++) { const ox = rnd(-90, 90), oy = rnd(-300, 30), sp = rnd(.6, 1.2); E('smoke', 1000, u => ({x:b.x + ox, y:b.y + 90 + oy - 40 * u, r:lerp(40, 90, eo(u)) * sp, a:.8 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 28}); } },
@@ -221,7 +225,8 @@ const EYES = {B_1:[[351,107],[381,108]],B_2:[[322,106],[351,110]],B_3:[[263,102]
     nextHit(){ return new Promise(r => hitW.push(r)); },
     idle(){ if (cur || held) return Promise.resolve(false); return run(variant(IDLES)); },
     has: n => !!ACT[n],
-    fx(name, o = {}){ if (name === 'mark') mark = {x:o.x, y:o.y, t0:clk()}; else if (name === 'unmark') mark = null; },
+    fx(name, o = {}){ if (name === 'puff') { const n = o.n || 14, R = o.r || 60; for (let i = 0; i < n; i++) { const ox = rnd(-R, R), oy = rnd(-R * 1.4, R * .4), sp = rnd(.6, 1.2); E('smoke', 1100, u => ({x:o.x + ox * (.4 + u), y:o.y + oy - 40 * u * sp, r:lerp(R * .5, R * 1.1, eo(u)) * sp, a:.9 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 22}); } E('glow', 800, u => ({x:o.x, y:o.y - R * .4, r:lerp(R, R * 2.6, eo(u)), c:VIO, a:.5 * Math.sin(Math.PI * u)})); }
+      else if (name === 'mark') mark = {x:o.x, y:o.y, t0:clk()}; else if (name === 'unmark') mark = null; },
     setMode(m){ mode = m || null; },
     setDead(){},
     reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; held = null; mark = null; mode = null; hitW = []; },

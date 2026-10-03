@@ -346,3 +346,15 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sc-s,.sc-n{font-family:'Pixelify Sans',monospace!important;font-style:normal!important;font-weight:500!important;line-height:1.1!important;letter-spacing:.02em;text-shadow:1px 1px 0 rgba(255,238,190,.6)!important}
 .sc-s{font-size:clamp(11px,3.2vw,14px)!important;color:#3f2812!important}
 .sc-n{font-size:clamp(11px,3vw,13px)!important;color:#5a3a1a!important}
+
+/* gag do dragão esqueleto (v166) */
+.gag-alert{position:absolute;z-index:44;top:51%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;font-family:'Pixelify Sans',monospace;color:#ff3b30;text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;animation:gagpulse .38s steps(2) infinite}
+.gag-alert b{font-size:9cqw;line-height:1}
+.gag-alert i{font-style:normal;font-weight:700;font-size:3.4cqw;letter-spacing:.2cqw}
+.gag-alert.out{animation:none;opacity:0;transition:opacity .35s}
+@keyframes gagpulse{0%{transform:translateX(-50%) scale(1)}100%{transform:translateX(-50%) scale(1.14)}}
+.gag-goblin{position:absolute;z-index:6;width:9.5cqw;transform:translate(-50%,-100%);image-rendering:pixelated;pointer-events:none;animation:gobin .35s steps(5) both}
+.gag-goblin.gone{animation:gobout .45s steps(5) both}
+@keyframes gobin{0%{transform:translate(-50%,-100%) scale(0)}100%{transform:translate(-50%,-100%) scale(1)}}
+@keyframes gobout{0%{transform:translate(-50%,-100%) scale(1);opacity:1}100%{transform:translate(-50%,-100%) scale(0);opacity:0}}
+.gag-bubble{position:absolute;z-index:44;left:47%;top:7%;font:700 9cqw 'Pixelify Sans',monospace;color:#ffe27a;text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;animation:gagpulse .5s steps(2) infinite;pointer-events:none}

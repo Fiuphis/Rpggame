@@ -689,6 +689,46 @@ async function chooseSkill(k){
   }
 }
 
+
+// ---- Gag cômico (1x por partida): o boss tenta invocar um Dragão Esqueleto (HITKILL), mas só vem um goblin.
+const GAG_SPOT = {x:50.5, y:49.5};   // % do #game (pés do goblin)
+async function gagDragon(){
+  state.gag = true;
+  const g = $('#game'), wp = (xp, yp) => ({x:xp * 10.24, y:yp * 15.36});
+  const sp = wp(GAG_SPOT.x, GAG_SPOT.y);
+  showBanner('BOSS INVOCANDO!', 'ele tenta invocar um DRAGÃO ESQUELETO');
+  const cast = A.play('boss', 'gagCast'); A.sayRandom('boss', 'enrage', .8);
+  await wait(1700);
+  showBanner('ALERTA: HITKILL!', 'se der certo, mata TODOS os heróis de uma vez');
+  flashHit();
+  const al = HERO_ORDER.map(k => { const d = document.createElement('div'); d.className = 'gag-alert'; d.style.left = HERO_X[k] + '%'; d.innerHTML = '<b>☠</b><i>HITKILL</i>'; g.appendChild(d); return d; });
+  await Promise.all([cast, wait(2400)]);
+  // puf: surge o goblin
+  A.fx('boss', 'puff', {x:sp.x, y:sp.y - 30, n:18, r:80});
+  al.forEach(d => d.classList.add('out')); setTimeout(() => al.forEach(d => d.remove()), 400);
+  const gb = document.createElement('img'); gb.className = 'gag-goblin'; gb.src = 'boss/goblin.png'; gb.alt = '';
+  gb.style.left = GAG_SPOT.x + '%'; gb.style.top = GAG_SPOT.y + '%'; g.appendChild(gb);
+  await wait(450);
+  showBanner('...UM GOBLIN?', 'pequeno e fraquinho. O boss não entendeu nada');
+  const bub = document.createElement('div'); bub.className = 'gag-bubble'; bub.textContent = '?!'; g.appendChild(bub);
+  await A.play('boss', 'gagLook'); bub.remove();
+  showBanner('DESINVOCANDO...', 'o Lorde das Trevas manda o goblin de volta');
+  const dis = A.play('boss', 'gagDismiss');
+  await wait(750);
+  A.fx('boss', 'puff', {x:sp.x, y:sp.y - 30, n:14, r:70});
+  gb.classList.add('gone'); setTimeout(() => gb.remove(), 500);
+  await dis;
+  showBanner('DRAGÃO CANCELADO', 'o boss desistiu da invocação... por enquanto 😅');
+  await wait(1900); hideBanner();
+}
+function maybeGag(where){
+  if (state.gag || state.over || state.bossHp <= 0 || aliveHeroes().length === 0) return Promise.resolve();
+  const force = TEST_MODE && window.__force === 'gag';
+  const p = where === 'start' ? .16 : .1;
+  if (!force && !(state.round >= 2 && (Math.random() < p || state.round >= 6))) return Promise.resolve();
+  return gagDragon();
+}
+
 async function playRound(){
   if (state.over) return;
   state.round++;
@@ -701,6 +741,7 @@ async function playRound(){
   if (FORCE === 'prep' && !empowered && !enragedNow) { prepWarn = true; tele = null; }
   if (FORCE === 'tele' && !empowered && !enragedNow) { prepWarn = false; tele = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp)[0] || null; }
   await bossIntro({prep:prepWarn, tele, empowered, dazed});
+  if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) await maybeGag('start');
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta difícil garantida: mantém os ultimates aparecendo
   const q = pickQuestion(state.forceHard ? 3 : (Math.random() < 0.55 ? 1 : 2));
@@ -832,6 +873,7 @@ async function playRound(){
     hideBanner(); hideRing();
     if (state.bossHp <= 0) return endGame(true);
     if (aliveHeroes().length === 0) return endGame(false);
+    if (k !== HERO_ORDER[HERO_ORDER.length - 1] || Math.random() < .5) await maybeGag('hit');
   }
 
   // ---- 3b) estocada: só quando o Tanque está com Provocação/Proteção; atravessa a guarda e fere um aliado
