@@ -235,3 +235,7 @@
 .merchant-vote .merchant-title{font-size:1.2cqw;justify-content:flex-end;min-height:1.3cqw}
 .bag-panel .merchant-question{font-size:1.15cqw}
 .bag-panel .vote-choice{font-size:1.2cqw;padding:.35cqw .6cqw}
+.bag-toggle{padding:0;gap:0;background:none;border:0;border-radius:0;box-shadow:none;bottom:.8%;filter:drop-shadow(0 0 1.2cqw rgba(255,197,78,.25))}
+.bag-toggle img{height:auto;width:24cqw;image-rendering:auto}
+.bag-toggle[aria-expanded=true]{box-shadow:none;filter:drop-shadow(0 0 1.6cqw rgba(255,224,138,.8)) brightness(1.15)}
+.bag-toggle:active{transform:translateX(-50%) scale(.96)}
