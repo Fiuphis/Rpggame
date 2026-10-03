@@ -261,7 +261,7 @@ html{background:#050711}body{background:transparent}
 html{background:#02030a}
 body::before{background:#02030a;filter:none}
 .skel-layer{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
-.sk{position:absolute;left:calc(var(--x)*1%);width:min(calc(var(--s)*1vw),calc(var(--s)*.5dvh));height:auto;image-rendering:pixelated;transform:translateX(-50%) rotate(var(--r)) scaleX(var(--f));
+.sk{position:absolute;left:calc(var(--x)*1%);width:min(calc(var(--s)*.8vw),calc(var(--s)*.4dvh));height:auto;transform:translateX(-50%) rotate(var(--r)) scaleX(var(--f));
 -webkit-mask-image:linear-gradient(to bottom,#000 38%,transparent 92%);mask-image:linear-gradient(to bottom,#000 38%,transparent 92%);
 opacity:.95;filter:brightness(.16) sepia(.5) saturate(.9);animation:skFlick var(--d) linear infinite;animation-delay:var(--dl);will-change:filter}
 .sk.t{bottom:calc(50% + min(75vw,50dvh) - var(--o))}
