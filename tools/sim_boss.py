@@ -1,13 +1,14 @@
 # Simulador Monte-Carlo do combate (espelha as regras de app.js). Uso: python3 tools/sim_boss.py [N]
 import random, sys, statistics as st
-P = dict(boss_hp=650, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20, stun=1.25, thrust=24, enr_aoe=2, new=True, hard_acc=-.2, easy_acc=.12)
+P = dict(boss_hp=700, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20, stun=1.25, thrust=24, enr_aoe=2, new=True, hard_acc=-.2, easy_acc=.12)
 DIFF = {1:(18,3), 2:(32,5), 3:(50,9)}
 SK = {
- 'mage':[('mana_atk','atk',10,0,1),('elem_atk','atk',20,1,1.3),('mana_def','def',10,0,.5),('elem_def','def',20,1,.5),('dodge','dodge',0,1,0)],
+ 'mage':[('mana_atk','atk',10,0,1),('elem_atk','atk',20,1,1.3),('mana_def','def',10,0,.35),('elem_def','def',20,1,.55),('dodge','dodge',0,1,0)],
  'knight':[('atk','atk',0,0,1),('heavy','atk',15,1,1.5),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
- 'tank':[('atk','atk',0,0,1),('super','atk',20,3,2),('guard','util',20,2,0),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
+ 'tank':[('atk','atk',0,0,1),('super','atk',20,3,2),('guard','util',20,2,0),('def','def',0,0,.65),('dodge','dodge',0,1,0)],
  'assassin':[('atk','atk',0,0,1),('holy_atk','atk',20,1,1.5),('def','def',0,0,.5),('holy_def','def',20,1,.75),('dodge','dodge',0,1,0)],
 }
+BASE = {'mage':14,'knight':21,'tank':14,'assassin':10}
 ORDER = ['mage','knight','tank','assassin']
 def game(acc, rng, policy, p=P):
     hp = {k:100 for k in ORDER}; mp = {k:100 for k in ORDER}; cd = {k:{} for k in ORDER}
@@ -48,7 +49,7 @@ def game(acc, rng, policy, p=P):
                     if tg: t = tg[0]; (hp.__setitem__(t, 35) if hp[t] <= 0 else hp.__setitem__(t, min(100, hp[t] + 25))); ult[k] = False
                 else:
                     ult[k] = False
-                    if k == 'mage': boss -= 49; mcd = 1
+                    if k == 'mage': boss -= 56; mcd = 1
                     if k == 'knight': bers = 2; tired = 0
                     if k == 'tank': taunt = 2
             av = [s for s in SK[k] if cd[k].get(s[0], 0) <= 0 and mp[k] >= s[2]]
@@ -86,7 +87,7 @@ def game(acc, rng, policy, p=P):
                 if not ok[k]: hurt = base
             elif s[1] == 'atk':
                 if ok[k] or (k == 'knight' and bers > 0):
-                    dealt = 14 * s[4]
+                    dealt = BASE[k] * s[4]
                     if s[0] == 'elem_atk':
                         if policy == 'smart': dealt *= 1.5; burn = 2
                         else:

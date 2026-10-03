@@ -34,18 +34,20 @@ const ITEMS = {
 const HERO_ORDER = ['mage','knight','tank','assassin'];
 const HERO_COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ff3d5c'};
 const HERO_X = {mage:10.3, knight:33.2, tank:63.5, assassin:89.7};   // centro do herói (% da largura)
-const BOSS_MAX_HP = 650, HERO_MAX_HP = 100;
+const BOSS_MAX_HP = 700, HERO_MAX_HP = 100;
+// Dano base por herói: Cleriga baixo, Maga/Tanque médio, Guerreiro alto. Fraqueza certa (fogo da Maga) = alto; Buraco Negro = extremamente alto.
+const HERO_BASE = {mage:14, knight:21, tank:14, assassin:10};
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
 const QUESTION_SECONDS = {1:25, 2:30, 3:35}, ACTION_SECONDS = 25;   // tempo para responder: fácil 25s, média 30s, difícil 35s
 const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
-const ULT_INFO = {mage:'dano direto de 3,5x o dano base no boss; recarga: não volta na próxima pergunta difícil, só na seguinte (se acertarem)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
+const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta difícil, só na seguinte (se acertarem)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
-const BH_MULT = 3.5;   // Buraco Negro: dano próprio de 3,5x o dano base (como o fogo dá 1,5x)
+const BH_MULT = 4;   // Buraco Negro: dano próprio de 4x o dano base da Maga (56)
 const THRUST_CD = 3, TELE_CD = 2;   // recarga em perguntas (contando a do uso): Estocada fica 2 perguntas sem sair, Teleporte 1
 const THRUST_DMG = 24, ENRAGE_AOE = 2;                  // Estocada (ignora Provocação/Proteção); Enfurecer: Onda Sombria +2
 const HERO_WX = k => HERO_X[k] * 10.24;                 // x do herói no mundo 1024x1536
@@ -77,8 +79,8 @@ const SKILLS = {
   mage:[
     {id:'mana_atk', kind:'atk', name:'Ataque de Mana', desc:'Raio de mana. Dano normal.', mana:10, cd:0, mult:1},
     {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. O boss é fraco a FOGO (1,5x e queima por 2 perguntas); água, ar e terra ele ignora (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
-    {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 50% do dano.', mana:10, cd:0, reduce:.5},
-    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento. Só ganha bônus contra o elemento certo.', mana:20, cd:1, reduce:.5, bonus:.65, elem:true},
+    {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 35% do dano.', mana:10, cd:0, reduce:.35},
+    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento. Só ganha bônus contra o elemento certo.', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
   knight:[
@@ -92,7 +94,7 @@ const SKILLS = {
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de martelo. Dano normal.', mana:0, cd:0, mult:1},
     {id:'super', kind:'atk', name:'Ataque Super Pesado', desc:'2x o dano normal e deixa o boss desnorteado na pergunta seguinte (+25% de dano nele, sem habilidades especiais).', mana:20, cd:3, mult:2},
     {id:'guard', kind:'util', name:'Proteção Específica', desc:'Escudo sobre 1 herói: o dano dele vai para o Tanque, com 40% a menos.', mana:20, cd:2, target:true},
-    {id:'def', kind:'def', name:'Defesa', desc:'Ergue o escudo. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
+    {id:'def', kind:'def', name:'Defesa', desc:'Ergue o escudo. Corta 65% do dano.', mana:0, cd:0, reduce:.65},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
   assassin:[
@@ -589,7 +591,7 @@ async function activateUlt(k){
   showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
   const tx = cleTarget ? HERO_X[cleTarget] / 100 * 1024 : null;
   const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:1098} : {}); A.sayRandom(k, 'ult', 1);
-  if (k === 'mage') { await wait(3000); await heroAttack(k, Math.round(ATTACK_DAMAGE * BH_MULT), '#b36bff', true); state.ultCd.mage = 1; }
+  if (k === 'mage') { await wait(3000); await heroAttack(k, Math.round(HERO_BASE.mage * BH_MULT), '#b36bff', true); state.ultCd.mage = 1; }
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
@@ -772,7 +774,7 @@ async function playRound(){
         const t = act.target; sub = `passou a vez para ${GROUPS[t]}`;
         showBanner(`${nm}: ${sk.name}`, sub); await wait(1100);
         A.play(k, 'pass'); A.sayRandom(k, 'pass', .6);
-        if (correct[t] && state.heroes[t].hp > 0) { showRing(t); await doAttack(t, 'melee', null, Math.round(ATTACK_DAMAGE * 1.5)); } else floatText(HERO_X[t], 56, 'ERROU!', '#ff6b81');
+        if (correct[t] && state.heroes[t].hp > 0) { showRing(t); await doAttack(t, 'melee', null, Math.round(HERO_BASE[t] * 1.5)); } else floatText(HERO_X[t], 56, 'ERROU!', '#ff6b81');
         renderHud(); await wait(700); hideBanner(); hideRing();
         if (state.bossHp <= 0) return endGame(true);
         continue;
@@ -780,7 +782,7 @@ async function playRound(){
       if (sk.kind === 'atk') {
         const bers = k === 'knight' && state.buff.bers > 0;
         if (ok || bers) {
-          dmg = Math.round(ATTACK_DAMAGE * sk.mult); sub = ok ? 'acertou e atacou!' : 'errou, mas o Berserk atacou!';
+          dmg = Math.round(HERO_BASE[k] * sk.mult); sub = ok ? 'acertou e atacou!' : 'errou, mas o Berserk atacou!';
           if (sk.elem && el && BOSS.immune.includes(el)) { dmg = 0; sub = `${ELEMENTS[el].name}: o boss é IMUNE!`; }
           else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); state.burn = BURN_TURNS; sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x e fica QUEIMANDO por ${BURN_TURNS} perguntas.`; }
           else if (sk.elem && el) { const r = applyMark(el); if (r) { dmg += r.dmg; sub += ` ${r.name}! +${r.dmg}`; if (r.rage) state.rage = Math.max(0, state.rage + r.rage); } else sub += ` Marca de ${ELEMENTS[el].name.toLowerCase()}.`; }

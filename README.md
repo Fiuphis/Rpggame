@@ -337,3 +337,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v88: Estocada com recarga de 2 perguntas, Teleporte 1; Buraco Negro = 3x o dano base (sem duração); Super Pesado do Tanque (recarga 3) desnorteia o boss na pergunta seguinte (+25% de dano nele, sem habilidades especiais). Vida do boss 630 (tools/sim_boss.py: grupo de 60% vence ~57%, ~13 rodadas).
 - v92: Buraco Negro = ataque próprio de 3,5x o dano base (49), recarga: pula a próxima pergunta difícil; tempo esgotado no menu de elementos = sem ação; vida do boss 650.
 - Teste: ?teste=1&grupo=x; window.__force='prep'|'tele' força o evento.
+- v93: dano base por herói (Clériga 10, Maga/Tanque 14, Guerreiro 21; Buraco Negro 4x = 56), defesa Maga 35% / Guerreiro e Clériga 50% / Tanque 65%; vida do boss 700; textos dos menus regravados (tools/patch_menu_text.py).
