@@ -44,11 +44,11 @@ function build(){
   if (fogFlag) {   // veio da seleção de grupo: nuvens cobrem tudo (paradas no meio), depois saem do meio até as bordas do mapa
     veil.style.display = 'none'; mp.classList.add('blur'); mp.classList.add('intro');
     const base = document.querySelector('.base'); (base.decode ? base.decode().catch(() => {}) : Promise.resolve()).then(() => setTimeout(() => {
-      mp.classList.remove('blur'); setTimeout(() => { document.body.classList.add('settled'); document.documentElement.classList.add('settled'); }, 1400);
+      mp.classList.remove('blur');
       Fog.open(mp, 2600);
     }, 700));
   } else {
-    mp.classList.add('intro'); document.body.classList.add('settled'); document.documentElement.classList.add('settled');
+    mp.classList.add('intro'); Fog.rest(mp);
     requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add('out')));
   }
   if (before !== done) setTimeout(() => paint(done, false), 3000);

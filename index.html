@@ -88,10 +88,9 @@ confirmBtn.onclick=()=>{
 };
 testBtn.onclick=()=>{LOBBY.setTest(!LOBBY.testMode);location.href='index.html'};
 render();
-if(sessionStorage.getItem('bd1_fog_lobby')){ // voltando do mapa: nuvens cobrem e abrem do meio até as bordas
-  sessionStorage.removeItem('bd1_fog_lobby');document.body.classList.add('fogwait');
-  setTimeout(()=>{document.body.classList.add('fogopen');Fog.open(document.getElementById('stage'),2600).then(()=>document.body.classList.remove('fogwait','fogopen'))},700);
-}
+const _st=document.getElementById('stage');
+if(sessionStorage.getItem('bd1_fog_lobby')){sessionStorage.removeItem('bd1_fog_lobby');setTimeout(()=>Fog.open(_st,2600),700)}else Fog.rest(_st);
+addEventListener('resize',()=>{if(!document.documentElement.classList.contains('fogin'))Fog.rest(_st)});
 window.addEventListener('storage',render);
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='updated')location.reload()});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}))}
 </script>
