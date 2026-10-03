@@ -28,8 +28,18 @@ for name, m in M['poses'].items():
     lb, kb = ndi.label(bodym)
     if kb: sb = ndi.sum(bodym, lb, range(1, kb + 1)); bodym = np.isin(lb, np.where(sb > 150)[0] + 1)
     nb = ndi.binary_dilation(bodym, iterations=4)
+    semi = (a < 250) & (a > 0) & (lum < 100) & ~fxpix & ~near_orb
+    im[..., 3][semi] = 0; a = im[..., 3].astype(int)
+    gl = (sat < 30) & (lum < 100) & ~near_orb | (a == 0)
+    lg, kg = ndi.label(gl); edgeids = set(np.unique(np.concatenate([lg[0], lg[-1], lg[:, 0], lg[:, -1]]))) - {0}
+    flat = np.isin(lg, list(edgeids)) & (a > 0)
+    im[..., 3][flat] = 0; a = im[..., 3].astype(int)
+    gray = (a < 255) & (a > 0) & (sat < 38) & ~bodym & ~near_orb
+    im[..., 3][gray] = 0; a = im[..., 3].astype(int)
     outside = a < 30; edge = ndi.binary_dilation(outside, iterations=3) & (a > 0) & nb
-    fr = edge & whitish & ~near_orb
+    e2 = ndi.binary_dilation(im[..., 3] < 200, iterations=3) & (a > 0) & nb
+    pale = (((mn > 100) & (sat < 115) & (lum > 105)) | ((sat < 62) & (lum > 72))) & e2 & ~near_orb
+    fr = (edge & whitish & ~near_orb) | pale
     # 3) pontos brancos internos pequenos (não do orbe)
     lw, kw = ndi.label(whitish & (a > 60))
     if kw:

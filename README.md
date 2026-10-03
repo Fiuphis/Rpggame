@@ -187,3 +187,7 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Poses da Maga com contorno escuro e sem pontos brancos (tools/post_outline.py, roda depois de cut_white/bake_grad).
 - Projéteis viraram luz suave com rastro e fagulhas; brilho pulsante no cajado; poses de carregamento (castdef, bolha de mana, mãos elementais).
 - Sem andar/correr; mais variantes de ataque, mágica e golpe forte; idle calmo, movimentos extras raros e aleatórios.
+
+## v45
+- Poses de giro/balanço do cajado reescaladas (estavam ~20% menores) — Maga mantém o mesmo tamanho em todas as animações.
+- Borda branca/cinza removida: post_outline.py agora limpa franjas claras, halos cinza e fundo plano antes do contorno escuro.

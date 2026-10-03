@@ -4,7 +4,7 @@ sys.path.insert(0, 'tools')
 from recorta_folha3 import extract_all
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; S = 1.95; TMP = '/tmp/g1'
+SRC = sys.argv[1]; S = float(sys.argv[2]) if len(sys.argv) > 2 else 2.45; TMP = '/tmp/g1'
 shutil.rmtree(TMP, ignore_errors=True)
 m = extract_all(SRC, TMP, S=S)
 PICK = {'spin1':'p_3_4', 'stars':'p_3_5', 'spinwide':'p_3_6', 'swingf':'p_3_7', 'swingl':'p_3_8', 'swingr':'p_3_9'}
