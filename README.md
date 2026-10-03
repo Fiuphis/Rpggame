@@ -349,3 +349,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v102: névoa branca suave animada nas áreas de degradê (lobby e jogo).
 - v103: nuvens mais cheias andando esquerda→direita, só na seleção de grupo (removidas do jogo).
 - v104: nuvens densas que atravessam a borda do menu de seleção (só lobby).
+- v105: borda do jogo escura com esqueletos (tools/make_skel.py) emergindo da escuridão, luz falhando.
