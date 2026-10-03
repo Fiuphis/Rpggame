@@ -34,17 +34,18 @@ const ITEMS = {
 const HERO_ORDER = ['mage','knight','tank','assassin'];
 const HERO_COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ff3d5c'};
 const HERO_X = {mage:10.3, knight:33.2, tank:63.5, assassin:89.7};   // centro do herói (% da largura)
-const BOSS_MAX_HP = 630, HERO_MAX_HP = 100;
+const BOSS_MAX_HP = 650, HERO_MAX_HP = 100;
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
 const QUESTION_SECONDS = {1:25, 2:30, 3:35}, ACTION_SECONDS = 25;   // tempo para responder: fácil 25s, média 30s, difícil 35s
 const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
-const ULT_INFO = {mage:'3x o dano base (só nesta pergunta, sem duração)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
+const ULT_INFO = {mage:'dano direto de 3,5x o dano base no boss; recarga: não volta na próxima pergunta difícil, só na seguinte (se acertarem)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
+const BH_MULT = 3.5;   // Buraco Negro: dano próprio de 3,5x o dano base (como o fogo dá 1,5x)
 const THRUST_CD = 3, TELE_CD = 2;   // recarga em perguntas (contando a do uso): Estocada fica 2 perguntas sem sair, Teleporte 1
 const THRUST_DMG = 24, ENRAGE_AOE = 2;                  // Estocada (ignora Provocação/Proteção); Enfurecer: Onda Sombria +2
 const HERO_WX = k => HERO_X[k] * 10.24;                 // x do herói no mundo 1024x1536
@@ -144,6 +145,7 @@ const state = {
   bossHp:BOSS_MAX_HP, rage:0, hardNext:false, over:false,
   cd:{mage:{},knight:{},tank:{},assassin:{}}, marks:[], burn:0, buff:{bh:0, bers:0, tired:0, taunt:0}, guardFor:null,         // recarga das habilidades (perguntas restantes)
   curAttack:BOSS_ATTACK,
+  ultCd:{mage:0,knight:0,tank:0,assassin:0},
   ultReady:{mage:false,knight:false,tank:false,assassin:false},   // carrega ao acertar pergunta difícil
   curQ:null, lastQ:{1:-1,2:-1,3:-1},
   round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false
@@ -587,7 +589,7 @@ async function activateUlt(k){
   showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
   const tx = cleTarget ? HERO_X[cleTarget] / 100 * 1024 : null;
   const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:1098} : {}); A.sayRandom(k, 'ult', 1);
-  if (k === 'mage') b.bh = 1;
+  if (k === 'mage') { await wait(3000); await heroAttack(k, Math.round(ATTACK_DAMAGE * BH_MULT), '#b36bff', true); state.ultCd.mage = 1; }
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
@@ -648,7 +650,7 @@ async function chooseSkill(k){
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta difícil
-    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : 'ACERTE UMA DIFÍCIL')});
+    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 DIFÍCIL' : 'ACERTE UMA DIFÍCIL')});
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], disabled:!!b, block:b}); });
     const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts});
     if (r.idx === null) return null;
@@ -661,7 +663,8 @@ async function chooseSkill(k){
         options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', slot:[2, 0]}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
-      element = els[r2.idx === null ? 0 : r2.idx];
+      if (r2.idx === null) return null;              // tempo acabou sem decisão no menu de elementos = como não escolher nada
+      element = els[r2.idx];
     }
     return {skill:sk, element};
   }
@@ -702,7 +705,7 @@ async function playRound(){
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
   if (correct[activeGroup]) { state.gold += meta.reward; persist(); renderGold(); toast(`Seu grupo acertou! +${meta.reward} moeda${meta.reward > 1 ? 's' : ''}.`); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
-  if (q.difficulty === 3) HERO_ORDER.forEach(k => { if (correct[k]) state.ultReady[k] = true; });
+  if (q.difficulty === 3) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma difícil inteira
   await wait(1500);
   renderHud();
   await closePanel();
@@ -913,7 +916,7 @@ function restartRun(){
   A.reset();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
-  HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; });
+  HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
   state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
   $('#end-screen').hidden = true; renderHud(); turnTimer = setTimeout(playRound, 800);
 }

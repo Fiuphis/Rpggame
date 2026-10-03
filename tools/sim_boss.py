@@ -1,6 +1,6 @@
 # Simulador Monte-Carlo do combate (espelha as regras de app.js). Uso: python3 tools/sim_boss.py [N]
 import random, sys, statistics as st
-P = dict(boss_hp=630, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20, stun=1.25, thrust=24, enr_aoe=2, new=True, hard_acc=-.2, easy_acc=.12)
+P = dict(boss_hp=650, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20, stun=1.25, thrust=24, enr_aoe=2, new=True, hard_acc=-.2, easy_acc=.12)
 DIFF = {1:(18,3), 2:(32,5), 3:(50,9)}
 SK = {
  'mage':[('mana_atk','atk',10,0,1),('elem_atk','atk',20,1,1.3),('mana_def','def',10,0,.5),('elem_def','def',20,1,.5),('dodge','dodge',0,1,0)],
@@ -12,7 +12,7 @@ ORDER = ['mage','knight','tank','assassin']
 def game(acc, rng, policy, p=P):
     hp = {k:100 for k in ORDER}; mp = {k:100 for k in ORDER}; cd = {k:{} for k in ORDER}
     boss = p['boss_hp']; rage = 0; hardNext = False; since = 0; ult = {k:False for k in ORDER}
-    bh = bers = tired = taunt = 0; burn = 0; prepNext = False; dazed = False; rnd = 0; tcd = 0; ecd = 0; falls = {k:0 for k in ORDER}
+    bh = bers = tired = taunt = 0; burn = 0; prepNext = False; dazed = False; rnd = 0; tcd = 0; ecd = 0; mcd = 0; falls = {k:0 for k in ORDER}
     def alive(): return [k for k in ORDER if hp[k] > 0]
     def hit(k, d):
         nonlocal hp
@@ -36,6 +36,7 @@ def game(acc, rng, policy, p=P):
         ok = {k: rng.random() < (a if (policy == 'smart' or True) else .6) for k in ORDER}
         if d == 3:
             for k in ORDER:
+                if k == 'mage' and mcd > 0: mcd -= 1; continue
                 if ok[k]: ult[k] = True
         # escolha de ações
         act = {}
@@ -47,7 +48,7 @@ def game(acc, rng, policy, p=P):
                     if tg: t = tg[0]; (hp.__setitem__(t, 35) if hp[t] <= 0 else hp.__setitem__(t, min(100, hp[t] + 25))); ult[k] = False
                 else:
                     ult[k] = False
-                    if k == 'mage': bh = 1
+                    if k == 'mage': boss -= 49; mcd = 1
                     if k == 'knight': bers = 2; tired = 0
                     if k == 'tank': taunt = 2
             av = [s for s in SK[k] if cd[k].get(s[0], 0) <= 0 and mp[k] >= s[2]]
