@@ -374,3 +374,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v129: nuvens de repouso entram menos no mapa/menu (sobreposição 14%→2%, opacidade .62→.5).
 - v130: brilho das nuvens não invade mais o conteúdo (sobreposição -6%, opacidade .45).
 - v131: nuvens encostam na borda do menu/mapa; brilho invade só um pouco (sobreposição +1%, opacidade .48).
+- v132: botão de atualizar versão saiu do jogo e foi pro canto superior direito do menu de seleção de grupo (↻ ATUALIZAR: limpa cache e recarrega).

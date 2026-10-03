@@ -979,12 +979,6 @@ buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
 $('#restart').addEventListener('click',restartRun);
 $('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;location.href='map.html'+location.search});
 beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.addEventListener('message', e => {
-    if (!e.data || e.data.type !== 'updated' || document.getElementById('upd')) return;
-    const b = document.createElement('button'); b.id = 'upd'; b.textContent = 'NOVA VERSÃO · TOQUE PARA ATUALIZAR';
-    b.style.cssText = 'position:fixed;z-index:99;left:50%;bottom:10px;transform:translateX(-50%);padding:10px 14px;background:#0d0b1c;border:1px solid #ffc449;color:#ffc449;font:12px monospace;cursor:pointer';
-    b.onclick = () => location.reload(); document.body.appendChild(b);
-  });
-  window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
-}
+// v132: o aviso de nova versão saiu do jogo; a atualização manual fica no menu de seleção de grupo (botão ↻ ATUALIZAR)
+if('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
+

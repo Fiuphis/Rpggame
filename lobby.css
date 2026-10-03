@@ -47,3 +47,7 @@ body::after{transition:opacity .6s}
 body.leaving .stage{opacity:.25}
 body.leaving::before{filter:blur(22px) brightness(.15)}
 
+/* v132: botão de atualizar a versão (antes ficava dentro do jogo) */
+.upd-btn{position:fixed;z-index:45;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font:bold 10px/1 monospace;letter-spacing:.06em;color:#ffc449;background:rgba(13,11,28,.82);border:1px solid #8a6a2a;padding:7px 9px;cursor:pointer;transition:opacity .9s ease}
+.upd-btn:disabled{opacity:.6}
+.fogin .upd-btn{opacity:0;pointer-events:none}
