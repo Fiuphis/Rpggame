@@ -6,8 +6,8 @@ body{display:grid;place-items:center;background:transparent;position:relative;fo
 .map{position:relative;width:min(100vw,calc(100dvh*1224/1285));aspect-ratio:1224/1285;transform-origin:23% 33%;
 -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 97%,transparent 100%),linear-gradient(to right,transparent 0,#000 3%,#000 97%,transparent 100%);-webkit-mask-composite:source-in;
 mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 97%,transparent 100%),linear-gradient(to right,transparent 0,#000 3%,#000 97%,transparent 100%);mask-composite:intersect}
-.map{transition:filter 2.6s ease}
-.map.blur{filter:blur(12px)}
+.map{transition:filter 1.6s ease;will-change:filter}
+.map.blur{filter:blur(6px)}
 .map.intro{animation:mapIn 2.8s cubic-bezier(.2,.7,.2,1) both}
 @keyframes mapIn{from{transform:scale(1.12)}to{transform:scale(1)}}
 .base{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
