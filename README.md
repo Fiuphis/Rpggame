@@ -200,3 +200,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Novo rig `cleric.js` + poses de costas recortadas das folhas brancas (`tools/cut_cleric.py` → `clr/`), mesma escala e ancoradas no chão, manto branco preservado, contorno escuro.
 - Habilidades dela: Ataque Normal (cajado, 3 variações), Ataque Sagrado (3 variações, uma lendo/tocando a Bíblia), Defesa Normal e Sagrada (escudo de luz atrás dela), Esquiva (2), Luz Sagrada (pilar de luz), dano, vitória e morte (cai no chão).
 - Ociosa: sorteia ler a Bíblia, tocar no livro, rezar ou erguer o cajado, com pausas longas.
+
+## v48
+- Borda escura fina na Clériga (1px, `outline()` em tools/cut_cleric.py) e borda da Maga reduzida de ~3px para 1px (tools/post_outline.py); franjas claras removidas em ambas.

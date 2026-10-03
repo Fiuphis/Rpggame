@@ -52,6 +52,21 @@ def fixedge(im, core):
     ring &= ndi.binary_dilation(core, iterations=3)
     im[..., :3][ring] = (58, 34, 38); im[..., 3][ring] = 255
     return im
+def outline(I):
+    """borda fina escura (1px) no corpo, já na escala final; pixels claros da beirada viram a cor da borda"""
+    im = np.array(I); a = im[..., 3].astype(int); body = a >= 128
+    l, k = ndi.label(a > 200)
+    if k: sz = ndi.sum(a > 200, l, range(1, k + 1)); main = np.isin(l, [i + 1 for i, v in enumerate(sz) if v >= .15 * sz.max()])
+    else: main = body
+    rgb = im[..., :3].astype(int); light = (rgb.min(2) > 150) & ((rgb.max(2) - rgb.min(2)) < 60)
+    near = ndi.binary_dilation(main, iterations=3) & ~main & (a < 200) & (a > 0) & (rgb.min(2) > 135) & ((rgb.max(2) - rgb.min(2)) < 90)
+    im[..., 3][near] = 0
+    light2 = (rgb.min(2) > 118) & ((rgb.max(2) - rgb.min(2)) < 75)
+    inner = main & ~ndi.binary_erosion(main, iterations=2) & light2
+    im[..., :3][inner] = (46, 28, 34)
+    ring = ndi.binary_dilation(main, iterations=1) & ~main
+    im[..., :3][ring] = (46, 28, 34); im[..., 3][ring] = 255
+    return Image.fromarray(im)
 def stats(im, core):
     a = im[..., 3]; sol = (a > 240) & core
     ys, xs = np.where(sol); gy = ys.max() + 1; top = ys.min()
@@ -71,7 +86,7 @@ if __name__ == '__main__':
         orb = None
         if staff:
             a2 = np.asarray(I)[..., 3]; ys, xs = np.where(a2 > 200); t = ys.min(); sel = ys < t + 10; orb = [float(xs[sel].mean()), float(t + 5)]
-        I.save(f'{OUT}/{name}.png'); meta['poses'][name] = {'w':I.width, 'h':I.height, 'cx':cx * s, 'gy':gy * s, 'orb':orb}
+        I = outline(I); I.save(f'{OUT}/{name}.png'); meta['poses'][name] = {'w':I.width, 'h':I.height, 'cx':cx * s, 'gy':gy * s, 'orb':orb}
     for name, (k, ids) in FX.items():
         c = sh[k].crop(ids); mn = c.min(2); al = np.clip((250 - mn) / 70, 0, 1); im = rgba(c, al); I = Image.fromarray(im)
         I = I.resize((round(I.width * 2.0), round(I.height * 2.0)), Image.NEAREST); I.save(f'{OUT}/fx_{name}.png'); meta['fx'][name] = {'w':I.width, 'h':I.height}

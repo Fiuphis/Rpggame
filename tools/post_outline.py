@@ -51,12 +51,9 @@ for name, m in M['poses'].items():
     im[..., 3][fr & (a < 255) & (a > 0)] = np.maximum(a[fr & (a < 255) & (a > 0)], 200)
     # 4) contorno escuro (2px) fora do corpo, exceto junto ao orbe (brilho)
     body = bodym; solidall = im[..., 3] >= 90
-    ring = ndi.binary_dilation(body, iterations=2) & ~solidall
+    ring = ndi.binary_dilation(body, iterations=1) & ~solidall
     ring &= ~near_orb
     im[..., :3][ring] = NAVY; im[..., 3][ring] = 255
-    # contorno suave externo (alpha parcial)
-    ring2 = ndi.binary_dilation(body | ring, iterations=1) & ~solidall & ~ring & ~near_orb
-    im[..., :3][ring2] = NAVY; im[..., 3][ring2] = 120
     Image.fromarray(im).save(f'{D}/{name}.png')
     m['w'] += 2 * P; m['h'] += 2 * P; m['cx'] += P; m['gy'] += P
     if m.get('orb'): m['orb'] = [m['orb'][0] + P, m['orb'][1] + P]
