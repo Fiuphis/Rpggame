@@ -156,10 +156,12 @@ const state = {
 function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify({v:2, gold:state.gold, inventory:state.inventory})); }
 
 const $ = s => document.querySelector(s);
-const wait = ms => new Promise(r=>setTimeout(r,ms));
+let __readUntil=0;
+const readMs=s=>Math.min(6000,900+50*String(s).length);
+const wait = ms => new Promise(r=>setTimeout(r,Math.max(ms,__readUntil-Date.now())));
 const __seen={};
 function fresh(key,ms){const n=Date.now();if(__seen[key]&&n-__seen[key]<ms)return false;__seen[key]=n;return true}
-function toast(msg){if(!fresh('t:'+msg,4000))return;const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),2200)}
+function toast(msg){if(!fresh('t:'+msg,4000))return;const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),readMs(msg)+400)}
 let votes = {yes:0, no:0};
 let botTimers = [], voteTimer = null, voteEndsAt = 0;
 const VOTE_SECONDS = 25;
@@ -446,8 +448,8 @@ function showRing(hero){
 }
 function hideRing(){ const m = $('#turn-marker'); if (m) m.remove(); }
 function bannerKind(t){t=String(t).toUpperCase();if(/ULTIMATE/.test(t))return 'ult';if(/LUZ SAGRADA|ESQUIVOU|DESNORTEADO/.test(t))return 'good';if(/BOSS|ONDA|ESTOCADA|TELEPORTE|GOLPE|PREPARANDO/.test(t))return 'bad';return ''}
-function showBanner(t, sub){ const b=$('#turn-banner'); const key=t+'|'+(sub||''); if(b.classList.contains('show')&&b.dataset.k===key)return; b.dataset.k=key; b.className='turn-banner show '+bannerKind(t); b.innerHTML=`${t}${sub?`<small>${sub}</small>`:''}`; }
-function hideBanner(){ const b=$('#turn-banner'); b.classList.remove('show'); b.dataset.k=''; }
+function showBanner(t, sub){ const b=$('#turn-banner'); const key=t+'|'+(sub||''); if(b.classList.contains('show')&&b.dataset.k===key)return; b.dataset.k=key; __readUntil=Date.now()+readMs((t+' '+(sub||'')).replace(/<[^>]*>/g,'')); b.className='turn-banner show '+bannerKind(t); b.innerHTML=`${t}${sub?`<small>${sub}</small>`:''}`; }
+function hideBanner(){ __readUntil=0; const b=$('#turn-banner'); b.classList.remove('show'); b.dataset.k=''; }
 function floatText(xPct, yPct, text, color){
   const d = document.createElement('div'); d.className = 'dmg-float'; d.textContent = text;
   d.style.left = xPct + '%'; d.style.top = yPct + '%'; d.style.color = color || '#ffd24d';

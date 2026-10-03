@@ -393,3 +393,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v148: ondas da costa com 1 pixel de espessura.
 - v149: ondas da costa bem sutis (linha de 1px com 30% de opacidade, aparência de ~0,25px).
 - v150: avisos do combate (banner + toast) movidos para a faixa de baixo, abaixo dos heróis, sem cobrir o boss; visual novo (cores por tipo, losangos); anti-repetição e toast de Fúria redundante removido.
+- v151: avisos ficam o tempo de leitura proporcional ao tamanho do texto (0,9s + 50ms/caractere, máx. 6s); mensagens curtas idem.
