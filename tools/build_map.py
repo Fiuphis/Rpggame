@@ -3,6 +3,11 @@ import numpy as np, os, json
 from PIL import Image, ImageDraw, ImageFilter
 D=os.path.dirname(__file__); O=os.path.join(D,'..','map'); os.makedirs(O,exist_ok=True)
 src=Image.open(os.path.join(D,'jornada_src.png')).convert('RGB'); W,H=src.size
+# v138: apaga o texto da citação do painel (canto inferior direito); as frases agora rodam ao vivo no jogo (#quote)
+import cv2
+_a=np.array(src); _box=(925,1130,1195,1226); _roi=_a[_box[1]:_box[3],_box[0]:_box[2]]
+_l=(_roi*[.3,.59,.11]).sum(axis=2); _m=(_l>105).astype(np.uint8)*255; _m=cv2.dilate(_m,np.ones((5,5),np.uint8),iterations=1)
+_a[_box[1]:_box[3],_box[0]:_box[2]]=cv2.inpaint(np.ascontiguousarray(_roi),_m,4,cv2.INPAINT_TELEA); src=Image.fromarray(_a)
 src.save(os.path.join(O,'base.webp'),quality=90,method=6)
 g=np.array(src).astype(float); lum=(g*[.3,.59,.11]).sum(axis=2)
 gray=np.clip((lum-18)*.82+14,0,255); gimg=Image.fromarray(np.stack([gray*.97,gray,gray*1.03],axis=2).clip(0,255).astype(np.uint8))

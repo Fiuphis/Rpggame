@@ -380,3 +380,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v135: nuvens voltam ao ajuste da v129 (sobreposição 2%, opacidade .5); no mapa opacidade .42 e blur de entrada 3px (mais nítido).
 - v136: nuvens e mapa idênticos à v128 (sobreposição 14%, opacidade .62, blur de entrada 6px/1,6s).
 - v137: botão voltar do celular/navegador no mapa = TROCAR DE GRUPO.
+- v138: citação do canto do mapa agora roda frases (lore, dicas, falas de personagens com nome), troca a cada 9s ou ao tocar; texto original apagado da arte.
