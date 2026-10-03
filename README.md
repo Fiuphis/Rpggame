@@ -400,3 +400,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v155: olhos vermelhos do boss agora desenhados dentro do sprite (acompanham cada pose); raio sem tela azul, só o relâmpago no céu.
 - v156: inventário e mercador ficam na frente dos avisos (avisos curtos aparecem logo acima da aba).
 - v157: relâmpago mais visível (mais grosso, com ramificações, 3 clarões) e mais frequente (a cada 10–24s).
+- v158: relâmpago com clarão na sala toda (luz azulada) e brilho em volta do raio; raio continua no fundo.

@@ -90,6 +90,8 @@ function bolt(now) { boltT = now; const sd = Math.random() < .5 ? 1 : 0, x0 = sd
 function lightning(now) {
   if (now > nextBolt) { bolt(now); nextBolt = now + R(10000, 24000); }
   const d = (now - boltT) / 1000; if (d > 1) return 0; const f = Math.max(0, d < .12 ? 1 : d < .22 ? .25 : d < .34 ? 1 : d < .42 ? .3 : Math.max(0, .9 - (d - .42) * 1.5));
+  if (f > .02) { g = gf; g.globalCompositeOperation = 'lighter'; g.globalAlpha = 1; g.fillStyle = `rgba(105,130,255,${.26 * f})`; g.fillRect(0, 0, W, H);
+    const mx = boltPts[Math.floor(boltPts.length / 2)][0], my = boltPts[Math.floor(boltPts.length / 2)][1], gr = g.createRadialGradient(mx, my, 0, mx, my, 70); gr.addColorStop(0, `rgba(210,225,255,${.35 * f})`); gr.addColorStop(1, 'rgba(210,225,255,0)'); g.fillStyle = gr; g.fillRect(mx - 70, my - 70, 140, 140); }
   if (d < .8 && f > .1) { g = gb; g.globalCompositeOperation = 'lighter'; const al = Math.min(1, f);
     const line = (pts, w, a) => { for (let i = 0; i < pts.length - 1; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.ceil(Math.hypot(x1 - x0, y1 - y0)); for (let k = 0; k <= n; k++) { const x = x0 + (x1 - x0) * k / n, y = y0 + (y1 - y0) * k / n; rect(x - w - 2, y, w * 2 + 5, 1, '#6f8fff', a * .16); rect(x - w - 1, y, w * 2 + 3, 1, '#cfe0ff', a * .3); rect(x - (w > 0 ? 0 : 0), y, w, 1, '#fff', a); } } };
     line(boltPts, 1, al); for (const br of boltBr) line(br, 0, al * .8); }
