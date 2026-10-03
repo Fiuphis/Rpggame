@@ -354,3 +354,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v107: só o esqueleto do usuário, 68 em montes sobrepostos (bordas lotadas).
 - v108: 12 esqueletos em cima e 12 embaixo, menores, mais escuridão.
 - v109: só rostos, maiores e mais juntos; no escuro ficam pretos (somem) e só aparecem na luz.
+- v110: rostos com profundidade (perto=maior/mais claro, longe=menor/mais fraco), oclusão só por rostos acesos.
