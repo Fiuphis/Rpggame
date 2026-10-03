@@ -397,3 +397,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v152: cenário do boss vivo (ambient.js): chamas animadas nas tochas, luz/sombra pulsando, brasas, reflexos no chão, nuvens no céu, poeira e morcegos em perspectiva (perto→longe e no fundo).
 - v153: cenário do boss: relâmpago raro, névoa no chão, raios de luar, olhos do boss brilham com a Fúria, runas no chão, estandartes balançando, teias, sombras dos heróis tremendo, tochas apagam/reacendem quando o boss ruge, corvos nos pilares.
 - v154: morcegos voam só na parte de cima da sala, atrás do boss e longe dos heróis.
+- v155: olhos vermelhos do boss agora desenhados dentro do sprite (acompanham cada pose); raio sem tela azul, só o relâmpago no céu.

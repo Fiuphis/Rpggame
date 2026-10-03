@@ -146,11 +146,15 @@ function make(host){
     TK.forEach(k => { const d0 = k === 'sc' || k === 'al' ? 1 : 0; o[k] = lerp(ta[k] != null ? ta[k] : d0, tb[k] != null ? tb[k] : d0, u); });
     return o;
   }
+const EYES = {B_1:[[351,107],[381,108]],B_2:[[322,106],[351,110]],B_3:[[263,102],[291,100]],B_4:[[307,249],[332,248]],B_5:[[426,97],[453,95]],B_6:[[296,200],[326,200]],B_7:[[338,135],[367,136]],B_8:[[381,98],[411,98]],B_10:[[345,119]],B_11:[[350,155],[377,156]],B_12:[[369,130],[404,130]]};
   function drawPose(g, name, o, tm, tint, ox, oy){
     const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return;
     const br = Math.sin(tm / 1000 * 1.8) * (o.breathe == null ? 1 : o.breathe), sc = SZ * (o.sc || 1);
     g.save(); g.globalAlpha = clamp(o.al == null ? 1 : o.al); g.translate(ox + (o.dx || 0), oy + (o.dy || 0)); g.rotate((o.rot || 0) * Math.PI / 180); g.scale(sc * (1 - .004 * br), sc * (1 + .008 * br));
     g.drawImage(im, -m.cx, -m.gy);
+    const ey = EYES[name]; if (ey && !(tint && tint > 0.2)) { let r = 0; try { r = window.BD_RAGE ? clamp(window.BD_RAGE()) : 0; } catch (e) {} const p = .78 + .22 * Math.sin(tm / 1000 * (4 + r * 8)), a = (.14 + .86 * r) * p, rad = 6 + 14 * r;
+      g.globalCompositeOperation = 'lighter'; for (const [x, y] of ey) { const X = x - m.cx, Y = y - m.gy, gr = g.createRadialGradient(X, Y, 0, X, Y, rad); gr.addColorStop(0, `rgba(255,70,50,${.85 * a})`); gr.addColorStop(.35, `rgba(255,40,30,${.35 * a})`); gr.addColorStop(1, 'rgba(255,30,20,0)'); g.fillStyle = gr; g.fillRect(X - rad, Y - rad, rad * 2, rad * 2); g.fillStyle = `rgba(255,170,140,${Math.min(1, .25 + a)})`; g.fillRect(X - 2, Y - 1.5, 4, 3); }
+      g.globalCompositeOperation = 'source-over'; }
     if (tint) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(255,40,40,${tint})`; g.fillRect(-m.cx, -m.gy, m.w, m.h); }
     g.restore();
   }

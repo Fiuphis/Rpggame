@@ -90,8 +90,7 @@ function bolt(now) { boltT = now; boltPts = [[R(104, 150), 4]]; let x = boltPts[
 function lightning(now) {
   if (now > nextBolt) { bolt(now); nextBolt = now + R(18000, 42000); }
   const d = (now - boltT) / 1000; if (d > 1) return 0; const f = Math.max(0, d < .08 ? 1 : d < .16 ? .15 : d < .24 ? .9 : Math.max(0, .5 - (d - .24) * 1.4));
-  g = gf; g.globalCompositeOperation = 'lighter'; g.globalAlpha = 1; g.fillStyle = `rgba(110,135,255,${.3 * f})`; g.fillRect(0, 0, W, H);
-  g.save(); g.beginPath(); g.rect(84, 2, 90, 60); g.clip(); g.fillStyle = `rgba(200,215,255,${.45 * f})`; g.fillRect(84, 2, 90, 60);
+  g = gb; g.globalCompositeOperation = 'lighter'; g.globalAlpha = 1; g.save(); g.beginPath(); g.rect(84, 2, 90, 60); g.clip();
   if (d < .3) for (let i = 0; i < boltPts.length - 1; i++) { const [x0, y0] = boltPts[i], [x1, y1] = boltPts[i + 1]; for (let k = 0; k <= 6; k++) rect(x0 + (x1 - x0) * k / 6, y0 + (y1 - y0) * k / 6, 1, 1, '#fff', 1); } g.restore();
   return f;
 }
@@ -154,7 +153,7 @@ function loop(now) {
   if (document.hidden || now - last < 40) return; const dt = Math.min(.1, (now - last) / 1000); last = now; const tm = (now - t0) / 1000;
   gb.globalCompositeOperation = 'source-over'; gf.globalCompositeOperation = 'source-over'; gb.clearRect(0, 0, W, H); gf.clearRect(0, 0, W, H); gban.setTransform(1, 0, 0, 1, 0, 0);
   { const d = (now - roarT) / 1000; lit = d < 0 || d > 2.4 ? 1 : d < .25 ? 1 - .85 * (d / .25) : (() => { const u = (d - .25) / 2.15; return .15 + .85 * (1 - Math.pow(1 - u, 2)) + .3 * Math.sin(u * Math.PI) * (1 - u); })(); if (roarK === 0) lit = 1; }
-  const fl0 = Math.sin(tm * 8.3) * .5 + Math.sin(tm * 13.7 + 1) * .3 + Math.sin(tm * 3.1) * .2; banners(tm); const bf = lightning(now); g = gb; shafts(tm, bf); fog(dt); runes(tm); webs(tm); shadows(tm, fl0); for (const c of crows) updCrow(c, now, tm); eyes(tm);
+  const fl0 = Math.sin(tm * 8.3) * .5 + Math.sin(tm * 13.7 + 1) * .3 + Math.sin(tm * 3.1) * .2; banners(tm); const bf = lightning(now); g = gb; shafts(tm, bf); fog(dt); runes(tm); webs(tm); shadows(tm, fl0); for (const c of crows) updCrow(c, now, tm);
   g = gb; g.globalCompositeOperation = 'lighter';
   const fl = (Math.sin(tm * 8.3) * .5 + Math.sin(tm * 13.7 + 1) * .3 + Math.sin(tm * 3.1) * .2);
   /* nuvens no céu (janela do trono) */
