@@ -255,3 +255,4 @@ html{background:#050711}body{background:transparent}
 /* v98: texto dos botões SIM/NÃO centralizado de fato (glifos maiúsculos ficavam altos na caixa) e botões afastados da moldura */
 .bag-panel .vote-row{margin:0 .7cqw}
 .bag-panel .vote-choice>*{position:relative;top:.3cqw}
+.bag-panel .vote-row{position:relative;top:.35cqw}
