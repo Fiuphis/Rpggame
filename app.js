@@ -56,8 +56,9 @@ const ELEMENTS = {
   air:{name:'AR', color:'#9fe8d0'}, earth:{name:'TERRA', color:'#c19a52'},
   demon:{name:'DEMONÍACO', color:'#b36bff'}, holy:{name:'SAGRADO', color:'#ffe08a'}
 };
-// Imunidades do boss: só o SAGRADO o afeta. Elementos comuns não causam dano, marcas nem reações; escudos só ganham bônus contra o que o fere.
-const BOSS = {weak:['holy'], immune:['fire','water','air','earth']};
+// Boss: fraco a FOGO e a SAGRADO (1,5x). Água, ar e terra: imune (a Maga faz o ataque só pelo efeito, dano 0). Sem marcas/reações; escudos só ganham bônus contra o que o fere.
+const BOSS = {weak:['holy','fire'], immune:['water','air','earth']};
+const BOSS_WEAK_MULT = 1.5;   // fogo e sagrado ferem o boss em dobro-ish (1,5x); água, ar e terra: só o efeito visual, dano 0
 const BOSS_FAMILY = 'DEMONÍACO';   // o boss é demônio/vampiro: todo dano dele é demoníaco
 const BOSS_ATTACK = {tipo:'FÍSICO', attr:'demon'};   // o boss ataca fisicamente, com atributo demoníaco/vampírico
 
@@ -67,7 +68,7 @@ const BOSS_ATTACK = {tipo:'FÍSICO', attr:'demon'};   // o boss ataca fisicament
 const SKILLS = {
   mage:[
     {id:'mana_atk', kind:'atk', name:'Ataque de Mana', desc:'Raio de mana. Dano normal.', mana:10, cd:0, mult:1},
-    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. O Lorde das Trevas é imune a elementos.', mana:20, cd:1, mult:1.3, elem:true},
+    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. O boss é fraco a FOGO (1,5x); água, ar e terra ele ignora (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
     {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 50% do dano.', mana:10, cd:0, reduce:.5},
     {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento. Só ganha bônus contra o elemento certo.', mana:20, cd:1, reduce:.5, bonus:.65, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
@@ -589,7 +590,7 @@ async function chooseSkill(k){
       const els = ['fire','water','air','earth'];
       const r2 = await runVote({
         menu:true, title:sk.name.toUpperCase(), text:'Escolham o elemento', seconds:8, attack:at,
-        options: els.map(e => ({label:ELEMENTS[e].name, desc:'', kind:'elem', icon:{fire:'fire',water:'drop',air:'wind',earth:'rock'}[e], color:ELEMENTS[e].color, chips: BOSS.immune.includes(e) ? '<span class="tag block">BOSS IMUNE</span>' : '<span class="tag attr holy">EFETIVO</span>'}))
+        options: els.map(e => ({label:ELEMENTS[e].name, desc:'', kind:'elem', icon:{fire:'fire',water:'drop',air:'wind',earth:'rock'}[e], color:ELEMENTS[e].color, chips: BOSS.immune.includes(e) ? '<span class="tag block">BOSS IMUNE</span>' : '<span class="tag attr holy">BOSS FRACO 1,5x</span>'}))
           .concat([{label:'VOLTAR', desc:'Escolher outra habilidade', kind:'back', icon:'back', chips:''}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
@@ -681,6 +682,7 @@ async function playRound(){
         if (ok || bers) {
           dmg = Math.round(ATTACK_DAMAGE * sk.mult); sub = ok ? 'acertou e atacou!' : 'errou, mas o Berserk atacou!';
           if (sk.elem && el && BOSS.immune.includes(el)) { dmg = 0; sub = `${ELEMENTS[el].name}: o boss é IMUNE!`; }
+          else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x`; }
           else if (sk.elem && el) { const r = applyMark(el); if (r) { dmg += r.dmg; sub += ` ${r.name}! +${r.dmg}`; if (r.rage) state.rage = Math.max(0, state.rage + r.rage); } else sub += ` Marca de ${ELEMENTS[el].name.toLowerCase()}.`; }
           if (bers) { dmg = Math.round(dmg * 1.5); sub += ' Berserk 1,5x!'; }
           if (dmg > 0 && k === 'mage' && state.buff.bh > 0) { dmg *= 2; sub += ' Buraco Negro x2!'; }
@@ -702,7 +704,7 @@ async function playRound(){
     const col = el ? ELEMENTS[el].color : null;
     showBanner(`${nm}: ${sk ? sk.name : 'sem ação'}${el ? ' · ' + ELEMENTS[el].name : ''}`, sub); await wait(1100);
     if (sk && sk.id === 'guard') { A.play(k, 'guard', {color:'#ff9d3d'}); A.sayRandom(k, 'guard', .6); }
-    if (dmg > 0) { await doAttack(k, skAnim(k, sk), col, dmg, skSay(k, sk)); }
+    if (dmg > 0 || (sk && sk.kind === 'atk' && sk.elem && el && BOSS.immune.includes(el) && (ok || (k === 'knight' && state.buff.bers > 0)))) { await doAttack(k, skAnim(k, sk), col, dmg, skSay(k, sk)); }   // elemental no boss imune: faz o ataque (efeito visível), dano 0
     else if (hurt > 0) { if (defended) { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .5); await wait(250); } await bossCounter(k, hurt, defended); }
     else if (sk && sk.kind === 'dodge') { A.play(k, 'dodge'); A.sayRandom(k, 'dodge', .55); if (!ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8'); }
     else if (sk && sk.kind === 'def') { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .4); }
@@ -762,6 +764,7 @@ async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed 
     imp.classList.remove('active'); void imp.offsetWidth; imp.classList.add('active');
   }
   game.classList.remove('boss-hit'); void game.offsetWidth; game.classList.add('boss-hit');
+  if (dmg <= 0) { floatText(50, 17, 'IMUNE!', '#b8c4d9'); renderHud(); await wait(600); game.classList.remove('boss-hit'); return; }
   state.bossHp = Math.max(0, state.bossHp - dmg); A.play('boss', 'hurt'); A.sayRandom('boss', 'hurt', .3);
   floatText(50, 17, `-${dmg}`, col === '#d9e6ff' ? '#ffffff' : col);
   renderHud(); await wait(600); game.classList.remove('boss-hit');

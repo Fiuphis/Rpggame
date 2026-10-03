@@ -109,7 +109,7 @@ Recorte reconstruído varrendo cada coluna a partir do topo (tudo abaixo do prim
 - Status ativos aparecem abaixo da barra de cada herói.
 
 ## v21
-- Boss imune a elementos: só o SAGRADO o afeta (`BOSS = {weak:['holy'], immune:[fogo,água,ar,terra]}` em app.js). Ataque elemental da Maga causa 0 (IMUNE) e não gera marcas/reações.
+- Boss: fraco a FOGO e SAGRADO (1,5x, `BOSS = {weak:['holy','fire'], immune:['water','air','earth']}` em app.js). Água, ar e terra: a Maga faz o ataque só pelo efeito (dano 0, IMUNE!). Sem marcas/reações.
 - Escudo com bônus só contra o elemento certo: Defesa Sagrada da Clériga corta 75%; Escudo Elemental da Maga corta só 50% neste boss.
 - Balanceamento (simulação Monte Carlo): boss 450 HP, contra-ataque 18/32/50, Onda Sombria (dano em área por rodada) 3/5/9. Jogo misto ~50-60% vitória com 50-60% de acerto.
 - Mana cheia no início; menu de habilidades fecha assim que a escolha é decidida.
@@ -278,3 +278,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Tamanho: Maga e Clériga com a mesma altura (~225, menores que o Cavaleiro 261 e o Tanque 314). Poses destoantes corrigidas (Maga: castdef/fogo/água/ar/terra ×1,2; Clériga: ult1/ult2/at1/bp3).
 - Maga: projéteis (orbe, cometa, raio, estrela dupla, cristal, redemoinho, cruz) com trajetórias (arco, reto, zigue-zague, duplo) e impactos próprios (raio, cristais, cruz, redemoinho, cometa, estrelas). Elementos: 4 variações cada com efeitos diferentes (3 colunas/chuva/meteoro de fogo; colunas/onda/anéis de água; ciclones duplos/ascendente; espinhos triplos/varredura/chuva de pedras).
 - Clériga: ataque normal 7, sagrado 6 — projéteis (raios, estrela, cruz, sol) em arco/reto/zigue-zague/duplo e impactos novos (small4, holy4 lótus+anéis, holy5 três pilares).
+
+## v69 — Boss fraco a fogo
+- Ataque elemental da Maga: fogo agora fere o boss (1,5x sobre o 1,3x do ataque); água/ar/terra continuam a mostrar o ataque no boss com dano 0 (IMUNE!). Menu de elementos mostra "BOSS FRACO 1,5x" no fogo e "BOSS IMUNE" nos outros.
