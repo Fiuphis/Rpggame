@@ -393,7 +393,7 @@ function buildQuestionPanel(text, at, seconds, side){
   const ad = add('', 'dq-val sm', Q.attr, at ? `<i class="dq-dot"></i>${e.name}` : ''); if (e) { ad.style.setProperty('--ec', e.color); ad.style.color = e.color; }
   add('dq-text', '', Q.title, `<span></span>`).firstChild.textContent = text;
   add('', 'dq-coin', Q.coin, side ? side.reward : '0');
-  if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 11, Q.title[1] + .5, 11, 7], `<small>RANK</small><b>${side.rank}</b>`);
+  if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 9.6, Q.title[1] + 2.2, 11, 7], `<small>RANK</small><b>${side.rank}</b>`);
   add('', 'dq-side-timer', Q.time, `<span id="vote-timer" class="dq-side-timer">${seconds}s</span>`);
   return L;
 }

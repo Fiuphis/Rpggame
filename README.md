@@ -411,3 +411,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v166: gag cômica (1x por partida): o boss tenta invocar um Dragão Esqueleto (alerta HITKILL em todos os heróis), mas vem só um goblin; ele estranha, desinvoca e desiste.
 - v167: topo todo preto (sem caveiras/luz piscando); jogo encostado no topo; papiro bem maior (cobre o rodapé do jogo) e botões de inventário/mercador mais acima; textos do papiro maiores.
 - v168: dificuldade vira RANK C (azul), B (verde), A (laranja), S (roxo), SS (amarelo) em tudo; 8 perguntas novas (S e SS); selo de rank no painel; sorteio por peso e S/SS garantida a cada 5.
+- v169: selo de rank um pouco mais abaixo e à direita (não toca mais na borda dourada nem no texto).
