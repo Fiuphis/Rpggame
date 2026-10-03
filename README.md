@@ -341,3 +341,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v94: Defesa Sagrada 65%, Defesa do Tanque 75%.
 - v95: Buraco Negro em dois estouros: 1,5x + 2,5x (= 4x).
 - v97: aba de votação do mercador remedida sobre a arte (SIM/NÃO e contadores centralizados, nada encosta na moldura).
+- v98: texto SIM/NÃO centralizado na vertical e botões afastados da moldura.
