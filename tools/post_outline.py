@@ -51,9 +51,6 @@ for name, m in M['poses'].items():
     im[..., 3][fr & (a < 255) & (a > 0)] = np.maximum(a[fr & (a < 255) & (a > 0)], 200)
     # 4) contorno escuro (2px) fora do corpo, exceto junto ao orbe (brilho)
     body = bodym; solidall = im[..., 3] >= 90
-    sol2 = (im[..., 3] >= 90) & ~fxpix & nb & ~near_orb
-    inband = sol2 & ~ndi.binary_erosion(sol2, iterations=2)
-    im[..., :3][inband] = NAVY
     ring = ndi.binary_dilation(body, iterations=1) & ~solidall
     ring &= ~near_orb
     im[..., :3][ring] = NAVY; im[..., 3][ring] = 255

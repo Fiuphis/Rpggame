@@ -212,3 +212,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v51
 - Borda escura agora entra 2px para dentro do corpo (Clériga e Maga), cobrindo as franjas brancas; contorno externo de 1px mantido.
+
+## v52
+- Maga: borda voltou à versão fina (1px por fora). Clériga: removida a linha clara que ficava entre o corpo e o contorno (pixels claros até 6px da beirada viram a cor do contorno).
