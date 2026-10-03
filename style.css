@@ -290,3 +290,7 @@ background:radial-gradient(ellipse at 30% 50%,rgba(255,40,40,.95),transparent 55
 .in-skip[hidden]{display:none}
 .in-skip b{color:#ffc54e}
 .in-skip.selected{border-color:#ffc54e;background:#2a2110}
+.in-cap{position:absolute;left:50%;bottom:22%;transform:translateX(-50%);width:min(88vw,520px);text-align:center;z-index:2;pointer-events:none}
+.in-cap[hidden]{display:none}
+.in-cap i{display:block;font:normal 10px/1 monospace;letter-spacing:.2em;color:#d7384a;margin-bottom:8px;text-shadow:0 0 8px rgba(215,56,74,.7)}
+.in-cap span{display:block;min-height:2.6em;font:bold 18px/1.35 Georgia,'Times New Roman',serif;color:#ffe3dc;text-shadow:0 0 10px rgba(255,60,60,.6),0 2px 0 #000,0 0 14px #000,0 0 22px #000}

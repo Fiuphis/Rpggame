@@ -6,7 +6,9 @@ const $ = s => document.querySelector(s);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), seg = (t, a, b) => clamp((t - a) / (b - a));
 const eio = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, eo = t => 1 - Math.pow(1 - t, 3);
 const lerp = (a, b, t) => a + (b - a) * t;
-const T = {fadeIn:[900, 1700], push:[1700, 3700], pull:[3700, 6500], crossA:[3900, 5200], hold:6500, smoke:7000, black:[7500, 8100], reveal:8100, end:8900};
+const T = {fadeIn:[900, 1700], push:[1700, 3900], pull:[3900, 6800], crossA:[4100, 5500], hold:6800, smoke:7400, black:[7900, 8500], reveal:8500, end:9300};
+// falas do boss: [início, fim, texto]
+const LINES = [[2000, 3700, 'Quem ousa invadir o meu castelo?'], [4000, 6100, 'Estes insetos estão com interesse em morrer, huh?!'], [6300, 7300, 'Muito bem...'], [7600, 9200, 'Espero que consigam me entreter!']];
 const BOSS_CLOSE = [.5, .47], BOSS_FAR = [.5, .43], EYES = [.50, .295];   // posições (fração da imagem)
 
 function load(src){ return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
@@ -16,7 +18,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
   return new Promise(async resolve => {
     root.hidden = false; root.style.opacity = 1; root.classList.remove('out');
     const stage = root.querySelector('.in-stage'), close = root.querySelector('.in-close'), far = root.querySelector('.in-far'),
-          eyes = root.querySelector('.in-eyes'), cv = root.querySelector('.in-smoke'), btn = root.querySelector('.in-skip'), cnt = btn.querySelector('b');
+          eyes = root.querySelector('.in-eyes'), cv = root.querySelector('.in-smoke'), cap = root.querySelector('.in-cap'), capTxt = cap.querySelector('span'), btn = root.querySelector('.in-skip'), cnt = btn.querySelector('b');
     await Promise.race([Promise.all([load(close.src), load(far.src)]), new Promise(r => setTimeout(r, 2500))]);
     let yes = 0, mine = false, skipped = false, revealed = false, done = false, t0 = performance.now(), parts = [], lastT = 0;
     const paintBtn = () => { cnt.textContent = `${yes}/${need}`; btn.classList.toggle('selected', mine); };
@@ -51,6 +53,10 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       eyes.style.transform = `translate(-50%,-50%) scale(${sClose})`;   // acompanha o zoom da imagem de perto
       const eo_ = close.getBoundingClientRect(), so = stage.getBoundingClientRect();
       eyes.style.left = (eo_.left - so.left + eo_.width * EYES[0]) + 'px'; eyes.style.top = (eo_.top - so.top + eo_.height * EYES[1]) + 'px';
+      // ---- fala do boss (digitando) ----
+      const L = LINES.find(l => t >= l[0] && t < l[1]);
+      if (L) { const n = Math.min(L[2].length, Math.floor((t - L[0]) / 32) + 1); cap.hidden = false; capTxt.textContent = L[2].slice(0, n);
+        cap.style.opacity = Math.min(1, seg(t, L[0], L[0] + 200)) * (1 - seg(t, L[1] - 250, L[1])); } else cap.hidden = true;
       // ---- botão de pular ----
       btn.hidden = !(t > 500 && t < T.smoke + 400 && !skipped);
       // ---- fumaça no trono ----
