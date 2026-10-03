@@ -3,12 +3,18 @@
    Moedas/itens salvos por grupo em localStorage. Votação multiplayer real entre celulares precisa de backend (próxima etapa).
 */
 
-// difficulty: 1 fácil, 2 média, 3 difícil. Dano do contra-ataque e tipo do ataque vêm de DIFFICULTY.
-const DIFFICULTY = {
-  1:{label:'FÁCIL',   type:'ATAQUE FÍSICO',  damage:18, reward:1, aoe:3},
-  2:{label:'MÉDIA',   type:'ATAQUE SOMBRIO', damage:32, reward:2, aoe:5},
-  3:{label:'DIFÍCIL', type:'ATAQUE MÍSTICO', damage:50, reward:3, aoe:9}
+// difficulty = rank: 1 C, 2 B, 3 A, 4 S, 5 SS. Dano do contra-ataque e tipo do ataque vêm de DIFFICULTY.
+const DIFFICULTY = {   // ranks: 1=C (mais fácil) … 5=SS (mais difícil)
+  1:{label:'RANK C',  rank:'C',  type:'ATAQUE FÍSICO',  damage:18, reward:1, aoe:3},
+  2:{label:'RANK B',  rank:'B',  type:'ATAQUE FÍSICO',  damage:28, reward:2, aoe:5},
+  3:{label:'RANK A',  rank:'A',  type:'ATAQUE SOMBRIO', damage:38, reward:3, aoe:7},
+  4:{label:'RANK S',  rank:'S',  type:'ATAQUE MÍSTICO', damage:50, reward:4, aoe:9},
+  5:{label:'RANK SS', rank:'SS', type:'ATAQUE MÍSTICO', damage:64, reward:5, aoe:12}
 };
+const HARD_MIN = 4;   // rank S e SS contam como "difíceis" (carregam o especial, fúria etc.)
+const isHardQ = q => q && q.difficulty >= HARD_MIN;
+const RANK_W = [0, .30, .30, .25, .10, .05];   // sorteio normal por rank (índice = dificuldade)
+function rollDiff(){ let r = Math.random(), d = 1; for (; d < 5; d++) { r -= RANK_W[d]; if (r < 0) break; } return d; }
 const QUESTIONS = [
   {difficulty:1, text:'Qual das alternativas abaixo representa uma chave primária em um banco de dados?', answers:['Uma tabela de relacionamento','Um campo que identifica unicamente um registro','Um índice não clusterizado','Um comando de seleção'], correct:1},
   {difficulty:1, text:'Qual comando SQL é utilizado para consultar dados de uma tabela?', answers:['INSERT','UPDATE','SELECT','DROP'], correct:2},
@@ -21,7 +27,15 @@ const QUESTIONS = [
   {difficulty:3, text:'Qual forma normal elimina dependências parciais em chaves primárias compostas?', answers:['1FN','2FN','3FN','FNBC'], correct:1},
   {difficulty:3, text:'No ACID, qual propriedade garante que dados confirmados sobrevivam a falhas?', answers:['Atomicidade','Consistência','Isolamento','Durabilidade'], correct:3},
   {difficulty:3, text:'Qual cláusula filtra os grupos formados por um GROUP BY?', answers:['WHERE','HAVING','DISTINCT','UNION'], correct:1},
-  {difficulty:3, text:'Qual nível de isolamento evita leituras sujas, mas permite leituras não repetíveis?', answers:['READ UNCOMMITTED','READ COMMITTED','REPEATABLE READ','SERIALIZABLE'], correct:1}
+  {difficulty:3, text:'Qual nível de isolamento evita leituras sujas, mas permite leituras não repetíveis?', answers:['READ UNCOMMITTED','READ COMMITTED','REPEATABLE READ','SERIALIZABLE'], correct:1},
+  {difficulty:4, text:'Qual anomalia ocorre quando uma transação relê um conjunto de linhas e aparecem novas linhas inseridas por outra transação?', answers:['Leitura suja','Leitura não repetível','Leitura fantasma','Atualização perdida'], correct:2},
+  {difficulty:4, text:'Em um índice B-Tree, qual é a complexidade típica da busca por uma chave?', answers:['O(1)','O(log n)','O(n)','O(n log n)'], correct:1},
+  {difficulty:4, text:'Qual forma normal exige que todo determinante seja uma chave candidata?', answers:['2FN','3FN','FNBC','4FN'], correct:2},
+  {difficulty:4, text:'O que o comando EXPLAIN normalmente mostra em um SGBD?', answers:['O plano de execução da consulta','O esquema completo do banco','O histórico de transações','Os usuários conectados'], correct:0},
+  {difficulty:5, text:'Qual protocolo garante serializabilidade separando uma fase de aquisição e uma de liberação de bloqueios?', answers:['Two-Phase Locking (2PL)','Write-Ahead Logging','Two-Phase Commit','Ordenação por timestamp simples'], correct:0},
+  {difficulty:5, text:'A dependência multivalorada é eliminada ao atingir qual forma normal?', answers:['3FN','FNBC','4FN','2FN'], correct:2},
+  {difficulty:5, text:'Qual técnica de recuperação exige gravar a alteração no log ANTES de gravá-la nos dados em disco?', answers:['Shadow Paging','Write-Ahead Logging','Checkpoint fuzzy','Bloqueio otimista'], correct:1},
+  {difficulty:5, text:'Pelo teorema CAP, havendo partição de rede, um sistema distribuído deve escolher entre quais propriedades?', answers:['Atomicidade e Durabilidade','Isolamento e Consistência','Consistência e Disponibilidade','Disponibilidade e Escalabilidade'], correct:2}
 ];
 
 // Banco de ações do Mercador: cada item vira uma pergunta de votação. Para criar ações novas, adicione aqui.
@@ -40,10 +54,10 @@ const HERO_BASE = {mage:14, knight:21, tank:14, assassin:10};
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
-const QUESTION_SECONDS = {1:25, 2:30, 3:35}, ACTION_SECONDS = 25;   // tempo para responder: fácil 25s, média 30s, difícil 35s
+const QUESTION_SECONDS = {1:25, 2:30, 3:35, 4:40, 5:45}, ACTION_SECONDS = 25;   // tempo para responder: C 25s, B 30s, A 35s, S 40s, SS 45s
 const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
-const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta difícil, só na seguinte (se acertarem)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
+const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta rank S/SS, só na seguinte (se acertarem)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
@@ -52,7 +66,7 @@ const BH_MULT = 4;   // Buraco Negro: dano próprio de 4x o dano base da Maga (5
 const THRUST_CD = 3, TELE_CD = 2;   // recarga em perguntas (contando a do uso): Estocada fica 2 perguntas sem sair, Teleporte 1
 const THRUST_DMG = 24, ENRAGE_AOE = 2;                  // Estocada (ignora Provocação/Proteção); Enfurecer: Onda Sombria +2
 const HERO_WX = k => HERO_X[k] * 10.24;                 // x do herói no mundo 1024x1536
-const HARD_EVERY = 5;   // a cada 5 perguntas sem difícil, a próxima é difícil
+const HARD_EVERY = 5;   // a cada 5 perguntas sem rank S/SS, a próxima é S ou SS
 const HEAL_AMOUNT = 25, REVIVE_HP = 35;
 // Reações entre elementos (Maga): dois elementos diferentes marcados no boss explodem em bônus de dano.
 const REACTIONS = {
@@ -149,8 +163,8 @@ const state = {
   cd:{mage:{},knight:{},tank:{},assassin:{}}, marks:[], burn:0, buff:{bh:0, bers:0, tired:0, taunt:0}, guardFor:null,         // recarga das habilidades (perguntas restantes)
   curAttack:BOSS_ATTACK,
   ultCd:{mage:0,knight:0,tank:0,assassin:0},
-  ultReady:{mage:false,knight:false,tank:false,assassin:false},   // carrega ao acertar pergunta difícil
-  curQ:null, lastQ:{1:-1,2:-1,3:-1},
+  ultReady:{mage:false,knight:false,tank:false,assassin:false},   // carrega ao acertar pergunta rank S/SS
+  curQ:null, lastQ:{1:-1,2:-1,3:-1,4:-1,5:-1},
   round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false
 };
 function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify({v:2, gold:state.gold, inventory:state.inventory})); }
@@ -379,7 +393,7 @@ function buildQuestionPanel(text, at, seconds, side){
   const ad = add('', 'dq-val sm', Q.attr, at ? `<i class="dq-dot"></i>${e.name}` : ''); if (e) { ad.style.setProperty('--ec', e.color); ad.style.color = e.color; }
   add('dq-text', '', Q.title, `<span></span>`).firstChild.textContent = text;
   add('', 'dq-coin', Q.coin, side ? side.reward : '0');
-  if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 11, Q.title[1] + .5, 11, 7], side.label);
+  if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 11, Q.title[1] + .5, 11, 7], `<small>RANK</small><b>${side.rank}</b>`);
   add('', 'dq-side-timer', Q.time, `<span id="vote-timer" class="dq-side-timer">${seconds}s</span>`);
   return L;
 }
@@ -553,7 +567,7 @@ const aliveHeroes = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 async function bossIntro(ev = {}){
   const game = $('#game');
   if (state.hardNext) {
-    showBanner('O BOSS ENFURECEU!', `pergunta difícil a caminho · Onda Sombria +${ENRAGE_AOE}`);
+    showBanner('O BOSS ENFURECEU!', `pergunta rank S/SS a caminho · Onda Sombria +${ENRAGE_AOE}`);
     flashHit(); A.play('boss', 'enrage'); A.sayRandom('boss', 'enrage', 1); state.enraged = true; await wait(2300); hideBanner();
     state.rage = 0; state.hardNext = false; renderHud(); return;
   }
@@ -668,8 +682,8 @@ async function chooseSkill(k){
     if (!endsAt) endsAt = Date.now() + ACTION_SECONDS * 1000;
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
-    // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta difícil
-    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 DIFÍCIL' : 'ACERTE UMA DIFÍCIL')});
+    // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta rank S/SS
+    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 S/SS' : 'ACERTE RANK S/SS')});
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], disabled:!!b, block:b}); });
     const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts});
     if (r.idx === null) return null;
@@ -743,9 +757,9 @@ async function playRound(){
   await bossIntro({prep:prepWarn, tele, empowered, dazed});
   if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) await maybeGag('start');
   state.sinceHard = (state.sinceHard || 0) + 1;
-  if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta difícil garantida: mantém os ultimates aparecendo
-  const q = pickQuestion(state.forceHard ? 3 : (Math.random() < 0.55 ? 1 : 2));
-  if (q.difficulty === 3) state.sinceHard = 0;
+  if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta S/SS garantida: mantém os ultimates aparecendo
+  const q = pickQuestion(state.forceHard ? (Math.random() < .7 ? 4 : 5) : rollDiff());
+  if (isHardQ(q)) state.sinceHard = 0;
   state.forceHard = false; state.curQ = q;
   const meta = DIFFICULTY[q.difficulty];
   state.curAttack = BOSS_ATTACK;
@@ -754,7 +768,7 @@ async function playRound(){
   const res = await runVote({
     attack: state.curAttack, text: q.text, seconds: QUESTION_SECONDS[q.difficulty],
     options: q.answers.map(label => ({label})),
-    side: {reward:meta.reward, label:meta.label, d:q.difficulty}
+    side: {reward:meta.reward, label:meta.label, rank:meta.rank, d:q.difficulty}
   });
   // grupos controlados por outros jogadores: simulados (sem backend não dá para ver o voto real deles)
   const correct = {};
@@ -765,7 +779,7 @@ async function playRound(){
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
   if (correct[activeGroup]) { state.gold += meta.reward; persist(); goldGain(meta.reward); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
-  if (q.difficulty === 3) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma difícil inteira
+  if (isHardQ(q)) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma pergunta S/SS inteira
   await wait(1500);
   renderHud();
   await closePanel();
@@ -955,7 +969,7 @@ async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed 
 }
 async function bossCounter(hero, dmg, defended){
   const r = routeHit(hero, dmg), t = r.to;
-  const anim = {1:'slashH', 2:'slashV', 3:'summon'}[state.curQ ? state.curQ.difficulty : 1] || 'slashH';
+  const anim = {1:'slashH', 2:'slashV', 3:'slashH', 4:'summon', 5:'summon'}[state.curQ ? state.curQ.difficulty : 1] || 'slashH';
   if (A.has('boss', anim)) { A.play('boss', anim, {tx:HERO_WX(t), ty:1010}); await Promise.race([A.hit('boss'), wait(3500)]); }
   else await shoot(50, 26, HERO_X[t], 60, '#ff2d4d', 560);
   flashHit();

@@ -11,7 +11,7 @@ Esta versão usa a arte original `game.png` como camada visual principal e coloc
 
 ## Etapa 6 — Novo combate (regras e barras)
 Rodada: pergunta → cada grupo vota na alternativa → rodada dos heróis (ataque básico, defesa ou esquiva) → resolução herói por herói.
-- perguntas têm dificuldade (fácil/média/difícil); o dano do contra-ataque do boss vem de `DIFFICULTY` (10/20/35);
+- perguntas têm rank C/B/A/S/SS (`DIFFICULTY`: dano 18/28/38/50/64, moedas 1-5, tempo 25-45s); S e SS são as "difíceis" (carregam o especial);
 - acertou + ataque = ataca (14 de dano no boss); errou + ataque = falha e o boss contra-ataca;
 - errou + defesa = leva metade do dano; errou + esquiva = não leva dano, fúria +1, esquiva em recarga na pergunta seguinte;
 - acertou + defesa/esquiva = não defende/esquiva nada e a fúria sobe +5 (enche a barra);
@@ -410,3 +410,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v165: textos do papiro em fonte pixelart (Pixelify Sans, OFL); título não invade mais a moldura de cima.
 - v166: gag cômica (1x por partida): o boss tenta invocar um Dragão Esqueleto (alerta HITKILL em todos os heróis), mas vem só um goblin; ele estranha, desinvoca e desiste.
 - v167: topo todo preto (sem caveiras/luz piscando); jogo encostado no topo; papiro bem maior (cobre o rodapé do jogo) e botões de inventário/mercador mais acima; textos do papiro maiores.
+- v168: dificuldade vira RANK C (azul), B (verde), A (laranja), S (roxo), SS (amarelo) em tudo; 8 perguntas novas (S e SS); selo de rank no painel; sorteio por peso e S/SS garantida a cada 5.

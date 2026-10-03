@@ -75,7 +75,7 @@
 .rage.full .rage-seg{animation:rage-glow .8s ease-in-out infinite}
 @keyframes rage-glow{0%,100%{box-shadow:0 0 0 1px #05020a,0 0 6px rgba(255,120,20,.4)}50%{box-shadow:0 0 0 1px #05020a,0 0 16px rgba(255,120,20,.95)}}
 .diff{display:inline-block;font-size:1.3cqw;padding:.2cqw .7cqw;border:1px solid currentColor;letter-spacing:.1cqw}
-.diff.d1{color:#7be3a0}.diff.d2{color:#ffd24d}.diff.d3{color:#ff5a6e}.diff.d0{color:#ffc54e}
+.diff.d1{color:#8fd8ff}.diff.d2{color:#9fe8a8}.diff.d3{color:#ffb866}.diff.d4{color:#c9a3ff}.diff.d5{color:#ffe14d}.diff.d0{color:#ffc54e}
 .side-reward{display:flex;align-items:center;gap:.6cqw;color:#ffc54e;font-size:2.4cqw;line-height:1}.side-reward img{height:3cqw;image-rendering:pixelated}
 .end-screen{position:absolute;z-index:70;inset:0;background:rgba(2,2,8,.82);display:flex;align-items:center;justify-content:center}
 .end-screen[hidden]{display:none}
@@ -172,7 +172,7 @@
 #dq-text span{display:block;max-width:100%}
 .dq-coin{display:flex;align-items:center;justify-content:center;color:#ffc54e;font-weight:bold;font-size:3cqw;line-height:1}
 .dq-diff{display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:1.3cqw;letter-spacing:.15cqw;line-height:1}
-.dq-diff.d1{color:#9fe3a8}.dq-diff.d2{color:#ffc54e}.dq-diff.d3{color:#ff6b6b}
+.dq-diff.d1{color:#8fd8ff}.dq-diff.d2{color:#9fe8a8}.dq-diff.d3{color:#ffb866}.dq-diff.d4{color:#c9a3ff;text-shadow:0 0 .8cqw rgba(190,150,255,.7)}.dq-diff.d5{color:#ffe14d;text-shadow:0 0 1cqw rgba(255,225,70,.85)}
 .dq-side-timer,.sk-time{display:flex;align-items:center;justify-content:center;color:#3de0b0;font-weight:bold;font-size:2.7cqw;line-height:1}
 .dq-side-timer.urgent,.sk-time.urgent{color:#ff536b}
 .dq-answer{appearance:none;-webkit-appearance:none;margin:0;padding:0;background:transparent;border:0;outline:0;cursor:pointer;color:#e8def3;font-family:monospace;text-align:left}
@@ -349,3 +349,8 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sc-t{font-size:clamp(15px,4.6vw,22px)!important}
 .sc-s{font-size:clamp(12px,3.6vw,16px)!important}
 .sc-n{font-size:clamp(12px,3.4vw,15px)!important}
+
+/* v168: selo de rank no painel da pergunta */
+.dq-diff{flex-direction:column;gap:0}
+.dq-diff small{font-size:.95cqw;letter-spacing:.15cqw;opacity:.9;line-height:1}
+.dq-diff b{font-family:"Pixelify Sans",monospace;font-size:3cqw;line-height:.9;letter-spacing:0}
