@@ -315,3 +315,5 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - TIPO sempre com a mesma espada (`icon_tipo_sword.png`). Título "VEZ DA MAGA / DO GUERREIRO / DO TANQUE / DA CLÉRIGA" desenhado por código.
 - Painel de pergunta novo (`question_panel.png`): TIPO, ATRIBUTO, enunciado, moedas, tempo e alternativas a) b) c) d) com votos.
 - MAGO → MAGA em todo o jogo. Ataque Super Pesado do Tanque custa 20 de mana (como no quadro). Escolha de alvo (Passar a Vez, Proteção, Luz Sagrada) segue no menu simples antigo.
+
+## v80 — Guerreiro: rolamento/esquiva/dano menores (escala da família ROLL ~0,8x em `tools/cut_knight.py`, ancoragem mantida).
