@@ -915,13 +915,25 @@ function endGame(win){
   o.querySelector('p').textContent = win ? 'O Lorde das Trevas foi derrotado.' : 'Todos os heróis caíram.';
   o.classList.toggle('win', win); o.hidden = false;
 }
+// Abertura da batalha (intro.js). Em ?teste=1 fica desligada, a menos que ?intro=1; ?intro=0 sempre desliga.
+const INTRO_ON = (new URLSearchParams(location.search).get('intro') || (TEST_MODE ? '0' : '1')) === '1';
+const bossCanvas = () => document.querySelector('canvas.hero.boss');
+function beginBattle(delay){
+  clearTimeout(turnTimer);
+  const go = () => { turnTimer = setTimeout(playRound, delay); };
+  const intro = document.getElementById('intro');
+  if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; return go(); }
+  const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça
+  const n = groupMembers();
+  Intro.play({voters:n, need:majorityOf(n), bots:TEST_MODE, onReveal:() => { const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', 'tpBack'); }}).then(() => setTimeout(go, 500));
+}
 function restartRun(){
   A.reset();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
   state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
-  $('#end-screen').hidden = true; renderHud(); turnTimer = setTimeout(playRound, 800);
+  $('#end-screen').hidden = true; renderHud(); beginBattle(800);
 }
 
 function useInventory(index){
@@ -963,7 +975,7 @@ $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote
 
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
 $('#restart').addEventListener('click',restartRun);
-turnTimer = setTimeout(playRound, 1500);   // começa com a tela limpa; o boss ataca em seguida
+beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
 if('serviceWorker' in navigator){
   navigator.serviceWorker.addEventListener('message', e => {
     if (!e.data || e.data.type !== 'updated' || document.getElementById('upd')) return;

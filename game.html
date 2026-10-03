@@ -11,6 +11,15 @@
 <title>Banco de Dados I — RPG</title>
 </head>
 <body>
+<div id="intro" class="intro" hidden aria-hidden="false">
+  <div class="in-stage">
+    <img class="in-close" src="intro/throne_close.webp" alt="" draggable="false">
+    <img class="in-far" src="intro/throne_far.webp" alt="" draggable="false">
+    <div class="in-eyes"></div>
+    <canvas class="in-smoke"></canvas>
+  </div>
+  <button type="button" class="in-skip" hidden>PULAR ABERTURA <b>0/1</b></button>
+</div>
 <div class="skel-layer" aria-hidden="true">
 <img class="sk t" src="skel/skel_face.png" alt="" draggable="false" style="--x:9.1;--s:54;--r:159deg;--f:-1;--o:6px;--pk:1;--d:8.2s;--dl:-2.2s;z-index:3">
 <img class="sk t" src="skel/skel_face.png" alt="" draggable="false" style="--x:14.4;--s:12;--r:170deg;--f:1;--o:0px;--pk:0.45;--d:11.7s;--dl:-6.5s;z-index:1">
@@ -114,6 +123,7 @@
 <script src="mage.js"></script>
 <script src="fxsoft.js"></script><script src="knight.js"></script><script src="tank.js"></script><script src="cleric.js"></script><script src="boss.js"></script>
 <script src="anim.js"></script>
+<script src="intro.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
