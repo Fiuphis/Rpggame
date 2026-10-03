@@ -398,3 +398,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v153: cenário do boss: relâmpago raro, névoa no chão, raios de luar, olhos do boss brilham com a Fúria, runas no chão, estandartes balançando, teias, sombras dos heróis tremendo, tochas apagam/reacendem quando o boss ruge, corvos nos pilares.
 - v154: morcegos voam só na parte de cima da sala, atrás do boss e longe dos heróis.
 - v155: olhos vermelhos do boss agora desenhados dentro do sprite (acompanham cada pose); raio sem tela azul, só o relâmpago no céu.
+- v156: inventário e mercador ficam na frente dos avisos (avisos curtos aparecem logo acima da aba).

@@ -217,8 +217,8 @@
 .bag-toggle{position:absolute;z-index:30;left:50%;bottom:1.2%;transform:translateX(-50%);display:flex;align-items:center;gap:1.2cqw;padding:.9cqw 1.6cqw;background:linear-gradient(#17122b,#0a0816);border:2px solid #b8893a;border-radius:1.2cqw;box-shadow:0 0 0 2px #05040a,0 0 1.6cqw rgba(255,197,78,.35);cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0}
 .bag-toggle img{height:6.2cqw;width:auto;image-rendering:pixelated;display:block}.bag-toggle .bt-m{height:6.2cqw;border:1px solid #6b5a2e;image-rendering:auto}
 .bag-toggle[aria-expanded=true]{border-color:#ffe08a;box-shadow:0 0 0 2px #05040a,0 0 2.4cqw rgba(255,224,138,.7)}
-.bag-back{position:absolute;inset:0;z-index:26;background:rgba(2,2,10,.45)}
-.bag-panel{position:absolute;z-index:29;left:3%;width:94%;bottom:11%;aspect-ratio:1913/743;container-type:inline-size;animation:dq-in .25s ease-out both}
+.bag-back{position:absolute;inset:0;z-index:47;background:rgba(2,2,10,.45)}
+.bag-panel{position:absolute;z-index:48;left:3%;width:94%;bottom:11%;aspect-ratio:1913/743;container-type:inline-size;animation:dq-in .25s ease-out both}
 .bag-panel>img{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 #inventory-hits{position:absolute;inset:0;pointer-events:none}
 .inventory-hit{position:absolute;border:0;background:transparent;appearance:none;-webkit-appearance:none;-webkit-tap-highlight-color:transparent;outline:none}.inventory-hit:focus,.inventory-hit:active{outline:none;background:transparent}
@@ -306,3 +306,4 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 
 .amb{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}.amb.b{z-index:2}.amb.f{z-index:5}
 .game.boss-attack .amb.b{animation:boss-rumble 1s linear both}.game.boss-hit .amb.b{animation:boss-rumble .38s linear}
+.game:has(#bag-panel:not([hidden])) #toast{top:63.5%;z-index:49;transform:translate(-50%,-100%)}.game:has(#bag-panel:not([hidden])) #toast.show{transform:translate(-50%,-100%)}
