@@ -262,3 +262,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 ## v63 — mais variações
 - Tanque: ataque 5→8, super pesado 4→7, proteção 4→6, defesa 4→6, esquiva 3→5, dor 3→4, vitória 4→5, provocação 3→6 (nova chuva de pedras `taunt:4`, golpes `small4`/`big4`).
 - Especiais: Maga 2→6 (buraco negro com variantes `bhopen2/bhbig2/bhend2`), Clériga 3→7 (`lightup2`/`lightend2`), Tanque 3→6. Só poses e efeitos reais recombinados.
+
+## v64 — ataques do Tanque realmente diferentes
+- Antes as variações mudavam só a preparação; o golpe era sempre a mesma pose (a_sw). Agora cada variação usa pose de golpe própria (reto, diagonal n2/n3, marreta no chão a_bi, duplo) e um estilo de onda: reta, `drop` (cai do alto sobre o boss), `ground` (zigue-zague pelo chão com pedras subindo), `twin` (duas ondas). Normal 8 e super pesado 7.
