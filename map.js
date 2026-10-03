@@ -68,7 +68,12 @@ $('#reset').onclick = () => { $('#confirm').hidden = false; };
 $('#c-no').onclick = () => { $('#confirm').hidden = true; };
 $('#c-yes').onclick = () => { localStorage.removeItem(KEY); sessionStorage.removeItem('bd1_justwon'); done = []; $('#confirm').hidden = true; deselect(); paint(done, false); };
 // voltar = trocar de grupo (o progresso fica salvo no aparelho)
-$('#back').addEventListener('click', e => { e.preventDefault(); LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }); });
+let leaving = false;
+function leaveMap() { if (leaving) return; leaving = true; LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }); }
+$('#back').addEventListener('click', e => { e.preventDefault(); leaveMap(); });
+// v137: o "voltar" do celular/navegador faz o mesmo que TROCAR DE GRUPO (nuvens fecham e volta ao menu)
+history.pushState({ mapa: 1 }, '');
+addEventListener('popstate', () => { const c = $('#confirm'); if (c && !c.hidden) { c.hidden = true; history.pushState({ mapa: 1 }, ''); return; } leaveMap(); });
 function voters(){ return Math.max(1, LOBBY.counts()[grp] || 0); }
 function deselect(){ selected = null; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false; $('#panel').hidden = true; document.querySelectorAll('.node').forEach(e => e.classList.remove('sel')); }
 function select(id){

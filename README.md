@@ -379,3 +379,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v134: ATUALIZAR baixa os arquivos ignorando o cache HTTP e mostra a versão no botão.
 - v135: nuvens voltam ao ajuste da v129 (sobreposição 2%, opacidade .5); no mapa opacidade .42 e blur de entrada 3px (mais nítido).
 - v136: nuvens e mapa idênticos à v128 (sobreposição 14%, opacidade .62, blur de entrada 6px/1,6s).
+- v137: botão voltar do celular/navegador no mapa = TROCAR DE GRUPO.
