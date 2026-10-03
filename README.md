@@ -353,3 +353,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v106: esqueletos das bordas do jogo agora usam o sprite do usuário (tools/cut_skel.py recorta o fundo).
 - v107: só o esqueleto do usuário, 68 em montes sobrepostos (bordas lotadas).
 - v108: 12 esqueletos em cima e 12 embaixo, menores, mais escuridão.
+- v109: só rostos, maiores e mais juntos; no escuro ficam pretos (somem) e só aparecem na luz.

@@ -262,17 +262,17 @@ html{background:#02030a}
 body::before{background:#02030a;filter:none}
 .skel-layer{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
 .sk{position:absolute;left:calc(var(--x)*1%);width:min(calc(var(--s)*.8vw),calc(var(--s)*.4dvh));height:auto;transform:translateX(-50%) rotate(var(--r)) scaleX(var(--f));
--webkit-mask-image:linear-gradient(to bottom,#000 38%,transparent 92%);mask-image:linear-gradient(to bottom,#000 38%,transparent 92%);
-opacity:.95;filter:brightness(.16) sepia(.5) saturate(.9);animation:skFlick var(--d) linear infinite;animation-delay:var(--dl);will-change:filter}
+-webkit-mask-image:linear-gradient(to bottom,#000 62%,transparent 100%);mask-image:linear-gradient(to bottom,#000 62%,transparent 100%);
+opacity:.95;filter:brightness(0);animation:skFlick var(--d) linear infinite;animation-delay:var(--dl);will-change:filter}
 .sk.t{bottom:calc(50% + min(75vw,50dvh) - var(--o))}
 .sk.b{top:calc(50% + min(75vw,50dvh) - var(--o))}
 @keyframes skFlick{
-0%,58%{filter:brightness(.16) sepia(.5) saturate(.9)}
-60%{filter:brightness(1.05) sepia(.35) saturate(1.3) drop-shadow(0 0 5px rgba(255,170,80,.55))}
-61.5%{filter:brightness(.2) sepia(.5) saturate(.9)}
-63%{filter:brightness(.95) sepia(.35) saturate(1.3) drop-shadow(0 0 4px rgba(255,170,80,.5))}
-64.5%{filter:brightness(.3) sepia(.5) saturate(.9)}
-67%{filter:brightness(.75) sepia(.35) saturate(1.2) drop-shadow(0 0 3px rgba(255,170,80,.4))}
-80%{filter:brightness(.55) sepia(.4) saturate(1.1)}
-92%,100%{filter:brightness(.16) sepia(.5) saturate(.9)}}
-@media (prefers-reduced-motion:reduce){.sk{animation:none;filter:brightness(.4) sepia(.4)}}
+0%,58%{filter:brightness(0)}
+60%{filter:brightness(.95) sepia(.4) saturate(1.2) drop-shadow(0 0 4px rgba(255,170,80,.45))}
+61.5%{filter:brightness(0)}
+63%{filter:brightness(.8) sepia(.4) saturate(1.2) drop-shadow(0 0 3px rgba(255,170,80,.4))}
+64.5%{filter:brightness(.05)}
+67%{filter:brightness(.6) sepia(.4) saturate(1.1)}
+78%{filter:brightness(.25) sepia(.4)}
+90%,100%{filter:brightness(0)}}
+@media (prefers-reduced-motion:reduce){.sk{animation:none;filter:brightness(0)}}

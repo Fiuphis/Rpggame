@@ -20,5 +20,5 @@ out=src.copy(); out.putalpha(m)
 bb=out.getbbox(); out=out.crop(bb); W,H=out.size; out=out.crop((0,0,W,H-4)); W,H=out.size   # tira a linha de chão
 O=os.path.join(D,'..','skel'); os.makedirs(O,exist_ok=True)
 def sv(img,n): img.save(os.path.join(O,n))
-sv(out,'skel_1.png')                                   # corpo inteiro
 print(out.size)
+sv(out.crop((int(W*.12),int(H*.02),int(W*.9),int(H*.40))),'skel_face.png')   # só a caveira
