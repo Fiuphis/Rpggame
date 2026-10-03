@@ -49,7 +49,7 @@ function buildMage(h, m, P){
   const mk = (cls) => { const k = document.createElement('canvas'); k.className = 'fxl ' + cls; k.width = 1024; k.height = 1536; return k; };
   const back = mk('back'), front = mk('front'); $('#game').append(back, front);
   h.rig = window.MageRig.make({c:h.c, cv:h.cv, P, Px:PX, Py:PT, W:m.w, Hh:m.h, world:{x:m.x, y:m.y}, layers:{back, front}, orbWorld:{x:m.x + 190, y:m.y + 45},
-    shadow:c => shadow(c, 'mage')});
+    shadow:c => shadow(c, 'mage'), shakeEl:$('#game')});
   h.rig.start();
 }
 function drawStill(w){
