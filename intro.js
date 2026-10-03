@@ -6,14 +6,14 @@ const $ = s => document.querySelector(s);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), seg = (t, a, b) => clamp((t - a) / (b - a));
 const eio = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, eo = t => 1 - Math.pow(1 - t, 3);
 const lerp = (a, b, t) => a + (b - a) * t;
-const T = {fadeIn:[900, 1700], push:[1700, 3900], pull:[3900, 6800], crossA:[4100, 5500], hold:6800, smoke:7400, black:[7900, 8500], reveal:8500, end:9300};
+const T = {fadeIn:[900, 2000], push:[2000, 6100], pull:[6100, 10000], crossA:[6300, 8300], hold:10000, smoke:12800, black:[14500, 15300], reveal:15300, end:16300};
 // falas do boss: [início, fim, texto]
-const LINES = [[2000, 3700, 'Quem ousa invadir o meu castelo?'], [4000, 6100, 'Estes insetos estão com interesse em morrer, huh?!'], [6300, 7300, 'Muito bem...'], [7600, 9200, 'Espero que consigam me entreter!']];
+const LINES = [[2600, 5900, 'Quem ousa invadir o meu castelo?'], [6300, 10600, 'Estes insetos estão com interesse em morrer, huh?!'], [10900, 12700, 'Muito bem...'], [13200, 16000, 'Espero que consigam me entreter!']];
 // rostos dos heróis (recortados das folhas de personagem): olham em volta, assustados, depois da 1ª fala
 const REACT = [['maga', ['maga_0', 'maga_2', 'maga_1', 'maga_4'], 'MAGA'], ['knight', ['knight_0', 'knight_1', 'knight_2'], 'GUERREIRO'],
                ['tank', ['tank_0', 'tank_1', 'tankx_1', 'tankx_0'], 'TANQUE'], ['cler', ['cler_3', 'cler_5', 'cler_8', 'cler_13'], 'CLÉRIGA']];
-const RX = [3650, 6300];
-const BOSS_CLOSE = [.5, .47], BOSS_FAR = [.5, .43], EYES = [.50, .295];   // posições (fração da imagem)
+const RX = [6000, 10600];
+const BOSS_CLOSE = [.5, .47], BOSS_FAR = [.5, .31], EYES = [.50, .295];   // posições (fração da imagem)
 
 function load(src){ return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
 
@@ -37,8 +37,8 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
     const ctx = cv.getContext('2d'); const fit = () => { cv.width = stage.clientWidth; cv.height = stage.clientHeight; }; fit();
     // fumaça (violeta escuro) em volta de um ponto da tela
     function puff(cx, cy, scale){
-      for (let i = 0; i < 46; i++) parts.push({x:cx + (Math.random() - .5) * 110 * scale, y:cy + (Math.random() - .5) * 150 * scale,
-        vx:(Math.random() - .5) * 26 * scale, vy:-(10 + Math.random() * 36) * scale, r0:(26 + Math.random() * 40) * scale, r1:(80 + Math.random() * 90) * scale,
+      for (let i = 0; i < 64; i++) parts.push({x:cx + (Math.random() - .5) * 150 * scale, y:cy + (Math.random() - .5) * 210 * scale,
+        vx:(Math.random() - .5) * 26 * scale, vy:-(10 + Math.random() * 36) * scale, r0:(14 + Math.random() * 26) * scale, r1:(42 + Math.random() * 62) * scale,
         born:performance.now() + Math.random() * 260, life:1200 + Math.random() * 600});
     }
     const bossPx = (img, [fx, fy]) => { const r = img.getBoundingClientRect(), s = stage.getBoundingClientRect(); return [r.left - s.left + r.width * fx, r.top - s.top + r.height * fy, r.width]; };
@@ -46,7 +46,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
     function frame(now){
       if (done) return; const t = now - t0;
       // ---- câmera ----
-      const flick = t < T.fadeIn[1] + 600 ? (Math.sin(t * .04) * Math.sin(t * .013) > .15 ? 1 : .35) : 1;
+      const flick = t < T.fadeIn[1] + 500 ? (Math.sin(t * .04) * Math.sin(t * .013) > .15 ? 1 : .35) : 1;
       const aClose = (t < T.fadeIn[0] ? 0 : eio(seg(t, ...T.fadeIn))) * flick * (1 - eio(seg(t, ...T.crossA)));
       const sClose = t < T.pull[0] ? lerp(1.1, 1.22, seg(t, T.fadeIn[0], T.push[1])) : lerp(1.22, .8, eio(seg(t, ...T.pull)));
       close.style.opacity = aClose; close.style.transformOrigin = `${BOSS_CLOSE[0] * 100}% ${BOSS_CLOSE[1] * 100}%`; close.style.transform = `scale(${sClose})`;
@@ -55,7 +55,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       far.style.opacity = aFar; far.style.transformOrigin = `${BOSS_FAR[0] * 100}% ${BOSS_FAR[1] * 100}%`; far.style.transform = `scale(${sFar})`;
       far.style.filter = `brightness(${(.9 + .1 * Math.sin(t * .02) * Math.sin(t * .0071)).toFixed(3)})`;
       // olhos vermelhos pulsando
-      const eyeA = seg(t, 2200, 2900) * (1 - seg(t, T.crossA[0], T.crossA[1])) * (.65 + .35 * Math.sin(t * .012));
+      const eyeA = seg(t, 2600, 3400) * (1 - seg(t, T.crossA[0], T.crossA[1])) * (.65 + .35 * Math.sin(t * .012));
       eyes.style.opacity = eyeA; eyes.style.left = EYES[0] * 100 + '%'; eyes.style.top = EYES[1] * 100 + '%';
       eyes.style.transform = `translate(-50%,-50%) scale(${sClose})`;   // acompanha o zoom da imagem de perto
       const eo_ = close.getBoundingClientRect(), so = stage.getBoundingClientRect();
@@ -68,7 +68,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
         const sh = 1.6, jx = Math.sin(u * .09 + i) * sh, jy = Math.cos(u * .13 + i * 2) * sh * .6; o.el.style.transform = `translate(${jx.toFixed(1)}px,${jy.toFixed(1)}px) scale(${(.6 + .4 * eo(clamp(u / 220))).toFixed(3)})`; });
       // ---- fala do boss (digitando) ----
       const L = LINES.find(l => t >= l[0] && t < l[1]);
-      if (L) { const n = Math.min(L[2].length, Math.floor((t - L[0]) / 32) + 1); cap.hidden = false; capTxt.textContent = L[2].slice(0, n);
+      if (L) { const n = Math.min(L[2].length, Math.floor((t - L[0]) / 32) + 1); cap.hidden = false; capTxt.textContent = L[2].slice(0, n); cap.classList.toggle('done', n >= L[2].length);
         cap.style.opacity = Math.min(1, seg(t, L[0], L[0] + 200)) * (1 - seg(t, L[1] - 250, L[1])); } else cap.hidden = true;
       // ---- botão de pular ----
       btn.hidden = !(t > 500 && t < T.smoke + 400 && !skipped);
@@ -80,7 +80,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       ctx.clearRect(0, 0, cv.width, cv.height);
       for (const p of parts) { const u = (now - p.born) / p.life; if (u < 0 || u > 1) continue;
         const r = lerp(p.r0, p.r1, eo(u)), a = Math.sin(Math.PI * Math.pow(u, .7)) * .85, x = p.x + p.vx * u * 2, y = p.y + p.vy * u * 2;
-        const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(46,10,64,${a})`); g.addColorStop(.6, `rgba(24,4,36,${a * .7})`); g.addColorStop(1, 'rgba(10,0,16,0)');
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, `rgba(46,10,64,${a * .8})`); g.addColorStop(.45, `rgba(26,5,38,${a * .45})`); g.addColorStop(1, 'rgba(10,0,16,0)');
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
       // ---- sai da frente ----
       if (t >= T.reveal) { const k = seg(t, T.reveal, T.end); root.style.opacity = 1 - eio(k); }

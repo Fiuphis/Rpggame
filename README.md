@@ -358,3 +358,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v111: abertura da batalha (intro.js): escuro → trono → zoom para trás → fumaça → boss se materializa; grupo vota para pular. Desligada em ?teste=1 (use &intro=1).
 - v112: falas do boss na abertura (legenda digitando).
 - v113: reação dos 4 heróis na abertura (rostos recortados das folhas de personagem, em intro/f_*.webp), olhando em volta assustados após a 1ª fala do boss.
+- v114: abertura ~16s (mais lenta), caixa de fala do boss, recortes de rosto melhores (tools/cut_heads.py), fumaça centrada no trono.
