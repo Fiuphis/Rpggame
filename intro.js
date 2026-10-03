@@ -6,13 +6,9 @@ const $ = s => document.querySelector(s);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v)), seg = (t, a, b) => clamp((t - a) / (b - a));
 const eio = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, eo = t => 1 - Math.pow(1 - t, 3);
 const lerp = (a, b, t) => a + (b - a) * t;
-const T = {fadeIn:[900, 2000], push:[2000, 6100], pull:[6100, 10000], crossA:[6300, 8300], hold:10000, smoke:12800, black:[14500, 15300], reveal:15300, end:16300};
+const T = {fadeIn:[900, 2000], push:[2000, 8700], pull:[8700, 12500], crossA:[8900, 10900], hold:12500, smoke:26000, black:[26800, 27600], reveal:27600, end:28600};
 // falas do boss: [início, fim, texto]
-const LINES = [[2600, 5900, 'Quem ousa invadir o meu castelo?'], [6300, 10600, 'Estes insetos estão com interesse em morrer, huh?!'], [10900, 12700, 'Muito bem...'], [13200, 16000, 'Espero que consigam me entreter!']];
-// rostos dos heróis (recortados das folhas de personagem): olham em volta, assustados, depois da 1ª fala
-const REACT = [['maga', ['maga_0', 'maga_2', 'maga_1', 'maga_4'], 'MAGA'], ['knight', ['knight_0', 'knight_1', 'knight_2'], 'GUERREIRO'],
-               ['tank', ['tank_0', 'tank_1', 'tankx_1', 'tankx_0'], 'TANQUE'], ['cler', ['cler_3', 'cler_5', 'cler_8', 'cler_13'], 'CLÉRIGA']];
-const RX = [6000, 10600];
+const LINES = [[2600, 8700, 'Quem ousa invadir o meu castelo?'], [9000, 15600, 'Estes insetos estão com interesse em morrer, huh?!'], [15900, 21300, 'Muito bem...'], [21600, 27600, 'Espero que consigam me entreter!']];   // cada fala: digitando + ~5 s parada
 const BOSS_CLOSE = [.5, .47], BOSS_FAR = [.5, .31], EYES = [.50, .295];   // posições (fração da imagem)
 
 function load(src){ return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = src; }); }
@@ -21,12 +17,9 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
   const root = $('#intro'); if (!root) { onReveal(); return Promise.resolve(); }
   return new Promise(async resolve => {
     root.hidden = false; root.style.opacity = 1; root.classList.remove('out');
-    const rx = root.querySelector('.in-react'), stage = root.querySelector('.in-stage'), close = root.querySelector('.in-close'), far = root.querySelector('.in-far'),
+    const stage = root.querySelector('.in-stage'), close = root.querySelector('.in-close'), far = root.querySelector('.in-far'),
           eyes = root.querySelector('.in-eyes'), cv = root.querySelector('.in-smoke'), cap = root.querySelector('.in-cap'), capTxt = cap.querySelector('span'), btn = root.querySelector('.in-skip'), cnt = btn.querySelector('b');
     await Promise.race([Promise.all([load(close.src), load(far.src)]), new Promise(r => setTimeout(r, 2500))]);
-    if (!rx.children.length) REACT.forEach(([k, fr, nm]) => { const d = document.createElement('div'); d.className = 'rx ' + k;
-      d.innerHTML = `<div class="rx-face"><img alt="" draggable="false"><i class="rx-drop"></i></div><b class="rx-bang">!</b><span>${nm}</span>`; rx.appendChild(d); fr.forEach(n => { new Image().src = `intro/f_${n}.webp`; }); });
-    const rxs = [...rx.children].map((el, i) => ({el, img: el.querySelector('img'), cur: -1, fr: REACT[i][1]}));
     let yes = 0, mine = false, skipped = false, revealed = false, done = false, t0 = performance.now(), parts = [], lastT = 0;
     const paintBtn = () => { cnt.textContent = `${yes}/${need}`; btn.classList.toggle('selected', mine); };
     btn.onclick = () => { if (done || revealed) return; mine = !mine; yes += mine ? 1 : -1; paintBtn(); if (yes >= need) skip(); };
@@ -51,7 +44,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       const sClose = t < T.pull[0] ? lerp(1.1, 1.22, seg(t, T.fadeIn[0], T.push[1])) : lerp(1.22, .8, eio(seg(t, ...T.pull)));
       close.style.opacity = aClose; close.style.transformOrigin = `${BOSS_CLOSE[0] * 100}% ${BOSS_CLOSE[1] * 100}%`; close.style.transform = `scale(${sClose})`;
       const aFar = eio(seg(t, T.crossA[0] + 200, T.crossA[1] + 100)) * (1 - eio(seg(t, T.black[0], T.black[1])));
-      const sFar = lerp(3, 1, eio(seg(t, ...T.pull)));
+      const sFar = lerp(3, 1, eio(seg(t, ...T.pull))) + .05 * seg(t, T.hold, T.smoke);   // depois do zoom, deriva bem devagar
       far.style.opacity = aFar; far.style.transformOrigin = `${BOSS_FAR[0] * 100}% ${BOSS_FAR[1] * 100}%`; far.style.transform = `scale(${sFar})`;
       far.style.filter = `brightness(${(.9 + .1 * Math.sin(t * .02) * Math.sin(t * .0071)).toFixed(3)})`;
       // olhos vermelhos pulsando
@@ -60,12 +53,6 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       eyes.style.transform = `translate(-50%,-50%) scale(${sClose})`;   // acompanha o zoom da imagem de perto
       const eo_ = close.getBoundingClientRect(), so = stage.getBoundingClientRect();
       eyes.style.left = (eo_.left - so.left + eo_.width * EYES[0]) + 'px'; eyes.style.top = (eo_.top - so.top + eo_.height * EYES[1]) + 'px';
-      // ---- reação dos heróis: olham uns para os outros, assustados ----
-      const rk = t >= RX[0] && t < RX[1] && !skipped;
-      rx.style.opacity = rk ? Math.min(seg(t, RX[0], RX[0] + 250), 1 - seg(t, RX[1] - 300, RX[1])) : 0;
-      if (rk) rxs.forEach((o, i) => { const u = t - RX[0] - i * 130; if (u < 0) { o.el.style.opacity = 0; return; } o.el.style.opacity = 1;
-        const idx = Math.floor(u / 360) % o.fr.length; if (idx !== o.cur) { o.cur = idx; o.img.src = `intro/f_${o.fr[idx]}.webp`; o.img.style.transform = (i === 0 || i === 1) !== (idx % 2 === 0) ? 'scaleX(-1)' : ''; }
-        const sh = 1.6, jx = Math.sin(u * .09 + i) * sh, jy = Math.cos(u * .13 + i * 2) * sh * .6; o.el.style.transform = `translate(${jx.toFixed(1)}px,${jy.toFixed(1)}px) scale(${(.6 + .4 * eo(clamp(u / 220))).toFixed(3)})`; });
       // ---- fala do boss (digitando) ----
       const L = LINES.find(l => t >= l[0] && t < l[1]);
       if (L) { const n = Math.min(L[2].length, Math.floor((t - L[0]) / 32) + 1); cap.hidden = false; capTxt.textContent = L[2].slice(0, n); cap.classList.toggle('done', n >= L[2].length);
