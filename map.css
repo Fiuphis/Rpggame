@@ -56,9 +56,10 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 /* v127: botões do topo ficam ocultos durante a transição das nuvens e surgem suavemente depois */
 .back,.reset{transition:opacity .9s ease}
 .fogin .back,.fogin .reset{opacity:0;pointer-events:none}
-/* v138: frases rotativas no quadro do canto inferior direito */
+/* v138: frases rotativas no quadro do canto inferior direito.
+   Caixa = interior exato da moldura da arte (x 912–1192, y 1119–1224 de 1224×1285), com o mesmo respiro (--p) nos 4 lados */
 .map{container-type:inline-size}
-.quote{position:absolute;left:75.9%;top:88.5%;width:21.4%;height:7.4%;display:flex;flex-direction:column;justify-content:center;gap:.5cqw;color:#e9dfc6;font-family:Georgia,"Times New Roman",serif;cursor:pointer;pointer-events:auto;transition:opacity .42s ease;z-index:2}
+.quote{--p:1.2cqw;position:absolute;left:74.51%;top:87.08%;width:22.88%;height:8.17%;box-sizing:border-box;padding:var(--p);overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:.35cqw;color:#e9dfc6;font-family:Georgia,"Times New Roman",serif;cursor:pointer;pointer-events:auto;transition:opacity .42s ease;z-index:2}
 .quote.out{opacity:0}
-.q-t{margin:0;font-size:1.42cqw;line-height:1.38;text-shadow:0 1px 0 #000}
-.q-a{margin:0;font-size:1.3cqw;line-height:1;text-align:right;color:#cdbfdc}
+.q-t{margin:0;font-size:var(--fs,1.3cqw);line-height:1.3;text-shadow:0 1px 0 #000}
+.q-a{margin:0;font-size:calc(var(--fs,1.3cqw)*.92);line-height:1.05;text-align:right;color:#cdbfdc}

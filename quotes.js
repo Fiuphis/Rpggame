@@ -19,10 +19,13 @@ const Q = [
 const t = document.getElementById('q-t'), a = document.getElementById('q-a'), box = document.getElementById('quote');
 if (!t) return;
 let i = 0, tm = 0;
-const show = n => { i = n; box.classList.add('out'); setTimeout(() => { t.textContent = '“' + Q[i][0] + '”'; a.textContent = '— ' + Q[i][1]; box.classList.remove('out'); }, 420); };
+// reduz a letra até caber inteira na caixa (nunca corta)
+const fit = () => { let fs = 1.3; box.style.setProperty('--fs', fs + 'cqw'); while (box.scrollHeight > box.clientHeight + 0.5 && fs > 0.8) { fs -= 0.04; box.style.setProperty('--fs', fs.toFixed(2) + 'cqw'); } };
+const set = n => { t.textContent = '“' + Q[n][0] + '”'; a.textContent = '— ' + Q[n][1]; fit(); };
+const show = n => { i = n; box.classList.add('out'); setTimeout(() => { set(i); box.classList.remove('out'); }, 420); };
 const next = () => { let n; do n = Math.floor(Math.random() * Q.length); while (n === i); show(n); };
 const loop = () => { clearInterval(tm); tm = setInterval(next, 9000); };
-t.textContent = '“' + Q[0][0] + '”'; a.textContent = '— ' + Q[0][1];
+set(0); addEventListener('resize', () => set(i));
 box.addEventListener('click', () => { next(); loop(); });
 loop();
 })();
