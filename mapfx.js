@@ -318,8 +318,8 @@ const drawWeather = (dt, now) => {
   for (let i = flecks.length - 1; i >= 0; i--) { const f = flecks[i]; f.t += dt; f.x += f.v * dt; if (f.t > f.life) { flecks.splice(i, 1); continue; } const a = Math.sin(f.t / f.life * Math.PI) * .8; for (let q = 0; q < f.l; q++) if (wat(f.x - q, f.y)) px(f.x - q, f.y, 'w', a * (1 - q / f.l * .6)); }
   for (let i = wavesL.length - 1; i >= 0; i--) { const wv = wavesL[i], u = (ms - wv.t) / 2300; if (u >= 1) { wavesL.splice(i, 1); continue; }
     if (u < .7) { const e = ease(u / .7), y = wv.y1 + 14 * (1 - e), w = wv.w * (.55 + .45 * e);
-      for (let dx = -w / 2; dx <= w / 2; dx++) { const arc = Math.round(dx * dx / (w * 1.1)); if (wat(wv.x + dx, y + arc)) { px(wv.x + dx, y + arc, 'w', .9); } } }
-    else { const s = (u - .7) / .3; for (let dx = -wv.w / 2; dx <= wv.w / 2; dx++) if (wat(wv.x + dx, wv.y1 + 2)) { px(wv.x + dx, wv.y1 + 2, 'w', (1 - s) * .9);  } } }
+      for (let dx = -w / 2; dx <= w / 2; dx++) { const arc = Math.round(dx * dx / (w * 1.1)); if (wat(wv.x + dx, y + arc)) { px(wv.x + dx, y + arc, 'w', .3); } } }
+    else { const s = (u - .7) / .3; for (let dx = -wv.w / 2; dx <= wv.w / 2; dx++) if (wat(wv.x + dx, wv.y1 + 2)) { px(wv.x + dx, wv.y1 + 2, 'w', (1 - s) * .3);  } } }
 };
 const drawClouds = (dt, now) => {
   for (let i = clouds.length - 1; i >= 0; i--) { const c = clouds[i]; c.x += c.vx * dt; c.y += c.vy * dt; if (c.x > W + 40 || c.x < -50 || c.y > H + 30 || c.y < -30) { clouds.splice(i, 1); continue; }

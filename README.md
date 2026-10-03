@@ -391,3 +391,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v146: peixes pulando removidos.
 - v147: respingos brancos das ondas na costa removidos (onda só desliza e some).
 - v148: ondas da costa com 1 pixel de espessura.
+- v149: ondas da costa bem sutis (linha de 1px com 30% de opacidade, aparência de ~0,25px).
