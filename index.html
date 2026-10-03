@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#050711">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.add('fogin')}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="lobby.css">
 <link rel="stylesheet" href="fog.css">
@@ -19,6 +20,7 @@
   <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
 </main>
 <button id="test-toggle" class="test-toggle" type="button"></button>
+<script src="fog.js"></script>
 <script src="lobby.js"></script>
 <script>
 const W=1024,H=1536;
@@ -82,10 +84,14 @@ confirmBtn.onclick=()=>{
   if(!selected)return;
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
-  document.body.classList.add('leaving');document.getElementById('fogT').classList.add('close');document.getElementById('fogB').classList.add('close');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{location.href='map.html'+location.search},1100);
+  document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search});
 };
 testBtn.onclick=()=>{LOBBY.setTest(!LOBBY.testMode);location.href='index.html'};
 render();
+if(sessionStorage.getItem('bd1_fog_lobby')){ // voltando do mapa: nuvens cobrem e abrem do meio até as bordas
+  sessionStorage.removeItem('bd1_fog_lobby');document.body.classList.add('fogwait');
+  setTimeout(()=>{document.body.classList.add('fogopen');Fog.open(document.getElementById('stage'),2600).then(()=>document.body.classList.remove('fogwait','fogopen'))},700);
+}
 window.addEventListener('storage',render);
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='updated')location.reload()});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}))}
 </script>

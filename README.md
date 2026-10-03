@@ -364,3 +364,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v117: mapa Jornada dos Heróis (map.html/js/css, tools/build_map.py): lobby → mapa → voto para entrar → abertura; vitória marca o boss como concluído e libera o próximo. Progresso em localStorage bd1_progress (?resetmapa=1 zera).
 - v118: mapa: botão REINICIAR (com confirmação) perto da bússola, nós selecionáveis (tocar de novo desmarca), rejogar boss concluído, 'trocar de grupo' sem perder progresso.
 - v121: transição lobby→mapa com nuvens densas que fecham de cima/baixo até o meio e abrem (mapa com blur → nítido) até as bordas do mapa, onde ficam como as nuvens da seleção (fog.css).
+- v122: nuvens ficam paradas no meio até a página abrir; mesmo efeito na volta mapa→seleção (fog.js).

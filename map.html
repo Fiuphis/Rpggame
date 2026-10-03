@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#050711">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{if(sessionStorage.getItem('bd1_fog'))document.documentElement.classList.add('fogin')}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="map.css">
 <link rel="stylesheet" href="fog.css">
@@ -26,8 +27,9 @@
   <button class="p-go" id="p-go" type="button">ENTRAR <b>0/1</b></button>
 </section>
 <div class="confirm" id="confirm" hidden><div class="c-box"><div class="c-t">REINICIAR PROGRESSO?</div><div class="c-s">A jornada volta ao começo, como se nenhum boss tivesse sido derrotado.</div><div class="c-b"><button id="c-yes" type="button">REINICIAR</button><button id="c-no" type="button">CANCELAR</button></div></div></div>
-<div class="fog top shut" id="fogT"></div><div class="fog bot shut" id="fogB"></div>
+<div class="fog top" id="fogT"></div><div class="fog bot" id="fogB"></div>
 <div class="veil" id="veil"></div>
+<script src="fog.js"></script>
 <script src="lobby.js"></script>
 <script src="map.js"></script>
 </body>

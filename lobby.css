@@ -52,3 +52,9 @@ body::after{transition:opacity .6s}
 .stage{transition:opacity 1s ease-in}
 body.leaving .stage{opacity:.25}
 body.leaving::before{filter:blur(22px) brightness(.15)}
+
+/* nuvens persistentes entram só depois que as de transição saem */
+body.fogwait::after{opacity:0}
+body::after,html::after{transition:opacity 2s ease}
+html.fogin::after{opacity:0}
+body.fogopen::after{opacity:1;transition-delay:1.2s}

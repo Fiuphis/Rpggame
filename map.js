@@ -40,19 +40,15 @@ function build(){
   const before = won !== null && done.includes(+won) ? done.filter(d => d !== +won) : done;
   paint(before, true);
   const fogFlag = sessionStorage.getItem('bd1_fog'); sessionStorage.removeItem('bd1_fog');
-  const fT = $('#fogT'), fB = $('#fogB'), veil = $('#veil'), mp = $('#map');
-  if (fogFlag) {   // veio da seleção de grupo: nuvens cobrem tudo e abrem do meio para as bordas do mapa
-    veil.style.transition = 'none'; veil.classList.add('out'); mp.classList.add('blur'); mp.classList.add('intro');
-    setTimeout(() => {
-      const r = mp.getBoundingClientRect(), bh = fT.getBoundingClientRect().height;
-      const endTop = -(bh - Math.max(0, r.top) - bh * .12);   // a borda interna da nuvem para um pouco além da borda do mapa
-      fT.style.setProperty('--end', endTop + 'px'); fB.style.setProperty('--end', endTop + 'px');
-      fT.classList.remove('shut'); fB.classList.remove('shut'); void fT.offsetWidth; fT.classList.add('open'); fB.classList.add('open'); mp.classList.remove('blur');
-      setTimeout(() => { document.body.classList.add('settled'); document.documentElement.classList.add('settled'); }, 1400);
-      setTimeout(() => { fT.remove(); fB.remove(); }, 4300);
-    }, 500);
+  const veil = $('#veil'), mp = $('#map');
+  if (fogFlag) {   // veio da seleção de grupo: nuvens cobrem tudo (paradas no meio), depois saem do meio até as bordas do mapa
+    veil.style.display = 'none'; mp.classList.add('blur'); mp.classList.add('intro');
+    const base = document.querySelector('.base'); (base.decode ? base.decode().catch(() => {}) : Promise.resolve()).then(() => setTimeout(() => {
+      mp.classList.remove('blur'); setTimeout(() => { document.body.classList.add('settled'); document.documentElement.classList.add('settled'); }, 1400);
+      Fog.open(mp, 2600);
+    }, 700));
   } else {
-    fT.remove(); fB.remove(); mp.classList.add('intro'); document.body.classList.add('settled'); document.documentElement.classList.add('settled');
+    mp.classList.add('intro'); document.body.classList.add('settled'); document.documentElement.classList.add('settled');
     requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add('out')));
   }
   if (before !== done) setTimeout(() => paint(done, false), 3000);
@@ -72,7 +68,7 @@ $('#reset').onclick = () => { $('#confirm').hidden = false; };
 $('#c-no').onclick = () => { $('#confirm').hidden = true; };
 $('#c-yes').onclick = () => { localStorage.removeItem(KEY); sessionStorage.removeItem('bd1_justwon'); done = []; $('#confirm').hidden = true; deselect(); paint(done, false); };
 // voltar = trocar de grupo (o progresso fica salvo no aparelho)
-$('#back').addEventListener('click', () => { LOBBY.leave(); });
+$('#back').addEventListener('click', e => { e.preventDefault(); LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }); });
 function voters(){ return Math.max(1, LOBBY.counts()[grp] || 0); }
 function deselect(){ selected = null; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false; $('#panel').hidden = true; document.querySelectorAll('.node').forEach(e => e.classList.remove('sel')); }
 function select(id){
