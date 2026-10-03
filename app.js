@@ -161,7 +161,7 @@ const readMs=s=>Math.min(6000,900+50*String(s).length);
 const wait = ms => new Promise(r=>setTimeout(r,Math.max(ms,__readUntil-Date.now())));
 const __seen={};
 function fresh(key,ms){const n=Date.now();if(__seen[key]&&n-__seen[key]<ms)return false;__seen[key]=n;return true}
-function scWrite(el, text, cls){ el.className = el.className.split(' ')[0] + (cls ? ' ' + cls : ''); el.textContent = ''; const per = Math.max(10, Math.min(24, 1500 / Math.max(1, String(text).length)));
+function scWrite(el, text, cls){ if (window.Paper) Paper.burst(10); el.className = el.className.split(' ')[0] + (cls ? ' ' + cls : ''); el.textContent = ''; const per = Math.max(10, Math.min(24, 1500 / Math.max(1, String(text).length)));
   [...String(text)].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch; s.style.animationDelay = (i * per) + 'ms'; el.appendChild(s); }); }
 function paperOn(){ return document.documentElement.classList.contains('paper'); }
 function fitScroll(){ const g = $('#game').getBoundingClientRect(), bh = Math.max(0, Math.round(innerHeight - g.bottom)); document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.classList.toggle('paper', bh >= 56); }

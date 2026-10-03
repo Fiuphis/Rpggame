@@ -331,3 +331,11 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sc-t.bad{color:#7a1410}.sc-t.good{color:#1f5a2a}.sc-t.ult{color:#4a2a7a}
 .sc-in span{white-space:pre-wrap;opacity:0;animation:ink .12s ease-out forwards}
 @keyframes ink{0%{opacity:0;filter:blur(1.6px);transform:translateY(1.5px)}100%{opacity:1;filter:none;transform:none}}
+/* papiro pixelart (paper.js): sobrescreve o visual anterior */
+.scroll{background:#0b0810!important;box-shadow:0 -4px 14px rgba(0,0,0,.7)!important}
+.scroll::before,.scroll::after,.sc-roll{display:none!important}
+.sc-art,.sc-fx{position:absolute;left:0;top:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}
+.sc-in{inset:36px 11% 36px!important;z-index:2;gap:2px!important}
+.sc-t,.sc-s,.sc-n{text-shadow:0 1px 0 rgba(255,238,190,.55)}
+.sc-t{font-size:clamp(12px,3.6vw,17px);letter-spacing:.06em;text-transform:uppercase}.sc-s{font-size:clamp(10px,3vw,13px)!important}.sc-n{font-size:clamp(10px,2.9vw,12px)!important}
+.sc-t:not(:empty)::after{content:"";display:block;width:56%;height:5px;margin:3px auto 0;background:linear-gradient(90deg,transparent,#7a5630 12%,#7a5630 43%,transparent 43%,transparent 57%,#7a5630 57%,#7a5630 88%,transparent);clip-path:polygon(0 40%,100% 40%,100% 60%,0 60%);opacity:.8}
