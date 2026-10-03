@@ -40,7 +40,7 @@ function build(){
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
     if (cfg && cfg.pad != null) WHO.forEach(w => { if (H[w].rig) return; H[w].cv.width = cellW(w); H[w].cv.height = cellH(w); });
-    for (const w of WHO) { H[w].sheets = await loadSheets(w); drawStill(w); scheduleIdle(w, rnd(800, 2500)); }
+    for (const w of WHO) { H[w].sheets = await loadSheets(w); drawStill(w); scheduleIdle(w, w === 'assassin' ? rnd(6000, 12000) : rnd(800, 2500)); }
   });
 }
 function buildMage(h, m, P, Rig, cfg){
@@ -88,7 +88,7 @@ function playSheet(w, s, {loop = false, hold = false} = {}){
 async function play(w, name, opts = {}){
   const h = H[w]; if (!h) return false;
   if (h.dead && name !== 'revive') return false;
-  if (h.rig) { const n = h.rig.has(name) ? name : h.rig.has('melee') && name !== 'idle' ? 'melee' : null; if (!n) return false; clearTimeout(h.idleT); h.cur = n; await h.rig.play(n, opts); h.cur = null; scheduleIdle(w, rnd(1200, 3200)); return true; }
+  if (h.rig) { const n = h.rig.has(name) ? name : h.rig.has('melee') && name !== 'idle' ? 'melee' : null; if (!n) return false; clearTimeout(h.idleT); h.cur = n; await h.rig.play(n, opts); h.cur = null; scheduleIdle(w, w === 'assassin' ? rnd(9000, 16000) : rnd(1200, 3200)); return true; }
   const r = resolve(w, name); if (!r) return false;
   clearTimeout(h.idleT); h.cur = name;
   await playSheet(w, r.s);
@@ -97,7 +97,7 @@ async function play(w, name, opts = {}){
 function scheduleIdle(w, delay){
   const h = H[w]; if (!h) return; clearTimeout(h.idleT);
   h.idleT = setTimeout(async () => {
-    if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, rnd(4500, 10000)); }
+    if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, w === 'assassin' ? rnd(11000, 22000) : rnd(4500, 10000)); }
     if (h.cur || h.dead || document.hidden || !h.sheets.idle) return scheduleIdle(w, rnd(1500, 3500));
     h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, rnd(1500, 4000));
   }, delay);

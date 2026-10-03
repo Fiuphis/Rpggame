@@ -7,7 +7,7 @@
 const POSES = ['at1','at2','at3','at3','at2','dn1','dn2','dn2','dn1','dg1','dg2','dg3','idle1','stf','pr1','pr2','ex1','v1','v2','d1','d2','d3','d4','ult1','ult2','bt1','bt2','bt3','bt4','bp1','bp2','bp3','br1','br2','br3','br4','br5','br6','bg1','bg2','bg3','bg4'];
 const FXS = ['star1','star2','star3','ring1','ring2','ring3','pillar','lotus','burst','aura','streak1','streak2','streak3','sunstar','star4','pillar2','cross1'];
 const T = {x:517, y:340};
-const BASE = 276;
+const BASE = 292, SZ = 1.05;      // pés mais para a frente (baixo) e um pouco maior
 const GOLD = '255,214,120';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
@@ -58,6 +58,7 @@ const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
   S(2800, [[0,'idle1'],[.2,'stf',{dx:-2}],[.75,'stf',{dx:-2}],[.97,'idle1']]),
   S(2600, [[0,'idle1'],[.2,'pr2'],[.7,'pr2'],[.97,'idle1']]),
 ];
+IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.7); });      // movimentos de ociosa mais lentos
 const lastV = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; const p = lastV.get(v) ?? -1; let i; do { i = Math.floor(Math.random() * v.length); } while (v.length > 1 && i === p); lastV.set(v, i); return v[i]; };
 const DEATH = [[0,'d1'],[.3,'d2'],[.58,'d3'],[.82,'d4']];
@@ -124,11 +125,11 @@ function make(host){
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1, br0 = 1){
     const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return null;
     const br = Math.sin(tm / 1000 * 2.2) * br0, fx = Px + W / 2 + dx, fy = Py + BASE + dy;
-    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(sc * (1 - .004 * br), sc * (1 + .008 * br));
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * sc * (1 - .004 * br), SZ * sc * (1 + .008 * br));
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
-    if (m.orb) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = m.orb[0] - m.cx, oy = m.orb[1] - m.gy; return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
+    if (m.orb) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (m.orb[0] - m.cx) * SZ, oy = (m.orb[1] - m.gy) * SZ; return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
     return null;
   }
   function frame(){
@@ -145,7 +146,7 @@ function make(host){
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
     lastT = st;
     const f = clamp((now - cur_t) / fade);
-    c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P, Py - host.P); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = false;
+    c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P, Py - host.P + (BASE - 276)); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = false;
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 : 0;
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);

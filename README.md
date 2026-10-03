@@ -203,3 +203,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v48
 - Borda escura fina na Clériga (1px, `outline()` em tools/cut_cleric.py) e borda da Maga reduzida de ~3px para 1px (tools/post_outline.py); franjas claras removidas em ambas.
+
+## v49
+- Clériga mais à frente (pés ~16px mais baixos, 5% maior) e ociosa bem mais calma: movimentos extras a cada 11–22 s (9–16 s após uma ação) e 1,7x mais lentos.
