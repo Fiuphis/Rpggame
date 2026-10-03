@@ -312,3 +312,22 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 @keyframes gplus{0%{opacity:0;transform:translateY(1.4cqw) scale(.7)}18%{opacity:1;transform:translateY(0) scale(1.2)}50%{opacity:.95;transform:translateY(.5cqw) scale(1)}100%{opacity:0;transform:translateY(-2.4cqw) scale(.75)}}
 .gold-hud.bump{animation:gbump .45s ease-out}
 @keyframes gbump{0%{transform:scale(1)}35%{transform:scale(1.28);color:#fff1b8;text-shadow:0 0 1.4cqw #ffc54e}100%{transform:scale(1)}}
+
+/* Papiro na faixa de baixo: os avisos são escritos nele */
+.scroll{position:fixed;left:0;right:0;bottom:0;height:var(--bh,0px);display:none;z-index:60;pointer-events:none;overflow:hidden;
+ background:radial-gradient(120% 90% at 50% 40%,rgba(255,240,200,.55),rgba(255,240,200,0) 70%),radial-gradient(40% 60% at 12% 70%,rgba(120,80,30,.28),transparent),radial-gradient(35% 55% at 88% 30%,rgba(110,70,25,.26),transparent),linear-gradient(180deg,#d9c18a,#c9aa6c 55%,#b8935a);
+ box-shadow:0 -6px 18px rgba(0,0,0,.65)}
+.scroll::before{content:"";position:absolute;inset:0;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 .32  0 0 0 0 .21  0 0 0 0 .08  0 0 0 .5 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");mix-blend-mode:multiply;opacity:.8}
+.scroll::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(90,60,25,.07) 0 1px,transparent 1px 5px),linear-gradient(90deg,rgba(60,35,10,.4),transparent 9%,transparent 91%,rgba(60,35,10,.4));pointer-events:none}
+.paper .scroll{display:block}
+.paper .turn-banner,.paper #toast{display:none!important}
+.sc-roll{position:absolute;left:0;right:0;height:12px;z-index:2;background:linear-gradient(180deg,#5a3d1b,#c9a15a 28%,#f0dca4 50%,#b78d4a 74%,#4a3015)}
+.sc-roll.top{top:0}.sc-roll.bot{bottom:0}
+.sc-in{position:absolute;inset:14px 7% 14px;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;text-align:center;color:#3a2410;font-family:"Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;transition:opacity .5s}
+.sc-in.fade{opacity:0}
+.sc-t{font-weight:700;font-size:clamp(14px,4.3vw,20px);line-height:1.15;letter-spacing:.04em}
+.sc-s{font-style:italic;font-size:clamp(11px,3.3vw,14px);line-height:1.3;color:#4a3118}
+.sc-n{font-size:clamp(11px,3.2vw,13px);font-style:italic;color:#5a3a1a;min-height:1.2em}
+.sc-t.bad{color:#7a1410}.sc-t.good{color:#1f5a2a}.sc-t.ult{color:#4a2a7a}
+.sc-in span{white-space:pre-wrap;opacity:0;animation:ink .12s ease-out forwards}
+@keyframes ink{0%{opacity:0;filter:blur(1.6px);transform:translateY(1.5px)}100%{opacity:1;filter:none;transform:none}}

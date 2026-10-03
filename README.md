@@ -405,3 +405,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v160: caixas do mapa (título, rosa dos ventos, legenda, frase) acima das nuvens, aparecendo depois que o mapa carrega e as nuvens densas saem (hud.js + map/ui_*.webp).
 - v161: caixa 'Jornada dos Heróis' acima das nuvens sem o brasão do Castelo (o brasão fica com o mapa).
 - v162: avisos de combate bem menores; aviso de moedas virou '+N' animado abaixo do contador (que atualiza logo depois).
+- v163: avisos de combate escritos num papiro que cobre a faixa de baixo (no lugar dos esqueletos); em telas sem faixa, mantém os avisos pequenos sobre o jogo.

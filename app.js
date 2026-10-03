@@ -161,7 +161,12 @@ const readMs=s=>Math.min(6000,900+50*String(s).length);
 const wait = ms => new Promise(r=>setTimeout(r,Math.max(ms,__readUntil-Date.now())));
 const __seen={};
 function fresh(key,ms){const n=Date.now();if(__seen[key]&&n-__seen[key]<ms)return false;__seen[key]=n;return true}
-function toast(msg){if(!fresh('t:'+msg,4000))return;const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),readMs(msg)+400)}
+function scWrite(el, text, cls){ el.className = el.className.split(' ')[0] + (cls ? ' ' + cls : ''); el.textContent = ''; const per = Math.max(10, Math.min(24, 1500 / Math.max(1, String(text).length)));
+  [...String(text)].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch; s.style.animationDelay = (i * per) + 'ms'; el.appendChild(s); }); }
+function paperOn(){ return document.documentElement.classList.contains('paper'); }
+function fitScroll(){ const g = $('#game').getBoundingClientRect(), bh = Math.max(0, Math.round(innerHeight - g.bottom)); document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.classList.toggle('paper', bh >= 56); }
+addEventListener('resize', fitScroll); addEventListener('orientationchange', () => setTimeout(fitScroll, 300)); addEventListener('load', fitScroll); setTimeout(fitScroll, 0);
+function toast(msg){if(!fresh('t:'+msg,4000))return;if(paperOn()){const n=$('#sc-n');scWrite(n,msg);clearTimeout(window.__toast);window.__toast=setTimeout(()=>{n.textContent=''},readMs(msg)+600);return}const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),readMs(msg)+400)}
 let votes = {yes:0, no:0};
 let botTimers = [], voteTimer = null, voteEndsAt = 0;
 const VOTE_SECONDS = 25;
@@ -451,8 +456,10 @@ function showRing(hero){
 }
 function hideRing(){ const m = $('#turn-marker'); if (m) m.remove(); }
 function bannerKind(t){t=String(t).toUpperCase();if(/ULTIMATE/.test(t))return 'ult';if(/LUZ SAGRADA|ESQUIVOU|DESNORTEADO/.test(t))return 'good';if(/BOSS|ONDA|ESTOCADA|TELEPORTE|GOLPE|PREPARANDO/.test(t))return 'bad';return ''}
-function showBanner(t, sub){ const b=$('#turn-banner'); const key=t+'|'+(sub||''); if(b.classList.contains('show')&&b.dataset.k===key)return; b.dataset.k=key; __readUntil=Date.now()+readMs((t+' '+(sub||'')).replace(/<[^>]*>/g,'')); b.className='turn-banner show '+bannerKind(t); b.innerHTML=`${t}${sub?`<small>${sub}</small>`:''}`; }
-function hideBanner(){ __readUntil=0; const b=$('#turn-banner'); b.classList.remove('show'); b.dataset.k=''; }
+function showBanner(t, sub){ const b=$('#turn-banner'); const key=t+'|'+(sub||''); if(b.dataset.k===key)return; b.dataset.k=key; __readUntil=Date.now()+readMs((t+' '+(sub||'')).replace(/<[^>]*>/g,''));
+  if (paperOn()) { const k = bannerKind(t); $('.sc-in').classList.remove('fade'); scWrite($('#sc-t'), String(t).replace(/<[^>]*>/g, ''), k); scWrite($('#sc-s'), sub || ''); b.classList.remove('show'); return; }
+  b.className='turn-banner show '+bannerKind(t); b.innerHTML=`${t}${sub?`<small>${sub}</small>`:''}`; }
+function hideBanner(){ __readUntil=0; const b=$('#turn-banner'); b.classList.remove('show'); b.dataset.k=''; const si=$('.sc-in'); if(si){si.classList.add('fade'); setTimeout(()=>{ if(si.classList.contains('fade')){ $('#sc-t').textContent=''; $('#sc-s').textContent=''; } },520);} }
 function floatText(xPct, yPct, text, color){
   const d = document.createElement('div'); d.className = 'dmg-float'; d.textContent = text;
   d.style.left = xPct + '%'; d.style.top = yPct + '%'; d.style.color = color || '#ffd24d';
