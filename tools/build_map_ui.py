@@ -9,7 +9,9 @@ for k, v in B.items():
     else: _, cx, cy, r = v; x0, y0, x1, y1 = cx - r - 6, cy - r - 6, cx + r + 6, cy + r + 6
     w, h = x1 - x0, y1 - y0; m = Image.new('L', (w * 4, h * 4), 0); d = ImageDraw.Draw(m)
     if v[0] == 'rect': d.rounded_rectangle([6 * 4, 6 * 4, (w - 6) * 4, (h - 6) * 4], radius=5 * 4, fill=255) if False else d.rounded_rectangle([4 * 2, 4 * 2, w * 4 - 4 * 2, h * 4 - 4 * 2], radius=6 * 4, fill=255)
-    else:
+    if k == 'title':   # tira o brasão do Castelo (e a placa do nome) — ficam com o mapa, abaixo das nuvens
+        d.ellipse([(317 - 82 - x0) * 4, (157 - 74 - y0) * 4, (317 + 82 - x0) * 4, (157 + 74 - y0) * 4], fill=0); d.rectangle([(205 - x0) * 4, (221 - y0) * 4, w * 4, h * 4], fill=0)
+    if v[0] != 'rect':
         import numpy as np
         yy, xx = np.mgrid[0:h, 0:w]; dd = np.hypot(xx - w / 2 + .5, yy - h / 2 + .5); a = np.clip((88 - dd) / 14, 0, 1)
         m = Image.fromarray((a * 255).astype('uint8'))
