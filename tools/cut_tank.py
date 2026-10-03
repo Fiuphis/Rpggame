@@ -5,18 +5,30 @@ from PIL import Image
 from scipy import ndimage as ndi
 sys.path.insert(0, os.path.dirname(__file__))
 import boxes_tank as B
-SRC = '/root/.claude/uploads/3a96d84d-702c-52a6-9324-e85ba38ea593/e49fa76c-image.png'
+UP = '/root/.claude/uploads/3a96d84d-702c-52a6-9324-e85ba38ea593/'
+SRC = {'a':UP + 'a4b6b1ee-image.png', 'b':UP + '3e1f2dc4-image.png', 'c':UP + 'e49fa76c-image.png'}
+REF = {'a':'a_i1', 'b':'v1', 'c':'i1'}      # pose neutra de cada folha (corpo = BODY_H)
 OUTD = 'tank'; BODY_H = float(os.environ.get('BODY_H', 262)); RING = 2
 NAVY = np.array([22, 14, 30], np.float32)
-BOX = {**B.C, **B.C2}
-BOX['t1'] = (3, 558, 148, 732); BOX['t2'] = (148, 560, 356, 742)
-BOX['n2'] = (457, 84, 598, 252); BOX['n3'] = (498, 60, 702, 252); BOX['h3'] = (1040, 50, 1162, 276); BOX['n4'] = (673, 90, 826, 252)
-MASK = {'t3':[(356, 520, 505, 572)], 'n2':[(500, 60, 600, 120)], 'n3':[(497, 125, 598, 252), (672, 85, 720, 140)]}
+BOX = {k: ('c',) + v for k, v in {**B.C, **B.C2}.items()}
+BOX['t1'] = ('c', 3, 558, 148, 732); BOX['t2'] = ('c', 148, 560, 356, 742)
+BOX['n2'] = ('c', 457, 84, 598, 252); BOX['n3'] = ('c', 498, 60, 702, 252); BOX['h3'] = ('c', 1040, 50, 1162, 276); BOX['n4'] = ('c', 673, 90, 826, 252)
+# folha a (poses limpas, 1 martelo + 1 escudo) e folha b (provocação com pedras e sequência de queda)
+BOX.update({
+ 'a_i1':('a',244,27,459,225), 'a_i2':('a',528,25,744,225), 'a_hh':('a',75,244,237,491), 'a_sw':('a',985,307,1282,500), 'a_rd':('a',781,318,958,495),
+ 'a_cr':('a',26,600,261,751), 'a_lo':('a',620,570,826,737), 'a_bi':('a',268,510,612,778), 'a_s1':('a',214,790,387,982), 'a_s2':('a',408,797,568,982),
+ 'a_bub':('a',577,789,740,988), 'a_swl':('a',1074,807,1262,965), 'a_rl1':('a',25,1041,268,1174), 'a_rl2':('a',325,1049,539,1181), 'a_dust':('a',561,1053,777,1185),
+ 'tA':('b',9,1012,184,1186), 'tB':('b',184,1006,326,1186), 'tC':('b',324,996,583,1186),
+ 'v1':('b',617,1032,760,1183), 'v2':('b',759,1040,903,1183), 'v3':('b',920,1052,1077,1183), 'v4':('b',1096,1035,1305,1199),
+})
+# poses descartadas (escudo/martelo duplicado, bolinha estranha ou recorte ruim): não são gravadas
+SKIP = {'i3','p3','x2','t2','t4','t5','t6','u1','u2','u3','u4','n4','b2','b3','e1','e2','e3','e4','s1','s2','s3','s4','h3x'}
+MASK = {'v4':[(1252, 1035, 1305, 1172)], 'tB':[(184, 1006, 300, 1015)], 'tA':[(9, 1012, 30, 1018)], 't3':[(356, 520, 505, 572)], 'n2':[(500, 60, 600, 120)], 'n3':[(497, 125, 598, 252), (672, 85, 720, 140)]}
 S4 = ndi.generate_binary_structure(2, 1); S8 = ndi.generate_binary_structure(2, 2)
-IM = np.asarray(Image.open(SRC).convert('RGB')).astype(np.float32)
+IMS = {k: np.asarray(Image.open(v).convert('RGB')).astype(np.float32) for k, v in SRC.items()}
 
 def process(name):
-    x0, y0, x1, y1 = BOX[name]; c = IM[y0:y1, x0:x1].copy(); h, w = c.shape[:2]
+    sk, x0, y0, x1, y1 = BOX[name]; c = IMS[sk][y0:y1, x0:x1].copy(); h, w = c.shape[:2]
     mn = c.min(2); mx = c.max(2); sat = mx - mn
     bgm = (mn >= 224) & (sat < 16)
     fg = ~bgm
@@ -36,11 +48,17 @@ def process(name):
         if (m & near).any() or (ar >= 40 and not edge): keep[i] = True
     reg = keep[g] & fg
     a = np.clip((250 - mn) / 65.0, 0, 1) * reg
+    # brilhos coloridos (dourado/azul) sobre o xadrez: o alpha vem da saturação (não depende da casa clara/escura do xadrez)
+    lt = reg & (mn >= 140)
+    a_sat = np.clip((sat - 26) / 105.0, 0, 1); a_old = a
+    a = np.where(lt, np.maximum(a_sat, a_old * np.clip((sat - 42) / 14.0, 0, 1)), a)
+    fxm = lt & (a > 0.02)
     a[core] = 1.0
     # franja clara na beirada do corpo
     fr = ndi.binary_dilation(core, S8, iterations=2) & ~core
     a[fr & (sat < 28) & (mn > 200)] = 0
     rgb = np.clip((c - 255 * (1 - a[..., None])) / np.maximum(a[..., None], .08), 0, 255)
+    rgb[fxm & ~core] = np.clip(c[fxm & ~core] * (255.0 / np.maximum(mx[fxm & ~core], 1))[..., None], 0, 255)
     rgb[a < .02] = 0
     return rgb, a, core
 
@@ -73,13 +91,15 @@ def outline(col, al, cm):
     return col, al
 
 def main(only=None):
-    ref = process('i1'); cx, gy, top = feet_stats(ref[1], ref[2]); s0 = BODY_H / (gy - top); print('escala', s0, 'corpo ref', gy - top)
+    SC0 = {}
+    for sk, rn in REF.items():
+        ref = process(rn); cx, gy, top = feet_stats(ref[1], ref[2]); SC0[sk] = BODY_H / (gy - top); print('escala', sk, SC0[sk], 'corpo ref', gy - top)
     if os.path.isdir(OUTD) and not only: shutil.rmtree(OUTD)
     os.makedirs(OUTD, exist_ok=True)
     meta = {'poses':{}, 'body_h':BODY_H}
     for name in BOX:
-        if only and name not in only: continue
-        rgb, a, core = process(name); cx, gy, top = feet_stats(a, core)
+        if (only and name not in only) or name in SKIP: continue
+        rgb, a, core = process(name); cx, gy, top = feet_stats(a, core); s0 = SC0[BOX[name][0]]
         col, al, cm = scale_img(rgb, a, core, s0); col, al = outline(col, al, cm)
         pad = RING + 2
         im = np.dstack([col, al * 255]).astype(np.uint8); im = np.pad(im, ((pad, pad), (pad, pad), (0, 0)))

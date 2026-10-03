@@ -253,3 +253,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Personagem trocado pelas folhas novas: `tools/cut_tank.py` (poses, escala única, ancoradas nos pés, borda fina só no corpo) + `tools/cut_tank_fx.py` (pedras) → `tank/*.png`; caixas de recorte em `tools/boxes_tank.py`.
 - Novo rig `tank.js`: ataque normal (5 variações), super pesado (4), proteção específica (4), defesa (4), esquiva (4), dor (3), vitória (4), provocação/ult (3), ociosa (5). Sacola embaralhada: nunca repete a mesma variação em seguida.
 - Brilho nos golpes: onda dourada sai do martelo até o boss; o dano só entra quando ela acerta (fireHit), com clarão, pedras e anéis no impacto (`RIG_HERO` inclui o tanque).
+
+## v62 — Tanque refeito: 1 martelo + 1 escudo
+- Removidas as poses com martelo/escudo duplicado ou bugado (i3, p3, x2, t2/t4–t6, u*, e*, s*, b2, b3, n4). Ataques usam martelo na cabeça → golpe em sequência fluida (folhas a/b).
+- Queda em 3 poses (meio caído → um joelho → dois joelhos) e levantar na ordem inversa (1,1 s).
+- Provocação com as pedras voando (tA/tB/tC); sem a versão de dois escudos.

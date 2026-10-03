@@ -4,7 +4,7 @@
    Cada uso sorteia uma variação diferente da anterior (sacola embaralhada). O dano só entra quando o golpe acerta (fireHit). */
 (() => {
 'use strict';
-const POSES = ['i1','i2','i3','n1','n2','n3','n4','h1','h2','h3','h4','p1','p2','p3','p4','f1','f2','f3','e1','e2','e3','e4','t1','t2','t3','t4','t5','t6','u1','u2','u4','x1','x2','s1','s2','s3','s4','b1','b2','b3','r1','r2','r3'];
+const POSES = ['i1','i2','i3','n1','n2','n3','h1','h2','h3','h4','x1','p1','p2','p4','f1','f2','f3','b1','r1','r2','r3','t1','t3','a_i1','a_i2','a_hh','a_sw','a_rd','a_cr','a_lo','a_bi','a_s1','a_s2','a_bub','a_swl','a_rl1','a_rl2','a_dust','tA','tB','tC','v1','v2','v3','v4'];
 const FXS = ['rock1','rock3','rock4','rock5','rock6'];
 const T = {x:517, y:340};                 // ponto de impacto no boss
 const BASE = 262, SZ = 1.0, XOFF = -18;     // pés (y) e escala do corpo
@@ -18,65 +18,65 @@ const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
 
 // ---- animações (passos [t, pose, {dx,dy,rot,sc}], eventos [t, 'nome:arg']) ----
 const ACT = {
-  melee:[   // golpe de martelo: 5 variações
-    S(1500, [[0,'i1'],[.12,'n1',{dx:-4}],[.3,'n2',{dx:-6}],[.46,'n3',{dx:2}],[.58,'n4',{dx:8}],[.86,'n4',{dx:4}],[.97,'i1']], [[.3,'wind'],[.52,'swing:1'],[.62,'hit:small']]),
-    S(1450, [[0,'i2'],[.14,'n1',{dx:-3}],[.34,'n2',{dx:-6}],[.5,'n4',{dx:8,dy:-2}],[.84,'n4',{dx:4}],[.97,'i1']], [[.34,'wind'],[.5,'swing:2'],[.6,'hit:small2']]),
-    S(1600, [[0,'i3'],[.12,'n1'],[.3,'n3',{dx:-2}],[.44,'n3',{dx:2,dy:-3}],[.56,'n4',{dx:8}],[.88,'n4',{dx:3}],[.97,'i1']], [[.32,'wind'],[.52,'swing:1'],[.62,'hit:small3']]),
-    S(1700, [[0,'r2'],[.12,'n1',{dx:-4}],[.28,'n2',{dx:-8}],[.44,'n3',{dx:-2}],[.58,'n4',{dx:10}],[.8,'n4',{dx:6}],[.9,'r3'],[.98,'i1']], [[.28,'wind'],[.52,'swing:2'],[.64,'hit:small']]),
-    S(1700, [[0,'i1'],[.1,'n1',{dx:-3}],[.26,'h1',{dx:-4,dy:-2}],[.42,'n2',{dx:-4}],[.54,'n3',{dx:2}],[.64,'n4',{dx:8}],[.88,'n4',{dx:3}],[.97,'i1']], [[.26,'wind'],[.5,'swing:3'],[.66,'hit:small2']]),
+  melee:[   // martelo na cabeça → golpe: 5 variações (a onda sai no 'swing' e o dano entra quando ela chega)
+    S(2100, [[0,'a_i1'],[.1,'a_rd',{dx:-3}],[.24,'a_hh',{dx:-4}],[.31,'a_hh',{dx:-6,dy:-2}],[.38,'a_sw',{dx:8}],[.62,'a_sw',{dx:4}],[.72,'a_lo'],[.9,'a_i1']], [[.2,'wind'],[.33,'swing:1:small']]),
+    S(2100, [[0,'a_i2'],[.1,'a_cr',{dx:-3}],[.26,'a_hh',{dx:-4}],[.38,'a_sw',{dx:8}],[.62,'a_sw',{dx:4}],[.74,'a_rd'],[.92,'a_i1']], [[.22,'wind'],[.33,'swing:2:small2']]),
+    S(2200, [[0,'a_i1'],[.1,'a_lo'],[.22,'n2',{dx:-6}],[.32,'n3',{dx:2}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.76,'a_cr'],[.92,'a_i2']], [[.2,'wind'],[.35,'swing:1:small3']]),
+    S(2200, [[0,'i2'],[.1,'n1'],[.22,'n2',{dx:-6}],[.32,'n3',{dx:2}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.78,'a_rd'],[.93,'a_i1']], [[.2,'wind'],[.35,'swing:2:small']]),
+    S(2200, [[0,'a_i2'],[.1,'a_rd'],[.22,'a_hh',{dy:-2}],[.3,'a_hh',{dy:-4}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.76,'a_lo'],[.93,'a_i1']], [[.2,'wind'],[.34,'swing:3:small2']]),
   ],
-  heavy:[   // ataque super pesado (2x dano): 4 variações
-    S(2300, [[0,'i1'],[.1,'n1',{dx:-4}],[.24,'h1',{dx:-6,dy:-3}],[.42,'h2',{dx:-4,dy:-4}],[.56,'h3',{dy:4}],[.7,'h4',{dy:2}],[.9,'h4'],[.98,'i1']], [[.22,'wind'],[.4,'wind'],[.54,'swing:4'],[.66,'hit:big']]),
-    S(2400, [[0,'i2'],[.1,'n1'],[.24,'h1',{dx:-6,dy:-2}],[.4,'h2',{dx:-4,dy:-4}],[.56,'x1',{dy:6}],[.76,'h4'],[.92,'r3'],[.98,'i1']], [[.22,'wind'],[.4,'wind'],[.54,'swing:4'],[.66,'hit:big2']]),
-    S(2400, [[0,'i3'],[.1,'n2',{dx:-6}],[.26,'h1',{dx:-6,dy:-3}],[.44,'h2',{dx:-4,dy:-5}],[.58,'h3',{dy:4}],[.74,'x2',{dy:6}],[.92,'h4'],[.98,'i1']], [[.24,'wind'],[.42,'wind'],[.56,'swing:4'],[.7,'hit:big3']]),
-    S(2500, [[0,'r3'],[.1,'t1',{dx:-4}],[.28,'h1',{dx:-6,dy:-3}],[.46,'h2',{dx:-4,dy:-5}],[.6,'x1',{dy:6}],[.78,'h3',{dy:3}],[.93,'h4'],[.98,'i1']], [[.26,'wind'],[.44,'wind'],[.58,'swing:4'],[.7,'hit:big']]),
+  heavy:[   // super pesado (2x dano): 4 variações
+    S(3100, [[0,'a_i1'],[.08,'a_rd',{dx:-3}],[.2,'a_hh',{dx:-4,dy:-2}],[.3,'h1',{dx:-6,dy:-3}],[.4,'h2',{dx:-4,dy:-4}],[.48,'h3',{dy:4}],[.78,'a_bi',{dy:2}],[.88,'a_lo'],[.95,'a_i1']], [[.18,'wind'],[.32,'wind'],[.44,'swing:4:big']]),
+    S(3200, [[0,'a_i2'],[.08,'a_cr'],[.2,'a_hh',{dy:-2}],[.3,'h1',{dx:-6,dy:-2}],[.4,'h2',{dx:-4,dy:-4}],[.5,'a_bi',{dy:3}],[.72,'x1',{dy:6}],[.86,'h4'],[.95,'a_i1']], [[.18,'wind'],[.32,'wind'],[.46,'swing:4:big2']]),
+    S(3200, [[0,'a_i1'],[.08,'a_lo'],[.2,'a_hh',{dy:-3}],[.32,'h2',{dx:-4,dy:-5}],[.44,'h3',{dy:4}],[.52,'a_bi',{dy:2}],[.76,'h4'],[.88,'a_rd'],[.95,'a_i2']], [[.18,'wind'],[.34,'wind'],[.48,'swing:4:big3']]),
+    S(3300, [[0,'i2'],[.08,'a_rd'],[.2,'a_hh',{dy:-3}],[.3,'h1',{dx:-6,dy:-3}],[.4,'h2',{dx:-4,dy:-5}],[.5,'x1',{dy:6}],[.72,'a_bi'],[.86,'h4'],[.95,'a_i1']], [[.18,'wind'],[.34,'wind'],[.46,'swing:4:big']]),
   ],
-  guard_p:[ // proteção específica (escudo sobre o aliado): 4 variações
-    S(2000, [[0,'i1'],[.14,'p1'],[.34,'p3',{dy:-2}],[.8,'p3'],[.96,'i1']], [[.3,'shield:p1']]),
-    S(2000, [[0,'i2'],[.14,'p2'],[.34,'p4'],[.8,'p4'],[.96,'i1']], [[.3,'shield:p2']]),
-    S(2100, [[0,'i1'],[.12,'p2'],[.3,'b1',{dx:-3}],[.8,'b1'],[.96,'i1']], [[.28,'shield:p3']]),
-    S(2100, [[0,'i3'],[.14,'p1'],[.3,'b2',{dy:-2}],[.8,'b3'],[.96,'i1']], [[.3,'shield:p4']]),
+  guard_p:[ // proteção específica (um escudo): 4 variações
+    S(2000, [[0,'a_i1'],[.14,'p1'],[.34,'a_s1',{dy:-1}],[.8,'a_s1'],[.96,'a_i1']], [[.3,'shield:p1']]),
+    S(2000, [[0,'a_i2'],[.14,'p2'],[.34,'p4'],[.8,'p4'],[.96,'a_i1']], [[.3,'shield:p2']]),
+    S(2100, [[0,'a_i2'],[.12,'a_rd'],[.3,'a_s2'],[.8,'a_swl'],[.96,'a_i1']], [[.28,'shield:p3']]),
+    S(2100, [[0,'a_i1'],[.14,'p1'],[.3,'a_bub'],[.8,'a_bub'],[.96,'a_i2']], [[.3,'shield:p4']]),
   ],
   guard_d:[ // defesa com escudo: 4 variações
-    S(1900, [[0,'i1'],[.12,'f1'],[.3,'f2'],[.88,'f2'],[.98,'i1']], [[.26,'shield:d1']]),
-    S(1900, [[0,'i2'],[.12,'f1'],[.3,'f3'],[.88,'f3'],[.98,'i1']], [[.26,'shield:d2']]),
-    S(1900, [[0,'i1'],[.12,'p1'],[.3,'b1'],[.88,'b1'],[.98,'i1']], [[.26,'shield:d3']]),
-    S(2000, [[0,'i3'],[.12,'f3'],[.3,'b2'],[.6,'b3'],[.88,'b3'],[.98,'i1']], [[.26,'shield:d4']]),
+    S(1900, [[0,'a_i2'],[.12,'f1'],[.3,'f2'],[.88,'f2'],[.98,'a_i1']], [[.26,'shield:d1']]),
+    S(1900, [[0,'a_i1'],[.12,'f1'],[.3,'f3'],[.88,'f3'],[.98,'a_i2']], [[.26,'shield:d2']]),
+    S(1900, [[0,'a_i1'],[.12,'a_rd'],[.3,'a_s2'],[.88,'a_s2'],[.98,'a_i1']], [[.26,'shield:d3']]),
+    S(2000, [[0,'a_i2'],[.12,'b1'],[.3,'a_swl'],[.88,'a_swl'],[.98,'a_i1']], [[.26,'shield:d4']]),
   ],
-  dodge:[   // esquiva: rolamentos com poeira e vento
-    S(1100, [[0,'i1'],[.12,'f1',{dx:-6}],[.3,'e1',{dx:-34,dy:-2}],[.5,'e2',{dx:-60}],[.72,'e4',{dx:-40}],[.9,'r1',{dx:-8}],[.98,'i1']], [], {ghost:true}),
-    S(1100, [[0,'i2'],[.12,'f3',{dx:6}],[.3,'e4',{dx:34,dy:-2}],[.5,'e3',{dx:60}],[.72,'e2',{dx:36}],[.9,'r1',{dx:6}],[.98,'i1']], [], {ghost:true, gdir:-1}),
-    S(1100, [[0,'i1'],[.12,'s1',{dx:-8}],[.34,'s2',{dx:-40,dy:-4}],[.54,'s4',{dx:-58,dy:-2}],[.78,'s3',{dx:-30}],[.92,'r1'],[.98,'i1']], [], {ghost:true}),
-    S(1100, [[0,'i3'],[.12,'s3',{dx:8}],[.34,'s4',{dx:40,dy:-4}],[.54,'s2',{dx:58,dy:-2}],[.78,'s1',{dx:30}],[.92,'r1'],[.98,'i1']], [], {ghost:true, gdir:-1}),
+  dodge:[   // esquiva: rolamento com vento e poeira
+    S(1250, [[0,'a_i1'],[.1,'a_rd',{dx:-6}],[.26,'a_rl1',{dx:-44,dy:-2}],[.48,'a_rl2',{dx:-66}],[.7,'a_dust',{dx:-44}],[.86,'r1',{dx:-10}],[.98,'a_i1']], [], {ghost:true}),
+    S(1250, [[0,'a_i2'],[.1,'a_cr',{dx:6}],[.26,'a_rl2',{dx:44}],[.48,'a_rl1',{dx:64,dy:-2}],[.7,'a_dust',{dx:40}],[.86,'r2',{dx:8}],[.98,'a_i1']], [], {ghost:true, gdir:-1}),
+    S(1250, [[0,'a_i1'],[.1,'f1',{dx:-6}],[.28,'a_rl1',{dx:-40,dy:-2}],[.52,'a_dust',{dx:-62}],[.74,'a_rl2',{dx:-34}],[.88,'r1'],[.98,'a_i1']], [], {ghost:true}),
   ],
   hurt:[
-    S(850, [[0,'i1'],[.1,'f1',{dx:-8,rot:-3}],[.34,'f1',{dx:3}],[.62,'f1'],[.92,'i1']], [], {tint:true}),
-    S(850, [[0,'i2'],[.1,'r1',{dx:-8,rot:-4}],[.34,'r1',{dx:3}],[.62,'r2'],[.92,'i1']], [], {tint:true}),
-    S(850, [[0,'i3'],[.12,'r2',{dx:-6,dy:2,rot:-3}],[.36,'r2',{dx:3}],[.64,'r2'],[.92,'i1']], [], {tint:true}),
+    S(850, [[0,'a_i1'],[.1,'f1',{dx:-8,rot:-3}],[.34,'f1',{dx:3}],[.62,'f1'],[.92,'a_i1']], [], {tint:true}),
+    S(850, [[0,'a_i2'],[.1,'a_rd',{dx:-8,rot:-4}],[.34,'a_rd',{dx:3}],[.62,'a_cr'],[.92,'a_i1']], [], {tint:true}),
+    S(900, [[0,'a_i1'],[.12,'v2',{dx:-6,dy:2}],[.4,'v2',{dx:2}],[.66,'v1'],[.92,'a_i2']], [], {tint:true}),
   ],
   victory:[
-    S(3000, [[0,'i1'],[.12,'n1'],[.3,'t1',{dy:-2}],[.52,'t3',{dy:-4}],[.8,'t3',{dy:-3}],[.96,'i1']], [[.32,'cheer'],[.54,'cheer:rise'],[.8,'cheer']]),
-    S(3000, [[0,'i2'],[.14,'h1',{dy:-2}],[.4,'t1',{dy:-4}],[.64,'t2'],[.82,'t2'],[.96,'i1']], [[.4,'cheer'],[.6,'cheer:rise'],[.82,'cheer']]),
-    S(3200, [[0,'i3'],[.14,'t4'],[.34,'t5'],[.56,'t4'],[.78,'t5'],[.96,'i1']], [[.36,'cheer:rise'],[.58,'cheer'],[.8,'cheer:rise']]),
-    S(3200, [[0,'i1'],[.14,'p1'],[.3,'u4'],[.58,'u4'],[.78,'u1'],[.96,'i1']], [[.32,'cheer'],[.6,'cheer:rise'],[.8,'cheer']]),
+    S(3000, [[0,'a_i1'],[.12,'a_rd'],[.28,'a_hh',{dy:-2}],[.5,'tB',{dy:-3}],[.8,'tB',{dy:-2}],[.96,'a_i1']], [[.3,'cheer'],[.52,'cheer:rise'],[.8,'cheer']]),
+    S(3200, [[0,'a_i2'],[.14,'tA'],[.38,'tB'],[.62,'tC'],[.82,'tC'],[.96,'a_i1']], [[.36,'cheer:rise'],[.6,'cheer'],[.82,'cheer:rise']]),
+    S(3000, [[0,'a_i1'],[.14,'a_hh',{dy:-3}],[.4,'a_hh',{dy:-5}],[.58,'tC'],[.84,'tC'],[.96,'a_i2']], [[.4,'cheer'],[.6,'cheer:rise'],[.84,'cheer']]),
+    S(3000, [[0,'i2'],[.14,'t1',{dy:-2}],[.4,'t3',{dy:-4}],[.8,'t3',{dy:-3}],[.96,'a_i1']], [[.4,'cheer'],[.6,'cheer:rise'],[.8,'cheer']]),
   ],
-  ult:[     // provocação: aura dourada ao redor dele
-    S(3600, [[0,'i1'],[.1,'n1'],[.24,'t1',{dy:-3}],[.42,'t3',{dy:-5}],[.7,'t3',{dy:-4}],[.82,'t4'],[.96,'i1']], [[.14,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.66,'taunt:3']]),
-    S(3600, [[0,'i2'],[.1,'p1'],[.24,'t2'],[.42,'u2',{dy:-4}],[.68,'t4'],[.84,'t5'],[.96,'i1']], [[.14,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.66,'taunt:3']]),
-    S(3600, [[0,'i3'],[.1,'h1',{dx:-4}],[.26,'t1',{dy:-3}],[.44,'u1',{dy:-4}],[.66,'t5'],[.84,'t3'],[.96,'i1']], [[.14,'wind'],[.28,'taunt'],[.46,'taunt:2'],[.68,'taunt:3']]),
+  ult:[     // provocação: martelo no alto + aura e pedras voando
+    S(3800, [[0,'a_i1'],[.08,'a_rd'],[.2,'a_hh',{dy:-3}],[.34,'tB',{dy:-3}],[.56,'tC',{dy:-4}],[.82,'tC',{dy:-3}],[.95,'a_i1']], [[.12,'wind'],[.3,'taunt'],[.46,'taunt:2'],[.62,'taunt:3']]),
+    S(3800, [[0,'a_i2'],[.1,'p1'],[.22,'tA'],[.4,'tB'],[.62,'tC'],[.82,'tB'],[.95,'a_i1']], [[.12,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.64,'taunt:3']]),
+    S(3800, [[0,'a_i1'],[.1,'a_hh',{dx:-4}],[.24,'tB',{dy:-3}],[.42,'tA'],[.62,'tC',{dy:-4}],[.84,'tC'],[.95,'a_i2']], [[.12,'wind'],[.28,'taunt'],[.46,'taunt:2'],[.66,'taunt:3']]),
   ],
 };
 const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
-  S(4200, [[0,'i1'],[.2,'i2'],[.5,'i3'],[.8,'i2'],[.98,'i1']]),
-  S(3600, [[0,'i1'],[.25,'r2'],[.6,'r3'],[.85,'r2'],[.98,'i1']]),
-  S(3000, [[0,'i1'],[.3,'i3'],[.75,'i3'],[.98,'i1']]),
-  S(3400, [[0,'i1'],[.25,'f1'],[.6,'f1'],[.98,'i1']]),
-  S(3600, [[0,'i1'],[.2,'r3'],[.5,'n1'],[.8,'r3'],[.98,'i1']]),
+  S(4200, [[0,'a_i1'],[.2,'a_i2'],[.5,'a_i2'],[.8,'a_i1'],[.98,'a_i1']]),
+  S(3600, [[0,'a_i1'],[.25,'a_rd'],[.6,'a_rd'],[.85,'a_i1'],[.98,'a_i1']]),
+  S(3600, [[0,'a_i1'],[.25,'a_lo'],[.6,'a_cr'],[.85,'a_lo'],[.98,'a_i1']]),
+  S(3200, [[0,'a_i1'],[.3,'i2'],[.75,'i2'],[.98,'a_i1']]),
+  S(3000, [[0,'a_i1'],[.25,'a_i2'],[.75,'a_i2'],[.98,'a_i1']]),
 ];
 IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.5); });
 const bags = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };
-const DEATH = [[0,'f1'],[.28,'e1'],[.55,'e2'],[.8,'e4']];
+const DEATH = [[0,'v1'],[.3,'v2'],[.62,'v3'],[.88,'v4']];      // cai aos poucos: meio caído → um joelho → dois joelhos
+const REVIVE = [[0,'v4'],[.2,'v3'],[.5,'v2'],[.82,'v1']];     // levanta na ordem inversa
 
 function glow(g, x, y, r, col, a){
   if (a <= 0.005 || r <= 1) return; const gr = g.createRadialGradient(x, y, 0, x, y, r);
@@ -99,13 +99,13 @@ function make(host){
   fetch('tank/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank/${n}.png`)); FXS.forEach(n => load('fx_' + n, `tank/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
-  let deadTarget = 0, deadT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;
+  let deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
   const hand = () => { const f = feet(); return {x:f.x + 60, y:f.y - 170}; };
 
-  function swing(k){      // onda de impacto: sai do martelo e voa até o boss
+  function swing(k){      // onda de impacto: sai do martelo e voa até o boss (devolve a duração do voo)
     const a = hand(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), d = 420 + dist * .35, ang = Math.atan2(b.y - a.y, b.x - a.x), kk = rnd(-1, 1) * 18, sz = k === 4 ? 1.4 : k === 3 ? 1.1 : 1;
     const path = u => { const e = Math.pow(u, 1.6), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + kk * w, y:lerp(a.y, b.y, e) - w * 30}; };
     const fd = u => u < .1 ? u / .1 : u > .92 ? (1 - u) / .08 : 1;
@@ -113,7 +113,9 @@ function make(host){
     E('streak', d, u => { const p = path(u), q = path(Math.min(1, u + .04)); return {x:p.x, y:p.y, ang:Math.atan2(q.y - p.y, q.x - p.x), len:120 * sz, th:26 * sz, c:FIRE, a:.8 * fd(u)}; });
     for (let i = 1; i <= 9; i++) { const ut = i / 10, p = path(ut), rr = FXS[i % FXS.length]; E('glow', 480, v => ({x:p.x, y:p.y + 10 * v, r:46 * sz * (1 - v * .6), c:FIRE, a:.45 * (1 - v)}), {delay:ut * d});
       E('fx_' + rr, 640, v => ({x:p.x + Math.sin(i * 3) * 24 * v, y:p.y + 10 + 60 * v * v - 26 * v, s:.55 * (1 - v * .3), rot:v * 5 * (i % 2 ? 1 : -1), a:1 - seg(v, .55, 1)}), {delay:ut * d * .9}); }
+    return d;
   }
+  function swingHit(k, kind){ const d = swing(k); setTimeout(() => { hit(kind); fireHit(); }, d / (window.__ts == null ? 1 : window.__ts)); }
   function hit(kind){
     const bl = (r, col, a, dl = 0, d = 650) => E('glow', d, u => ({...T, r:r * (.4 + eo(u) * .9), c:col, a:a * (1 - u) * (u < .08 ? u / .08 : 1)}), {delay:dl});
     const rocks = (n, spread, up, big) => { for (let i = 0; i < n; i++) { const an = -Math.PI / 2 + rnd(-1.25, 1.25), sp = rnd(.5, 1) * spread, rr = FXS[i % FXS.length], rot = rnd(-6, 6);
@@ -141,7 +143,7 @@ function make(host){
       if (k === 'p2' || k === 'p4' || k === 'd2' || k === 'd4') E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:cc, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
       for (let i = 0; i < (p ? 6 : 3); i++) { const an = i * 1.1; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:16, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
   };
-  function runEv(e){ const [k, a] = e.split(':'); if (k === 'swing') swing(+a); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
+  function runEv(e){ const [k, a, b] = e.split(':'); if (k === 'swing') swingHit(+a, b || 'small'); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
 
   function poseAt(a, pe){
     const st = a.steps; let i = 0; while (i < st.length - 1 && pe >= st[i + 1][0]) i++;
@@ -167,7 +169,8 @@ function make(host){
       pe = (now - cur.start) / a.dur; st = poseAt(a, clamp(pe));
       const ev = a.ev || []; while (cur.fired < ev.length && pe >= ev[cur.fired][0]) runEv(ev[cur.fired++][1]);
       if (pe >= 1) { const d = cur; cur = null; d.done(); }
-    } else st = {pose:'i1', dx:0, dy:0, rot:0, sc:1};
+    } else if (reviveT) { const k = clamp((now - reviveT) / 1100); st = poseAt({steps:REVIVE, dur:1100}, k); if (k >= 1) reviveT = 0; }
+    else st = {pose:'a_i1', dx:0, dy:0, rot:0, sc:1};
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
     lastT = st;
     const f = clamp((now - cur_t) / fade);
@@ -204,8 +207,8 @@ function make(host){
     nextHit(){ return new Promise(r => hitW.push(r)); },
     idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(IDLES)); },
     has: n => !!ACT[n] || n === 'guard' || n === 'cast',
-    setDead(d){ if (d) { if (cur) cur.done(false); cur = null; deadTarget = 1; deadT = clk(); } else { deadTarget = 0; flashT = clk(); } },
-    reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; },
+    setDead(d){ if (d) { if (cur) cur.done(false); cur = null; reviveT = 0; deadTarget = 1; deadT = clk(); } else if (deadTarget) { deadTarget = 0; reviveT = clk(); } },
+    reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; reviveT = 0; },
   };
 }
 window.TankRig = {make};
