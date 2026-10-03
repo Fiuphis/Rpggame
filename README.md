@@ -258,3 +258,7 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Removidas as poses com martelo/escudo duplicado ou bugado (i3, p3, x2, t2/t4–t6, u*, e*, s*, b2, b3, n4). Ataques usam martelo na cabeça → golpe em sequência fluida (folhas a/b).
 - Queda em 3 poses (meio caído → um joelho → dois joelhos) e levantar na ordem inversa (1,1 s).
 - Provocação com as pedras voando (tA/tB/tC); sem a versão de dois escudos.
+
+## v63 — mais variações
+- Tanque: ataque 5→8, super pesado 4→7, proteção 4→6, defesa 4→6, esquiva 3→5, dor 3→4, vitória 4→5, provocação 3→6 (nova chuva de pedras `taunt:4`, golpes `small4`/`big4`).
+- Especiais: Maga 2→6 (buraco negro com variantes `bhopen2/bhbig2/bhend2`), Clériga 3→7 (`lightup2`/`lightend2`), Tanque 3→6. Só poses e efeitos reais recombinados.

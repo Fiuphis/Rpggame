@@ -24,45 +24,62 @@ const ACT = {
     S(2200, [[0,'a_i1'],[.1,'a_lo'],[.22,'n2',{dx:-6}],[.32,'n3',{dx:2}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.76,'a_cr'],[.92,'a_i2']], [[.2,'wind'],[.35,'swing:1:small3']]),
     S(2200, [[0,'i2'],[.1,'n1'],[.22,'n2',{dx:-6}],[.32,'n3',{dx:2}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.78,'a_rd'],[.93,'a_i1']], [[.2,'wind'],[.35,'swing:2:small']]),
     S(2200, [[0,'a_i2'],[.1,'a_rd'],[.22,'a_hh',{dy:-2}],[.3,'a_hh',{dy:-4}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.76,'a_lo'],[.93,'a_i1']], [[.2,'wind'],[.34,'swing:3:small2']]),
+    S(2300, [[0,'a_i1'],[.1,'a_cr'],[.22,'a_rd',{dx:-3}],[.3,'a_hh',{dx:-5,dy:-3}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.76,'a_lo'],[.93,'a_i2']], [[.2,'wind'],[.36,'swing:2:small4']]),
+    S(2200, [[0,'i2'],[.1,'a_lo'],[.24,'n1'],[.32,'n3',{dx:2}],[.4,'a_sw',{dx:8}],[.64,'a_sw',{dx:4}],[.78,'a_cr'],[.93,'a_i1']], [[.2,'wind'],[.35,'swing:3:small3']]),
+    S(2300, [[0,'a_i2'],[.1,'a_rd',{dx:-4}],[.2,'a_hh',{dy:-3}],[.3,'a_hh',{dx:-6,dy:-5}],[.4,'a_sw',{dx:10}],[.52,'a_sw',{dx:6}],[.66,'a_sw',{dx:4}],[.78,'a_rd'],[.93,'a_i1']], [[.18,'wind'],[.34,'swing:1:small4'],[.5,'swing:2:small']]),
   ],
   heavy:[   // super pesado (2x dano): 4 variações
     S(3100, [[0,'a_i1'],[.08,'a_rd',{dx:-3}],[.2,'a_hh',{dx:-4,dy:-2}],[.3,'h1',{dx:-6,dy:-3}],[.4,'h2',{dx:-4,dy:-4}],[.48,'h3',{dy:4}],[.78,'a_bi',{dy:2}],[.88,'a_lo'],[.95,'a_i1']], [[.18,'wind'],[.32,'wind'],[.44,'swing:4:big']]),
     S(3200, [[0,'a_i2'],[.08,'a_cr'],[.2,'a_hh',{dy:-2}],[.3,'h1',{dx:-6,dy:-2}],[.4,'h2',{dx:-4,dy:-4}],[.5,'a_bi',{dy:3}],[.72,'x1',{dy:6}],[.86,'h4'],[.95,'a_i1']], [[.18,'wind'],[.32,'wind'],[.46,'swing:4:big2']]),
     S(3200, [[0,'a_i1'],[.08,'a_lo'],[.2,'a_hh',{dy:-3}],[.32,'h2',{dx:-4,dy:-5}],[.44,'h3',{dy:4}],[.52,'a_bi',{dy:2}],[.76,'h4'],[.88,'a_rd'],[.95,'a_i2']], [[.18,'wind'],[.34,'wind'],[.48,'swing:4:big3']]),
     S(3300, [[0,'i2'],[.08,'a_rd'],[.2,'a_hh',{dy:-3}],[.3,'h1',{dx:-6,dy:-3}],[.4,'h2',{dx:-4,dy:-5}],[.5,'x1',{dy:6}],[.72,'a_bi'],[.86,'h4'],[.95,'a_i1']], [[.18,'wind'],[.34,'wind'],[.46,'swing:4:big']]),
+    S(3300, [[0,'a_i1'],[.08,'a_cr'],[.2,'a_hh',{dy:-3}],[.3,'h1',{dx:-6,dy:-3}],[.4,'h2',{dx:-4,dy:-5}],[.48,'h3',{dy:4}],[.6,'a_bi',{dy:2}],[.78,'a_lo'],[.95,'a_i2']], [[.18,'wind'],[.32,'wind'],[.45,'swing:4:big4']]),
+    S(3400, [[0,'a_i2'],[.08,'a_lo'],[.2,'a_hh',{dy:-2}],[.32,'h1',{dx:-6,dy:-2}],[.42,'h2',{dx:-4,dy:-5}],[.5,'h3',{dy:4}],[.66,'x1',{dy:6}],[.84,'h4'],[.95,'a_i1']], [[.18,'wind'],[.34,'wind'],[.47,'swing:4:big2'],[.6,'swing:3:small2']]),
+    S(3300, [[0,'a_i1'],[.08,'a_rd'],[.2,'a_hh',{dy:-4}],[.3,'a_hh',{dx:-6,dy:-6}],[.4,'h2',{dx:-4,dy:-5}],[.5,'a_bi',{dy:3}],[.7,'a_bi',{dy:2}],[.86,'a_cr'],[.95,'a_i2']], [[.18,'wind'],[.3,'wind'],[.44,'swing:4:big3']]),
   ],
   guard_p:[ // proteção específica (um escudo): 4 variações
     S(2000, [[0,'a_i1'],[.14,'p1'],[.34,'a_s1',{dy:-1}],[.8,'a_s1'],[.96,'a_i1']], [[.3,'shield:p1']]),
     S(2000, [[0,'a_i2'],[.14,'p2'],[.34,'p4'],[.8,'p4'],[.96,'a_i1']], [[.3,'shield:p2']]),
     S(2100, [[0,'a_i2'],[.12,'a_rd'],[.3,'a_s2'],[.8,'a_swl'],[.96,'a_i1']], [[.28,'shield:p3']]),
     S(2100, [[0,'a_i1'],[.14,'p1'],[.3,'a_bub'],[.8,'a_bub'],[.96,'a_i2']], [[.3,'shield:p4']]),
+    S(2100, [[0,'a_i1'],[.12,'a_cr'],[.3,'a_s1'],[.5,'a_bub'],[.8,'a_bub'],[.96,'a_i2']], [[.28,'shield:p2'],[.5,'shield:p4']]),
+    S(2000, [[0,'a_i2'],[.12,'p2'],[.3,'a_s2'],[.8,'a_s2'],[.96,'a_i1']], [[.3,'shield:p1']]),
   ],
   guard_d:[ // defesa com escudo: 4 variações
     S(1900, [[0,'a_i2'],[.12,'f1'],[.3,'f2'],[.88,'f2'],[.98,'a_i1']], [[.26,'shield:d1']]),
     S(1900, [[0,'a_i1'],[.12,'f1'],[.3,'f3'],[.88,'f3'],[.98,'a_i2']], [[.26,'shield:d2']]),
     S(1900, [[0,'a_i1'],[.12,'a_rd'],[.3,'a_s2'],[.88,'a_s2'],[.98,'a_i1']], [[.26,'shield:d3']]),
     S(2000, [[0,'a_i2'],[.12,'b1'],[.3,'a_swl'],[.88,'a_swl'],[.98,'a_i1']], [[.26,'shield:d4']]),
+    S(1900, [[0,'a_i1'],[.12,'a_cr'],[.3,'a_s1'],[.88,'a_s1'],[.98,'a_i2']], [[.26,'shield:d2']]),
+    S(2000, [[0,'a_i2'],[.12,'f1'],[.3,'a_s2'],[.6,'f3'],[.88,'f3'],[.98,'a_i1']], [[.26,'shield:d3'],[.58,'shield:d1']]),
   ],
   dodge:[   // esquiva: rolamento com vento e poeira
     S(1250, [[0,'a_i1'],[.1,'a_rd',{dx:-6}],[.26,'a_rl1',{dx:-44,dy:-2}],[.48,'a_rl2',{dx:-66}],[.7,'a_dust',{dx:-44}],[.86,'r1',{dx:-10}],[.98,'a_i1']], [], {ghost:true}),
     S(1250, [[0,'a_i2'],[.1,'a_cr',{dx:6}],[.26,'a_rl2',{dx:44}],[.48,'a_rl1',{dx:64,dy:-2}],[.7,'a_dust',{dx:40}],[.86,'r2',{dx:8}],[.98,'a_i1']], [], {ghost:true, gdir:-1}),
     S(1250, [[0,'a_i1'],[.1,'f1',{dx:-6}],[.28,'a_rl1',{dx:-40,dy:-2}],[.52,'a_dust',{dx:-62}],[.74,'a_rl2',{dx:-34}],[.88,'r1'],[.98,'a_i1']], [], {ghost:true}),
+    S(1300, [[0,'a_i2'],[.1,'a_lo',{dx:6}],[.28,'a_rl2',{dx:46,dy:-2}],[.5,'a_dust',{dx:66}],[.74,'a_rl1',{dx:36}],[.88,'r2'],[.98,'a_i1']], [], {ghost:true, gdir:-1}),
+    S(1200, [[0,'a_i1'],[.1,'a_cr',{dx:-4}],[.26,'a_rl1',{dx:-52,dy:-6}],[.46,'a_rl2',{dx:-76,dy:-10}],[.68,'a_dust',{dx:-48}],[.88,'a_rd',{dx:-8}],[.98,'a_i1']], [], {ghost:true}),
   ],
   hurt:[
     S(850, [[0,'a_i1'],[.1,'f1',{dx:-8,rot:-3}],[.34,'f1',{dx:3}],[.62,'f1'],[.92,'a_i1']], [], {tint:true}),
     S(850, [[0,'a_i2'],[.1,'a_rd',{dx:-8,rot:-4}],[.34,'a_rd',{dx:3}],[.62,'a_cr'],[.92,'a_i1']], [], {tint:true}),
     S(900, [[0,'a_i1'],[.12,'v2',{dx:-6,dy:2}],[.4,'v2',{dx:2}],[.66,'v1'],[.92,'a_i2']], [], {tint:true}),
+    S(850, [[0,'a_i2'],[.1,'a_lo',{dx:-8,rot:-3}],[.34,'a_lo',{dx:3}],[.62,'f1'],[.92,'a_i1']], [], {tint:true}),
   ],
   victory:[
     S(3000, [[0,'a_i1'],[.12,'a_rd'],[.28,'a_hh',{dy:-2}],[.5,'tB',{dy:-3}],[.8,'tB',{dy:-2}],[.96,'a_i1']], [[.3,'cheer'],[.52,'cheer:rise'],[.8,'cheer']]),
     S(3200, [[0,'a_i2'],[.14,'tA'],[.38,'tB'],[.62,'tC'],[.82,'tC'],[.96,'a_i1']], [[.36,'cheer:rise'],[.6,'cheer'],[.82,'cheer:rise']]),
     S(3000, [[0,'a_i1'],[.14,'a_hh',{dy:-3}],[.4,'a_hh',{dy:-5}],[.58,'tC'],[.84,'tC'],[.96,'a_i2']], [[.4,'cheer'],[.6,'cheer:rise'],[.84,'cheer']]),
     S(3000, [[0,'i2'],[.14,'t1',{dy:-2}],[.4,'t3',{dy:-4}],[.8,'t3',{dy:-3}],[.96,'a_i1']], [[.4,'cheer'],[.6,'cheer:rise'],[.8,'cheer']]),
+    S(3200, [[0,'a_i1'],[.12,'a_cr'],[.3,'tA',{dy:-2}],[.5,'a_hh',{dy:-4}],[.7,'tB',{dy:-3}],[.88,'tB'],[.96,'a_i2']], [[.32,'cheer'],[.52,'cheer:rise'],[.72,'cheer'],[.88,'cheer:rise']]),
   ],
   ult:[     // provocação: martelo no alto + aura e pedras voando
     S(3800, [[0,'a_i1'],[.08,'a_rd'],[.2,'a_hh',{dy:-3}],[.34,'tB',{dy:-3}],[.56,'tC',{dy:-4}],[.82,'tC',{dy:-3}],[.95,'a_i1']], [[.12,'wind'],[.3,'taunt'],[.46,'taunt:2'],[.62,'taunt:3']]),
     S(3800, [[0,'a_i2'],[.1,'p1'],[.22,'tA'],[.4,'tB'],[.62,'tC'],[.82,'tB'],[.95,'a_i1']], [[.12,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.64,'taunt:3']]),
     S(3800, [[0,'a_i1'],[.1,'a_hh',{dx:-4}],[.24,'tB',{dy:-3}],[.42,'tA'],[.62,'tC',{dy:-4}],[.84,'tC'],[.95,'a_i2']], [[.12,'wind'],[.28,'taunt'],[.46,'taunt:2'],[.66,'taunt:3']]),
+    S(4000, [[0,'a_i2'],[.08,'a_cr'],[.2,'a_hh',{dy:-3}],[.34,'tA'],[.5,'tC',{dy:-4}],[.7,'tB',{dy:-3}],[.86,'tC'],[.95,'a_i1']], [[.12,'wind'],[.3,'taunt'],[.44,'taunt:4'],[.6,'taunt:2'],[.76,'taunt:3']]),
+    S(4000, [[0,'a_i1'],[.08,'a_lo'],[.2,'p1',{dy:-1}],[.34,'a_hh',{dy:-4}],[.5,'tB',{dy:-3}],[.7,'tC',{dy:-4}],[.88,'tC'],[.95,'a_i2']], [[.12,'wind'],[.28,'taunt:2'],[.44,'taunt:4'],[.6,'taunt'],[.78,'taunt:3']]),
+    S(4200, [[0,'a_i2'],[.08,'a_rd'],[.18,'a_hh',{dy:-3}],[.3,'a_hh',{dx:-4,dy:-6}],[.44,'tA'],[.6,'tB',{dy:-3}],[.76,'tC',{dy:-4}],[.9,'tC'],[.95,'a_i1']], [[.12,'wind'],[.3,'taunt:4'],[.46,'taunt:2'],[.62,'taunt:4'],[.8,'taunt:3']]),
   ],
 };
 const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
@@ -124,6 +141,8 @@ function make(host){
     if (kind === 'small') { bl(120, GOLD, .9); bl(70, '255,255,255', .8, 0, 380); rocks(4, 90, 60); ring(90, 520, GOLD, .8); }
     else if (kind === 'small2') { bl(130, FIRE, .9); bl(80, '255,255,255', .8, 0, 380); rocks(5, 110, 70); ring(110, 560, FIRE, .8); }
     else if (kind === 'small3') { bl(125, GOLD, .9); rocks(4, 100, 80); ring(100, 520, GOLD, .8); ring(60, 420, '255,255,255', .6, 80); }
+    else if (kind === 'small4') { bl(125, FIRE, .9); bl(75, '255,255,255', .8, 0, 380); rocks(6, 120, 90); ring(95, 520, GOLD, .8); ring(130, 600, FIRE, .6, 100); }
+    else if (kind === 'big4') { bl(270, GOLD, 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); bl(120, FIRE, .8, 260, 700); rocks(14, 230, 140, true); ring(210, 800, GOLD, .9); ring(130, 600, FIRE, .8, 110); ring(70, 440, '255,255,255', .7, 200); shakeT = clk(); }
     else if (kind === 'big') { bl(260, FIRE, 1, 0, 950); bl(150, '255,255,255', .9, 0, 520); rocks(10, 180, 110, true); ring(190, 760, FIRE, .9); ring(110, 560, GOLD, .8, 100); shakeT = clk(); }
     else if (kind === 'big2') { bl(280, GOLD, 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); rocks(12, 210, 130, true); ring(220, 820, GOLD, .9); ring(130, 600, FIRE, .8, 120); shakeT = clk(); }
     else { bl(270, FIRE, 1, 0, 1000); bl(170, '255,255,255', .9, 0, 520); rocks(11, 200, 120, true); ring(200, 800, FIRE, .9); ring(120, 600, GOLD, .8, 90); ring(70, 440, '255,255,255', .7, 160); shakeT = clk(); }
@@ -137,13 +156,16 @@ function make(host){
       E('ring', 1100, u => ({x:f.x, y:f.y - 6, r:lerp(50, 150 + 40 * n, eo(u)), c:n === 2 ? FIRE : GOLD, a:.85 * (1 - u)}));
       E('glow', 1300, u => ({x:f.x, y:f.y - 130, r:lerp(70, 190 + 30 * n, eo(u)), c:GOLD, a:.55 * Math.sin(Math.PI * u)}), {back:true});
       if (n === 3) { E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,236,200', a:.7 * (1 - u)})); shakeT = clk(); } },
+    taunt4(){ const f = feet(); E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(50, 210, eo(u)), c:FIRE, a:.8 * (1 - u)}));
+      for (let i = 0; i < 9; i++) { const ox = (i - 4) * 38 + rnd(-10, 10), rr = FXS[i % FXS.length], dl = i * 90; E('fx_' + rr, 900, u => ({x:f.x + ox, y:lerp(f.y - 330, f.y - 20, u * u), s:.6, rot:u * 4 * (i % 2 ? 1 : -1), a:u < .1 ? u / .1 : 1 - seg(u, .8, 1)}), {delay:dl}); E('glow', 360, u => ({x:f.x + ox, y:f.y - 14, r:lerp(20, 60, u), c:FIRE, a:.5 * (1 - u)}), {delay:dl + 760}); }
+      shakeT = clk() + 700; },
     shield(k){ const f = feet(), cs = hex2rgb(col), p = /^p/.test(k || ''), cc = cs || (p ? '255,170,80' : '120,180,255');
       E('glow', 1700, u => ({x:f.x, y:f.y - 125, r:p ? 190 : 160, c:cc, a:(p ? .5 : .4) * Math.sin(Math.PI * u)}), {back:true});
       E('ring', 1500, u => ({x:f.x, y:f.y - 6, r:lerp(50, p ? 150 : 120, eo(u)), c:cc, a:.7 * Math.sin(Math.PI * u)}));
       if (k === 'p2' || k === 'p4' || k === 'd2' || k === 'd4') E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:cc, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
       for (let i = 0; i < (p ? 6 : 3); i++) { const an = i * 1.1; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:16, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
   };
-  function runEv(e){ const [k, a, b] = e.split(':'); if (k === 'swing') swingHit(+a, b || 'small'); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) EV[k](a); }
+  function runEv(e){ const [k, a, b] = e.split(':'); if (k === 'swing') swingHit(+a, b || 'small'); else if (k === 'hit') { hit(a); fireHit(); } else if (k === 'taunt' && a === '4') EV.taunt4(); else if (EV[k]) EV[k](a); }
 
   function poseAt(a, pe){
     const st = a.steps; let i = 0; while (i < st.length - 1 && pe >= st[i + 1][0]) i++;
