@@ -33,3 +33,9 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100vh;padd
 .msg{position:absolute;z-index:6;left:50%;top:89.4%;transform:translate(-50%,6px);padding:1.2cqw 3cqw;background:rgba(5,5,14,.95);border:1px solid #ffc54e;color:#ffc54e;font-size:2.5cqw;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
 .msg.show{opacity:1;transform:translate(-50%,0)}
 .test-toggle{appearance:none;-webkit-appearance:none;margin:10px auto 0;font-family:monospace;font-size:10px;color:#6e6580;background:none;border:1px dashed #2f2948;padding:6px 10px;cursor:pointer}
+/* v96: seleção de classe centralizada na página; as faixas escuras viram um fundo desfocado da própria arte, com degradê nas bordas do palco */
+html{background:#050711}
+body{min-height:100vh;min-height:100dvh;justify-content:center;padding:0;position:relative;overflow-x:hidden;background:transparent}
+body::before{content:"";position:fixed;inset:-40px;z-index:-1;background:#050711 url(select_plate.webp) center/cover no-repeat;filter:blur(22px) brightness(.62) saturate(1.1)}
+.stage{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 95%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 95%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);mask-composite:intersect}
+.test-toggle{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;background:rgba(5,7,17,.7)}
