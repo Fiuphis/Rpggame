@@ -254,5 +254,5 @@ html{background:#050711}body{background:transparent}
 .game{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 2%,#000 98.4%,transparent 100%),linear-gradient(to right,transparent 0,#000 2%,#000 98%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 2%,#000 98.4%,transparent 100%),linear-gradient(to right,transparent 0,#000 2%,#000 98%,transparent 100%);mask-composite:intersect}
 /* v98: texto dos botões SIM/NÃO centralizado de fato (glifos maiúsculos ficavam altos na caixa) e botões afastados da moldura */
 .bag-panel .vote-row{margin:0 .7cqw}
-.bag-panel .vote-choice>*{position:relative;top:.45cqw}
+.bag-panel .vote-choice>*{position:relative;top:.375cqw}
 .bag-panel .vote-row{position:relative;top:.35cqw}

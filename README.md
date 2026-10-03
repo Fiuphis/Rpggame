@@ -344,3 +344,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v98: texto SIM/NÃO centralizado na vertical e botões afastados da moldura.
 - v99: botões SIM/NÃO um pouco mais para baixo.
 - v99: texto SIM/NÃO um pouco mais baixo.
+- v100: texto SIM/NÃO meio ajuste acima.
