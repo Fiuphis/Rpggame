@@ -237,3 +237,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Mana não regenera mais: só sobe com Poção de Mana.
 - Cenário trocado (salão do trono novo); HUD (boss, moedas, cartões dos heróis, painel) preservado.
 - Tremor do cenário reduzido a quase nada (±1px).
+
+## v58
+- Maga: contorno padronizado e fino (2px) em todas as poses do corpo (tools/thin_outline.py); poses das folhas ampliadas (giros/golpes) e idle3/dodge3 estavam com contorno de 5-8px.
