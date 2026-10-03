@@ -6,8 +6,8 @@ from scipy import ndimage as ndi
 sys.path.insert(0, os.path.dirname(__file__))
 import boxes_tank as B
 UP = '/root/.claude/uploads/3a96d84d-702c-52a6-9324-e85ba38ea593/'
-SRC = {'a':UP + 'a4b6b1ee-image.png', 'b':UP + '3e1f2dc4-image.png', 'c':UP + 'e49fa76c-image.png'}
-REF = {'a':'a_i1', 'b':'v1', 'c':'i1'}      # pose neutra de cada folha (corpo = BODY_H)
+SRC = {'a':UP + 'a4b6b1ee-image.png', 'b':UP + '3e1f2dc4-image.png', 'c':UP + 'e49fa76c-image.png', 'd':UP + 'd6884b1c-image.png'}
+REF = {'a':'a_i1', 'b':'v1', 'c':'i1', 'd':'d_i1'}      # pose neutra de cada folha (corpo = BODY_H)
 OUTD = 'tank'; BODY_H = float(os.environ.get('BODY_H', 262)); RING = 2
 NAVY = np.array([22, 14, 30], np.float32)
 BOX = {k: ('c',) + v for k, v in {**B.C, **B.C2}.items()}
@@ -24,6 +24,18 @@ BOX.update({
 # poses descartadas (escudo/martelo duplicado, bolinha estranha ou recorte ruim): não são gravadas
 SKIP = {'i3','p3','x2','t2','t4','t5','t6','u1','u2','u3','u4','n4','b2','b3','e1','e2','e3','e4','s1','s2','s3','s4','h3x'}
 MASK = {'v4':[(1252, 1035, 1305, 1172)], 'tB':[(184, 1006, 300, 1015)], 'tA':[(9, 1012, 30, 1018)], 't3':[(356, 520, 505, 572)], 'n2':[(500, 60, 600, 120)], 'n3':[(497, 125, 598, 252), (672, 85, 720, 140)]}
+# folha d (versão nova, 1 martelo + 1 escudo): ataques com arco azul, super pesado com pedras, defesa, esquiva, movimentos do martelo
+BOX.update({k:('d',)+v for k,v in {
+ 'd_i1':(8,48,182,240),'d_i2':(182,52,366,238),'d_i3':(366,52,566,240),
+ 'd_a1':(606,38,776,238),'d_a2':(778,98,946,240),'d_a3':(885,35,1108,240),'d_a4':(1108,30,1296,250),
+ 'd_h1':(8,368,152,528),'d_h2':(192,292,340,528),'d_h3':(355,282,595,535),'d_h4':(595,325,812,535),
+ 'd_u1':(830,305,1045,528),'d_u2':(1055,315,1295,528),
+ 'd_p1':(8,592,192,762),'d_p2':(206,586,472,768),'d_p3':(486,582,664,758),
+ 'd_f1':(696,602,852,770),'d_f2':(866,566,1078,772),'d_f3':(1086,606,1268,772),
+ 'd_e1':(8,812,212,952),'d_e2':(212,818,432,952),'d_e3':(448,826,694,962),'d_e4':(706,850,962,972),
+ 'd_m1':(6,1006,192,1165),'d_m2':(188,1006,432,1172),'d_m3':(432,1012,556,1166),'d_m4':(563,1028,682,1168)}.items()})
+AURA = {'d_u1','d_u2','d_f2','d_p2','d_p3','d_f3','d_a3','d_a4','d_m1','d_m2','d_m3','d_e2','d_e3','d_e4'}
+MASK['d_a3'] = [(880,105,946,245)]
 S4 = ndi.generate_binary_structure(2, 1); S8 = ndi.generate_binary_structure(2, 2)
 IMS = {k: np.asarray(Image.open(v).convert('RGB')).astype(np.float32) for k, v in SRC.items()}
 
@@ -53,6 +65,7 @@ def process(name):
     a_sat = np.clip((sat - 26) / 105.0, 0, 1); a_old = a
     a = np.where(lt, np.maximum(a_sat, a_old * np.clip((sat - 42) / 14.0, 0, 1)), a)
     fxm = lt & (a > 0.02)
+    if name in AURA: a[reg & ~core & (sat < 48) & (mn >= 160)] = 0      # xadrez visível dentro de auras
     a[core] = 1.0
     # franja clara na beirada do corpo
     fr = ndi.binary_dilation(core, S8, iterations=2) & ~core

@@ -265,3 +265,8 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v64 — ataques do Tanque realmente diferentes
 - Antes as variações mudavam só a preparação; o golpe era sempre a mesma pose (a_sw). Agora cada variação usa pose de golpe própria (reto, diagonal n2/n3, marreta no chão a_bi, duplo) e um estilo de onda: reta, `drop` (cai do alto sobre o boss), `ground` (zigue-zague pelo chão com pedras subindo), `twin` (duas ondas). Normal 8 e super pesado 7.
+
+## v65 — Tanque com as poses da folha nova (d)
+- `tools/cut_tank.py` ganhou a folha d (poses `d_*`) e `tools/cut_tank_fx_d.py` recorta os efeitos extras (`fx_bring`, `fx_bspike`, `fx_earth`, `fx_rockburst`).
+- Sem mais martelo largado no chão: removidas a_bi, h3/h4 (folha c), x1 e as poses de folha c que não seguravam o martelo. Super pesado = d_h1→d_h2 (martelo no alto)→d_h3/d_h4 (explosão de pedras).
+- Ataque normal 10, super pesado 7, proteção 6, defesa 6, esquiva 6, dor 5, vitória 5, provocação 6; ondas azuis (d_a3/d_m1) e douradas (a_sw/n3); novos impactos `spike`, `quake`, `burst`.
