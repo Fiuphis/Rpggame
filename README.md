@@ -346,3 +346,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v99: texto SIM/NÃO um pouco mais baixo.
 - v100: texto SIM/NÃO meio ajuste acima.
 - v101: texto SIM/NÃO mais acima (ajuste fino).
+- v102: névoa branca suave animada nas áreas de degradê (lobby e jogo).

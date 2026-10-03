@@ -39,3 +39,19 @@ body{min-height:100vh;min-height:100dvh;justify-content:center;padding:0;positio
 body::before{content:"";position:fixed;inset:-40px;z-index:-1;background:#050711 url(select_plate.webp) center/cover no-repeat;filter:blur(22px) brightness(.62) saturate(1.1)}
 .stage{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 95%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 95%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);mask-composite:intersect}
 .test-toggle{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;background:rgba(5,7,17,.7)}
+/* v102: névoa/nuvens brancas suaves nas áreas de degradê (topo e base), brilho singelo e meio opaco sobre o fundo desfocado */
+body::after{content:"";position:fixed;top:0;bottom:0;left:-25%;right:-25%;z-index:-1;pointer-events:none;
+background:
+radial-gradient(42% 8% at 16% 6%,rgba(255,255,255,.42),transparent 72%),
+radial-gradient(34% 6% at 52% 2%,rgba(240,244,255,.36),transparent 72%),
+radial-gradient(38% 7% at 88% 8%,rgba(255,255,255,.34),transparent 72%),
+radial-gradient(30% 5% at 34% 12%,rgba(225,233,255,.28),transparent 72%),
+radial-gradient(34% 5% at 74% 14%,rgba(235,240,255,.24),transparent 72%),
+radial-gradient(44% 8% at 14% 95%,rgba(255,255,255,.42),transparent 72%),
+radial-gradient(36% 6% at 50% 99%,rgba(240,244,255,.40),transparent 72%),
+radial-gradient(40% 7% at 86% 93%,rgba(255,255,255,.36),transparent 72%),
+radial-gradient(30% 5% at 62% 87%,rgba(225,233,255,.28),transparent 72%),
+radial-gradient(30% 5% at 30% 88%,rgba(235,240,255,.24),transparent 72%);
+filter:blur(12px);opacity:.9;animation:mistDrift 46s ease-in-out infinite alternate}
+@keyframes mistDrift{from{transform:translateX(-6%) scale(1)}50%{transform:translateX(2%) scale(1.04)}to{transform:translateX(6%) scale(1)}}
+@media (prefers-reduced-motion:reduce){body::after{animation:none}}
