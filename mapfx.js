@@ -331,7 +331,7 @@ let nextCloud = 0;
 const spawnCloud = () => { const ang = R(-.5, .5) + (Math.random() < .25 ? Math.PI : 0), sp = R(2.5, 5), nb = RI(6, 9), blobs = Array.from({ length: nb }, (_, i) => { const m = Math.sin((i + .5) / nb * Math.PI); return { x: i * 3.4 + R(-1.5, 1.5), y: R(-2, 2) - m * 2, r: Math.max(2, Math.round(2 + m * 4 + R(0, 1.5))) }; });
   const sx = Math.cos(ang) > 0 ? -35 : W + 15; clouds.push({ x: sx, y: R(20, H - 20), vx: Math.cos(ang) * sp, vy: Math.sin(ang) * sp * .6, blobs }); };
 
-const WEIGHTS = [['fish', 3], ['rock', 2.5], ['fin', 2], ['eyes', 1.5], ['tentacle', 1.5], ['serpent', 1]];
+const WEIGHTS = [['rock', 2.5], ['fin', 2], ['eyes', 1.5], ['tentacle', 1.5], ['serpent', 1]];
 const spawn = force => {
   if (!force && ev.length >= 3) return;
   let tot = WEIGHTS.reduce((s, w) => s + w[1], 0), r = Math.random() * tot, name = WEIGHTS[0][0];

@@ -388,3 +388,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v143: barcos removidos do mapa.
 - v144: clima por região (calmo/vento/ondas grandes/tempestade com raios e chuva/ciclone raro, trocando sozinho) e nuvens raras passando.
 - v145: interações: raio frita voadores/tentáculos/criaturas (viram pó), ciclone puxa voadores pra água, wyvern queima morcegos/pássaros, tentáculo agarra um e arrasta (os outros fogem em pânico).
+- v146: peixes pulando removidos.
