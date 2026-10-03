@@ -83,7 +83,7 @@ const SKILLS = {
   ],
   tank:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de martelo. Dano normal.', mana:0, cd:0, mult:1},
-    {id:'super', kind:'atk', name:'Ataque Super Pesado', desc:'2x o dano normal.', mana:25, cd:2, mult:2},
+    {id:'super', kind:'atk', name:'Ataque Super Pesado', desc:'2x o dano normal.', mana:20, cd:2, mult:2},
     {id:'guard', kind:'util', name:'Proteção Específica', desc:'Escudo sobre 1 herói: o dano dele vai para o Tanque, com 40% a menos.', mana:20, cd:2, target:true},
     {id:'def', kind:'def', name:'Defesa', desc:'Ergue o escudo. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
@@ -107,7 +107,7 @@ Object.keys(SKILLS).forEach(k => SKILLS[k].forEach(s => { const m = SKILL_META[k
 // mana NÃO regenera: só sobe com Poção de Mana
 const KIND_LABEL = {atk:'ATAQUE', def:'DEFESA', dodge:'ESQUIVA', util:'TÁTICA'};
 
-const GROUPS = {mage:'MAGO', knight:'GUERREIRO', tank:'TANQUE', assassin:'CLÉRIGA'};
+const GROUPS = {mage:'MAGA', knight:'GUERREIRO', tank:'TANQUE', assassin:'CLÉRIGA'};
 const PARAMS = new URLSearchParams(location.search);
 // O grupo vem do lobby (página inicial). ?grupo=... só vale junto com ?teste=1.
 const TEST_MODE = LOBBY.testMode; // simula os outros 6 jogadores votando
@@ -336,6 +336,35 @@ function renderHud(){
 
 // ===== Painel (pergunta / ação) =====
 function openPanel(){ $('#action-menu').hidden = true; $('#dynamic-question').classList.remove('exiting'); $('#dynamic-ui').hidden = false; $('#dynamic-question').hidden = false; }
+function openSkillMenu(){ $('#dynamic-question').hidden = true; $('#action-menu').hidden = true; const m = $('#skill-menu'); m.classList.remove('exiting'); m.hidden = false; $('#dynamic-ui').hidden = false; }
+const pc = b => `left:${b[0]}%;top:${b[1]}%;width:${b[2]}%;height:${b[3]}%`;
+function buildSkillFrame(panel, title, text, at, seconds){
+  const M = MENU_META[panel], fr = $('#skm-frame'), L = $('#skm-layer');
+  fr.src = `menu_${panel}.png`; L.innerHTML = '';
+  const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
+  if (M.title) add('sk-title', M.title, `<b>${title}</b><span>${text}</span>`);
+  add('sk-tipo', M.tipo, `<img src="icon_tipo_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
+  add('sk-time', M.time, `<span id="vote-timer" class="sk-time">${seconds}s</span>`);
+  return M;
+}
+function buildQuestionPanel(text, at, seconds, side){
+  const Q = MENU_META.question, L = $('#dq-layer'); L.innerHTML = '';
+  const add = (id, cls, box, html) => { const d = document.createElement('div'); if (id) d.id = id; d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
+  const e = at ? ELEMENTS[at.attr] : null;
+  add('', 'dq-val', Q.tipo, at ? at.tipo : '');
+  const ad = add('', 'dq-val sm', Q.attr, at ? `<i class="dq-dot"></i>${e.name}` : ''); if (e) { ad.style.setProperty('--ec', e.color); ad.style.color = e.color; }
+  add('dq-text', '', Q.title, `<span></span>`).firstChild.textContent = text;
+  add('', 'dq-coin', Q.coin, side ? side.reward : '0');
+  if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 11, Q.title[1] + .5, 11, 7], side.label);
+  add('', 'dq-side-timer', Q.time, `<span id="vote-timer" class="dq-side-timer">${seconds}s</span>`);
+  return L;
+}
+function fitText(){
+  const fit = (box, inner, minPx) => { if (!box || !inner) return; let fs = parseFloat(getComputedStyle(box).fontSize); box.style.fontSize = fs + 'px';
+    while (inner.offsetHeight > box.clientHeight + 1 && fs > minPx) box.style.fontSize = (fs -= 1) + 'px'; };
+  const t = $('#dq-text'); if (t && !$('#dynamic-question').hidden) fit(t, t.firstChild, 9);
+  document.querySelectorAll('.dq-answer .label').forEach(l => fit(l, l.firstChild, 9));
+}
 function openMenu(){ $('#dynamic-question').hidden = true; const m = $('#action-menu'); m.classList.remove('exiting'); m.hidden = false; $('#dynamic-ui').hidden = false; }
 function attackChips(at){
   if (!at) return '';
@@ -345,9 +374,10 @@ function attackChips(at){
 }
 async function closePanel(){
   const m = $('#action-menu'), q = $('#dynamic-question'), ui = $('#dynamic-ui');
-  const dq = !m.hidden ? m : q; dq.classList.add('exiting'); await wait(250);
+  const sm = $('#skill-menu');
+  const dq = !sm.hidden ? sm : !m.hidden ? m : q; dq.classList.add('exiting'); await wait(250);
   // some por completo (nada fica na tela durante a resolução)
-  m.hidden = true; q.hidden = true; ui.hidden = true; m.classList.remove('exiting'); q.classList.remove('exiting');
+  m.hidden = true; q.hidden = true; sm.hidden = true; ui.hidden = true; m.classList.remove('exiting'); q.classList.remove('exiting'); sm.classList.remove('exiting');
 }
 // ===== Pixel art gerado em código (sprites 11x11 em string -> imagem sem suavização) =====
 const PAL = {k:'#0b0814',W:'#f4f1ff',S:'#9aa3c2',Y:'#ffc54e',y:'#ffe9a0',B:'#7a4a22',R:'#e0392d',O:'#ff8a2a',b:'#2f6fe0',l:'#6fb4ff',c:'#8fe8d4',t:'#a8864a',T:'#7a5e30',D:'#4d3a1c',G:'#c9d4ff',P:'#b36bff',g:'#5ee08a'};
@@ -417,36 +447,37 @@ function flashHit(){
 
 // Votação genérica dentro do grupo: mostra contagem ao vivo (o grupo vê entre si), decide por maioria.
 // Empate entre as mais votadas = sorteio; ninguém votou = null. O painel continua aberto ao terminar.
-function runVote({type, text, options, seconds, side, menu, title, attack}){
+function runVote({type, text, options, seconds, side, menu, title, attack, panel}){
   return new Promise(resolve => {
     const voters = groupMembers(), need = majorityOf(voters);
     const sv = options.map(() => 0); let my = null, locked = false, timer = null, bots = [];
-    let list;
-    if (menu) {
+    let list, M = null;
+    if (menu && panel) { M = buildSkillFrame(panel, title, text, attack, seconds); list = $('#skm-layer'); }
+    else if (menu) {
       $('#am-title').textContent = title; $('#am-text').textContent = text;
       $('#am-attack').innerHTML = attackChips(attack);
       $('#am-timer').innerHTML = `<span id="vote-timer" class="dq-side-timer">${seconds}s</span>`;
-      list = $('#am-list');
-    } else {
-      $('#dq-attack').innerHTML = attackChips(attack);
-      $('#dq-text').textContent = text;
-      $('#dq-side').innerHTML = `${side || ''}<span id="vote-timer" class="dq-side-timer">${seconds}s</span>`;
-      list = $('#dq-answers');
-    }
-    list.innerHTML = '';
+      list = $('#am-list'); list.innerHTML = '';
+    } else { list = buildQuestionPanel(text, attack, seconds, side); }
     const enabled = options.map((o, i) => o.disabled ? -1 : i).filter(i => i >= 0);
     const btns = options.map((o, i) => {
       const b = document.createElement('button'); b.type = 'button';
-      if (menu) {
+      if (M) {
+        const [r, c] = o.slot, cd = M.cards[r][c], cn = M.cnt[r * 2 + c];
+        b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
+        b.innerHTML = `<b class="cnt sk-cnt" style="left:${(cn[0] - cd[0]) / cd[2] * 100}%;top:${(cn[1] - cd[1]) / cd[3] * 100}%;width:${cn[2] / cd[2] * 100}%;height:${cn[3] / cd[3] * 100}%">0</b>`;
+        b.setAttribute('aria-label', o.label);
+        if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
+      } else if (menu) {
         b.className = `act-card ${o.kind || ''}`;
         b.innerHTML = `<span class="ac-icon">${o.icon ? `<img src="${pixIcon(o.icon)}" alt="">` : ''}</span><span class="ac-name"></span><span class="ac-desc"></span><span class="ac-chips"></span><b class="cnt">0</b>`;
         b.querySelector('.ac-name').textContent = o.label; b.querySelector('.ac-desc').textContent = o.desc || '';
         b.querySelector('.ac-chips').innerHTML = o.chips || '';
         if (o.color) b.style.setProperty('--ec', o.color);
       } else {
-        b.className = 'dq-answer';
-        b.innerHTML = `<span class="letter">${String.fromCharCode(97 + i)})</span><span class="label"></span><b class="cnt">0</b>`;
-        b.querySelector('.label').textContent = o.label + (o.note ? `  ${o.note}` : '');
+        b.className = 'dq-answer'; b.style.cssText = pc(MENU_META.question.rows[i]);
+        b.innerHTML = `<span class="label"><span></span></span><b class="cnt">0</b>`;
+        b.querySelector('.label span').textContent = o.label + (o.note ? `  ${o.note}` : '');
       }
       if (o.disabled) { b.disabled = true; b.classList.add('off'); b.querySelector('.cnt').textContent = ''; }
       else b.onclick = () => pick(i);
@@ -467,7 +498,8 @@ function runVote({type, text, options, seconds, side, menu, title, attack}){
       if (idx !== null) { btns[idx].classList.add('chosen'); if (tie) toast(`Empate! ${String.fromCharCode(97 + idx)}) sorteada.`); }
       resolve({idx, btns});
     }
-    menu ? openMenu() : openPanel();
+    panel ? openSkillMenu() : menu ? openMenu() : openPanel();
+    fitText();
     const endsAt = Date.now() + seconds * 1000;
     const tick = () => {
       const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
@@ -583,23 +615,30 @@ function skillChips(sk, block){
   return h;
 }
 // Menu de ações do herói: o grupo vota numa habilidade (e, se for elemental, depois no elemento).
+const ARTICLE = {mage:'DA', knight:'DO', tank:'DO', assassin:'DA'};
+const SLOT = {   // posição [linha, coluna] de cada habilidade no quadro do herói
+  assassin:{ult:[0,0], holy_atk:[1,0], holy_def:[2,0], atk:[0,1], def:[1,1], dodge:[2,1]},
+  mage:{ult:[0,0], elem_atk:[1,0], elem_def:[2,0], mana_atk:[0,1], mana_def:[1,1], dodge:[2,1]},
+  knight:{ult:[0,0], heavy:[1,0], def:[2,0], atk:[0,1], pass:[1,1], dodge:[2,1]},
+  tank:{ult:[0,0], super:[1,0], def:[2,0], atk:[0,1], guard:[1,1], dodge:[2,1]}
+};
 async function chooseSkill(k){
   const at = state.curAttack, list = SKILLS[k];
   for (;;) {
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
-    if (ult) opts.push({label:'ESPECIAL: ' + ULT_NAME[k], desc:ULT_INFO[k], kind:'ult', icon:ULT_ICON[k], chips:'<span class="tag attr holy">ESPECIAL</span><span class="tag cd">começa a contar ao usar</span>'});
-    list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, desc:sk.desc, kind:sk.kind, icon:sk.icon, chips:skillChips(sk, b), disabled:!!b}); });
-    const r = await runVote({menu:true, title:`VEZ ${({assassin:'DA'})[k] || 'DO'} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, attack:at, options:opts});
+    // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta difícil
+    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : 'ACERTE UMA DIFÍCIL')});
+    list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], disabled:!!b, block:b}); });
+    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, attack:at, options:opts});
     if (r.idx === null) return null;
-    if (ult && r.idx === 0) { await closePanel(); await activateUlt(k); continue; }   // ultimate ativado: o efeito começa a contar agora
-    const sk = list[r.idx - (ult ? 1 : 0)]; let element = null;
+    if (r.idx === 0) { await closePanel(); await activateUlt(k); continue; }   // ultimate ativado: o efeito começa a contar agora
+    const sk = list[r.idx - 1]; let element = null;
     if (sk.elem) {
       const els = ['fire','water','air','earth'];
       const r2 = await runVote({
-        menu:true, title:sk.name.toUpperCase(), text:'Escolham o elemento', seconds:8, attack:at,
-        options: els.map(e => ({label:ELEMENTS[e].name, desc:'', kind:'elem', icon:{fire:'fire',water:'drop',air:'wind',earth:'rock'}[e], color:ELEMENTS[e].color, chips: BOSS.immune.includes(e) ? '<span class="tag block">BOSS IMUNE</span>' : '<span class="tag attr holy">BOSS FRACO 1,5x + QUEIMA</span>'}))
-          .concat([{label:'VOLTAR', desc:'Escolher outra habilidade', kind:'back', icon:'back', chips:''}])
+        menu:true, panel:'elem', title:'', text:'', seconds:8, attack:at,
+        options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', slot:[2, 0]}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
       element = els[r2.idx === null ? 0 : r2.idx];
@@ -623,7 +662,7 @@ async function playRound(){
   const res = await runVote({
     attack: state.curAttack, text: q.text, seconds: QUESTION_SECONDS,
     options: q.answers.map(label => ({label})),
-    side: `<span class="side-reward">+<img src="icon_coin.png" alt=""><b>${meta.reward}</b></span><b class="diff d${q.difficulty}">${meta.label}</b>`
+    side: {reward:meta.reward, label:meta.label, d:q.difficulty}
   });
   // grupos controlados por outros jogadores: simulados (sem backend não dá para ver o voto real deles)
   const correct = {};

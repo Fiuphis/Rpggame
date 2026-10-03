@@ -53,18 +53,14 @@
   <section id="dynamic-ui" hidden>
     <div id="dynamic-question" class="dynamic-question">
       <img class="dq-frame" src="question_panel.png" alt="" draggable="false">
-      <div class="dq-content">
-        <div class="dq-top">
-          <div id="dq-attack" class="dq-attack"></div>
-          <div id="dq-text"></div>
-          <div id="dq-side" class="dq-reward"></div>
-        </div>
-        <div id="dq-answers"></div>
-      </div>
+      <div id="dq-layer" class="dq-layer"></div>
     </div>
   </section>
 
-  <!-- Menu de habilidades do herói (votação do grupo). -->
+  <!-- Menu de habilidades do herói: quadro de arte por herói + cartões clicáveis por cima. -->
+  <section id="skill-menu" class="skm" hidden><img id="skm-frame" class="skm-frame" alt="" draggable="false"><div id="skm-layer" class="skm-layer"></div></section>
+
+  <!-- Menu simples (escolha de alvo). -->
   <section id="action-menu" class="action-menu" hidden>
     <header class="am-head">
       <div class="am-who"><b id="am-title"></b><span id="am-text"></span></div>
@@ -85,6 +81,7 @@
   <div id="toast" role="status" aria-live="polite"></div>
 </div>
 <script src="lobby.js"></script>
+<script src="menu_meta.js"></script>
 <script src="mage.js"></script>
 <script src="fxsoft.js"></script><script src="knight.js"></script><script src="tank.js"></script><script src="cleric.js"></script>
 <script src="anim.js"></script>

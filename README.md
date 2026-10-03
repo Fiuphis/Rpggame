@@ -3,7 +3,7 @@
 Esta versão usa a arte original `game.png` como camada visual principal e coloca os controles por cima dela.
 
 ## Tela "Selecione sua classe" (novo design)
-- `index.html` reproduz o design enviado (`select_bg.webp`): MAGO, GUERREIRO, TANQUE e CLÉRIGA, cada uma com grupo de até 7 jogadores;
+- `index.html` reproduz o design enviado (`select_bg.webp`): MAGA, GUERREIRO, TANQUE e CLÉRIGA, cada uma com grupo de até 7 jogadores;
 - tocar numa classe seleciona: o card dá uma "saltada", fica mais claro e com borda colorida; tocar de novo desfaz a seleção (com outra saltada);
 - a contagem "n/7" da classe escolhida sobe +1 em verde só na sua tela; só conta de verdade ao confirmar (botão "CONFIRMAR: CLASSE" no rodapé, sem botões A/B);
 - classe com 7 jogadores fica escura com "7/7" em vermelho e não pode ser escolhida;
@@ -24,7 +24,7 @@ Rodada: pergunta → cada grupo vota na alternativa → rodada dos heróis (ataq
 - números para ajustar no topo do `app.js`: `BOSS_MAX_HP`, `HERO_MAX_HP`, `ATTACK_DAMAGE`, `DEFEND_REDUCTION`, `RAGE_*`, `DIFFICULTY`.
 
 ## Etapa 5 — Fase de ataque dos heróis
-- depois da pergunta do boss, cada herói tem a vez (Mago → Cavaleiro → Tanque → Assassino), marcada por um anel dourado no chão;
+- depois da pergunta do boss, cada herói tem a vez (Maga → Cavaleiro → Tanque → Assassino), marcada por um anel dourado no chão;
 - no herói do SEU grupo aparece o painel com 3 habilidades (a, b, c) para o grupo votar, com contador por opção e cronômetro de 10s;
 - regras: maioria (metade + 1) decide na hora; se todos votaram, vence a mais votada; empate entre as mais votadas = sorteio; ninguém votou = o herói perde a vez;
 - depois do voto o herói dispara um ataque na cor dele no boss (impacto, tremor e número de dano) e passa para o próximo; no fim o boss ataca de novo;
@@ -308,3 +308,10 @@ Guerreiro: poses do Berserk/ult padronizadas pela altura visível (cabelo→pés
 
 ## v78
 Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil) para ele não 'andar' entre poses. Medido no jogo: oscilação horizontal ≤ ±8 px em todas as ativações e ataques.
+
+## v79 — menus de habilidade e painel de pergunta novos
+- Quatro quadros de habilidade (um por herói, `menu_<heroi>.png`) + quadro de elementos (`menu_elem.png`), gerados por `tools/make_menus.py` a partir das artes enviadas: só foi apagado o que é dinâmico (título, caixa TIPO, tempo, contadores); o resto da arte é a original. Coordenadas em `menu_meta.js`.
+- Cartões clicáveis por cima da arte (borda dourada ao selecionar, contagem de votos ao vivo, escurecidos com motivo quando bloqueados: RECARGA n / SEM MANA / ACERTE UMA DIFÍCIL). O Especial aparece sempre e só libera após acertar uma pergunta difícil.
+- TIPO sempre com a mesma espada (`icon_tipo_sword.png`). Título "VEZ DA MAGA / DO GUERREIRO / DO TANQUE / DA CLÉRIGA" desenhado por código.
+- Painel de pergunta novo (`question_panel.png`): TIPO, ATRIBUTO, enunciado, moedas, tempo e alternativas a) b) c) d) com votos.
+- MAGO → MAGA em todo o jogo. Ataque Super Pesado do Tanque custa 20 de mana (como no quadro). Escolha de alvo (Passar a Vez, Proteção, Luz Sagrada) segue no menu simples antigo.

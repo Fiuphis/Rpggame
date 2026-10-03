@@ -4,7 +4,7 @@
    Para contar jogadores de verdade entre celulares, troque as funções por Supabase/Firebase (próxima etapa).
 */
 const LOBBY_GROUPS = {
-  mage:{name:'MAGO', color:'#4da3ff'},
+  mage:{name:'MAGA', color:'#4da3ff'},
   knight:{name:'GUERREIRO', color:'#ff5a4d'},
   tank:{name:'TANQUE', color:'#cfd8ff'},
   assassin:{name:'CLÉRIGA', color:'#ffd24d'}
