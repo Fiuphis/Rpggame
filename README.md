@@ -209,3 +209,6 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 
 ## v50
 - Clériga ~46px mais perto do Tanque; limpeza extra de pixels claros na borda (cut_cleric.py: faixa de 3px, brancos puros e cinzas viram a cor do contorno).
+
+## v51
+- Borda escura agora entra 2px para dentro do corpo (Clériga e Maga), cobrindo as franjas brancas; contorno externo de 1px mantido.

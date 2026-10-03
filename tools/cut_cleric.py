@@ -70,6 +70,8 @@ def outline(I):
     im[..., :3][band] = (206, 190, 196)
     gray2 = main & ~ndi.binary_erosion(main, iterations=2) & ((rgb.max(2) - rgb.min(2)) < 62) & (rgb.mean(2) > 70)
     im[..., :3][gray2] = (46, 28, 34)
+    edgeband = main & ~ndi.binary_erosion(main, iterations=2)
+    im[..., :3][edgeband] = (46, 28, 34)
     ring = ndi.binary_dilation(main, iterations=1) & ~main
     im[..., :3][ring] = (46, 28, 34); im[..., 3][ring] = 255
     return Image.fromarray(im)
