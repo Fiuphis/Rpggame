@@ -22,7 +22,7 @@ mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 97%,transparent 
 .node.ok::after{content:"";position:absolute;inset:8%;border:2px solid rgba(120,190,255,.9);border-radius:50%;opacity:0;animation:pulse 1.8s ease-out infinite}
 .node.sel::after{border-color:#ffd34d}
 @keyframes pulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.7);opacity:0}}
-.back{z-index:50;position:fixed;left:max(10px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));font:11px/1 monospace;color:#cdbfdc;text-decoration:none;background:rgba(5,7,17,.72);border:1px solid #4b4560;padding:8px 10px}
+.back{z-index:3;position:fixed;left:max(10px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));font:11px/1 monospace;color:#cdbfdc;text-decoration:none;background:rgba(5,7,17,.72);border:1px solid #4b4560;padding:8px 10px}
 .panel{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92vw,460px);z-index:6;padding:16px 16px 14px;text-align:center;
 background:linear-gradient(180deg,rgba(18,14,32,.96),rgba(7,5,14,.97));border:2px solid #4b4560;box-shadow:0 0 0 2px #07050e,0 0 0 4px #b08a3c,0 0 24px rgba(0,0,0,.7)}
 .panel[hidden]{display:none}
@@ -53,3 +53,6 @@ body::after{transition:opacity .6s}
 body.leaving .stage{opacity:.25}
 body.leaving::before{filter:blur(22px) brightness(.15)}
 
+/* v127: botões do topo ficam ocultos durante a transição das nuvens e surgem suavemente depois */
+.back,.reset{transition:opacity .9s ease}
+.fogin .back,.fogin .reset{opacity:0;pointer-events:none}

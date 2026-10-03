@@ -369,3 +369,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v124: nuvens fechadas ficam totalmente opacas (cobrem a tela inteira, a troca não aparece).
 - v125: performance — deriva das nuvens agora por transform (GPU), sem repintar ~150 gradientes+blur por frame.
 - v126: nuvens viram imagens pré-renderizadas (fog/*.webp, sem blur/máscara/gradientes em tempo real); blur do mapa mais leve.
+- v127: botão TROCAR DE GRUPO fica atrás das nuvens (não aparece durante a transição).
