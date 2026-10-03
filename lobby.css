@@ -49,6 +49,6 @@ html::after{z-index:-1;background-image:radial-gradient(24% 7% at 24% 8.7%,rgba(
 
 /* v117: transição lobby → mapa (escurece e aproxima) */
 body::after{transition:opacity .6s}
-.stage{transition:transform .75s ease-in,opacity .75s ease-in}
-body.leaving .stage{transform:scale(1.12);opacity:0}
+.stage{transition:opacity 1s ease-in}
+body.leaving .stage{opacity:.25}
 body.leaving::before{filter:blur(22px) brightness(.15)}

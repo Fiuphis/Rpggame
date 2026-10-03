@@ -39,8 +39,22 @@ function build(){
   const won = sessionStorage.getItem('bd1_justwon'); sessionStorage.removeItem('bd1_justwon');
   const before = won !== null && done.includes(+won) ? done.filter(d => d !== +won) : done;
   paint(before, true);
-  $('#map').classList.add('intro');
-  requestAnimationFrame(() => requestAnimationFrame(() => $('#veil').classList.add('out')));
+  const fogFlag = sessionStorage.getItem('bd1_fog'); sessionStorage.removeItem('bd1_fog');
+  const fT = $('#fogT'), fB = $('#fogB'), veil = $('#veil'), mp = $('#map');
+  if (fogFlag) {   // veio da seleção de grupo: nuvens cobrem tudo e abrem do meio para as bordas do mapa
+    veil.style.transition = 'none'; veil.classList.add('out'); mp.classList.add('blur'); mp.classList.add('intro');
+    setTimeout(() => {
+      const r = mp.getBoundingClientRect(), bh = fT.getBoundingClientRect().height;
+      const endTop = -(bh - Math.max(0, r.top) - bh * .12);   // a borda interna da nuvem para um pouco além da borda do mapa
+      fT.style.setProperty('--end', endTop + 'px'); fB.style.setProperty('--end', endTop + 'px');
+      fT.classList.remove('shut'); fB.classList.remove('shut'); void fT.offsetWidth; fT.classList.add('open'); fB.classList.add('open'); mp.classList.remove('blur');
+      setTimeout(() => { document.body.classList.add('settled'); document.documentElement.classList.add('settled'); }, 1400);
+      setTimeout(() => { fT.remove(); fB.remove(); }, 4300);
+    }, 500);
+  } else {
+    fT.remove(); fB.remove(); mp.classList.add('intro'); document.body.classList.add('settled'); document.documentElement.classList.add('settled');
+    requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add('out')));
+  }
   if (before !== done) setTimeout(() => paint(done, false), 3000);
 }
 function paint(dn, instant){

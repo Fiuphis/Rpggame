@@ -8,9 +8,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="lobby.css">
+<link rel="stylesheet" href="fog.css">
 <title>Selecione sua classe</title>
 </head>
 <body>
+<div class="fog top" id="fogT"></div><div class="fog bot" id="fogB"></div>
 <main class="stage" id="stage">
   <img class="bg" src="select_plate.webp" alt="Selecione sua classe" draggable="false">
   <div id="msg" class="msg" role="status" aria-live="polite"></div>
@@ -80,7 +82,7 @@ confirmBtn.onclick=()=>{
   if(!selected)return;
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
-  document.body.classList.add('leaving');setTimeout(()=>{location.href='map.html'+location.search},750);
+  document.body.classList.add('leaving');document.getElementById('fogT').classList.add('close');document.getElementById('fogB').classList.add('close');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{location.href='map.html'+location.search},1100);
 };
 testBtn.onclick=()=>{LOBBY.setTest(!LOBBY.testMode);location.href='index.html'};
 render();
