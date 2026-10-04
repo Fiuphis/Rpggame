@@ -37,6 +37,22 @@ const QUESTIONS = [
   {difficulty:5, text:'Qual técnica de recuperação exige gravar a alteração no log ANTES de gravá-la nos dados em disco?', answers:['Shadow Paging','Write-Ahead Logging','Checkpoint fuzzy','Bloqueio otimista'], correct:1},
   {difficulty:5, text:'Pelo teorema CAP, havendo partição de rede, um sistema distribuído deve escolher entre quais propriedades?', answers:['Atomicidade e Durabilidade','Isolamento e Consistência','Consistência e Disponibilidade','Disponibilidade e Escalabilidade'], correct:2}
 ];
+// Banco de perguntas editável: prioridade = salvo neste aparelho (editor.html) > perguntas.json > as perguntas embutidas acima.
+const QUESTIONS_DEFAULT = QUESTIONS.slice();
+function validQuestions(list){
+  if (!Array.isArray(list)) return null;
+  const ok = list.filter(q => q && Number.isInteger(q.difficulty) && q.difficulty >= 1 && q.difficulty <= 5 && typeof q.text === 'string' && q.text.trim() && Array.isArray(q.answers) && q.answers.length === 4 && q.answers.every(a => typeof a === 'string' && a.trim()) && Number.isInteger(q.correct) && q.correct >= 0 && q.correct <= 3);
+  return ok.length && [1,2,3,4,5].every(d => ok.some(q => q.difficulty === d)) ? ok : null;   // precisa ter pelo menos 1 pergunta de cada rank
+}
+const QREADY = (async () => {
+  try {
+    let list = null;
+    try { list = validQuestions(JSON.parse(localStorage.getItem('bd1_questions'))); } catch {}
+    if (!list) { const r = await fetch('perguntas.json', {cache:'no-cache'}); if (r.ok) list = validQuestions(await r.json()); }
+    if (list) QUESTIONS.splice(0, QUESTIONS.length, ...list);
+  } catch {}
+})();
+
 
 // Banco de ações do Mercador: cada item vira uma pergunta de votação. Para criar ações novas, adicione aqui.
 const ITEMS = {
@@ -692,7 +708,8 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
 
 // ===== Rodada: pergunta → ações dos heróis → resolução =====
 function pickQuestion(diff){
-  const pool = QUESTIONS.map((q, i) => ({q, i})).filter(o => o.q.difficulty === diff);
+  let pool = QUESTIONS.map((q, i) => ({q, i})).filter(o => o.q.difficulty === diff);
+  for (let k = 1; !pool.length && k < 5; k++) pool = QUESTIONS.map((q, i) => ({q, i})).filter(o => Math.abs(o.q.difficulty - diff) === k);
   let c; do { c = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && c.i === state.lastQ[diff]);
   state.lastQ[diff] = c.i; return c.q;
 }
@@ -922,6 +939,7 @@ function maybeGag(where){
 
 async function playRound(){
   if (state.over) return;
+  await QREADY;
   state.round++;
   const enragedNow = state.hardNext, empowered = state.prepNext && !enragedNow;
   const dazed = state.dazedNext; state.dazedNext = false; if (dazed) state.stun = true;

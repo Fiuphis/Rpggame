@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor de Perguntas</title>
+<style>
+@font-face{font-family:'Pixelify Sans';font-weight:500;src:url(fonts/pixelify-sans-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Pixelify Sans';font-weight:700;src:url(fonts/pixelify-sans-latin-700-normal.woff2) format('woff2')}
+:root{--bg:#0a0816;--card:#141028;--line:#3a3158;--gold:#ffc54e;--ink:#eee5f7;--mut:#9a90b8;
+ --d1:#8fd8ff;--d2:#8fe39a;--d3:#ffb35c;--d4:#c79bff;--d5:#ffe14d}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:500 15px/1.35 'Pixelify Sans',monospace}
+body{padding:14px 16px 90px;max-width:760px;margin:0 auto}
+h1{font-size:22px;color:var(--gold);margin:6px 0 2px;letter-spacing:.06em}
+.sub{color:var(--mut);margin:0 0 12px;font-size:13px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+button,select,input,textarea{font:inherit;color:var(--ink)}
+button{appearance:none;cursor:pointer;background:#1a1430;border:1px solid #6b5a2e;border-radius:6px;padding:8px 12px;letter-spacing:.04em;-webkit-tap-highlight-color:transparent}
+button:active{background:#2c2250}
+button.pri{background:var(--gold);color:#1a1206;border-color:#ffdf8a;font-weight:700}
+button.dng{border-color:#8a3040;color:#ff9aa8}
+button.chip{padding:6px 11px;border-color:var(--line)}
+button.chip.on{border-color:var(--gold);color:var(--gold)}
+input,select,textarea{background:#0e0a20;border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+textarea{min-height:78px;resize:vertical}
+.q{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0}
+.q .top{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.rk{font-weight:700;min-width:30px;text-align:center;padding:2px 6px;border-radius:4px;border:1px solid currentColor;font-size:13px}
+.rk.d1{color:var(--d1)}.rk.d2{color:var(--d2)}.rk.d3{color:var(--d3)}.rk.d4{color:var(--d4)}.rk.d5{color:var(--d5)}
+.tema{color:var(--mut);font-size:12px;flex:1}
+.q p{margin:0 0 6px}
+.q ol{margin:0;padding-left:20px;color:var(--mut);font-size:13px}
+.q li.right{color:#8fe39a;font-weight:700}
+.q .act{display:flex;gap:8px;margin-top:8px}
+.warn{background:#2a1020;border:1px solid #8a3040;color:#ffb0bc;padding:8px 10px;border-radius:6px;margin:8px 0;font-size:13px}
+.ok{background:#10281a;border:1px solid #2f7a48;color:#a8f0bf;padding:8px 10px;border-radius:6px;margin:8px 0;font-size:13px}
+.modal{position:fixed;inset:0;background:rgba(2,2,10,.8);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:16px;z-index:10}
+.modal.open{display:flex}
+.box{background:var(--card);border:2px solid #b8893a;border-radius:10px;padding:14px;width:100%;max-width:560px}
+.box label{display:block;margin:10px 0 4px;color:var(--mut);font-size:13px}
+.ans{display:flex;gap:8px;align-items:center;margin:6px 0}
+.ans input[type=radio]{width:auto;accent-color:var(--gold)}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.foot{position:fixed;left:0;right:0;bottom:0;background:#0d0a1c;border-top:1px solid var(--line);padding:10px 16px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+a{color:var(--gold)}
+</style>
+</head>
+<body>
+<h1>EDITOR DE PERGUNTAS</h1>
+<p class="sub">Banco de Dados I. Edite, importe ou exporte. <a href="index.html">Voltar ao jogo</a></p>
+<div id="msg"></div>
+<div class="bar" id="chips"></div>
+<div class="bar"><input id="search" placeholder="Buscar no texto ou no tema" style="flex:1;min-width:180px"></div>
+<div class="bar">
+  <button class="pri" id="add">NOVA PERGUNTA</button>
+  <button id="imp">IMPORTAR JSON OU CSV</button>
+  <button id="expj">EXPORTAR JSON</button>
+  <button id="expc">EXPORTAR CSV</button>
+  <input type="file" id="file" accept=".json,.csv,.txt,application/json,text/csv" hidden>
+</div>
+<div id="list"></div>
+
+<div class="foot">
+  <button class="pri" id="save">USAR NESTE APARELHO</button>
+  <button class="dng" id="reset">VOLTAR AO PADRAO</button>
+</div>
+
+<div class="modal" id="modal"><div class="box">
+  <b id="mtitle" style="color:var(--gold)">Pergunta</b>
+  <div class="row">
+    <div><label>Rank</label><select id="f-rank"><option value="1">C (mais fácil)</option><option value="2">B</option><option value="3">A</option><option value="4">S</option><option value="5">SS (mais difícil)</option></select></div>
+    <div><label>Tema ou capítulo</label><input id="f-tema" placeholder="ex.: SQL, Normalização"></div>
+  </div>
+  <label>Pergunta</label><textarea id="f-text"></textarea>
+  <label>Alternativas (marque a correta)</label>
+  <div class="ans"><input type="radio" name="c" value="0"><input class="a" placeholder="Alternativa A"></div>
+  <div class="ans"><input type="radio" name="c" value="1"><input class="a" placeholder="Alternativa B"></div>
+  <div class="ans"><input type="radio" name="c" value="2"><input class="a" placeholder="Alternativa C"></div>
+  <div class="ans"><input type="radio" name="c" value="3"><input class="a" placeholder="Alternativa D"></div>
+  <div id="ferr" class="warn" hidden></div>
+  <div class="bar" style="justify-content:flex-end"><button id="cancel">CANCELAR</button><button class="pri" id="ok">SALVAR</button></div>
+</div></div>
+
+<script>
+const R = ['C','B','A','S','SS'];
+let Q = [], filter = 0, editing = -1, dirty = false;
+const $ = s => document.querySelector(s);
+const esc = t => String(t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function valid(q){ return q && Number.isInteger(q.difficulty) && q.difficulty >= 1 && q.difficulty <= 5 && typeof q.text === 'string' && q.text.trim() && Array.isArray(q.answers) && q.answers.length === 4 && q.answers.every(a => typeof a === 'string' && a.trim()) && Number.isInteger(q.correct) && q.correct >= 0 && q.correct <= 3; }
+function say(html, cls){ $('#msg').innerHTML = html ? `<div class="${cls || 'ok'}">${html}</div>` : ''; }
+function missingRanks(){ return [1,2,3,4,5].filter(d => !Q.some(q => q.difficulty === d)).map(d => R[d - 1]); }
+
+async function load(){
+  let src = 'perguntas.json do jogo';
+  try { const l = JSON.parse(localStorage.getItem('bd1_questions')); if (Array.isArray(l) && l.length) { Q = l.filter(valid); src = 'salvo neste aparelho'; } } catch {}
+  if (!Q.length) { try { const r = await fetch('perguntas.json', {cache:'no-cache'}); Q = (await r.json()).filter(valid); } catch { Q = []; } }
+  render(); say(`Carregado: ${Q.length} perguntas (${src}).`);
+}
+function render(){
+  const cnt = d => Q.filter(q => !d || q.difficulty === d).length;
+  $('#chips').innerHTML = ['TODAS', ...R].map((n, i) => `<button class="chip${filter === i ? ' on' : ''}" data-f="${i}">${n} (${cnt(i)})</button>`).join('');
+  const t = $('#search').value.trim().toLowerCase();
+  const rows = Q.map((q, i) => ({q, i})).filter(o => (!filter || o.q.difficulty === filter) && (!t || (o.q.text + ' ' + (o.q.tema || '')).toLowerCase().includes(t)));
+  $('#list').innerHTML = rows.map(({q, i}) => `<div class="q"><div class="top"><span class="rk d${q.difficulty}">${R[q.difficulty - 1]}</span><span class="tema">${esc(q.tema || '')}</span></div><p>${esc(q.text)}</p><ol type="A">${q.answers.map((a, k) => `<li class="${k === q.correct ? 'right' : ''}">${esc(a)}</li>`).join('')}</ol><div class="act"><button data-e="${i}">EDITAR</button><button class="dng" data-d="${i}">APAGAR</button></div></div>`).join('') || '<p class="sub">Nenhuma pergunta aqui.</p>';
+  const m = missingRanks();
+  if (m.length) say(`Atenção: faltam perguntas do rank ${m.join(', ')}. O jogo só usa este banco se houver ao menos 1 de cada rank.`, 'warn');
+}
+function openForm(i){
+  editing = i; const q = i >= 0 ? Q[i] : {difficulty: filter || 1, tema:'', text:'', answers:['','','',''], correct:0};
+  $('#mtitle').textContent = i >= 0 ? 'Editar pergunta' : 'Nova pergunta';
+  $('#f-rank').value = q.difficulty; $('#f-tema').value = q.tema || ''; $('#f-text').value = q.text;
+  document.querySelectorAll('.a').forEach((e, k) => e.value = q.answers[k]);
+  document.querySelectorAll('input[name=c]').forEach(r => r.checked = +r.value === q.correct);
+  $('#ferr').hidden = true; $('#modal').classList.add('open');
+}
+function saveForm(){
+  const q = {difficulty: +$('#f-rank').value, tema: $('#f-tema').value.trim(), text: $('#f-text').value.trim(), answers: [...document.querySelectorAll('.a')].map(e => e.value.trim()), correct: +(document.querySelector('input[name=c]:checked') || {value:-1}).value};
+  if (!valid(q)) { const e = $('#ferr'); e.hidden = false; e.textContent = 'Preencha a pergunta, as 4 alternativas e marque a correta.'; return; }
+  if (editing >= 0) Q[editing] = q; else Q.push(q);
+  dirty = true; $('#modal').classList.remove('open'); render(); say('Alterado. Toque em USAR NESTE APARELHO para valer no jogo deste aparelho, ou exporte o JSON.');
+}
+function download(name, text, type){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+function csvCell(v){ return '"' + String(v).replace(/"/g, '""') + '"'; }
+function toCSV(){ return '﻿' + ['rank,tema,pergunta,A,B,C,D,correta', ...Q.map(q => [R[q.difficulty - 1], q.tema || '', q.text, ...q.answers, 'ABCD'[q.correct]].map(csvCell).join(','))].join('\r\n'); }
+function parseCSV(text){
+  text = text.replace(/^﻿/, ''); const first = text.split(/\r?\n/)[0] || '', sep = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  const rows = []; let row = [], cur = '', inq = false;
+  for (let i = 0; i < text.length; i++) { const c = text[i];
+    if (inq) { if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else inq = false; } else cur += c; }
+    else if (c === '"') inq = true; else if (c === sep) { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cur); cur = ''; if (row.some(x => x.trim())) rows.push(row); row = []; }
+    else cur += c; }
+  row.push(cur); if (row.some(x => x.trim())) rows.push(row);
+  const out = [], bad = [];
+  rows.forEach((r, n) => {
+    if (n === 0 && /rank|dificuldade|difficulty/i.test(r[0] || '')) return;
+    const rk = (r[0] || '').trim().toUpperCase(), d = R.indexOf(rk) >= 0 ? R.indexOf(rk) + 1 : parseInt(rk, 10);
+    const cv = (r[7] || '').trim().toUpperCase(), c = 'ABCD'.indexOf(cv) >= 0 && cv ? 'ABCD'.indexOf(cv) : parseInt(cv, 10) - 1;
+    const q = {difficulty: d, tema: (r[1] || '').trim(), text: (r[2] || '').trim(), answers: [r[3], r[4], r[5], r[6]].map(x => (x || '').trim()), correct: c};
+    if (valid(q)) out.push(q); else bad.push(n + 1);
+  });
+  return {out, bad};
+}
+async function doImport(file){
+  const text = await file.text(); let list = [], bad = [];
+  try { if (/\.json$/i.test(file.name) || /^\s*[\[{]/.test(text)) { const j = JSON.parse(text); const all = Array.isArray(j) ? j : j.perguntas || []; list = all.filter(valid); bad = all.map((q, i) => valid(q) ? 0 : i + 1).filter(Boolean); } else { const r = parseCSV(text); list = r.out; bad = r.bad; } }
+  catch (e) { say('Arquivo inválido: ' + esc(e.message), 'warn'); return; }
+  if (!list.length) { say('Nenhuma pergunta válida encontrada no arquivo.', 'warn'); return; }
+  const add = confirm(`${list.length} perguntas válidas encontradas${bad.length ? ` (${bad.length} linhas ignoradas)` : ''}.\n\nOK = SUBSTITUIR o banco atual.\nCancelar = ADICIONAR às existentes.`);
+  Q = add ? list : Q.concat(list); dirty = true; render();
+  say(`${list.length} perguntas ${add ? 'carregadas' : 'adicionadas'}${bad.length ? `. Linhas ignoradas por erro: ${bad.join(', ')}` : ''}.`, bad.length ? 'warn' : 'ok');
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.f !== undefined) { filter = +t.dataset.f; render(); }
+  else if (t.dataset.e !== undefined) openForm(+t.dataset.e);
+  else if (t.dataset.d !== undefined) { if (confirm('Apagar esta pergunta?')) { Q.splice(+t.dataset.d, 1); dirty = true; render(); } }
+});
+$('#add').onclick = () => openForm(-1);
+$('#cancel').onclick = () => $('#modal').classList.remove('open');
+$('#ok').onclick = saveForm;
+$('#search').oninput = render;
+$('#imp').onclick = () => $('#file').click();
+$('#file').onchange = e => { if (e.target.files[0]) doImport(e.target.files[0]); e.target.value = ''; };
+$('#expj').onclick = () => download('perguntas.json', JSON.stringify(Q, null, 1), 'application/json');
+$('#expc').onclick = () => download('perguntas.csv', toCSV(), 'text/csv');
+$('#save').onclick = () => {
+  const m = missingRanks(); if (m.length) { say(`Não dá para usar: faltam perguntas do rank ${m.join(', ')}.`, 'warn'); return; }
+  try { localStorage.setItem('bd1_questions', JSON.stringify(Q)); dirty = false; say(`Salvo neste aparelho: ${Q.length} perguntas. O jogo aberto neste aparelho já usa este banco. Para valer para todos, exporte o JSON e publique como perguntas.json.`); } catch { say('Não foi possível salvar neste aparelho.', 'warn'); }
+};
+$('#reset').onclick = async () => {
+  if (!confirm('Apagar o banco salvo neste aparelho e voltar ao perguntas.json do jogo?')) return;
+  try { localStorage.removeItem('bd1_questions'); } catch {} Q = []; await load();
+};
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+load();
+</script>
+</body>
+</html>

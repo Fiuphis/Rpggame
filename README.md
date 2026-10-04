@@ -429,3 +429,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v184: evento Arca do Tesouro (cerca de 1 a cada 5 rodadas, a partir da 3a): o grupo vota abrir ou ignorar; pode dar 4 a 8 moedas, uma pocao ou ser armadilha (-12 HP em todos).
 - v185: mercador com memoria: apos 3 compras (desde que ele fechou a loja pela ultima vez) da 15% de desconto em tudo, e passa a comentar o que voce ja comprou (defesa, cura, ataque, utilidade).
 - v186: relatorio no fim da partida: rodadas, acertos e erros por rank (C a SS), aproveitamento, moedas ganhas/gastas, itens usados e (na derrota) vida restante do boss.
+- v187: banco de perguntas editavel: editor.html (adicionar, editar, apagar, filtrar por rank, importar/exportar JSON e CSV, salvar neste aparelho). O jogo le: salvo no aparelho, depois perguntas.json, depois as embutidas. Link na tela inicial.

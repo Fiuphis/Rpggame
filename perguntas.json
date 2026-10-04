@@ -1,0 +1,242 @@
+[
+ {
+  "difficulty": 1,
+  "tema": "Banco de Dados",
+  "text": "Qual das alternativas abaixo representa uma chave primária em um banco de dados?",
+  "answers": [
+   "Uma tabela de relacionamento",
+   "Um campo que identifica unicamente um registro",
+   "Um índice não clusterizado",
+   "Um comando de seleção"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Banco de Dados",
+  "text": "Qual comando SQL é utilizado para consultar dados de uma tabela?",
+  "answers": [
+   "INSERT",
+   "UPDATE",
+   "SELECT",
+   "DROP"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Banco de Dados",
+  "text": "O que significa a sigla SGBD?",
+  "answers": [
+   "Sistema Geral de Banco Digital",
+   "Sistema Gerenciador de Banco de Dados",
+   "Servidor Gráfico de Base de Dados",
+   "Sistema Global de Backup de Dados"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Banco de Dados",
+  "text": "Qual comando SQL remove registros de uma tabela?",
+  "answers": [
+   "REMOVE",
+   "CUT",
+   "ERASE",
+   "DELETE"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Banco de Dados",
+  "text": "Qual propriedade garante que uma chave primária não se repita?",
+  "answers": [
+   "Unicidade",
+   "Ordenação",
+   "Criptografia",
+   "Compactação"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Banco de Dados",
+  "text": "Qual cláusula SQL filtra as linhas antes de agrupar os resultados?",
+  "answers": [
+   "HAVING",
+   "WHERE",
+   "ORDER BY",
+   "LIMIT"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Banco de Dados",
+  "text": "Qual JOIN retorna apenas os registros com correspondência nas duas tabelas?",
+  "answers": [
+   "LEFT JOIN",
+   "RIGHT JOIN",
+   "INNER JOIN",
+   "CROSS JOIN"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Banco de Dados",
+  "text": "O que é uma chave estrangeira?",
+  "answers": [
+   "Campo que referencia a chave primária de outra tabela",
+   "Chave usada para criptografar dados",
+   "Índice que ordena a tabela",
+   "Campo que aceita apenas números"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Banco de Dados",
+  "text": "Qual forma normal elimina dependências parciais em chaves primárias compostas?",
+  "answers": [
+   "1FN",
+   "2FN",
+   "3FN",
+   "FNBC"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Banco de Dados",
+  "text": "No ACID, qual propriedade garante que dados confirmados sobrevivam a falhas?",
+  "answers": [
+   "Atomicidade",
+   "Consistência",
+   "Isolamento",
+   "Durabilidade"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Banco de Dados",
+  "text": "Qual cláusula filtra os grupos formados por um GROUP BY?",
+  "answers": [
+   "WHERE",
+   "HAVING",
+   "DISTINCT",
+   "UNION"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Banco de Dados",
+  "text": "Qual nível de isolamento evita leituras sujas, mas permite leituras não repetíveis?",
+  "answers": [
+   "READ UNCOMMITTED",
+   "READ COMMITTED",
+   "REPEATABLE READ",
+   "SERIALIZABLE"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Banco de Dados",
+  "text": "Qual anomalia ocorre quando uma transação relê um conjunto de linhas e aparecem novas linhas inseridas por outra transação?",
+  "answers": [
+   "Leitura suja",
+   "Leitura não repetível",
+   "Leitura fantasma",
+   "Atualização perdida"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Banco de Dados",
+  "text": "Em um índice B-Tree, qual é a complexidade típica da busca por uma chave?",
+  "answers": [
+   "O(1)",
+   "O(log n)",
+   "O(n)",
+   "O(n log n)"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Banco de Dados",
+  "text": "Qual forma normal exige que todo determinante seja uma chave candidata?",
+  "answers": [
+   "2FN",
+   "3FN",
+   "FNBC",
+   "4FN"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Banco de Dados",
+  "text": "O que o comando EXPLAIN normalmente mostra em um SGBD?",
+  "answers": [
+   "O plano de execução da consulta",
+   "O esquema completo do banco",
+   "O histórico de transações",
+   "Os usuários conectados"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 5,
+  "tema": "Banco de Dados",
+  "text": "Qual protocolo garante serializabilidade separando uma fase de aquisição e uma de liberação de bloqueios?",
+  "answers": [
+   "Two-Phase Locking (2PL)",
+   "Write-Ahead Logging",
+   "Two-Phase Commit",
+   "Ordenação por timestamp simples"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 5,
+  "tema": "Banco de Dados",
+  "text": "A dependência multivalorada é eliminada ao atingir qual forma normal?",
+  "answers": [
+   "3FN",
+   "FNBC",
+   "4FN",
+   "2FN"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 5,
+  "tema": "Banco de Dados",
+  "text": "Qual técnica de recuperação exige gravar a alteração no log ANTES de gravá-la nos dados em disco?",
+  "answers": [
+   "Shadow Paging",
+   "Write-Ahead Logging",
+   "Checkpoint fuzzy",
+   "Bloqueio otimista"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 5,
+  "tema": "Banco de Dados",
+  "text": "Pelo teorema CAP, havendo partição de rede, um sistema distribuído deve escolher entre quais propriedades?",
+  "answers": [
+   "Atomicidade e Durabilidade",
+   "Isolamento e Consistência",
+   "Consistência e Disponibilidade",
+   "Disponibilidade e Escalabilidade"
+  ],
+  "correct": 2
+ }
+]
