@@ -45,8 +45,30 @@ const ITEMS = {
   hp_l:{name:'Poção Grande de HP', ask:'Poção grande de HP?', price:18, kind:'hp', amount:70, icon:'potion_hp_l.png'},
   mana_s:{name:'Poção Pequena de Mana', ask:'Poção pequena de mana?', price:2, kind:'mp', amount:20, icon:'potion_mana_s.png'},
   mana:{name:'Poção de Mana', ask:'Comprar poção de mana?', price:3, kind:'mp', amount:35, icon:'potion_mana.png'},
-  mana_l:{name:'Poção Grande de Mana', ask:'Poção grande de mana?', price:6, kind:'mp', amount:70, icon:'potion_mana_l.png'}
+  mana_l:{name:'Poção Grande de Mana', ask:'Poção grande de mana?', price:6, kind:'mp', amount:70, icon:'potion_mana_l.png'},
+  // defesa
+  iron_shield:{name:'Escudo de Ferro', ask:'Comprar Escudo de Ferro?', price:12, kind:'fx', fx:'shield', icon:'item_iron_shield.png', info:'Bloqueia por completo o próximo golpe que você receber.'},
+  amulet:{name:'Amuleto Protetor', ask:'Comprar Amuleto Protetor?', price:14, kind:'fx', fx:'amulet', icon:'item_amulet.png', info:'Reduz em 30% o dano que você recebe por 3 rodadas.'},
+  helm:{name:'Elmo Reforçado', ask:'Comprar Elmo Reforçado?', price:10, kind:'fx', fx:'helm', icon:'item_helm.png', info:'Corta 8 de dano de cada golpe que você recebe por 3 rodadas.'},
+  smokebomb:{name:'Bomba de Fumaça', ask:'Comprar Bomba de Fumaça?', price:11, kind:'fx', fx:'smoke', icon:'item_smokebomb.png', info:'Você escapa dos golpes diretos do boss por 2 rodadas (a Onda Sombria ainda acerta).'},
+  // cura
+  elixir:{name:'Elixir Completo', ask:'Comprar Elixir Completo?', price:16, kind:'fx', fx:'elixir', icon:'item_elixir.png', info:'Restaura 50 de HP e 50 de mana.'},
+  herb:{name:'Erva Curativa', ask:'Comprar Erva Curativa?', price:9, kind:'fx', fx:'herb', icon:'item_herb.png', info:'Cura 8 de HP no fim de cada rodada, por 4 rodadas.'},
+  // crítico e dano
+  lens:{name:'Lente do Caçador', ask:'Comprar Lente do Caçador?', price:11, kind:'fx', fx:'lens', icon:'item_lens.png', info:'Seu próximo ataque que acertar é CRÍTICO (1,8x de dano).'},
+  tonic:{name:'Tônico de Fúria', ask:'Comprar Tônico de Fúria?', price:12, kind:'fx', fx:'tonic', icon:'item_tonic.png', info:'Seus ataques causam +25% de dano por 3 rodadas.'},
+  powder:{name:'Pólvora Negra', ask:'Comprar Pólvora Negra?', price:8, kind:'fx', fx:'powder', icon:'item_powder.png', info:'Seu próximo ataque causa +15 de dano.'},
+  blade:{name:'Lâmina Afiada', ask:'Comprar Lâmina Afiada?', price:25, kind:'fx', fx:'blade', icon:'item_blade.png', info:'Permanente: todos os seus ataques causam +4 de dano até o fim da partida.'},
+  lightbomb:{name:'Bomba de Luz', ask:'Comprar Bomba de Luz?', price:13, kind:'fx', fx:'lightbomb', icon:'item_lightbomb.png', info:'Explode no fim da rodada: 40 de dano direto no boss.'},
+  // mana, especial e utilidade
+  hourglass:{name:'Ampulheta do Tempo', ask:'Comprar Ampulheta do Tempo?', price:14, kind:'fx', fx:'hourglass', icon:'item_hourglass.png', info:'Zera a recarga de todas as suas habilidades e dá +20 de mana.'},
+  luckycoin:{name:'Moeda da Sorte', ask:'Comprar Moeda da Sorte?', price:6, kind:'fx', fx:'lucky', icon:'item_luckycoin.png', info:'+3 moedas a cada acerto nas próximas 3 perguntas.'},
+  // raros
+  phoenix:{name:'Pena de Fênix', ask:'Comprar Pena de Fênix?', price:30, kind:'fx', fx:'phoenix', rare:true, icon:'item_phoenix.png', info:'RARO: revive seu herói caído com 60 de HP (só vale se algum aliado ainda estiver de pé).'},
+  dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:24, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 3 ataques causam de 0,5x a 3x de dano, sorteado.'},
+  scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:28, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói.'}
 };
+const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, dice:0, bomb:0});
 
 // ===== Configuração do combate (ajuste aqui) =====
 const HERO_ORDER = ['mage','knight','tank','assassin'];
@@ -159,7 +181,7 @@ const skSay = (k, sk) => ({heavy:'heavy', super:'heavy', holy_atk:'holy', mana_a
 const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a6cff' : sk.elem && el ? ELEMENTS[el].color : '#4da3ff';
 
 const state = {
-  shop:null,
+  shop:null, ib:newBuffs(),
   gold:0, question:0, answered:false,
   inventory:saved.inventory, pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
@@ -288,7 +310,8 @@ async function askUlt(hero){
 }
 
 // ===== Mercador vivo: humor, falas, loja que fecha, prateleira que repõe itens =====
-const SHOP_POOL = ['hp_s','hp','hp_l','mana_s','mana','mana_l'];            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
+const SHOP_POOL = Object.keys(ITEMS).filter(k => !ITEMS[k].rare);
+const RARE_POOL = Object.keys(ITEMS).filter(k => ITEMS[k].rare), RARE_CHANCE = 0.12;            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
 const SHOP_SLOTS = 4, SHOP_CLOSE_AT = 6, SHOP_CLOSED_Q = 3;   // 6 aberturas sem comprar → fecha por 3 perguntas
 const MSAY = {
   hi:['O que deseja?','Bem-vindo, viajante!','Olhe à vontade...','Em que posso ajudar?','Tenho o que você precisa.','Mercadoria de primeira!'],
@@ -299,15 +322,17 @@ const MSAY = {
   back:['Voltei! O que vai ser?','Reabri. Vai comprar agora?'],
   sold:['Negócio fechado!','Boa escolha!','Volte sempre!'],
   no:['Hmpf... indecisos.','Pensem rápido, tenho pressa.'],
+  rare:['Mercadoria RARA! Só hoje!','Olhe isto... é raro!'],
   stock:['Chegou mercadoria nova!','Acabei de repor a prateleira.'],
   shut:['Fechado! Voltem depois.','A loja está fechada!','Sem mercador, sem compra.']
 };
 const msayLast = {};
 function msay(kind){ const l = MSAY[kind]; let t; do { t = l[Math.floor(Math.random() * l.length)]; } while (l.length > 1 && t === msayLast[kind]); msayLast[kind] = t; return t; }
 function shuffled(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function newShop(){ return {slots:shuffled(SHOP_POOL).slice(0, SHOP_SLOTS), opens:0, closed:0}; }   // prateleira sorteada a cada partida
+function newShop(){ const slots = shuffled(SHOP_POOL).slice(0, SHOP_SLOTS); if (Math.random() < RARE_CHANCE) slots[Math.floor(Math.random() * SHOP_SLOTS)] = RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)]; return {slots, opens:0, closed:0}; }   // prateleira sorteada a cada partida
 function pickNew(sold){   // item novo no lugar do vendido: nunca o mesmo, de preferência um que ainda não está na prateleira
   const onShelf = state.shop.slots.filter(Boolean);
+  if (Math.random() < RARE_CHANCE) { const r = RARE_POOL.filter(t => !onShelf.includes(t)); if (r.length) return r[Math.floor(Math.random() * r.length)]; }
   let c = SHOP_POOL.filter(t => t !== sold && !onShelf.includes(t));
   if (!c.length) c = SHOP_POOL.filter(t => t !== sold);
   return c[Math.floor(Math.random() * c.length)];
@@ -329,7 +354,7 @@ function renderShop(opt = {}){
   const bp = $('#bag-panel'); bp.classList.toggle('shut', state.shop.closed > 0);
   state.shop.slots.forEach((type, i) => {
     const b = bp.querySelector('.shop.s' + i); if (!b) return; b.innerHTML = '';
-    b.disabled = !type;
+    b.disabled = !type; b.classList.toggle('rare', !!(type && ITEMS[type].rare));
     if (opt.sold === i && opt.soldType) b.insertAdjacentHTML('beforeend', `<img class="s-ghost" src="${ITEMS[opt.soldType].icon}" alt="">`);
     if (!type) return;
     const it = ITEMS[type];
@@ -367,6 +392,7 @@ function requestBuy(slot){
   if (state.pendingAction || state.voteLocked) { toast('Já existe uma votação aberta.'); return; }
   if (state.gold < item.price) { toast('Moedas insuficientes.'); return; }
   if (state.inventory.length >= 6) { toast('Mochila cheia.'); return; }
+  if (item.info) toast(item.name + ': ' + item.info);
   openMerchantVote(item.ask, {type:'buy', item:type, slot});
 }
 function executeBuy(type, slot){
@@ -376,7 +402,7 @@ function executeBuy(type, slot){
   if (state.inventory.length >= 6) { toast('Mochila cheia.'); return false; }
   state.gold -= item.price; state.inventory.push(type);
   state.shop.slots[slot] = null; state.shop.opens = 0; mMood(0); renderShop({sold:slot, soldType:type}); mBubble(msay('sold'));
-  setTimeout(() => { if (state.shop.slots[slot] || state.shop.closed > 0) return; state.shop.slots[slot] = pickNew(type); renderShop({arrive:[slot]}); }, 1100);
+  setTimeout(() => { if (state.shop.slots[slot] || state.shop.closed > 0) return; state.shop.slots[slot] = pickNew(type); renderShop({arrive:[slot]}); if (ITEMS[state.shop.slots[slot]].rare) mBubble(msay('rare')); }, 1100);
   persist(); renderGold(); renderInventoryHits();
   return true;
 }
@@ -859,7 +885,7 @@ async function playRound(){
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
-  if (correct[activeGroup]) { state.gold += meta.reward; persist(); goldGain(meta.reward); }
+  if (correct[activeGroup]) { let g = meta.reward; if (state.ib.lucky > 0) { g += 3; state.ib.lucky--; } state.gold += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
   if (isHardQ(q)) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma pergunta S/SS inteira
   await wait(1500);
@@ -902,9 +928,10 @@ async function playRound(){
         A.play(t, 'dodge'); A.sayRandom(t, 'dodge', .6); floatText(HERO_X[t], 56, 'ESQUIVOU!', '#9fe3a8');
         state.stun = true; floatText(50, 17, 'ATORDOADO! +25% de dano', '#ffd34d'); showBanner('ESQUIVOU DO TELEPORTE!', 'o boss ficou atordoado: +25% de dano nele nesta rodada');
       } else {
-        const red = sk && sk.kind === 'def' ? sk.reduce : 0, d = Math.round(TELE_DMG * (1 - red));
+        const red = sk && sk.kind === 'def' ? sk.reduce : 0; let d = Math.round(TELE_DMG * (1 - red));
+        const m = itemMit(t, d, true); d = m.d;
         flashHit(); A.play(t, 'hurt'); A.sayRandom(t, 'hurt', .4); state.heroes[t].hp = Math.max(0, state.heroes[t].hp - d);
-        floatText(HERO_X[t], 56, `-${d}${red ? ' (defesa)' : ''}`, '#ff6b81');
+        floatText(HERO_X[t], 56, `-${d}${red ? ' (defesa)' : ''}${m.note}`, '#ff6b81');
       }
       renderHud(); await wait(900); A.play('boss', 'tpBack'); await wait(1000); hideBanner(); hideRing();
       if (aliveHeroes().length === 0) return endGame(false);
@@ -979,11 +1006,11 @@ async function playRound(){
     else if (!state.over && tankUp && state.guardFor && state.heroes[state.guardFor].hp > 0) { tt = state.guardFor; why = 'ignora a Proteção'; }
     if (tt) {
       state.thrustCd = THRUST_CD;
-      const sk = kindOf(tt), dodged = !!sk && sk.kind === 'dodge', red = sk && sk.kind === 'def' ? sk.reduce : 0, d = Math.round(THRUST_DMG * (1 - red));
+      const sk = kindOf(tt), dodged = !!sk && sk.kind === 'dodge', red = sk && sk.kind === 'def' ? sk.reduce : 0; let d = Math.round(THRUST_DMG * (1 - red));
       showBanner('ESTOCADA!', `${why}: vai em ${GROUPS[tt]} (ESQUIVA anula, defesa reduz)`); showRing(tt); await wait(700);
       A.play('boss', 'thrust', {tx:HERO_WX(tt), ty:1010}); await Promise.race([A.hit('boss'), wait(3000)]);
       if (dodged) { A.play(tt, 'dodge'); floatText(HERO_X[tt], 56, 'ESQUIVOU!', '#9fe3a8'); }
-      else { flashHit(); A.play(tt, 'hurt'); A.sayRandom(tt, 'hurt', .4); state.heroes[tt].hp = Math.max(0, state.heroes[tt].hp - d); floatText(HERO_X[tt], 56, `-${d}${red ? ' (defesa)' : ''}`, '#ff6b81'); }
+      else { const m = itemMit(tt, d, true); d = m.d; flashHit(); A.play(tt, 'hurt'); A.sayRandom(tt, 'hurt', .4); state.heroes[tt].hp = Math.max(0, state.heroes[tt].hp - d); floatText(HERO_X[tt], 56, `-${d}${red ? ' (defesa)' : ''}${m.note}`, '#ff6b81'); }
       renderHud(); await wait(900); hideBanner(); hideRing();
       if (aliveHeroes().length === 0) return endGame(false);
     } }
@@ -992,13 +1019,15 @@ async function playRound(){
     if (aoe && !state.over) {
       showBanner('ONDA SOMBRIA', `o Lorde das Trevas fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
       await Promise.race([A.hit('boss'), wait(2500)]);
-      HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); const a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}`, '#b36bff'); } });
+      HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); let a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; const m = itemMit(k, a, false); a = m.d; h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}${m.note}`, '#b36bff'); } });
       renderHud(); await wait(1100); hideBanner();
       if (aliveHeroes().length === 0) return endGame(false);
     } }
 
   // ---- 4) fim da rodada: recargas, mana, fúria e duração dos efeitos
   shopTick();
+  await itemRoundEnd();
+  if (state.bossHp <= 0) return endGame(true);
   if (state.burn > 0) {   // fogo: dano contínuo no boss (0,25x do ataque normal) por 2 perguntas
     const bd = Math.max(1, Math.round(ATTACK_DAMAGE * BURN_MULT)); state.burn--;
     state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} 🔥`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
@@ -1046,6 +1075,7 @@ async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed 
   game.classList.remove('boss-hit'); void game.offsetWidth; game.classList.add('boss-hit');
   if (dmg <= 0) { floatText(50, 17, 'IMUNE!', '#b8c4d9'); renderHud(); await wait(600); game.classList.remove('boss-hit'); return; }
   if (state.stun) dmg = Math.round(dmg * STUN_MULT);
+  { const o = itemOff(hero, dmg); dmg = o.d; if (o.note) floatText(HERO_X[hero], 50, o.note, '#ffd34d'); }
   state.bossHp = Math.max(0, state.bossHp - dmg); A.play('boss', 'hurt'); A.sayRandom('boss', 'hurt', .3);
   floatText(50, 17, `-${dmg}`, col === '#d9e6ff' ? '#ffffff' : col);
   renderHud(); await wait(600); game.classList.remove('boss-hit');
@@ -1055,6 +1085,7 @@ async function bossCounter(hero, dmg, defended){
   const anim = {1:'slashH', 2:'slashV', 3:'slashH', 4:'summon', 5:'summon'}[state.curQ ? state.curQ.difficulty : 1] || 'slashH';
   if (A.has('boss', anim)) { A.play('boss', anim, {tx:HERO_WX(t), ty:1010}); await Promise.race([A.hit('boss'), wait(3500)]); }
   else await shoot(50, 26, HERO_X[t], 60, '#ff2d4d', 560);
+  const m = itemMit(t, r.dmg, true); r.dmg = m.d; r.note += m.note;
   flashHit();
   state.heroes[t].hp = Math.max(0, state.heroes[t].hp - r.dmg); if (!(defended && t === hero)) A.play(t, 'hurt'); A.sayRandom(t, 'hurt', .35);
   floatText(HERO_X[t], 56, `-${r.dmg}${defended ? ' (defesa)' : ''}${r.note}`, '#ff6b81');
@@ -1089,13 +1120,64 @@ function restartRun(){
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
-  state.shop = newShop(); { const st = $('#m-stage'); if (st) { st.classList.remove('shut','mad'); } } renderShop(); state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
+  state.shop = newShop(); { const st = $('#m-stage'); if (st) { st.classList.remove('shut','mad'); } } renderShop(); state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null; state.ib = newBuffs();
   $('#end-screen').hidden = true; renderHud(); beginBattle(800);
 }
 
+// ===== Efeitos dos itens do Mercador (valem para o herói deste jogador) =====
+function itemMit(hero, d, direct){      // dano recebido: escudo, fumaça, amuleto, elmo
+  const b = state.ib; if (hero !== activeGroup || d <= 0) return {d, note:''};
+  if (b.shield > 0) { b.shield--; return {d:0, note:' (escudo!)'}; }
+  if (direct && b.smoke > 0) return {d:0, note:' (fumaça!)'};
+  let note = '';
+  if (b.amulet > 0) { d = Math.round(d * 0.7); note += ' (amuleto)'; }
+  if (b.helm > 0) { d = Math.max(1, d - 8); note += ' (elmo)'; }
+  return {d, note};
+}
+function itemOff(hero, d){               // dano causado: lâmina, pólvora, tônico, lente, dado
+  const b = state.ib; if (hero !== activeGroup || d <= 0) return {d, note:''};
+  const n = [];
+  if (b.blade > 0) d += 4 * b.blade;
+  if (b.powder > 0) { b.powder = 0; d += 15; n.push('POLVORA +15'); }
+  if (b.tonic > 0) { d = Math.round(d * 1.25); n.push('FURIA +25%'); }
+  if (b.lens > 0) { b.lens = 0; d = Math.round(d * 1.8); n.push('CRITICO!'); }
+  if (b.dice > 0) { b.dice--; const m = [0.5, 1, 1.5, 2, 3][Math.floor(Math.random() * 5)]; d = Math.round(d * m); n.push('DADO ' + String(m).replace('.', ',') + 'x'); }
+  return {d, note:n.join(' ')};
+}
+async function itemRoundEnd(){          // fim da rodada: bomba de luz, erva, duração dos efeitos
+  const b = state.ib, h = state.heroes[activeGroup];
+  if (b.bomb > 0) { const n = b.bomb * 40; b.bomb = 0; state.bossHp = Math.max(0, state.bossHp - n); floatText(50, 17, `-${n} BOMBA`, '#fff2a8'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900); }
+  if (b.herb > 0 && h.hp > 0) { h.hp = Math.min(HERO_MAX_HP, h.hp + 8); floatText(HERO_X[activeGroup], 56, '+8', '#9fe3a8'); renderHud(); }
+  ['herb','amulet','helm','smoke','tonic'].forEach(k => { if (b[k] > 0) b[k]--; });
+}
+const FX = {
+  shield:(b) => { b.shield = 1; return 'Escudo de Ferro erguido: o próximo golpe será bloqueado.'; },
+  amulet:(b) => { b.amulet = 3; return 'Amuleto ativo: -30% de dano por 3 rodadas.'; },
+  helm:(b) => { b.helm = 3; return 'Elmo ativo: -8 de dano por golpe, 3 rodadas.'; },
+  smoke:(b) => { b.smoke = 2; return 'Fumaça! Golpes diretos erram por 2 rodadas.'; },
+  herb:(b) => { b.herb = 4; return 'Erva ativa: +8 de HP por rodada, 4 rodadas.'; },
+  lens:(b) => { b.lens = 1; return 'Lente pronta: próximo ataque será crítico.'; },
+  tonic:(b) => { b.tonic = 3; return 'Fúria: +25% de dano por 3 rodadas.'; },
+  powder:(b) => { b.powder = 1; return 'Pólvora pronta: próximo ataque +15.'; },
+  blade:(b) => { b.blade++; return `Lâmina afiada: +${4 * b.blade} de dano permanente.`; },
+  lightbomb:(b) => { b.bomb++; return 'Bomba armada: explode no fim da rodada.'; },
+  lucky:(b) => { b.lucky = 3; return 'Moeda da Sorte: +3 moedas por acerto, 3 perguntas.'; },
+  hourglass:(b, h) => { state.cd[activeGroup] = {}; h.mp = Math.min(100, h.mp + 20); return 'Ampulheta: recargas zeradas e +20 de mana.'; },
+  elixir:(b, h) => { h.hp = Math.min(HERO_MAX_HP, h.hp + 50); h.mp = Math.min(100, h.mp + 50); return 'Elixir: +50 de HP e +50 de mana.'; },
+  scroll:(b) => { state.ultReady[activeGroup] = true; state.ultCd[activeGroup] = 0; return 'Pergaminho: ULTIMATE carregado!'; },
+  dice:(b) => { b.dice = 3; return 'Dado lançado: próximos 3 ataques com dano sorteado.'; },
+  phoenix:(b, h) => { h.hp = 60; return 'Pena de Fênix: seu herói voltou com 60 de HP!'; }
+};
 function useInventory(index){
   const type=state.inventory[index];if(!type)return;
   const item=ITEMS[type], hero=state.heroes[activeGroup];
+  if(item.kind==='fx'){
+    if(item.fx==='phoenix'){ if(hero.hp>0){toast('A Pena de Fênix só serve para herói caído.');return} if(aliveHeroes().length===0){toast('Sem aliados de pé, a Fênix não responde.');return} }
+    else if(hero.hp<=0){toast('O herói caiu e não pode usar itens.');return}
+    if(item.fx==='elixir'&&hero.hp>=HERO_MAX_HP&&hero.mp>=100){toast('HP e mana já estão cheios.');return}
+    if(item.fx==='scroll'&&state.ultReady[activeGroup]){toast('O Ultimate já está carregado.');return}
+    const msg=FX[item.fx](state.ib,hero);state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(msg);return;
+  }
   const max = item.kind==='hp' ? HERO_MAX_HP : 100;
   if(hero.hp<=0 && item.kind==='hp'){toast('O herói caiu e não pode ser curado.');return}
   if(hero[item.kind]>=max){toast(item.kind==='hp'?'HP já está cheio.':'Mana já está cheia.');return}

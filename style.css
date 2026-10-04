@@ -405,3 +405,6 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .m-say.mad.say-in{animation:msayin .25s steps(5) both,mbub .2s linear 3}
 .bag-panel:has(.merchant-vote.open) .m-say{display:none}
 .m-say>span{display:block;width:100%;overflow-wrap:normal}
+/* item raro na prateleira: brilho dourado pulsando */
+.shop.rare .s-icon{filter:drop-shadow(0 0 3px #ffd34d) drop-shadow(0 0 7px #ff9d1a);animation:rarePulse 1.4s ease-in-out infinite}
+@keyframes rarePulse{50%{filter:drop-shadow(0 0 5px #fff2a8) drop-shadow(0 0 12px #ffb02e)}}
