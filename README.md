@@ -418,3 +418,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v173: sem emojis nos textos do jogo (aviso do dragão, dano de fogo, botões); alerta HITKILL usa caveira em pixel art.
 - v174: emoji da gag removido (resto voltou); mercador: reposição imediata a cada compra com OUTRO item, prateleira sorteada a cada partida, 6 poções (pequena/normal/grande de HP e mana), falas e perguntas se ajustam sozinhas à caixa.
 - v175: 16 itens novos no mercador com efeito real (defesa: Escudo de Ferro, Amuleto, Elmo, Bomba de Fumaca; cura: Elixir, Erva; critico/dano: Lente, Tonico, Polvora, Lamina, Bomba de Luz; utilidade: Ampulheta, Moeda da Sorte; raros com brilho dourado: Pena de Fenix, Dado do Destino, Pergaminho Arcano). Tocar num item na loja mostra o que ele faz.
+- v176: mercador agora aguenta 12 aberturas sem compra antes de se irritar e fechar a loja (humor sobe em 4 faixas: simpatico, impaciente, azedo, furioso).

@@ -312,7 +312,7 @@ async function askUlt(hero){
 // ===== Mercador vivo: humor, falas, loja que fecha, prateleira que repõe itens =====
 const SHOP_POOL = Object.keys(ITEMS).filter(k => !ITEMS[k].rare);
 const RARE_POOL = Object.keys(ITEMS).filter(k => ITEMS[k].rare), RARE_CHANCE = 0.12;            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
-const SHOP_SLOTS = 4, SHOP_CLOSE_AT = 6, SHOP_CLOSED_Q = 3;   // 6 aberturas sem comprar → fecha por 3 perguntas
+const SHOP_SLOTS = 4, SHOP_CLOSE_AT = 12, SHOP_CLOSED_Q = 3;   // 12 aberturas sem comprar → fecha por 3 perguntas
 const MSAY = {
   hi:['O que deseja?','Bem-vindo, viajante!','Olhe à vontade...','Em que posso ajudar?','Tenho o que você precisa.','Mercadoria de primeira!'],
   meh:['Vai comprar alguma coisa?','Já olhou o bastante?','Hm... decidiu algo?','Sem pressa... quase.'],
@@ -362,14 +362,14 @@ function renderShop(opt = {}){
     b.setAttribute('aria-label', 'Comprar ' + it.name);
   });
 }
-function mMood(n){ const st = $('#m-stage'); if (!st) return; st.classList.toggle('mad', n >= 4); st.style.setProperty('--mrage', n >= 6 ? .85 : n === 5 ? .6 : .3); }
+function mMood(n){ const st = $('#m-stage'); if (!st) return; st.classList.toggle('mad', n >= 8); st.style.setProperty('--mrage', n >= 11 ? .85 : n >= 10 ? .6 : .3); }
 function merchantOpened(){        // jogador abriu a mochila/loja
   const sh = state.shop;
   if (sh.closed > 0) { mBubble(msay('shut')); return; }
   sh.opens++; const n = sh.opens;
   mMood(n);
   if (n >= SHOP_CLOSE_AT) { mBubble(msay('close'), true); setTimeout(shopClose, 1900); return; }
-  mBubble(msay(n <= 2 ? 'hi' : n === 3 ? 'meh' : n === 4 ? 'bad' : 'mad'), n >= 5);
+  mBubble(msay(n <= 4 ? 'hi' : n <= 7 ? 'meh' : n <= 9 ? 'bad' : 'mad'), n >= 10);
 }
 function shopClose(){
   const sh = state.shop; if (sh.closed > 0) return;
