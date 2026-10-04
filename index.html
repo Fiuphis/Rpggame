@@ -91,7 +91,7 @@ confirmBtn.onclick=()=>{
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search});
 };
-(()=>{const V='v182',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
+(()=>{const V='v183',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
 b.onclick=async function(){b.disabled=true;b.textContent='ATUALIZANDO…';
 try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}
 if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}

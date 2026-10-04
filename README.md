@@ -425,3 +425,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v180: itens iguais empilham ate 3 por slot da mochila (numero no canto).
 - v181: errar pergunta rank S ou SS deixa a Onda Sombria 50% mais forte nessa rodada e enche a furia (+1 por heroi que errou).
 - v182: equilibrio (simulado): boss 650 de HP e Onda Sombria ~10% menor (A6, S8, SS11). Sem itens fica dificil; com alguns itens e ultimates bem usados e vitoria provavel.
+- v183: Fase 2 do boss (50% de HP): raios no fundo, cenario piscando, boss mais forte (Onda Sombria +2, olhos sempre acesos), sem fala. Tambem aplica de fato a regra do v181: errar rank S/SS deixa a Onda Sombria 50% mais forte e enche a furia.

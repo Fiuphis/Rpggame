@@ -97,8 +97,10 @@ const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // 
 const BH_PARTS = [1.5, 2.5];   // Buraco Negro: dois estouros na animação (1,5x + 2,5x = 4x o dano base da Maga = 56)
 const BH_MULT = 4;   // Buraco Negro: dano próprio de 4x o dano base da Maga (56)
 const THRUST_CD = 3, TELE_CD = 2;   // recarga em perguntas (contando a do uso): Estocada fica 2 perguntas sem sair, Teleporte 1
+const PHASE2_AT = .5, PHASE2_AOE = 2;   // fase 2: com 50% de HP o boss muda (cena de raios) e a Onda Sombria fica +2
 const THRUST_DMG = 24, ENRAGE_AOE = 2;                  // Estocada (ignora Provocação/Proteção); Enfurecer: Onda Sombria +2
 const HERO_WX = k => HERO_X[k] * 10.24;                 // x do herói no mundo 1024x1536
+const HARD_MISS_AOE = 1.5;   // errou pergunta S/SS: a Onda Sombria bate 50% mais forte e a fúria enche mais
 const HARD_EVERY = 5;   // a cada 5 perguntas sem rank S/SS, a próxima é S ou SS
 const HEAL_AMOUNT = 25, REVIVE_HP = 35;
 // Reações entre elementos (Maga): dois elementos diferentes marcados no boss explodem em bônus de dano.
@@ -188,7 +190,7 @@ const skSay = (k, sk) => ({heavy:'heavy', super:'heavy', holy_atk:'holy', mana_a
 const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a6cff' : sk.elem && el ? ELEMENTS[el].color : '#4da3ff';
 
 const state = {
-  shop:null, ib:allBuffs(),
+  shop:null, ib:allBuffs(), phase2:false,
   gold:0, question:0, answered:false,
   inventory:saved.inventory, pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
@@ -676,9 +678,23 @@ function pickQuestion(diff){
   state.lastQ[diff] = c.i; return c.q;
 }
 if (TEST_MODE) window.__bd = {state};
-window.BD_RAGE = () => state.rage / RAGE_MAX;
+window.BD_RAGE = () => Math.max(state.rage / RAGE_MAX, state.phase2 ? .7 : 0);   // fase 2: olhos do boss ficam sempre acesos
 const aliveHeroes = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 
+// Fase 2: ao cair a 50% de HP, raios caem no fundo, o cenário pisca várias vezes e o boss fica mais forte (sem fala)
+async function maybePhase2(){
+  if (state.phase2 || state.over || state.bossHp <= 0 || state.bossHp > BOSS_MAX_HP * PHASE2_AT) return;
+  state.phase2 = true;
+  showBanner('FASE 2', `o Lorde das Trevas despertou: Onda Sombria +${PHASE2_AOE} até o fim`);
+  A.play('boss', 'enrage');
+  const g = $('#game'), fl = document.createElement('div');
+  fl.style.cssText = 'position:absolute;inset:0;z-index:39;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 18%,#ffffff,#b9ccff 45%,#5a3cff 100%);mix-blend-mode:screen';
+  g.appendChild(fl);
+  fl.animate([{opacity:0},{opacity:.85,offset:.06},{opacity:0,offset:.14},{opacity:.55,offset:.22},{opacity:0,offset:.3},{opacity:.95,offset:.42},{opacity:0,offset:.5},{opacity:.4,offset:.6},{opacity:0,offset:.68},{opacity:1,offset:.8},{opacity:0}], {duration:2600, easing:'linear'}).finished.then(() => fl.remove());
+  [0, 260, 620, 980, 1400, 1850].forEach(t => setTimeout(() => { if (window.AMB) AMB.bolt(); }, t));
+  g.animate([{transform:'translate(0,0)'},{transform:'translate(-5px,3px)'},{transform:'translate(5px,-3px)'},{transform:'translate(-3px,-2px)'},{transform:'translate(0,0)'}], {duration:240, iterations:10});
+  flashHit(); await wait(3000); hideBanner(); renderHud();
+}
 async function bossIntro(ev = {}){
   const game = $('#game');
   if (state.hardNext) {
@@ -894,6 +910,7 @@ async function playRound(){
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
   if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
+  if (isHardQ(q)) { const miss = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length; if (miss) { state.rage = Math.min(RAGE_MAX, state.rage + miss); toast(`Erro no rank ${meta.rank}: fúria +${miss} e Onda Sombria mais forte.`); } }
   if (isHardQ(q)) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma pergunta S/SS inteira
   await wait(1500);
   renderHud();
@@ -1006,6 +1023,7 @@ async function playRound(){
     if (k !== HERO_ORDER[HERO_ORDER.length - 1] || Math.random() < .5) await maybeGag('hit');
   }
 
+  await maybePhase2();
   // ---- 3b) estocada: só quando o Tanque está com Provocação/Proteção; atravessa a guarda e fere um aliado
   { const tankUp = state.heroes.tank.hp > 0; let tt = null, why = '';
     if (state.thrustCd > 0 || dazed) { /* em recarga ou desnorteado */ }
@@ -1022,9 +1040,10 @@ async function playRound(){
       if (aliveHeroes().length === 0) return endGame(false);
     } }
   // ---- 3c) onda sombria: o boss fere todos os heróis vivos a cada rodada (tira a vantagem de só jogar certo)
-  { const aoe = meta.aoe + (state.enraged ? ENRAGE_AOE : 0);
+  { const hardMiss = isHardQ(q) ? HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length : 0;   // erro em rank S/SS: Onda Sombria +50%
+    const aoe = Math.round((meta.aoe + (state.enraged ? ENRAGE_AOE : 0) + (state.phase2 ? PHASE2_AOE : 0)) * (hardMiss ? HARD_MISS_AOE : 1));
     if (aoe && !state.over) {
-      showBanner('ONDA SOMBRIA', `o Lorde das Trevas fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
+      showBanner('ONDA SOMBRIA', `o Lorde das Trevas fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}${state.phase2 ? ' (fase 2 +' + PHASE2_AOE + ')' : ''}${hardMiss ? ' (erro no rank ' + meta.rank + ': +50%)' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
       await Promise.race([A.hit('boss'), wait(2500)]);
       HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); let a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; const m = itemMit(k, a, false); a = m.d; h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}${m.note}`, '#b36bff'); } });
       renderHud(); await wait(1100); hideBanner();
@@ -1040,6 +1059,7 @@ async function playRound(){
     state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} 🔥`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
     if (state.bossHp <= 0) return endGame(true);
   }
+  await maybePhase2();
   { const b = state.buff;
     if (b.bh > 0) b.bh--; state.guardFor = null; state.thrustCd = Math.max(0, state.thrustCd - 1); state.teleCd = Math.max(0, state.teleCd - 1); state.stun = false; state.enraged = false; if (empowered) state.prepNext = false;
     if (b.bers > 0) { b.bers--; if (b.bers === 0) b.tired = 1; } else if (b.tired > 0) b.tired--;
@@ -1125,7 +1145,7 @@ function beginBattle(delay){
 function restartRun(){
   A.reset(); closeTargetPick();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
-  Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
+  Object.assign(state, {phase2:false, sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
   state.shop = newShop(); { const st = $('#m-stage'); if (st) { st.classList.remove('shut','mad'); } } renderShop(); state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null; state.ib = allBuffs();
   $('#end-screen').hidden = true; renderHud(); beginBattle(800);
