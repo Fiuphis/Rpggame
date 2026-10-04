@@ -435,3 +435,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v189: icones pequenos dos efeitos de item ativos (com duracao) embaixo da barra de cada heroi e selo FASE 2 ao lado da barra do boss.
 - v191: barra de vida/mana de cada heroi na sua propria altura (acima da pose mais alta dele); icones de efeito de item bem menores, entre a barra e a cabeca; texto de status acima da barra.
 - v192: faixa entre barra e cabeca reduzida ao minimo (34px do grid) sem cobrir os icones.
+- v193: na selecao de classe, o titulo e o botao ESCOLHA UMA CLASSE ficam por cima das nuvens (camada propria; some na transicao).
