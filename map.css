@@ -95,3 +95,7 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 .c-b button{width:132px;height:40px;padding:0;border:0;background:url(btn_wood.png) center/100% 100% no-repeat;image-rendering:pixelated;color:#fff0c8;font:bold 12px 'Pixelify Sans',monospace;text-shadow:1px 1px 0 #2a1a0c}
 #c-yes{background:url(btn_gold.png) center/100% 100% no-repeat;color:#2a1604;border:0;text-shadow:0 1px 0 rgba(255,236,170,.6)}
 .c-b button:active{transform:translateY(2px)}
+
+/* v213: ao sair do mapa, botões e os 4 painéis (título, bússola, legenda, frase) somem rápido, antes das nuvens fecharem */
+body.mleaving .back,body.mleaving .reset{opacity:0!important;pointer-events:none;transition:opacity .3s ease!important}
+body.mleaving .hud{opacity:0!important;transition:opacity .3s ease!important}

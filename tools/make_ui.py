@@ -39,3 +39,22 @@ frame('ui_box.png', 32, 32, 4, *DARK, GL, GD, brackets=True, grain=.08)
 frame('ui_chip.png', 24, 16, 3, (30, 24, 50), (13, 10, 26), G, GD)
 frame('ui_chip_hi.png', 24, 16, 3, (66, 48, 24), (34, 22, 10), GL, G)
 frame('ui_chip_red.png', 24, 16, 3, (72, 18, 32), (36, 8, 18), (214, 86, 96, 255), (126, 36, 52, 255))
+
+# ---- chips Tipo/Atributo (azul = tipo, roxo = demoniaco, cinza = normal) + icones 9x9 ----
+frame('ui_chip_blue.png', 24, 16, 3, (22, 40, 78), (10, 18, 44), (120, 190, 255, 255), (36, 84, 150, 255))
+frame('ui_chip_purple.png', 24, 16, 3, (52, 22, 84), (24, 10, 46), (200, 130, 255, 255), (96, 48, 150, 255))
+frame('ui_chip_grey.png', 24, 16, 3, (44, 42, 60), (22, 20, 34), (186, 182, 214, 255), (98, 94, 122, 255))
+def icon(name, rows, pal):
+    im = Image.new('RGBA', (len(rows[0]), len(rows)), (0, 0, 0, 0))
+    for y, r in enumerate(rows):
+        for x, ch in enumerate(r):
+            if ch in pal: im.putpixel((x, y), pal[ch])
+    im.save(name); print(name, im.size)
+ICON_SWORD = ['.......WW', '......WWS', '.....WWS.', '....WWS..', 'Y..WWS...', '.YWWS....', '..YY.....', '.BYY.....', 'B........']
+icon('icon_chip_sword.png', ICON_SWORD, {'W': (244, 241, 255, 255), 'S': (154, 163, 194, 255), 'Y': (255, 197, 78, 255), 'B': (122, 74, 34, 255)})
+FL = ['....R....', '...RR....', '...RRR.R.', '..RRORR..', '.RRRORRR.', '.RROYORR.', '.RROYORR.', '..RROORR.', '...RRRR..']
+icon('icon_chip_demon.png', FL, {'R': (170, 60, 255, 255), 'O': (214, 130, 255, 255), 'Y': (250, 220, 255, 255)})
+DM = ['....W....', '...WSW...', '..WSSSW..', '.WSSSSSW.', 'WSSSSSSSW', '.WSSSSSW.', '..WSSSW..', '...WSW...', '....W....']
+icon('icon_chip_normal.png', DM, {'W': (244, 241, 255, 255), 'S': (154, 149, 184, 255)})
+ST = ['....Y....', '....Y....', '...YWY...', 'YYYYWYYYY', '.YYWWWYY.', '..YWWWY..', '..YWYWY..', '.YY...YY.', '.Y.....Y.']
+icon('icon_chip_elem.png', ST, {'Y': (255, 170, 60, 255), 'W': (255, 240, 190, 255)})

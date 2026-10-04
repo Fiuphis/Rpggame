@@ -183,7 +183,7 @@ const SKILLS = {
     {id:'mana_atk', kind:'atk', name:'Ataque de Mana', desc:'Raio de mana. Dano normal.', mana:10, cd:0, mult:1},
     {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. O boss é fraco a FOGO (1,5x e queima por 2 perguntas); água, ar e terra ele ignora (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
     {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 35% do dano.', mana:10, cd:0, reduce:.35},
-    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento. Só ganha bônus contra o elemento certo.', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
+    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; fogo (fraqueza do boss) corta 55%.', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
   knight:[
@@ -262,6 +262,7 @@ const $ = s => document.querySelector(s);
 let __readUntil=0;
 const readMs=s=>Math.min(6000,900+50*String(s).length);
 const wait = ms => new Promise(r=>setTimeout(r,Math.max(ms,__readUntil-Date.now())));
+const sleep = ms => new Promise(r=>setTimeout(r,ms));   // espera fixa, sincronizada com a animação (wait() estica até o fim da leitura do aviso)
 const __seen={};
 function fresh(key,ms){const n=Date.now();if(__seen[key]&&n-__seen[key]<ms)return false;__seen[key]=n;return true}
 function scWrite(el, text, cls){ if (window.Paper) Paper.burst(10); el.className = el.className.split(' ')[0] + (cls ? ' ' + cls : ''); el.textContent = ''; const per = Math.max(10, Math.min(24, 1500 / Math.max(1, String(text).length)));
@@ -595,14 +596,15 @@ function renderHud(){
 // ===== Painel (pergunta / ação) =====
 function openPanel(){ $('#action-menu').hidden = true; $('#dynamic-question').classList.remove('exiting'); $('#dynamic-ui').hidden = false; $('#dynamic-question').hidden = false; }
 function openSkillMenu(){ $('#dynamic-question').hidden = true; $('#action-menu').hidden = true; const m = $('#skill-menu'); m.classList.remove('exiting'); m.hidden = false; $('#dynamic-ui').hidden = false; }
-const pc = b => `left:${b[0]}%;top:${b[1]}%;width:${b[2]}%;height:${b[3]}%`;
+const pc = (b, g = 0) => `left:${b[0] - g}%;top:${b[1] - g * .6}%;width:${b[2] + g * 2}%;height:${b[3] + g * 1.2}%`;
+const ATTR_ICON = {demon:'icon_chip_demon.png', none:'icon_chip_normal.png', elem:'icon_chip_elem.png'};
 function buildSkillFrame(panel, title, text, at, seconds, note){
   const M = MENU_META[panel], fr = $('#skm-frame'), L = $('#skm-layer');
-  fr.src = `menu_${panel}.png`; L.innerHTML = '';
-  const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
+  fr.src = `menu_${panel}${panel === 'elem' && window.__elemDef ? 'def' : ''}.png`; L.innerHTML = '';
+  const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box, /^sk-(tipo|attr)/.test(cls) ? .7 : 0); d.innerHTML = html; L.appendChild(d); return d; };
   if (M.title) add('sk-title' + (panel === 'target' ? ' t2' : ''), M.title, `<b>${title}</b><span>${text}</span>`);
-  if (M.tipo) add('sk-tipo', M.tipo, `<img src="icon_tipo_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
-  if (M.attr && at && at.attr !== 'demon') { const e = ELEMENTS[at.attr], d = add('sk-attr', M.attr, `<i></i><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // a arte traz o chip DEMONÍACO; para outros atributos ele é coberto
+  if (M.tipo) add('sk-tipo', M.tipo, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
+  if (M.attr && at) { const e = ELEMENTS[at.attr], k = at.attr === 'demon' ? 'demon' : at.attr === 'none' ? 'none' : 'elem', d = add('sk-attr ' + k, M.attr, `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // chip em pixel art cobre o da arte
   add('sk-time', M.time, `<span id="vote-timer" class="sk-time">${seconds}s</span>`);
   if (M.info && note) add('tp-note', M.info, `<i class="tn-ico">${note.icon ? `<img src="${pixIcon(note.icon)}" alt="">` : ''}</i><span>${note.text}</span>`);
   fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
@@ -612,8 +614,9 @@ function buildQuestionPanel(text, at, seconds, side){
   const Q = MENU_META.question, L = $('#dq-layer'); L.innerHTML = '';
   const add = (id, cls, box, html) => { const d = document.createElement('div'); if (id) d.id = id; d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
   const e = at ? ELEMENTS[at.attr] : null;
-  add('', 'dq-val', Q.tipo, at ? at.tipo : '');
-  const ad = add('', 'dq-val sm', Q.attr, at ? `<i class="dq-dot"></i>${e.name}` : ''); if (e) { ad.style.setProperty('--ec', e.color); ad.style.color = e.color; }
+  add('', 'dq-val tp', Q.tipo, at ? `<img src="icon_chip_sword.png" alt="">${at.tipo}` : '');
+  const ak = at ? (at.attr === 'demon' ? 'demon' : at.attr === 'none' ? 'none' : 'elem') : '';
+  const ad = add('', 'dq-val sm ' + ak, Q.attr, at ? `<img src="${ATTR_ICON[ak]}" alt="">${e.name}` : ''); if (e) { ad.style.setProperty('--ec', e.color); ad.style.color = e.color; }
   add('dq-text', '', Q.title, `<span></span>`).firstChild.textContent = text;
   add('', 'dq-coin', Q.coin, side ? side.reward : '0');
   if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 9.6, Q.title[1] + 2.2, 11, 7], `<small>RANK</small><b>${side.rank}</b>`);
@@ -630,8 +633,9 @@ function openMenu(){ $('#dynamic-question').hidden = true; const m = $('#action-
 function attackChips(at){
   if (!at) return '';
   const e = ELEMENTS[at.attr];
-  return `<span class="chip"><small>TIPO</small><b>${at.tipo}</b></span>` +
-         `<span class="chip" style="--ec:${e.color}"><small>ATRIBUTO</small><b><i class="dot"></i>${e.name}</b></span>`;
+  const k = at.attr === 'demon' ? 'demon' : at.attr === 'none' ? 'none' : 'elem';
+  return `<span class="chip tp"><small>TIPO</small><b><img src="icon_chip_sword.png" alt="">${at.tipo}</b></span>` +
+         `<span class="chip ${k}" style="--ec:${e.color}"><small>ATRIBUTO</small><b><img src="${ATTR_ICON[k]}" alt="">${e.name}</b></span>`;
 }
 async function closePanel(){
   const m = $('#action-menu'), q = $('#dynamic-question'), ui = $('#dynamic-ui');
@@ -822,20 +826,49 @@ const CHEST_CHANCE = .22, CHEST_FROM = 3, CHEST_GAP = 4, CHEST_TRAP = 18;
 const CHEST_FRAMES = [0, 1, 2, 3].map(i => `chest_f${i}.png`);
 CHEST_FRAMES.forEach(f => { const i = new Image(); i.src = f; });
 async function chestPlay(img, order, ms = 120){ for (const f of order) { img.src = CHEST_FRAMES[f]; await wait(ms); } }
+// Tempo parado: a cena escurece e fica cinza, os personagens congelam (relógio das animações em ~0) e só a arca brilha no chão.
+function rampTS(to, ms){
+  const from = window.__ts == null ? 1 : window.__ts, t0 = performance.now();
+  (function f(){ const u = Math.min(1, (performance.now() - t0) / ms); window.__ts = Math.max(.001, from + (to - from) * u); if (u < 1) requestAnimationFrame(f); })();
+  clearTimeout(window.__tsFix); window.__tsFix = setTimeout(() => { window.__ts = Math.max(.001, to); }, ms + 80);
+}
+function timeStop(img){
+  const g = $('#game'); if (state.tsOv) return;
+  const ov = document.createElement('div'); ov.className = 'ts-dim';
+  ov.innerHTML = '<i class="ts-beam"></i><i class="ts-floor"></i>';
+  g.appendChild(ov); state.tsOv = ov; g.classList.add('timestop');
+  requestAnimationFrame(() => ov.classList.add('on'));
+  rampTS(.001, 520);
+  const ring = (dl, rev) => { const r = document.createElement('i'); r.className = 'ts-ring' + (rev ? ' rev' : ''); r.style.animationDelay = dl + 'ms'; ov.appendChild(r); };
+  [0, 380, 760].forEach(d => ring(d));
+  for (let i = 0; i < 22; i++) {   // poeira dourada suspensa no ar, parada
+    const p = document.createElement('i'); p.className = 'ts-mote'; p.style.left = (22 + Math.random() * 56) + '%'; p.style.top = (34 + Math.random() * 30) + '%';
+    p.style.animationDelay = (Math.random() * 2400) + 'ms'; p.style.width = p.style.height = (3 + Math.floor(Math.random() * 3)) + 'px'; ov.appendChild(p);
+  }
+}
+async function timeResume(){
+  const g = $('#game'), ov = state.tsOv; if (!ov) return; state.tsOv = null;
+  const r = document.createElement('i'); r.className = 'ts-ring rev'; ov.appendChild(r);   // anel que fecha: o tempo volta
+  ov.classList.add('off'); rampTS(1, 700);
+  setTimeout(() => { ov.remove(); g.classList.remove('timestop'); }, 900);
+}
 function chestDust(img, n = 18){   // poeira de pixels que sobe e some
   const g = $('#game'), gr = g.getBoundingClientRect(), r = img.getBoundingClientRect();
   for (let i = 0; i < n; i++) {
     const d = document.createElement('i'); d.className = 'chest-dust';
     const x = (r.left - gr.left + r.width * (.1 + Math.random() * .8)) / gr.width * 100, y = (r.top - gr.top + r.height * (.2 + Math.random() * .7)) / gr.height * 100;
-    d.style.left = x + '%'; d.style.top = y + '%'; d.style.background = ['#ffd966','#e8b83a','#fff2a8','#aa7a3c','#94602d'][i % 5];
+    d.style.left = x + '%'; d.style.top = y + '%'; d.style.background = ['#ffd966','#e8b83a','#fff2a8','#ffe28a','#c8902c'][i % 5]; const sz = 5 + Math.floor(Math.random() * 7); d.style.width = d.style.height = sz + 'px'; d.style.boxShadow = '0 0 6px 1px rgba(255,210,90,.8)';
     g.appendChild(d);
-    d.animate([{transform:'translate(0,0) scale(1)', opacity:1}, {transform:`translate(${(Math.random() - .5) * 90}px,${-30 - Math.random() * 70}px) scale(.4)`, opacity:0}], {duration:700 + Math.random() * 500, easing:'ease-out', delay:Math.random() * 150}).finished.then(() => d.remove());
+    d.animate([{transform:'translate(0,0) scale(1)', opacity:1}, {transform:`translate(${(Math.random() - .5) * 130}px,${-50 - Math.random() * 120}px) scale(.35)`, opacity:0}], {duration:1000 + Math.random() * 700, easing:'ease-out', delay:Math.random() * 220}).finished.then(() => d.remove());
   }
 }
 async function chestVanish(img){   // some: treme, pisca, vira poeira
   await img.animate([{transform:'translate(-50%,0)'},{transform:'translate(-52%,0)'},{transform:'translate(-48%,0)'},{transform:'translate(-52%,0)'},{transform:'translate(-50%,0)'}], {duration:300}).finished;
   await img.animate([{filter:'brightness(1)'},{filter:'brightness(3)'},{filter:'brightness(1)'},{filter:'brightness(3)'}], {duration:360, easing:'steps(4)'}).finished;
-  chestDust(img); img.style.visibility = 'hidden'; await wait(900); img.remove();
+  img.animate([{filter:'brightness(3) drop-shadow(0 0 3cqw #ffd34d)', opacity:1}, {filter:'brightness(5) drop-shadow(0 0 6cqw #fff2a8)', opacity:.9}], {duration:260, fill:'forwards'});
+  chestDust(img, 46); setTimeout(() => chestDust(img, 30), 160);
+  await img.animate([{opacity:.9, transform:'translate(-50%,0)'}, {opacity:0, transform:'translate(-50%,-6%) scale(.92)'}], {duration:520, easing:'ease-in', fill:'forwards'}).finished;
+  img.style.visibility = 'hidden'; await sleep(650); timeResume(); await sleep(900); img.remove();
 }
 // Rodada de baú: ocupa a rodada inteira (sem pergunta). O grupo vota abrir ou ignorar; quem votou em abrir leva um item da loja ou uma armadilha.
 const CHEST_ITEM_P = .7, CHEST_RARE_P = .1;
@@ -846,6 +879,7 @@ async function runChestRound(){
   state.chestAt = state.round;
   const g = $('#game'), img = document.createElement('img');
   img.className = 'chest'; img.src = CHEST_FRAMES[0]; img.alt = ''; g.appendChild(img);
+  timeStop(img);
   showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Abrir ou ignorar? (sem pergunta nesta rodada)');
   while (state.pendingAction || state.voteLocked) await wait(300);
   state.chestVote = null;
@@ -863,7 +897,7 @@ async function runChestRound(){
   } else {                                   // armadilha: só para quem abriu
     const k = activeGroup, h = state.heroes[k];
     showBanner('ARMADILHA!', `a arca explode em quem abriu: -${CHEST_TRAP} de HP`); flashHit();
-    if (h.hp > 0) { const m = itemMit(k, CHEST_TRAP, false); h.hp = Math.max(0, h.hp - m.d); A.play(k, 'hurt', {light:true}); floatText(HERO_X[k], 56, `-${m.d}${m.note}`, '#ff6b81'); }
+    if (h.hp > 0) { const m = itemMit(k, CHEST_TRAP, false); h.hp = Math.max(0, h.hp - m.d); window.__ts = 1; A.play(k, 'hurt', {light:true}); setTimeout(() => { if (state.tsOv) window.__ts = .001; }, 900); floatText(HERO_X[k], 56, `-${m.d}${m.note}`, '#ff6b81'); }
     renderHud(); await wait(2100); hideBanner();
   }
   await chestPlay(img, [2, 1, 0], 130); await wait(250); await chestVanish(img);   // fecha e some
@@ -927,11 +961,11 @@ async function activateUlt(k){
   showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
   const tx = cleTarget ? HERO_X[cleTarget] / 100 * 1024 : null;
   const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:1098} : {}); A.sayRandom(k, 'ult', 1);
-  if (k === 'mage') { await wait(3000); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true); await wait(550); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', true); state.ultCd.mage = 1; }   // 1º estouro 1,5x + 2º estouro 2,5x = 4x
+  if (k === 'mage') { await sleep(2900); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true); await sleep(550); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', true); state.ultCd.mage = 1; }   // 1º estouro 1,5x + 2º estouro 2,5x = 4x
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
-    const t = cleTarget; await wait(2500);   // a luz desce sobre o alvo e só então a vida muda
+    const t = cleTarget; await sleep(2500);   // a luz desce sobre o alvo e só então a vida muda
     const h = state.heroes[t];
     if (h.hp <= 0) { h.hp = REVIVE_HP; floatText(HERO_X[t], 56, 'REVIVEU!', '#ffe08a'); }
     else { h.hp = Math.min(HERO_MAX_HP, h.hp + HEAL_AMOUNT); floatText(HERO_X[t], 56, `+${HEAL_AMOUNT}`, '#9fe3a8'); }
@@ -996,6 +1030,7 @@ async function chooseSkill(k){
     const sk = list[r.idx - 1]; let element = null;
     if (sk.elem) {
       const els = ['fire','water','air','earth'];
+      window.__elemDef = sk.kind === 'def';   // o seletor de elementos tem uma arte para ataque e outra para escudo
       const r2 = await runVote({
         menu:true, panel:'elem', title:'', text:'', seconds:ACTION_SECONDS, endsAt, attack:at,
         options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', slot:[2, 0]}])
@@ -1020,7 +1055,7 @@ async function gagDragon(){
   await wait(1700);
   showBanner('ALERTA: HITKILL!', 'se der certo, mata TODOS os heróis de uma vez');
   flashHit();
-  const al = HERO_ORDER.map(k => { const d = document.createElement('div'); d.className = 'gag-alert'; d.style.left = HERO_X[k] + '%'; d.innerHTML = '<b>☠</b><i>HITKILL</i>'; g.appendChild(d); return d; });
+  const al = HERO_ORDER.map(k => { const d = document.createElement('div'); d.className = 'gag-alert'; d.style.left = HERO_X[k] + '%'; d.innerHTML = '<b>!</b><i>HITKILL</i>'; g.appendChild(d); return d; });
   await Promise.all([cast, wait(2400)]);
   // puf: surge o goblin
   A.fx('boss', 'puff', {x:sp.x, y:sp.y - 30, n:18, r:80});
@@ -1193,7 +1228,7 @@ async function playRound(){
         if (ok) { sub = 'acertou, mas defendeu à toa!'; state.rage = Math.min(RAGE_MAX, state.rage + RAGE_WASTED); }
         else {
           const red = (sk.holy ? BOSS.weak.includes('holy') : sk.elem && BOSS.weak.includes(el)) && sk.bonus ? sk.bonus : sk.reduce;
-          hurt = Math.round(dmgBase * (1 - red)); sub = `errou e cortou ${Math.round(red * 100)}% do dano${red > sk.reduce ? ' (bônus sagrado)' : sk.elem ? ' (elemento sem efeito no boss)' : ''}`; }
+          hurt = Math.round(dmgBase * (1 - red)); sub = `errou e cortou ${Math.round(red * 100)}% do dano${red > sk.reduce ? (sk.holy ? ' (bônus sagrado)' : ` (bônus de ${ELEMENTS[el].name.toLowerCase()})`) : sk.elem ? ' (elemento sem efeito no boss)' : ''}`; }
       } else if (sk.kind === 'dodge') {
         if (ok) { sub = 'acertou, mas esquivou à toa!'; state.rage = Math.min(RAGE_MAX, state.rage + RAGE_WASTED); }
         else { sub = 'errou e esquivou de tudo!'; state.rage = Math.min(RAGE_MAX, state.rage + RAGE_DODGE); }
@@ -1247,7 +1282,7 @@ async function playRound(){
   if (state.bossHp <= 0) return endGame(true);
   if (state.burn > 0) {   // fogo: dano contínuo no boss (0,25x do ataque normal) por 2 perguntas
     const bd = Math.max(1, Math.round(ATTACK_DAMAGE * BURN_MULT)); state.burn--;
-    state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} 🔥`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
+    state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd}`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
     if (state.bossHp <= 0) return endGame(true);
   }
   await maybePhase2();
@@ -1313,7 +1348,7 @@ async function bossCounter(hero, dmg, defended){
 
 const pickAlive = () => { const l = HERO_ORDER.filter(k => state.heroes[k].hp > 0); return l[Math.floor(Math.random() * l.length)] || 'knight'; };
 function endGame(win){
-  state.over = true; clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
+  state.over = true; if (state.tsOv) timeResume(); clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
   if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }
   else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
   const o = $('#end-screen'); o.querySelector('h2').textContent = win ? 'VITÓRIA!' : 'DERROTA';

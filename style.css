@@ -479,7 +479,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sc-btn.mini{padding:4px 14px;font-size:clamp(10px,3vw,12px)}
 .sc-btn:active{transform:translateY(2px);box-shadow:inset 0 0 0 1px #c89a56}
 /* bau: quadros em pixel art */
-.chest{width:28%;top:25%}
+.chest{width:24%;top:44%}
 .chest-dust{position:absolute;z-index:44;width:6px;height:6px;image-rendering:pixelated;pointer-events:none}
 
 .sc-ui{inset:40px 12% 36px!important;gap:3px!important}
@@ -610,8 +610,50 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sk-card .tp-chips{bottom:12%}
 .sk-card .tp-desc{top:41%}
 /* v211: chip de atributo sobre a arte (cobre o DEMONÍACO pintado quando o ataque do boss é normal) */
-.sk-attr{display:flex;align-items:center;justify-content:center;gap:1.2cqw;box-sizing:border-box;background:#070512;border:.45cqw solid var(--ec);padding:0 1.4cqw;overflow:hidden}
-.sk-attr i{flex:none;width:1.5cqw;height:1.5cqw;background:var(--ec);transform:rotate(45deg)}
+
+/* v213: arca no chão, na frente do boss, com o tempo parado em volta */
+.chest{animation:chestIn .45s cubic-bezier(.2,1.4,.4,1) both,chestGlow 1.5s ease-in-out .45s infinite alternate}
+@keyframes chestGlow{from{filter:drop-shadow(0 0 1.2cqw #ffd34d) drop-shadow(0 0 3cqw rgba(255,200,60,.65)) drop-shadow(0 .8cqw 0 rgba(0,0,0,.55))}to{filter:drop-shadow(0 0 2cqw #fff2a8) drop-shadow(0 0 6cqw rgba(255,210,80,.95)) drop-shadow(0 .8cqw 0 rgba(0,0,0,.55))}}
+.ts-dim{position:absolute;inset:0;z-index:42;pointer-events:none;opacity:0;transition:opacity .55s ease;overflow:hidden;
+  background:radial-gradient(ellipse 46% 30% at 50% 52%,rgba(0,0,0,0) 0,rgba(4,2,14,.22) 60%,rgba(3,1,10,.55) 100%);
+  -webkit-backdrop-filter:grayscale(.85) brightness(.62) contrast(1.1) sepia(.2);backdrop-filter:grayscale(.85) brightness(.62) contrast(1.1) sepia(.2)}
+.ts-dim.on{opacity:1}.ts-dim.off{opacity:0;transition:opacity .8s ease}
+.ts-beam{position:absolute;left:50%;top:0;width:60%;height:56%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(255,226,140,0),rgba(255,226,140,.28) 70%,rgba(255,236,170,.4));clip-path:polygon(44% 0,56% 0,92% 100%,8% 100%);mix-blend-mode:screen}
+.ts-floor{position:absolute;left:50%;top:50%;width:62%;height:11%;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(255,214,100,.7),rgba(255,190,60,.25) 55%,transparent 72%);mix-blend-mode:screen;animation:tsPulse 1.5s ease-in-out infinite alternate}
+@keyframes tsPulse{from{opacity:.65}to{opacity:1}}
+.ts-ring{position:absolute;left:50%;top:53%;width:20%;aspect-ratio:1;border:3px solid rgba(255,222,120,.9);border-radius:50%;transform:translate(-50%,-50%) scale(.2) scaleY(.45);opacity:0;box-shadow:0 0 12px rgba(255,210,90,.8),inset 0 0 10px rgba(255,210,90,.5);animation:tsRing 2.4s steps(14) infinite}
+.ts-ring.rev{animation:tsRingIn .7s steps(8) 1 both}
+@keyframes tsRing{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) scaleY(.45)}12%{opacity:.9}100%{opacity:0;transform:translate(-50%,-50%) scale(5.2) scaleY(.45)}}
+@keyframes tsRingIn{0%{opacity:.95;transform:translate(-50%,-50%) scale(5) scaleY(.45)}100%{opacity:0;transform:translate(-50%,-50%) scale(.3) scaleY(.45)}}
+.ts-mote{position:absolute;background:#ffe28a;box-shadow:0 0 6px 1px rgba(255,210,90,.8);image-rendering:pixelated;opacity:0;animation:tsMote 3.2s ease-in-out infinite}
+@keyframes tsMote{0%,100%{opacity:0;transform:translateY(0)}50%{opacity:.95;transform:translateY(-6px)}}
+.game.timestop .bag-back{background:none}
+.chest-dust{border-radius:0}
+
+/* v213: chips Tipo/Atributo em pixel art (moldura 9-slice + icone 9x9 + fonte pixel) */
+.sk-tipo,.sk-attr,.dq-val,.chip{border:0;border-style:solid;border-width:.6cqw;border-image-slice:4 fill;border-image-repeat:stretch;image-rendering:pixelated;background:none;border-image-source:url(ui_chip_blue.png);box-sizing:border-box}
+.sk-attr.demon,.dq-val.demon,.chip.demon{border-image-source:url(ui_chip_purple.png)}
+.sk-attr.none,.dq-val.none,.chip.none,.sk-attr.elem,.dq-val.elem,.chip.elem{border-image-source:url(ui_chip_grey.png)}
+.sk-tipo,.sk-attr{display:flex;align-items:center;justify-content:center;gap:1cqw;padding:0 .4cqw;overflow:hidden}
+.sk-tipo img,.sk-attr img,.dq-val img,.chip img{height:1.9cqw;width:1.9cqw;image-rendering:pixelated;flex:none}
 .sk-attr div{display:flex;flex-direction:column;gap:.5cqw;line-height:1}
-.sk-attr small{font-size:1cqw;color:#9a8fc4;letter-spacing:.1cqw}
-.sk-attr b{font-size:1.45cqw;color:var(--ec);letter-spacing:.05cqw;white-space:nowrap}
+.sk-attr small{font-size:1cqw;color:#c9b8f0;letter-spacing:.1cqw}
+.sk-attr b{font-size:1.4cqw;color:var(--ec);letter-spacing:.05cqw;white-space:nowrap;text-shadow:0 .2cqw 0 #000}
+.sk-attr.demon b{color:#e6c2ff}
+.sk-tipo b,.sk-attr b,.dq-val,.chip b{text-shadow:0 .2cqw 0 #000}
+.dq-val{justify-content:center;gap:.8cqw;padding:0 .4cqw;color:#fff;text-shadow:0 .2cqw 0 #000}
+.dq-val.demon{color:#e6c2ff}
+.dq-val.none,.dq-val.elem{color:var(--ec,#fff)}
+.chip{padding:.2cqw .6cqw;border-left-width:.9cqw}
+.chip b{display:flex;align-items:center;gap:.6cqw}
+.sk-tipo,.sk-attr{gap:.6cqw}
+.sk-tipo img,.sk-attr img{height:1.5cqw;width:1.5cqw}
+.sk-tipo b{font-size:1.1cqw!important}.sk-tipo small,.sk-attr small{font-size:.85cqw!important}
+.sk-attr b{font-size:1.2cqw!important}
+.sk-tipo div{gap:.4cqw}
+/* painel de pergunta: a moldura ja vem na arte; so o valor (icone + texto) fica por cima */
+.dq-val{border:0!important;border-image:none!important;padding:0 .6cqw!important;justify-content:flex-start}
+.dq-val img{height:1.4cqw;width:1.4cqw;margin-right:.5cqw}
+.dq-val.tp img{display:none}
+.dq-val.sm{font-size:1.3cqw}
+.dq-val img{display:none}
