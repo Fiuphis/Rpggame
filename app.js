@@ -505,13 +505,28 @@ function buildHud(){
     const s = document.createElement('div'); s.className = 'hero-status'; s.hidden = true;
     s.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD_Y + HUD.heroes[k][3] + 8)};width:${pctX(150)}`; $('#game').appendChild(s); bars['st_' + k] = s;
   });
+  HERO_ORDER.forEach(k => {   // ícones pequenos dos efeitos de item ativos (com a duração)
+    const c = document.createElement('div'); c.className = 'hero-chips';
+    c.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD_Y + HUD.heroes[k][3] + 26)};width:${pctX(205)}`; $('#game').appendChild(c); bars['ch_' + k] = c;
+  });
+  { const p2 = document.createElement('div'); p2.className = 'p2-badge'; p2.hidden = true; p2.textContent = 'FASE 2'; $('#game').appendChild(p2); bars.p2 = p2; }
   const mk = document.createElement('div'); mk.className = 'boss-marks'; mk.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(122)}`; $('#game').appendChild(mk); bars.marks = mk;
   const r = document.createElement('div'); r.className = 'rage';
   r.style.cssText = `left:${pctX(HUD.rage.x - 62)};top:${pctY(HUD.rage.y)};width:${pctX(HUD.rage.w + 62)};height:${pctY(HUD.rage.h)}`;
   r.innerHTML = '<span class="rage-label">FÚRIA</span><div class="rage-seg">' + '<b></b>'.repeat(RAGE_MAX) + '</div>';
   $('#game').appendChild(r); bars.rage = r;
 }
+const CHIP_DEF = [['shield','item_iron_shield.png','escudo'],['amulet','item_amulet.png','amuleto'],['helm','item_helm.png','elmo'],['smoke','item_smokebomb.png','fumaça'],['herb','item_herb.png','erva'],['tonic','item_tonic.png','tônico'],['lens','item_lens.png','lente'],['powder','item_powder.png','pólvora'],['dice','item_dice.png','dado'],['bomb','item_lightbomb.png','bomba'],['lucky','item_luckycoin.png','sorte'],['blade','item_blade.png','lâmina']];
+function renderChips(){
+  HERO_ORDER.forEach(k => {
+    const el = bars['ch_' + k]; if (!el) return; const b = state.ib[k], dead = state.heroes[k].hp <= 0;
+    const html = dead ? '' : CHIP_DEF.filter(([f]) => b[f] > 0).map(([f, ic, nm]) => `<span class="bf" title="${nm}"><img src="${ic}" alt="${nm}"><i>${f === 'blade' ? '+' + b[f] : f === 'bomb' ? '!' : b[f] > 1 || ['herb','amulet','helm','smoke','tonic','lucky'].includes(f) ? b[f] : ''}</i></span>`).join('');
+    if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = html; }
+  });
+  if (bars.p2) bars.p2.hidden = !state.phase2;
+}
 function renderHud(){
+  renderChips();
   const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x3' : '', knight: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', assassin: ''};
   HERO_ORDER.forEach(k => { const el = bars['st_' + k]; if (!el) return; el.textContent = st[k]; el.hidden = !st[k]; el.classList.toggle('bad', k === 'knight' && b.tired > 0); });
   A.setAura('boss', state.burn > 0 ? 'orange' : state.prepNext ? 'charge' : (state.rage >= RAGE_MAX || state.hardNext) ? 'rage' : null);
