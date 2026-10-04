@@ -155,6 +155,7 @@ const skSay = (k, sk) => ({heavy:'heavy', super:'heavy', holy_atk:'holy', mana_a
 const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a6cff' : sk.elem && el ? ELEMENTS[el].color : '#4da3ff';
 
 const state = {
+  shop:null,
   gold:0, question:0, answered:false,
   inventory:saved.inventory, pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
@@ -269,10 +270,8 @@ async function resolveVote(result){
     if (done) { state.ultDone = null; done(result === 'yes'); }
     return;
   }
-  if (result === 'yes') msg = executeBuy(action.item) ? 'Comprada!' : 'Não foi possível.';
-  else if (result === 'no') msg = 'Recusado.';
-  else if (result === 'tie') msg = 'Empate. Nada comprado.';
-  else msg = 'Tempo esgotado.';
+  if (result === 'yes') msg = executeBuy(action.item, action.slot) ? 'Comprada!' : 'Não foi possível.';
+  else { msg = result === 'no' ? 'Recusado.' : result === 'tie' ? 'Empate. Nada comprado.' : 'Tempo esgotado.'; mBubble(msay('no')); }
   showMerchantText(msg);
   await wait(1200);
   closeMerchantVote();
@@ -283,18 +282,86 @@ async function askUlt(hero){
   while (state.pendingAction || state.voteLocked) await wait(300);
   return new Promise(res => { state.ultDone = res; showBanner(`ULTIMATE PRONTO: ${GROUPS[hero]}`, ULT_NAME[hero]); openMerchantVote('Usar ULTIMATE?', {type:'ult', hero}); }).then(r => { hideBanner(); return r; });
 }
-function requestBuy(type){
+
+// ===== Mercador vivo: humor, falas, loja que fecha, prateleira que repõe itens =====
+const SHOP_POOL = ['hp','mana'];            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
+const SHOP_SLOTS = 4, SHOP_CLOSE_AT = 6, SHOP_CLOSED_Q = 3;   // 6 aberturas sem comprar → fecha por 3 perguntas
+const MSAY = {
+  hi:['O que deseja?','Bem-vindo, viajante!','Olhe à vontade...','Em que posso ajudar?','Tenho o que você precisa.','Mercadoria de primeira!'],
+  meh:['Vai comprar alguma coisa?','Já olhou o bastante?','Hm... decidiu algo?','Pode escolher, sem pressa... quase.'],
+  bad:['Não vai comprar nada, não?','Só vem olhar, é?','Meu tempo vale ouro, sabia?','De novo você...'],
+  mad:['Você está me fazendo perder o meu tempo!','Compra ou sai da frente!','Isto aqui não é museu!'],
+  close:['CHEGA! Estou fechando a loja!','Já deu! Loja FECHADA!'],
+  back:['Voltei! O que vai ser?','Reabri. Vai comprar agora?'],
+  sold:['Negócio fechado!','Boa escolha!','Volte sempre!'],
+  no:['Hmpf... indecisos.','Pensem rápido, não tenho o dia todo.'],
+  stock:['Chegou mercadoria nova!','Acabei de repor a prateleira.'],
+  shut:['Fechado! Voltem depois.','A loja está fechada!','Sem mercador, sem compra.']
+};
+const msayLast = {};
+function msay(kind){ const l = MSAY[kind]; let t; do { t = l[Math.floor(Math.random() * l.length)]; } while (l.length > 1 && t === msayLast[kind]); msayLast[kind] = t; return t; }
+function newShop(){ return {slots:Array.from({length:SHOP_SLOTS}, (_, i) => i < 2 ? 'hp' : 'mana'), opens:0, closed:0}; }
+let bubbleT = null;
+function mBubble(text, mad){
+  const b = $('#m-bubble'); if (!b) return; clearTimeout(bubbleT);
+  b.hidden = false; b.classList.toggle('mad', !!mad); b.textContent = text; b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+  bubbleT = setTimeout(() => { b.hidden = true; }, 2300 + text.length * 45);
+}
+function mPuff(){ const p = $('#m-puffs'); if (!p) return; for (let i = 0; i < 6; i++) { const d = document.createElement('i'); d.className = 'm-puff'; d.style.left = (Math.random() * 60) + '%'; d.style.top = (Math.random() * 20) + '%'; d.style.animationDelay = (i * 70) + 'ms'; p.appendChild(d); setTimeout(() => d.remove(), 1500); } }
+function renderShop(opt = {}){
+  const bp = $('#bag-panel'); bp.classList.toggle('shut', state.shop.closed > 0);
+  state.shop.slots.forEach((type, i) => {
+    const b = bp.querySelector('.shop.s' + i); if (!b) return; b.innerHTML = '';
+    b.disabled = !type;
+    if (opt.sold === i && opt.soldType) b.insertAdjacentHTML('beforeend', `<img class="s-ghost" src="${ITEMS[opt.soldType].icon}" alt="">`);
+    if (!type) return;
+    const it = ITEMS[type];
+    b.insertAdjacentHTML('beforeend', `<img class="s-icon${opt.arrive && opt.arrive.includes(i) ? ' arrive' : ''}" src="${it.icon}" alt=""><img class="s-coin" src="icon_coin.png" alt=""><b class="s-price">${it.price}</b>`);
+    b.setAttribute('aria-label', 'Comprar ' + it.name);
+  });
+}
+function mMood(n){ const st = $('#m-stage'); if (!st) return; st.classList.toggle('mad', n >= 4); st.style.setProperty('--mrage', n >= 6 ? .85 : n === 5 ? .6 : .3); }
+function merchantOpened(){        // jogador abriu a mochila/loja
+  const sh = state.shop;
+  if (sh.closed > 0) { mBubble(msay('shut')); return; }
+  sh.opens++; const n = sh.opens;
+  mMood(n);
+  if (n >= SHOP_CLOSE_AT) { mBubble(msay('close'), true); setTimeout(shopClose, 1900); return; }
+  mBubble(msay(n <= 2 ? 'hi' : n === 3 ? 'meh' : n === 4 ? 'bad' : 'mad'), n >= 5);
+}
+function shopClose(){
+  const sh = state.shop; if (sh.closed > 0) return;
+  sh.closed = SHOP_CLOSED_Q; sh.opens = 0;
+  mPuff(); setTimeout(() => { $('#m-stage').classList.add('shut'); $('#m-stage').classList.remove('mad'); renderShop(); }, 380);
+  toast(`O Mercador fechou a loja por ${SHOP_CLOSED_Q} perguntas.`);
+}
+function shopTick(){               // fim de cada pergunta: reabre a loja e repõe itens
+  const sh = state.shop;
+  if (sh.closed > 0) {
+    sh.closed--;
+    if (sh.closed === 0) { mPuff(); $('#m-stage').classList.remove('shut'); mMood(0); renderShop(); toast('O Mercador reabriu a loja.'); if (!$('#bag-panel').hidden) mBubble(msay('back')); }
+    return;
+  }
+  const arrive = [];
+  sh.slots.forEach((t, i) => { if (!t) { sh.slots[i] = SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)]; arrive.push(i); } });
+  if (arrive.length) { renderShop({arrive}); if (!$('#bag-panel').hidden) mBubble(msay('stock')); }
+}
+function requestBuy(slot){
+  if (state.shop.closed > 0) { toast('A loja está fechada.'); mBubble(msay('shut')); return; }
+  const type = state.shop.slots[slot]; if (!type) { toast('Prateleira vazia.'); return; }
   const item = ITEMS[type];
   if (state.pendingAction || state.voteLocked) { toast('Já existe uma votação aberta.'); return; }
   if (state.gold < item.price) { toast('Moedas insuficientes.'); return; }
   if (state.inventory.length >= 6) { toast('Mochila cheia.'); return; }
-  openMerchantVote(item.ask, {type:'buy', item:type});
+  openMerchantVote(item.ask, {type:'buy', item:type, slot});
 }
-function executeBuy(type){
+function executeBuy(type, slot){
   const item = ITEMS[type];
+  if (state.shop.closed > 0 || state.shop.slots[slot] !== type) { toast('Item indisponível.'); return false; }
   if (state.gold < item.price) { toast('Moedas insuficientes.'); return false; }
   if (state.inventory.length >= 6) { toast('Mochila cheia.'); return false; }
   state.gold -= item.price; state.inventory.push(type);
+  state.shop.slots[slot] = null; state.shop.opens = 0; mMood(0); renderShop({sold:slot, soldType:type}); mBubble(msay('sold'));
   persist(); renderGold(); renderInventoryHits();
   return true;
 }
@@ -916,6 +983,7 @@ async function playRound(){
     } }
 
   // ---- 4) fim da rodada: recargas, mana, fúria e duração dos efeitos
+  shopTick();
   if (state.burn > 0) {   // fogo: dano contínuo no boss (0,25x do ataque normal) por 2 perguntas
     const bd = Math.max(1, Math.round(ATTACK_DAMAGE * BURN_MULT)); state.burn--;
     state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} 🔥`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
@@ -1006,7 +1074,7 @@ function restartRun(){
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   Object.assign(state, {sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
-  state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
+  state.shop = newShop(); { const st = $('#m-stage'); if (st) { st.classList.remove('shut','mad'); } } renderShop(); state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null;
   $('#end-screen').hidden = true; renderHud(); beginBattle(800);
 }
 
@@ -1039,14 +1107,14 @@ $('#back-lobby').addEventListener('click',()=>{LOBBY.leave();location.href='inde
 $('#hitmap').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   const action=b.dataset.action;
-  if(action==='buy')requestBuy(b.dataset.item);
 });
 function setBag(on){ $('#bag-panel').hidden = !on; $('#bag-back').hidden = !on; $('#bag-toggle').setAttribute('aria-expanded', on); }
-$('#bag-toggle').addEventListener('click', () => setBag($('#bag-panel').hidden));
-$('#bag-back').addEventListener('click', () => setBag(false));
-$('#bag-panel').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.action === 'buy') requestBuy(b.dataset.item); });
+$('#bag-toggle').addEventListener('click', () => { const op = $('#bag-panel').hidden; setBag(op); if (op) merchantOpened(); else $('#m-bubble').hidden = true; });
+$('#bag-back').addEventListener('click', () => { setBag(false); $('#m-bubble').hidden = true; });
+$('#bag-panel').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.action === 'buy') requestBuy(+b.dataset.slot); });
 $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote-choice');if(b)vote(b.dataset.vote)});
 
+state.shop = newShop(); renderShop();
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
 $('#restart').addEventListener('click',restartRun);
 $('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;location.href='map.html'+location.search});

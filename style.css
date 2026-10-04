@@ -228,10 +228,10 @@
 .inventory-hit:nth-child(4){left:9.30%;top:55.99%;width:11.87%;height:26.92%}
 .inventory-hit:nth-child(5){left:22.90%;top:55.99%;width:12.02%;height:26.92%}
 .inventory-hit:nth-child(6){left:36.49%;top:55.99%;width:11.87%;height:26.92%}
-.bag-panel .shop.hp1{left:52.01%;top:49.93%;width:9.67%;height:34.99%}
-.bag-panel .shop.hp2{left:62.99%;top:49.93%;width:9.41%;height:34.99%}
-.bag-panel .shop.mana1{left:73.44%;top:49.93%;width:8.89%;height:34.99%}
-.bag-panel .shop.mana2{left:83.01%;top:49.93%;width:8.73%;height:34.99%}
+.bag-panel .shop.s0{left:52.01%;top:49.93%;width:9.67%;height:34.99%}
+.bag-panel .shop.s1{left:62.99%;top:49.93%;width:9.41%;height:34.99%}
+.bag-panel .shop.s2{left:73.44%;top:49.93%;width:8.89%;height:34.99%}
+.bag-panel .shop.s3{left:83.01%;top:49.93%;width:8.73%;height:34.99%}
 .bag-panel .hit{position:absolute;border:0;background:transparent;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0;padding:0}
 .bag-panel .hit:active{background:rgba(255,224,138,.18)}
 .merchant-vote{position:absolute;left:74.23%;top:29.88%;width:17.51%;height:14.27%;padding:0;color:#eee5f7;font-family:monospace;display:flex;flex-direction:column;gap:.4cqw;overflow:hidden}
@@ -354,3 +354,45 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .dq-diff{flex-direction:column;gap:0}
 .dq-diff small{font-size:.95cqw;letter-spacing:.15cqw;opacity:.9;line-height:1}
 .dq-diff b{font-family:"Pixelify Sans",monospace;font-size:3cqw;line-height:.9;letter-spacing:0}
+
+/* v170: mercador vivo — luz mexendo, humor, placa FECHADO e prateleira que repõe itens */
+.m-stage{position:absolute;left:52.2%;top:19.5%;width:20.1%;height:25%;overflow:hidden;pointer-events:none;z-index:2}
+.m-stage>*{position:absolute}
+.m-port{inset:0;background:url(bag_panel2.png) 65.3% 26% / 498% 401% no-repeat;transform-origin:50% 100%;animation:mbreath 3.6s ease-in-out infinite alternate}
+@keyframes mbreath{from{transform:scale(1) translateY(0)}to{transform:scale(1.02) translateY(-.4%)}}
+.m-stage.mad .m-port{animation:mshake .22s linear infinite}
+@keyframes mshake{0%,100%{transform:translate(0,0)}25%{transform:translate(1.2%,-.8%)}50%{transform:translate(-1%,.6%)}75%{transform:translate(.8%,.8%)}}
+.m-light{left:-8%;top:18%;width:50%;height:92%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,214,120,.9),rgba(255,150,50,.38) 46%,transparent);mix-blend-mode:screen;animation:mflick 1.7s ease-in-out infinite}
+@keyframes mflick{0%,100%{opacity:.85;transform:translate(0,0) scale(1)}18%{opacity:.55;transform:translate(2%,-2%) scale(.9)}42%{opacity:1;transform:translate(-2%,2%) scale(1.1)}66%{opacity:.68;transform:translate(1%,1%) scale(.95)}84%{opacity:.95;transform:translate(-1%,-1%) scale(1.05)}}
+.m-sway{inset:0;background:linear-gradient(100deg,transparent 0 28%,rgba(255,176,80,.26) 46%,transparent 64% 100%);background-size:240% 100%;mix-blend-mode:screen;animation:msway 4.8s ease-in-out infinite alternate}
+@keyframes msway{from{background-position:0 0}to{background-position:100% 0}}
+.m-shade{inset:0;background:linear-gradient(90deg,rgba(0,0,0,.34),transparent 38%,rgba(0,0,0,.28));animation:mshade 2.9s ease-in-out infinite alternate}
+@keyframes mshade{from{opacity:.35}to{opacity:1}}
+.m-rage{inset:0;background:radial-gradient(circle at 72% 38%,rgba(255,40,30,.65),transparent 72%);mix-blend-mode:screen;opacity:0;transition:opacity .5s}
+.m-stage.mad .m-rage{opacity:var(--mrage,.5);animation:mrage .5s ease-in-out infinite alternate}
+@keyframes mrage{from{filter:brightness(.8)}to{filter:brightness(1.3)}}
+.m-closed{left:22%;top:0;right:0;bottom:0;opacity:0;transition:opacity .7s;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}
+.m-empty{position:absolute;inset:0;background:linear-gradient(180deg,#1a0b12,#08050c 60%,#050309)}
+.m-sign{position:absolute;left:28%;top:-6%;width:70%;image-rendering:pixelated;transform-origin:50% 0;animation:msign 3.2s ease-in-out infinite alternate}
+@keyframes msign{from{transform:rotate(-3.5deg)}to{transform:rotate(3.5deg)}}
+.m-stage.shut .m-closed{opacity:1}
+.m-puffs{inset:0}
+.m-puff{position:absolute;width:40%;height:80%;border-radius:50%;background:radial-gradient(closest-side,rgba(60,20,80,.9),rgba(30,8,44,.5) 60%,transparent);animation:mpuff 1.1s ease-out forwards}
+@keyframes mpuff{0%{opacity:0;transform:translateY(20%) scale(.4)}35%{opacity:1}100%{opacity:0;transform:translateY(-35%) scale(1.5)}}
+.m-candle{position:absolute;top:66%;width:5%;height:14%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,200,90,.85),rgba(255,130,40,.3) 55%,transparent);mix-blend-mode:screen;pointer-events:none;z-index:3;animation:mcandle .9s ease-in-out infinite alternate}
+.m-candle.l{left:2.2%}.m-candle.r{right:2.4%;animation-delay:-.4s}
+@keyframes mcandle{0%{opacity:.6;transform:scale(.85) translateX(-3%)}35%{opacity:1;transform:scale(1.1) translateX(3%)}70%{opacity:.7;transform:scale(.92)}100%{opacity:.95;transform:scale(1.05) translateX(-2%)}}
+.m-bubble{position:absolute;left:51.5%;bottom:101%;width:46%;z-index:6;padding:1.6cqw 2cqw;background:#0b0810;border:.5cqw solid #c89a3c;box-shadow:0 0 0 .5cqw #05040a,.7cqw .7cqw 0 .5cqw rgba(0,0,0,.6);font:700 3cqw/1.15 'Pixelify Sans',monospace;color:#f4e7c4;text-align:center;pointer-events:none;animation:mpop .22s steps(4) both}
+.m-bubble::after{content:"";position:absolute;left:22%;top:100%;border:1.6cqw solid transparent;border-top-color:#c89a3c;border-bottom:0}
+.m-bubble.mad{color:#ff8a7a;border-color:#d8402e;animation:mpop .22s steps(4) both,mbub .2s linear infinite}
+.m-bubble.mad::after{border-top-color:#d8402e}
+@keyframes mpop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes mbub{0%,100%{margin-left:0}50%{margin-left:.5cqw}}
+.shop .s-icon{position:absolute;left:19%;top:15%;width:62%;height:45%;object-fit:contain;pointer-events:none}
+.shop .s-coin{position:absolute;left:22%;top:75%;width:22%;height:17%;object-fit:contain;pointer-events:none}
+.shop .s-price{position:absolute;left:50%;top:74%;width:40%;height:19%;display:flex;align-items:center;justify-content:center;font:700 3.2cqw Georgia,serif;color:#f3e6bf;pointer-events:none}
+.shop .s-icon.arrive{animation:sarrive .6s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes sarrive{from{transform:translateY(-60%) scale(.4);opacity:0;filter:brightness(2.5)}to{transform:none;opacity:1;filter:none}}
+.shop .s-ghost{position:absolute;left:19%;top:15%;width:62%;height:45%;object-fit:contain;pointer-events:none;animation:sgone .55s ease-in forwards}
+@keyframes sgone{0%{transform:none;opacity:1;filter:brightness(1.8)}100%{transform:translateY(-70%) scale(.3);opacity:0}}
+.bag-panel.shut .shop{opacity:.35;filter:grayscale(.85)}
