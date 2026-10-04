@@ -423,3 +423,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v178: afinidade de itens: Maga (Ampulheta, Pergaminho, Elixir, Moeda), Guerreiro (Lamina, Tonico, Bomba de Luz, Erva), Tanque (Escudo, Elmo, Amuleto), Assassina (Lente, Dado, Polvora, Fumaca) ganham +50% de efeito.
 - v179: itens podem ser dados a aliados (pocoes, Escudo, Amuleto, Elmo, Fumaca, Erva, Elixir, Pena de Fenix revive aliado caido); buffs agora sao por heroi e a afinidade vale para quem recebe.
 - v180: itens iguais empilham ate 3 por slot da mochila (numero no canto).
+- v181: errar pergunta rank S ou SS deixa a Onda Sombria 50% mais forte nessa rodada e enche a furia (+1 por heroi que errou).
