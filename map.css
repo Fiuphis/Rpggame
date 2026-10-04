@@ -84,3 +84,4 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 .p-go:disabled{opacity:1;background:url(enter_btn_off.png) center/100% 100% no-repeat;border:0;color:#8d84a3;text-shadow:0 2px 0 #14101c;cursor:default}
 
 .fogin .panel{display:none}
+.panel{bottom:max(96px,calc(env(safe-area-inset-bottom) + 84px))}
