@@ -89,7 +89,13 @@ const CAT_LABEL = {heal:'CURA', def:'DEFESA', atk:'ATAQUE', util:'UTILIDADE'};
 const newStats = () => ({rank:{1:[0,0],2:[0,0],3:[0,0],4:[0,0],5:[0,0]}, gained:0, spent:0, used:0});   // por rank: [acertos, erros]
 const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, luckyAmt:3, dice:0, bomb:0});
 // Afinidade: o herói indicado ganha +50% no efeito do item (duração, valor ou cargas).
-const AFFINITY = {mage:['hourglass','scroll','elixir','luckycoin'], knight:['blade','tonic','lightbomb','herb'], tank:['iron_shield','helm','amulet'], assassin:['lens','dice','powder','smokebomb']};
+// Afinidade (+50% no efeito) pelo papel de cada heroi: Maga = mana/magia e pouca defesa; Guerreiro = dano e furia; Tanque = defesa pesada e martelo; Cleriga = cura, luz e fe.
+const AFFINITY = {
+  mage:['hourglass','scroll','elixir','amulet','smokebomb'],        // recarga/mana, ultimate arcano, mana do elixir, amuleto magico, fumaça (esquiva) p/ quem tem pouca defesa
+  knight:['lens','tonic','blade','dice','helm'],                    // critico, furia, espada, aposta de berserker, elmo de combate
+  tank:['iron_shield','helm','amulet','powder'],                    // escudo, armadura, protecao, polvora no martelo
+  assassin:['herb','elixir','lightbomb','phoenix','luckycoin']      // erva, cura total, luz sagrada, ressurreicao, bencao da sorte (Cleriga)
+};
 Object.entries(AFFINITY).forEach(([h, l]) => l.forEach(k => { (ITEMS[k].aff = ITEMS[k].aff || []).push(h); }));
 const hasAff = (type, hero) => !!(ITEMS[type].aff && ITEMS[type].aff.includes(hero || activeGroup));
 const allBuffs = () => ({mage:newBuffs(), knight:newBuffs(), tank:newBuffs(), assassin:newBuffs()});
