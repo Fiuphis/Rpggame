@@ -469,7 +469,7 @@ function startBots(){
 }
 
 // ===== HUD dinâmico: barras de vida/mana dos heróis, vida do boss e fúria =====
-const HUD_W = 220, HUD_GAP = 40;   // HUD_GAP: faixa entre a barra e a cabeça (ícone de ult + chips de item)
+const HUD_W = 220, HUD_GAP = 34;   // HUD_GAP: faixa entre a barra e a cabeça (ícone de ult + chips de item)
 const HEAD_TOP = {mage:725, knight:692, tank:684, assassin:792};   // topo da pose mais alta de cada herói (medido, px do grid)
 const hudY = k => Math.round(HEAD_TOP[k] - HUD_GAP - HUD_W * HUD_IMG[k].h / HUD_IMG[k].w);   // barra pequena: largura (px do grid 1024) e posição vertical
 const HUD_IMG = {"mage": {"w": 1419, "h": 259, "hp": [0.2276, 0.7498, 0.3745, 0.1544], "mp": [0.2276, 0.7498, 0.6873, 0.1583]}, "knight": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.3211, 0.1626], "mp": [0.2275, 0.7493, 0.6585, 0.1585]}, "tank": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.313, 0.1585], "mp": [0.2275, 0.7493, 0.6463, 0.1585]}, "assassin": {"w": 1421, "h": 241, "hp": [0.2273, 0.7488, 0.2822, 0.1618], "mp": [0.2273, 0.7488, 0.6224, 0.1618]}};   // proporção e interior das barras (frações) de hud_<herói>.png
@@ -509,7 +509,7 @@ function buildHud(){
   });
   HERO_ORDER.forEach(k => {   // ícones pequenos dos efeitos de item ativos (com a duração)
     const c = document.createElement('div'); c.className = 'hero-chips';
-    c.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD.heroes[k][1] + HUD.heroes[k][3] + 4)};width:${pctX(186)}`; $('#game').appendChild(c); bars['ch_' + k] = c;
+    c.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD.heroes[k][1] + HUD.heroes[k][3] + 3)};width:${pctX(186)}`; $('#game').appendChild(c); bars['ch_' + k] = c;
   });
   { const p2 = document.createElement('div'); p2.className = 'p2-badge'; p2.hidden = true; p2.textContent = 'FASE 2'; $('#game').appendChild(p2); bars.p2 = p2; }
   const mk = document.createElement('div'); mk.className = 'boss-marks'; mk.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(122)}`; $('#game').appendChild(mk); bars.marks = mk;
