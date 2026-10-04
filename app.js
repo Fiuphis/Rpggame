@@ -8,8 +8,8 @@ const DIFFICULTY = {   // ranks: 1=C (mais fácil) … 5=SS (mais difícil)
   1:{label:'RANK C',  rank:'C',  type:'ATAQUE FÍSICO',  damage:18, reward:1, aoe:3},
   2:{label:'RANK B',  rank:'B',  type:'ATAQUE FÍSICO',  damage:28, reward:2, aoe:5},
   3:{label:'RANK A',  rank:'A',  type:'ATAQUE SOMBRIO', damage:38, reward:3, aoe:7},
-  4:{label:'RANK S',  rank:'S',  type:'ATAQUE MÍSTICO', damage:50, reward:4, aoe:9},
-  5:{label:'RANK SS', rank:'SS', type:'ATAQUE MÍSTICO', damage:64, reward:5, aoe:12}
+  4:{label:'RANK S',  rank:'S',  type:'ATAQUE MÍSTICO', damage:50, reward:5, aoe:9},
+  5:{label:'RANK SS', rank:'SS', type:'ATAQUE MÍSTICO', damage:64, reward:8, aoe:12}
 };
 const HARD_MIN = 4;   // rank S e SS contam como "difíceis" (carregam o especial, fúria etc.)
 const isHardQ = q => q && q.difficulty >= HARD_MIN;
@@ -43,9 +43,9 @@ const ITEMS = {
   hp_s:{name:'Poção Pequena de HP', ask:'Poção pequena de HP?', price:5, kind:'hp', amount:20, icon:'potion_hp_s.png'},
   hp:{name:'Poção de HP', ask:'Comprar poção de HP?', price:10, kind:'hp', amount:35, icon:'potion_hp.png'},
   hp_l:{name:'Poção Grande de HP', ask:'Poção grande de HP?', price:18, kind:'hp', amount:70, icon:'potion_hp_l.png'},
-  mana_s:{name:'Poção Pequena de Mana', ask:'Poção pequena de mana?', price:2, kind:'mp', amount:20, icon:'potion_mana_s.png'},
-  mana:{name:'Poção de Mana', ask:'Comprar poção de mana?', price:3, kind:'mp', amount:35, icon:'potion_mana.png'},
-  mana_l:{name:'Poção Grande de Mana', ask:'Poção grande de mana?', price:6, kind:'mp', amount:70, icon:'potion_mana_l.png'},
+  mana_s:{name:'Poção Pequena de Mana', ask:'Poção pequena de mana?', price:4, kind:'mp', amount:20, icon:'potion_mana_s.png'},
+  mana:{name:'Poção de Mana', ask:'Comprar poção de mana?', price:6, kind:'mp', amount:35, icon:'potion_mana.png'},
+  mana_l:{name:'Poção Grande de Mana', ask:'Poção grande de mana?', price:10, kind:'mp', amount:70, icon:'potion_mana_l.png'},
   // defesa
   iron_shield:{name:'Escudo de Ferro', ask:'Comprar Escudo de Ferro?', price:12, kind:'fx', fx:'shield', icon:'item_iron_shield.png', info:'Bloqueia por completo o próximo golpe que você receber.'},
   amulet:{name:'Amuleto Protetor', ask:'Comprar Amuleto Protetor?', price:14, kind:'fx', fx:'amulet', icon:'item_amulet.png', info:'Reduz em 30% o dano que você recebe por 3 rodadas.'},
@@ -64,9 +64,9 @@ const ITEMS = {
   hourglass:{name:'Ampulheta do Tempo', ask:'Comprar Ampulheta do Tempo?', price:14, kind:'fx', fx:'hourglass', icon:'item_hourglass.png', info:'Zera a recarga de todas as suas habilidades e dá +20 de mana.'},
   luckycoin:{name:'Moeda da Sorte', ask:'Comprar Moeda da Sorte?', price:6, kind:'fx', fx:'lucky', icon:'item_luckycoin.png', info:'+3 moedas a cada acerto nas próximas 3 perguntas.'},
   // raros
-  phoenix:{name:'Pena de Fênix', ask:'Comprar Pena de Fênix?', price:30, kind:'fx', fx:'phoenix', rare:true, icon:'item_phoenix.png', info:'RARO: revive seu herói caído com 60 de HP (só vale se algum aliado ainda estiver de pé).'},
-  dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:24, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 3 ataques causam de 0,5x a 3x de dano, sorteado.'},
-  scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:28, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói.'}
+  phoenix:{name:'Pena de Fênix', ask:'Comprar Pena de Fênix?', price:24, kind:'fx', fx:'phoenix', rare:true, icon:'item_phoenix.png', info:'RARO: revive seu herói caído com 60 de HP (só vale se algum aliado ainda estiver de pé).'},
+  dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 3 ataques causam de 0,5x a 3x de dano, sorteado.'},
+  scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói.'}
 };
 const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, dice:0, bomb:0});
 
