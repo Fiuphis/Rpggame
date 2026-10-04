@@ -7,9 +7,9 @@
 const DIFFICULTY = {   // ranks: 1=C (mais fácil) … 5=SS (mais difícil)
   1:{label:'RANK C',  rank:'C',  type:'ATAQUE FÍSICO',  damage:18, reward:1, aoe:3},
   2:{label:'RANK B',  rank:'B',  type:'ATAQUE FÍSICO',  damage:28, reward:2, aoe:5},
-  3:{label:'RANK A',  rank:'A',  type:'ATAQUE SOMBRIO', damage:38, reward:3, aoe:7},
-  4:{label:'RANK S',  rank:'S',  type:'ATAQUE MÍSTICO', damage:50, reward:5, aoe:9},
-  5:{label:'RANK SS', rank:'SS', type:'ATAQUE MÍSTICO', damage:64, reward:8, aoe:12}
+  3:{label:'RANK A',  rank:'A',  type:'ATAQUE SOMBRIO', damage:38, reward:3, aoe:6},
+  4:{label:'RANK S',  rank:'S',  type:'ATAQUE MÍSTICO', damage:50, reward:5, aoe:8},
+  5:{label:'RANK SS', rank:'SS', type:'ATAQUE MÍSTICO', damage:64, reward:8, aoe:11}
 };
 const HARD_MIN = 4;   // rank S e SS contam como "difíceis" (carregam o especial, fúria etc.)
 const isHardQ = q => q && q.difficulty >= HARD_MIN;
@@ -81,7 +81,7 @@ const GIVE = new Set(['shield','amulet','helm','smoke','herb','elixir','phoenix'
 const HERO_ORDER = ['mage','knight','tank','assassin'];
 const HERO_COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ff3d5c'};
 const HERO_X = {mage:10.3, knight:33.2, tank:63.5, assassin:89.7};   // centro do herói (% da largura)
-const BOSS_MAX_HP = 700, HERO_MAX_HP = 100;
+const BOSS_MAX_HP = 650, HERO_MAX_HP = 100;
 // Dano base por herói: Cleriga baixo, Maga/Tanque médio, Guerreiro alto. Fraqueza certa (fogo da Maga) = alto; Buraco Negro = extremamente alto.
 const HERO_BASE = {mage:14, knight:21, tank:14, assassin:10};
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)

@@ -424,3 +424,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v179: itens podem ser dados a aliados (pocoes, Escudo, Amuleto, Elmo, Fumaca, Erva, Elixir, Pena de Fenix revive aliado caido); buffs agora sao por heroi e a afinidade vale para quem recebe.
 - v180: itens iguais empilham ate 3 por slot da mochila (numero no canto).
 - v181: errar pergunta rank S ou SS deixa a Onda Sombria 50% mais forte nessa rodada e enche a furia (+1 por heroi que errou).
+- v182: equilibrio (simulado): boss 650 de HP e Onda Sombria ~10% menor (A6, S8, SS11). Sem itens fica dificil; com alguns itens e ultimates bem usados e vitoria provavel.
