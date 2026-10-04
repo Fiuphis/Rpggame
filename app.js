@@ -84,6 +84,8 @@ const ITEMS = {
   dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 3 ataques causam de 0,5x a 3x de dano, sorteado.'},
   scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói.'}
 };
+const itemInfo = t => { const it = ITEMS[t]; return it.info || (it.kind === 'hp' ? `Restaura ${it.amount} de HP do seu herói (ou de um aliado).` : `Restaura ${it.amount} de mana do seu herói (ou de um aliado).`); };
+const CAT_LABEL = {heal:'CURA', def:'DEFESA', atk:'ATAQUE', util:'UTILIDADE'};
 const newStats = () => ({rank:{1:[0,0],2:[0,0],3:[0,0],4:[0,0],5:[0,0]}, gained:0, spent:0, used:0});   // por rank: [acertos, erros]
 const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, luckyAmt:3, dice:0, bomb:0});
 // Afinidade: o herói indicado ganha +50% no efeito do item (duração, valor ou cargas).
@@ -404,7 +406,7 @@ function renderShop(opt = {}){
     if (opt.sold === i && opt.soldType) b.insertAdjacentHTML('beforeend', `<img class="s-ghost" src="${ITEMS[opt.soldType].icon}" alt="">`);
     if (!type) return;
     const it = ITEMS[type];
-    b.insertAdjacentHTML('beforeend', `<img class="s-icon${opt.arrive && opt.arrive.includes(i) ? ' arrive' : ''}" src="${it.icon}" alt=""><img class="s-coin" src="icon_coin.png" alt=""><b class="s-price">${priceOf(type)}</b>`);
+    b.insertAdjacentHTML('beforeend', `<img class="s-icon${opt.arrive && opt.arrive.includes(i) ? ' arrive' : ''}" src="${it.icon}" alt=""><i class="s-pill"></i><img class="s-coin" src="icon_coin.png" alt=""><b class="s-price">${priceOf(type)}</b>`);
     b.setAttribute('aria-label', 'Comprar ' + it.name);
   });
 }
@@ -1410,10 +1412,30 @@ $('#hitmap').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   const action=b.dataset.action;
 });
-function setBag(on){ $('#bag-panel').hidden = !on; $('#bag-back').hidden = !on; $('#bag-toggle').setAttribute('aria-expanded', on); }
+function setBag(on){ if (!on) { const t = $('#item-tip'); if (t) t.remove(); } $('#bag-panel').hidden = !on; $('#bag-back').hidden = !on; $('#bag-toggle').setAttribute('aria-expanded', on); }
 $('#bag-toggle').addEventListener('click', () => { const op = $('#bag-panel').hidden; setBag(op); if (op) merchantOpened(); else mBubble(''); });
 $('#bag-back').addEventListener('click', () => { setBag(false); mBubble(''); });
-$('#bag-panel').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.action === 'buy') requestBuy(+b.dataset.slot); });
+// Loja: tocar no ícone do item mostra a descrição; tocar nas moedas (parte de baixo) tenta comprar.
+function closeItemTip(){ const t = $('#item-tip'); if (t) t.remove(); }
+function showItemTip(slot){
+  closeItemTip();
+  const type = state.shop.slots[slot]; if (!type) return;
+  const it = ITEMS[type], bp = $('#bag-panel'), btn = bp.querySelector('.shop.s' + slot), pr = bp.getBoundingClientRect(), br = btn.getBoundingClientRect();
+  const cat = CAT_LABEL[itemCat(type)], aff = (it.aff || []).map(h => GROUPS[h]).join(', ');
+  const el = document.createElement('div'); el.id = 'item-tip'; el.className = 'it-tip' + (it.rare ? ' rare' : '');
+  el.innerHTML = `<div class="it-top"><div class="it-ico"><img src="${it.icon}" alt=""></div><div class="it-head"><b class="it-name">${it.name}</b><span class="it-tags"><em class="t-${itemCat(type)}">${cat}</em>${it.rare ? '<em class="t-rare">RARO</em>' : ''}</span></div></div>` +
+    `<p class="it-desc">${itemInfo(type).replace(/^RARO: /, '').replace(/^./, c => c.toUpperCase())}</p>` + (aff ? `<div class="it-aff">AFINIDADE <b>${aff}</b> +50%</div>` : '') +
+    `<div class="it-foot"><span>PREÇO</span><img src="icon_coin.png" alt=""><b>${priceOf(type)}</b><small>toque nas moedas para comprar</small></div>`;
+  bp.appendChild(el);
+  const w = 62, cx = ((br.left + br.width / 2) - pr.left) / pr.width * 100, left = Math.max(2, Math.min(100 - w - 2, cx - w / 2));
+  el.style.left = left + 'cqw'; el.style.setProperty('--tx', (cx - left) + 'cqw');
+  el.onclick = closeItemTip;
+}
+$('#bag-panel').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.dataset.action !== 'buy') { if (!e.target.closest('#item-tip')) closeItemTip(); return; }
+  const slot = +b.dataset.slot, r = b.getBoundingClientRect(), buyZone = (e.clientY - r.top) / r.height >= .66;
+  if (buyZone) { closeItemTip(); requestBuy(slot); } else showItemTip(slot);
+});
 $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote-choice');if(b)vote(b.dataset.vote)});
 
 state.shop = newShop(); renderShop();

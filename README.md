@@ -441,3 +441,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v196-198: painel e botao ENTRAR em pixel art (enter_*.png); botao ESCOLHA UMA CLASSE em pixel art (pick_btn_*.png); removidos os botoes A/B desenhados na arte da selecao; painel do boss fica sob as nuvens e some ao sair do mapa (e cancela a entrada pendente).
 - v199: painel de entrada no boss menor (72vw, max 336px) e de novo acima das nuvens.
 - v200: painel de entrada no boss subiu ~66px.
+- v201 (inclui o cartao de descricao do item, antes v190): loja: tocar no icone do item abre um cartao de descricao em pixel art (nome, categoria, efeito, afinidade, preco); tocar nas moedas tenta comprar.
