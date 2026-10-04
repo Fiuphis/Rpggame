@@ -341,10 +341,20 @@ const MSAY = {
   stock:['Chegou mercadoria nova!','Acabei de repor a prateleira.'],
   shut:['Fechado! Voltem depois.','A loja está fechada!','Sem mercador, sem compra.']
 };
+MSAY.deal = ['Cliente fiel! 15% de desconto!','Para você, desconto de 15%!'];
+const MCOMMENT = {   // comentários sobre o que o jogador já comprou
+  def:['Gostou do escudo, hein?','Bateu na parede de novo?','Defesa nunca é demais.'],
+  heal:['Ainda de pé? Boa poção.','Levaram uma surra, né?','Saúde antes de tudo.'],
+  atk:['Pegando pesado no boss!','Isso dói de verdade!','Quebre ele por mim!'],
+  util:['Esperto, esse aí.','Truque de mercador.']
+};
+const itemCat = t => { const it = ITEMS[t]; if (it.kind === 'hp' || it.kind === 'mp' || it.fx === 'elixir' || it.fx === 'herb' || it.fx === 'phoenix') return 'heal'; if (['shield','amulet','helm','smoke'].includes(it.fx)) return 'def'; if (['hourglass','scroll','lucky'].includes(it.fx)) return 'util'; return 'atk'; };
+const DISCOUNT_AFTER = 3, DISCOUNT = .85;   // bom cliente: a partir da 3a compra (desde a última vez que ele fechou a loja) tudo sai 15% mais barato
+const priceOf = t => { const p = ITEMS[t].price; return state.shop && state.shop.buys >= DISCOUNT_AFTER ? Math.max(1, Math.round(p * DISCOUNT)) : p; };
 const msayLast = {};
 function msay(kind){ const l = MSAY[kind]; let t; do { t = l[Math.floor(Math.random() * l.length)]; } while (l.length > 1 && t === msayLast[kind]); msayLast[kind] = t; return t; }
 function shuffled(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function newShop(){ const slots = shuffled(SHOP_POOL).slice(0, SHOP_SLOTS); if (Math.random() < RARE_CHANCE) slots[Math.floor(Math.random() * SHOP_SLOTS)] = RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)]; return {slots, opens:0, closed:0}; }   // prateleira sorteada a cada partida
+function newShop(){ const slots = shuffled(SHOP_POOL).slice(0, SHOP_SLOTS); if (Math.random() < RARE_CHANCE) slots[Math.floor(Math.random() * SHOP_SLOTS)] = RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)]; return {slots, opens:0, closed:0, buys:0, hist:[]}; }   // prateleira sorteada a cada partida
 function pickNew(sold){   // item novo no lugar do vendido: nunca o mesmo, de preferência um que ainda não está na prateleira
   const onShelf = state.shop.slots.filter(Boolean);
   if (Math.random() < RARE_CHANCE) { const r = RARE_POOL.filter(t => !onShelf.includes(t)); if (r.length) return r[Math.floor(Math.random() * r.length)]; }
@@ -373,7 +383,7 @@ function renderShop(opt = {}){
     if (opt.sold === i && opt.soldType) b.insertAdjacentHTML('beforeend', `<img class="s-ghost" src="${ITEMS[opt.soldType].icon}" alt="">`);
     if (!type) return;
     const it = ITEMS[type];
-    b.insertAdjacentHTML('beforeend', `<img class="s-icon${opt.arrive && opt.arrive.includes(i) ? ' arrive' : ''}" src="${it.icon}" alt=""><img class="s-coin" src="icon_coin.png" alt=""><b class="s-price">${it.price}</b>`);
+    b.insertAdjacentHTML('beforeend', `<img class="s-icon${opt.arrive && opt.arrive.includes(i) ? ' arrive' : ''}" src="${it.icon}" alt=""><img class="s-coin" src="icon_coin.png" alt=""><b class="s-price">${priceOf(type)}</b>`);
     b.setAttribute('aria-label', 'Comprar ' + it.name);
   });
 }
@@ -384,11 +394,12 @@ function merchantOpened(){        // jogador abriu a mochila/loja
   sh.opens++; const n = sh.opens;
   mMood(n);
   if (n >= SHOP_CLOSE_AT) { mBubble(msay('close'), true); setTimeout(shopClose, 1900); return; }
+  if (n <= 7 && sh.hist.length && Math.random() < .35) { const c = sh.hist[Math.floor(Math.random() * sh.hist.length)], l = MCOMMENT[c]; mBubble(l[Math.floor(Math.random() * l.length)]); return; }
   mBubble(msay(n <= 4 ? 'hi' : n <= 7 ? 'meh' : n <= 9 ? 'bad' : 'mad'), n >= 10);
 }
 function shopClose(){
   const sh = state.shop; if (sh.closed > 0) return;
-  sh.closed = SHOP_CLOSED_Q; sh.opens = 0;
+  sh.closed = SHOP_CLOSED_Q; sh.opens = 0; sh.buys = 0;
   mPuff(); setTimeout(() => { $('#m-stage').classList.add('shut'); $('#m-stage').classList.remove('mad'); renderShop(); }, 380);
   toast(`O Mercador fechou a loja por ${SHOP_CLOSED_Q} perguntas.`);
 }
@@ -405,7 +416,7 @@ function requestBuy(slot){
   const type = state.shop.slots[slot]; if (!type) { toast('Prateleira vazia.'); return; }
   const item = ITEMS[type];
   if (state.pendingAction || state.voteLocked) { toast('Já existe uma votação aberta.'); return; }
-  if (state.gold < item.price) { toast('Moedas insuficientes.'); return; }
+  if (state.gold < priceOf(type)) { toast('Moedas insuficientes.'); return; }
   if (!canAdd(type)) { toast('Mochila cheia.'); return; }
   if (item.info) toast(item.name + ': ' + item.info + (hasAff(type) ? ' AFINIDADE: +50% de efeito para o seu herói.' : ''));
   openMerchantVote(item.ask, {type:'buy', item:type, slot});
@@ -413,10 +424,11 @@ function requestBuy(slot){
 function executeBuy(type, slot){
   const item = ITEMS[type];
   if (state.shop.closed > 0 || state.shop.slots[slot] !== type) { toast('Item indisponível.'); return false; }
-  if (state.gold < item.price) { toast('Moedas insuficientes.'); return false; }
+  if (state.gold < priceOf(type)) { toast('Moedas insuficientes.'); return false; }
   if (!canAdd(type)) { toast('Mochila cheia.'); return false; }
-  state.gold -= item.price; state.inventory.push(type);
-  state.shop.slots[slot] = null; state.shop.opens = 0; mMood(0); renderShop({sold:slot, soldType:type}); mBubble(msay('sold'));
+  state.gold -= priceOf(type); state.inventory.push(type);
+  const sh = state.shop; sh.buys++; sh.hist.push(itemCat(type)); if (sh.hist.length > 6) sh.hist.shift();
+  state.shop.slots[slot] = null; state.shop.opens = 0; mMood(0); renderShop({sold:slot, soldType:type}); mBubble(msay(sh.buys === DISCOUNT_AFTER ? 'deal' : 'sold')); if (sh.buys === DISCOUNT_AFTER) setTimeout(() => renderShop(), 1150);
   setTimeout(() => { if (state.shop.slots[slot] || state.shop.closed > 0) return; state.shop.slots[slot] = pickNew(type); renderShop({arrive:[slot]}); if (ITEMS[state.shop.slots[slot]].rare) mBubble(msay('rare')); }, 1100);
   persist(); renderGold(); renderInventoryHits();
   return true;

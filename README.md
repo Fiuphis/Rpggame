@@ -427,3 +427,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v182: equilibrio (simulado): boss 650 de HP e Onda Sombria ~10% menor (A6, S8, SS11). Sem itens fica dificil; com alguns itens e ultimates bem usados e vitoria provavel.
 - v183: Fase 2 do boss (50% de HP): raios no fundo, cenario piscando, boss mais forte (Onda Sombria +2, olhos sempre acesos), sem fala. Tambem aplica de fato a regra do v181: errar rank S/SS deixa a Onda Sombria 50% mais forte e enche a furia.
 - v184: evento Arca do Tesouro (cerca de 1 a cada 5 rodadas, a partir da 3a): o grupo vota abrir ou ignorar; pode dar 4 a 8 moedas, uma pocao ou ser armadilha (-12 HP em todos).
+- v185: mercador com memoria: apos 3 compras (desde que ele fechou a loja pela ultima vez) da 15% de desconto em tudo, e passa a comentar o que voce ja comprou (defesa, cura, ataque, utilidade).
