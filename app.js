@@ -234,7 +234,18 @@ function scWrite(el, text, cls){ if (window.Paper) Paper.burst(10); el.className
   [...String(text)].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch; s.style.animationDelay = (i * per) + 'ms'; el.appendChild(s); }); }
 function paperOn(){ return document.documentElement.classList.contains('paper'); }
 // Conteúdo interativo no papiro (relatório, escolha de alvo...). Retorna o elemento, ou null se a faixa do papiro não existe.
-function paperUI(html){ if (!paperOn()) return null; const u = $('#sc-ui'); if (!u) return null; u.innerHTML = html; $('#scroll').classList.add('ui'); if (window.Paper) Paper.burst(14); return u; }
+// Ajusta o conteudo ao tamanho do papiro: se nao couber, primeiro modo compacto (.tight), depois reduz proporcionalmente (zoom). Papiro alto o bastante nao muda nada.
+function fitPaperUI(u){
+  const w = u.firstElementChild; if (!w || !w.classList.contains('ui-fit')) return;
+  w.style.transform = ''; w.style.width = ''; u.classList.remove('tight');
+  const room = () => u.clientHeight - parseFloat(getComputedStyle(u).paddingTop || 0) - parseFloat(getComputedStyle(u).paddingBottom || 0);
+  if (w.offsetHeight <= room() + 1) return;
+  u.classList.add('tight');
+  const h = w.offsetHeight; if (h <= room() + 1) return;
+  const k = Math.max(.5, room() / h); w.style.transform = 'scale(' + k.toFixed(3) + ')'; w.style.width = (100 / k).toFixed(1) + '%'; w.style.flex = 'none';
+}
+function paperUI(html){ if (!paperOn()) return null; const u = $('#sc-ui'); if (!u) return null; u.innerHTML = '<div class="ui-fit">' + html + '</div>'; $('#scroll').classList.add('ui'); fitPaperUI(u); if (window.Paper) Paper.burst(14); return u; }
+addEventListener('resize', () => { const u = $('#sc-ui'); if (u && $('#scroll').classList.contains('ui')) fitPaperUI(u); });
 const PP_MENU = () => paperOn() && $('#scroll') && $('#scroll').clientHeight - 76 >= 176;
 function paperUIClose(){ const sc = $('#scroll'); if (sc) sc.classList.remove('ui'); const u = $('#sc-ui'); if (u) u.innerHTML = ''; }
 function fitScroll(){ const g = $('#game').getBoundingClientRect(), band = Math.max(0, Math.round(innerHeight - g.bottom)), on = band >= 56, bh = on ? band + Math.round(g.height * .11) : band; document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.classList.toggle('paper', on); }

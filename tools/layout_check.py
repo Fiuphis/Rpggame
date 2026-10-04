@@ -63,6 +63,17 @@ try:
         if phone and g['game'][1] > 1: fail(f'game em {name}: quadro nao esta colado ao topo ({g["game"][1]:.0f}px)')
         if phone and abs(g['game'][2]-g['game'][0]-w) > 1: fail(f'game em {name}: quadro nao ocupa a largura toda')
         if g['scroll'] and g['scroll'][2]-g['scroll'][0]>0 and g['scroll'][3] > g['h']+1: fail(f'game em {name}: papiro passa do fim da tela')
+        # papiro: conteudo (relatorio final e escolha de alvo) tem que caber dentro do papiro em qualquer altura
+        PAP = """()=>{const sc=document.querySelector('#scroll');if(!sc||!document.documentElement.classList.contains('paper'))return null;const r=sc.getBoundingClientRect();let bad=[];
+          document.querySelectorAll('#sc-ui *').forEach(e=>{const b=e.getBoundingClientRect();if(b.width&&(b.bottom>r.bottom-10||b.top<r.top+8||b.right>r.right-4||b.left<r.left+4))bad.push((e.className||e.tagName)+'')});return bad.slice(0,4)}"""
+        pg.evaluate("()=>{const S=BancoDadosGame.state;S.inventory.length=0;S.inventory.push('hp');S.heroes.mage.hp=40;useInventory(0)}"); pg.wait_for_timeout(600)
+        bad = pg.evaluate(PAP)
+        if bad: fail(f'game em {name}: escolha de alvo nao cabe no papiro: {bad}')
+        pg.evaluate("closeTargetPick()"); pg.wait_for_timeout(200)
+        pg.evaluate("endGame(true)"); pg.wait_for_timeout(800)
+        bad = pg.evaluate(PAP)
+        if bad: fail(f'game em {name}: relatorio final nao cabe no papiro: {bad}')
+        snap('end')
         snap('game')
         if errs: fail(f'{name}: erros de JS {errs[:2]}')
         ctx.close()
