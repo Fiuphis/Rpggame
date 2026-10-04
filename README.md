@@ -439,3 +439,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v194: so as duas caixas do topo (titulo e descricao) ficam acima das nuvens, recortadas em PNG (plaque_cut.png); o botao voltou a ficar sob as nuvens.
 - v195: volta ao modo da v193 (titulo + botao acima das nuvens) e inclui as bandeiras laterais.
 - v196-198: painel e botao ENTRAR em pixel art (enter_*.png); botao ESCOLHA UMA CLASSE em pixel art (pick_btn_*.png); removidos os botoes A/B desenhados na arte da selecao; painel do boss fica sob as nuvens e some ao sair do mapa (e cancela a entrada pendente).
+- v199: painel de entrada no boss menor (72vw, max 336px) e de novo acima das nuvens.
