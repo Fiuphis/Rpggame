@@ -68,6 +68,7 @@ const ITEMS = {
   dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 3 ataques causam de 0,5x a 3x de dano, sorteado.'},
   scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói.'}
 };
+const newStats = () => ({rank:{1:[0,0],2:[0,0],3:[0,0],4:[0,0],5:[0,0]}, gained:0, spent:0, used:0});   // por rank: [acertos, erros]
 const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, luckyAmt:3, dice:0, bomb:0});
 // Afinidade: o herói indicado ganha +50% no efeito do item (duração, valor ou cargas).
 const AFFINITY = {mage:['hourglass','scroll','elixir','luckycoin'], knight:['blade','tonic','lightbomb','herb'], tank:['iron_shield','helm','amulet'], assassin:['lens','dice','powder','smokebomb']};
@@ -190,7 +191,7 @@ const skSay = (k, sk) => ({heavy:'heavy', super:'heavy', holy_atk:'holy', mana_a
 const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a6cff' : sk.elem && el ? ELEMENTS[el].color : '#4da3ff';
 
 const state = {
-  shop:null, ib:allBuffs(), phase2:false, chestAt:-9,
+  shop:null, ib:allBuffs(), phase2:false, chestAt:-9, stats:newStats(),
   gold:0, question:0, answered:false,
   inventory:saved.inventory, pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
@@ -426,7 +427,7 @@ function executeBuy(type, slot){
   if (state.shop.closed > 0 || state.shop.slots[slot] !== type) { toast('Item indisponível.'); return false; }
   if (state.gold < priceOf(type)) { toast('Moedas insuficientes.'); return false; }
   if (!canAdd(type)) { toast('Mochila cheia.'); return false; }
-  state.gold -= priceOf(type); state.inventory.push(type);
+  state.stats.spent += priceOf(type); state.gold -= priceOf(type); state.inventory.push(type);
   const sh = state.shop; sh.buys++; sh.hist.push(itemCat(type)); if (sh.hist.length > 6) sh.hist.shift();
   state.shop.slots[slot] = null; state.shop.opens = 0; mMood(0); renderShop({sold:slot, soldType:type}); mBubble(msay(sh.buys === DISCOUNT_AFTER ? 'deal' : 'sold')); if (sh.buys === DISCOUNT_AFTER) setTimeout(() => renderShop(), 1150);
   setTimeout(() => { if (state.shop.slots[slot] || state.shop.closed > 0) return; state.shop.slots[slot] = pickNew(type); renderShop({arrive:[slot]}); if (ITEMS[state.shop.slots[slot]].rare) mBubble(msay('rare')); }, 1100);
@@ -735,7 +736,7 @@ async function maybeChest(){
     const t = state.chestPotion; state.inventory.push(t); persist(); renderInventoryHits();
     showBanner('A ARCA TINHA UMA POÇÃO', ITEMS[t].name); await wait(1800); hideBanner();
   } else {                // moedas
-    const n = 4 + Math.floor(Math.random() * 5); state.gold += n; persist(); goldGain(n);
+    const n = 4 + Math.floor(Math.random() * 5); state.gold += n; state.stats.gained += n; persist(); goldGain(n);
     showBanner('A ARCA TINHA MOEDAS', `+${n} moedas`); await wait(1800); hideBanner();
   }
   img.classList.add('out'); setTimeout(() => img.remove(), 500);
@@ -953,7 +954,8 @@ async function playRound(){
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
-  if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; persist(); goldGain(g); }
+  state.stats.rank[q.difficulty][correct[activeGroup] ? 0 : 1]++;
+  if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; state.stats.gained += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
   if (isHardQ(q)) { const miss = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length; if (miss) { state.rage = Math.min(RAGE_MAX, state.rage + miss); toast(`Erro no rank ${meta.rank}: fúria +${miss} e Onda Sombria mais forte.`); } }
   if (isHardQ(q)) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma pergunta S/SS inteira
@@ -1173,6 +1175,10 @@ function endGame(win){
   o.querySelector('p').textContent = win ? 'O Lorde das Trevas foi derrotado.' : 'Todos os heróis caíram.';
   if (win) { try { const d = JSON.parse(localStorage.getItem('bd1_progress')) || {done:[]}; if (!d.done.includes(0)) d.done.push(0); localStorage.setItem('bd1_progress', JSON.stringify(d)); sessionStorage.setItem('bd1_justwon', '0'); } catch {} }
   $('#to-map').textContent = win ? 'VOLTAR AO MAPA' : 'MAPA';
+  { const st = state.stats, R = ['C','B','A','S','SS'], tot = Object.values(st.rank).reduce((a, [r, w]) => [a[0] + r, a[1] + w], [0, 0]), n = tot[0] + tot[1], pct = n ? Math.round(tot[0] / n * 100) : 0, bossPct = Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100));
+    $('#end-stats').innerHTML = `<div class="es-row"><span>Rodadas</span><b>${state.round}</b></div><div class="es-row"><span>Seu acerto</span><b>${tot[0]}/${n} (${pct}%)</b></div>` +
+      `<div class="es-ranks">${R.map((r, i) => `<div class="es-r d${i + 1}"><em>${r}</em><span>${st.rank[i + 1][0]} / ${st.rank[i + 1][1]}</span></div>`).join('')}</div>` +
+      `<div class="es-cap">certas / erradas por rank</div><div class="es-row"><span>Moedas ganhas / gastas</span><b>${st.gained} / ${st.spent}</b></div><div class="es-row"><span>Itens usados</span><b>${st.used}</b></div>` + (win ? '' : `<div class="es-row"><span>Vida restante do boss</span><b>${bossPct}%</b></div>`); }
   o.classList.toggle('win', win); o.hidden = false;
 }
 // Abertura da batalha (intro.js). Em ?teste=1 fica desligada, a menos que ?intro=1; ?intro=0 sempre desliga.
@@ -1190,7 +1196,7 @@ function beginBattle(delay){
 function restartRun(){
   A.reset(); closeTargetPick();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
-  Object.assign(state, {phase2:false, chestAt:-9, sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
+  state.stats = newStats(); Object.assign(state, {phase2:false, chestAt:-9, sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
   state.shop = newShop(); { const st = $('#m-stage'); if (st) { st.classList.remove('shut','mad'); } } renderShop(); state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null; state.ib = allBuffs();
   $('#end-screen').hidden = true; renderHud(); beginBattle(800);
@@ -1253,12 +1259,12 @@ function applyItem(index, tgt){
     else if(hero.hp<=0){toast(tgt===activeGroup?'O herói caiu e não pode usar itens.':`${GROUPS[tgt]} caiu e não pode receber itens.`);return}
     if(item.fx==='elixir'&&hero.hp>=HERO_MAX_HP&&hero.mp>=100){toast('HP e mana já estão cheios.');return}
     if(item.fx==='scroll'&&state.ultReady[tgt]){toast('O Ultimate já está carregado.');return}
-    const f=hasAff(type,tgt), msg=FX[item.fx](state.ib[tgt],hero,f,tgt)+(f?' (AFINIDADE)':'');state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(tgt===activeGroup?msg:`${GROUPS[tgt]} recebeu: ${msg}`);return;
+    const f=hasAff(type,tgt), msg=FX[item.fx](state.ib[tgt],hero,f,tgt)+(f?' (AFINIDADE)':'');state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(tgt===activeGroup?msg:`${GROUPS[tgt]} recebeu: ${msg}`);return;
   }
   const max = item.kind==='hp' ? HERO_MAX_HP : 100;
   if(hero.hp<=0 && item.kind==='hp'){toast(tgt===activeGroup?'O herói caiu e não pode ser curado.':`${GROUPS[tgt]} caiu e não pode ser curado.`);return}
   if(hero[item.kind]>=max){toast(item.kind==='hp'?'HP já está cheio.':'Mana já está cheia.');return}
-  hero[item.kind]=Math.min(max,hero[item.kind]+item.amount);state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(`${item.name} usada${who}.`);
+  hero[item.kind]=Math.min(max,hero[item.kind]+item.amount);state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(`${item.name} usada${who}.`);
 }
 function giveable(type){ const it = ITEMS[type]; return it.kind === 'hp' || it.kind === 'mp' || GIVE.has(it.fx); }
 function closeTargetPick(){ const p = $('#tgt-pick'); if (p) p.remove(); }
