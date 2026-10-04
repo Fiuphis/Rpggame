@@ -413,3 +413,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v168: dificuldade vira RANK C (azul), B (verde), A (laranja), S (roxo), SS (amarelo) em tudo; 8 perguntas novas (S e SS); selo de rank no painel; sorteio por peso e S/SS garantida a cada 5.
 - v169: selo de rank um pouco mais abaixo e à direita (não toca mais na borda dourada nem no texto).
 - v170: Mercador vivo — fala diferente a cada abertura e fica irritado se abrem sem comprar (6 vezes: fecha a loja por 3 perguntas, placa FECHADO em pixel art); luz da lanterna/velas mexendo; item comprado sai da prateleira e é reposto na pergunta seguinte (`SHOP_POOL`).
+- v171: fala do mercador agora no cantinho dele (caixa ao lado do retrato), sem balão grande.

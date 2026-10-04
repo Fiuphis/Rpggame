@@ -396,3 +396,11 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .shop .s-ghost{position:absolute;left:19%;top:15%;width:62%;height:45%;object-fit:contain;pointer-events:none;animation:sgone .55s ease-in forwards}
 @keyframes sgone{0%{transform:none;opacity:1;filter:brightness(1.8)}100%{transform:translateY(-70%) scale(.3);opacity:0}}
 .bag-panel.shut .shop{opacity:.35;filter:grayscale(.85)}
+
+/* v171: fala do mercador no cantinho dele (em vez do balão grande) */
+.m-say{position:absolute;left:73.8%;top:27.4%;width:17.6%;height:17%;display:flex;align-items:center;justify-content:center;text-align:center;z-index:3;pointer-events:none;overflow:hidden;font:700 2cqw/1.08 'Pixelify Sans',monospace;color:#f1dfae;text-shadow:1px 1px 0 #000;-webkit-font-smoothing:none}
+.m-say.mad{color:#ff8f7e}
+.m-say.say-in{animation:msayin .25s steps(5) both}
+@keyframes msayin{from{opacity:0;transform:translateY(25%)}to{opacity:1;transform:none}}
+.m-say.mad.say-in{animation:msayin .25s steps(5) both,mbub .2s linear 3}
+.bag-panel:has(.merchant-vote.open) .m-say{display:none}

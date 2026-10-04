@@ -302,10 +302,10 @@ const msayLast = {};
 function msay(kind){ const l = MSAY[kind]; let t; do { t = l[Math.floor(Math.random() * l.length)]; } while (l.length > 1 && t === msayLast[kind]); msayLast[kind] = t; return t; }
 function newShop(){ return {slots:Array.from({length:SHOP_SLOTS}, (_, i) => i < 2 ? 'hp' : 'mana'), opens:0, closed:0}; }
 let bubbleT = null;
-function mBubble(text, mad){
-  const b = $('#m-bubble'); if (!b) return; clearTimeout(bubbleT);
-  b.hidden = false; b.classList.toggle('mad', !!mad); b.textContent = text; b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
-  bubbleT = setTimeout(() => { b.hidden = true; }, 2300 + text.length * 45);
+function mBubble(text, mad){          // fala do mercador: no cantinho dele (mesma caixa da confirmação de compra)
+  const b = $('#m-say'); if (!b) return; clearTimeout(bubbleT);
+  b.classList.toggle('mad', !!mad); b.textContent = text; b.classList.remove('say-in'); void b.offsetWidth; b.classList.add('say-in');
+  bubbleT = setTimeout(() => { b.textContent = ''; }, 3200 + text.length * 55);
 }
 function mPuff(){ const p = $('#m-puffs'); if (!p) return; for (let i = 0; i < 6; i++) { const d = document.createElement('i'); d.className = 'm-puff'; d.style.left = (Math.random() * 60) + '%'; d.style.top = (Math.random() * 20) + '%'; d.style.animationDelay = (i * 70) + 'ms'; p.appendChild(d); setTimeout(() => d.remove(), 1500); } }
 function renderShop(opt = {}){
@@ -1109,8 +1109,8 @@ $('#hitmap').addEventListener('click',e=>{
   const action=b.dataset.action;
 });
 function setBag(on){ $('#bag-panel').hidden = !on; $('#bag-back').hidden = !on; $('#bag-toggle').setAttribute('aria-expanded', on); }
-$('#bag-toggle').addEventListener('click', () => { const op = $('#bag-panel').hidden; setBag(op); if (op) merchantOpened(); else $('#m-bubble').hidden = true; });
-$('#bag-back').addEventListener('click', () => { setBag(false); $('#m-bubble').hidden = true; });
+$('#bag-toggle').addEventListener('click', () => { const op = $('#bag-panel').hidden; setBag(op); if (op) merchantOpened(); else mBubble(''); });
+$('#bag-back').addEventListener('click', () => { setBag(false); mBubble(''); });
 $('#bag-panel').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.action === 'buy') requestBuy(+b.dataset.slot); });
 $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote-choice');if(b)vote(b.dataset.vote)});
 
