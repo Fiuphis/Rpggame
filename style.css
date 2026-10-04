@@ -731,3 +731,23 @@ body,button,input{font-family:OpenC,OpenD,monospace}
 .rage.full .rage-label{color:#fff3c4}
 
 .dq-diff b{font-size:2.6cqw}.dq-diff small{font-size:.85cqw;letter-spacing:.08cqw}
+
+/* v216: placa FURIA fora da barra (a esquerda), moldura pixel, texto centralizado com folga; nada por cima da barra */
+.rage .rage-label{position:absolute;right:100%;margin-right:1.6%;top:-16%;height:132%;width:21%;flex:none;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0;overflow:hidden;white-space:nowrap;
+ font:700 1.55cqw/1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.06cqw;color:#ffc24d;text-shadow:0 .2cqw 0 #000;text-align:center;
+ border:0!important;border-style:solid!important;border-width:max(2px,.4cqw)!important;border-image:url(ui_cs_gold.png) 2 fill/auto stretch!important;image-rendering:pixelated;background:none}
+.rage .rage-label i{display:none}
+.rage.full .rage-label{color:#fff3c4;border-image-source:url(ui_cs_red.png)!important}
+
+.pk-card.off{filter:grayscale(.85) brightness(.62);cursor:default}.pk-card.off:active{transform:none}
+.pk-card.off small{color:#ff9aa8;font-weight:700}
+/* card de Fogo: texto da arte coberto e substituido por chips dourados iguais aos outros */
+.sk-card .el-cover{position:absolute;left:25%;top:38%;width:70%;height:26%;background:#03040f;pointer-events:none}
+.sk-card .el-chip.gold{border-image-source:url(ui_cs_gold.png);color:#ffd98a}
+.sk-card .el-chip.a{left:25.6%;width:25%}
+.sk-card .el-chip.b{left:52.6%;width:31%}
+.sk-card.off .tp-chips,.sk-card.off .lock{z-index:3}
+
+.rage .rage-label{font-size:2.2cqw;letter-spacing:.04cqw}
+
+.rage .rage-label{top:0;height:100%;width:29.6%;margin-right:1.9%;font-size:1.8cqw;letter-spacing:.03cqw;border-width:max(1px,.3cqw)!important}

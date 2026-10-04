@@ -524,7 +524,7 @@ const hudY = k => Math.round(HEAD_TOP[k] - HUD_GAP - HUD_W * HUD_IMG[k].h / HUD_
 const HUD_IMG = {"mage": {"w": 1419, "h": 259, "hp": [0.2276, 0.7498, 0.3745, 0.1544], "mp": [0.2276, 0.7498, 0.6873, 0.1583]}, "knight": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.3211, 0.1626], "mp": [0.2275, 0.7493, 0.6585, 0.1585]}, "tank": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.313, 0.1585], "mp": [0.2275, 0.7493, 0.6463, 0.1585]}, "assassin": {"w": 1421, "h": 241, "hp": [0.2273, 0.7488, 0.2822, 0.1618], "mp": [0.2273, 0.7488, 0.6224, 0.1618]}};   // proporção e interior das barras (frações) de hud_<herói>.png
 const HUD = {
   boss:{x:251, y:70, w:525, h:19},
-  rage:{x:300, y:100, w:424, h:17},
+  rage:{x:400, y:99, w:324, h:24},
   icons:{}, heroes:{}
 };
 ['mage', 'knight', 'tank', 'assassin'].forEach(k => { const m = HUD_IMG[k], x = Math.round(clampHud(HERO_X[k] / 100 * 1024 - HUD_W / 2)); HUD.icons[k] = x; HUD.heroes[k] = [x, hudY(k), HUD_W, Math.round(HUD_W * m.h / m.w)]; });
@@ -561,10 +561,10 @@ function buildHud(){
     c.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD.heroes[k][1] + HUD.heroes[k][3] + 3)};width:${pctX(186)}`; $('#game').appendChild(c); bars['ch_' + k] = c;
   });
   { const p2 = document.createElement('div'); p2.className = 'p2-badge'; p2.hidden = true; p2.textContent = 'FASE 2'; p2.style.cssText = `left:${pctX(HUD.rage.x + HUD.rage.w)};top:${pctY(HUD.rage.y + HUD.rage.h + 5)}`; $('#game').appendChild(p2); bars.p2 = p2; }
-  const mk = document.createElement('div'); mk.className = 'boss-marks'; mk.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(122)}`; $('#game').appendChild(mk); bars.marks = mk;
+  const mk = document.createElement('div'); mk.className = 'boss-marks'; mk.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(HUD.rage.y + HUD.rage.h + 5)}`; $('#game').appendChild(mk); bars.marks = mk;
   const r = document.createElement('div'); r.className = 'rage';
-  r.style.cssText = `left:${pctX(HUD.rage.x - 62)};top:${pctY(HUD.rage.y)};width:${pctX(HUD.rage.w + 62)};height:${pctY(HUD.rage.h)}`;
-  r.innerHTML = '<span class="rage-label"><i></i>FÚRIA</span><div class="rage-seg">' + '<b></b>'.repeat(RAGE_MAX) + '</div>';
+  r.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(HUD.rage.y)};width:${pctX(HUD.rage.w)};height:${pctY(HUD.rage.h)}`;
+  r.innerHTML = '<span class="rage-label">FÚRIA</span><div class="rage-seg">' + '<b></b>'.repeat(RAGE_MAX) + '</div>';
   $('#game').appendChild(r); bars.rage = r;
 }
 const CHIP_DEF = [['shield','item_iron_shield.png','escudo'],['amulet','item_amulet.png','amuleto'],['helm','item_helm.png','elmo'],['smoke','item_smokebomb.png','fumaça'],['herb','item_herb.png','erva'],['tonic','item_tonic.png','tônico'],['lens','item_lens.png','lente'],['powder','item_powder.png','pólvora'],['dice','item_dice.png','dado'],['bomb','item_lightbomb.png','bomba'],['lucky','item_luckycoin.png','sorte'],['blade','item_blade.png','lâmina']];
@@ -654,6 +654,7 @@ async function closePanel(){
 const PAL = {k:'#0b0814',W:'#f4f1ff',S:'#9aa3c2',Y:'#ffc54e',y:'#ffe9a0',B:'#7a4a22',R:'#e0392d',O:'#ff8a2a',b:'#2f6fe0',l:'#6fb4ff',c:'#8fe8d4',t:'#a8864a',T:'#7a5e30',D:'#4d3a1c',G:'#c9d4ff',P:'#b36bff',g:'#5ee08a'};
 const SPR = {
   sword:['.........WW','........WWS','.......WWS.','......WWS..','.....WWS...','.Y..WWS....','..YWWS.....','...YYY.....','..BYYY.....','.BB.Y......','BB.........'],
+  info:['...bbbbb...','.blllllllb.','bllllWllllb','blllllllllb','bllllWllllb','bllllWllllb','bllllWllllb','bllllWllllb','blllWWWlllb','.blllllllb.','...bbbbb...'],
   sword2:['.........WW','.......RWWS','......RWWS.','.....RWWS..','....RWWS...','.Y.RWWS....','..YWWS.....','...YYY.....','..BYYY.....','.BB.Y......','BB.........'],
   hammer:['.TTTTTTT...','TTGGGGGTT..','TTGGGGGTT..','.TTTTTTT...','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......'],
   hammer2:['RTTTTTTTR..','TTGGGGGTT..','TTGGWWGTT..','RTTTTTTTR..','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......'],
@@ -753,6 +754,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
         b.innerHTML = `<b class="cnt sk-cnt" style="left:${(cn[0] - cd[0]) / cd[2] * 100}%;top:${(cn[1] - cd[1]) / cd[3] * 100}%;width:${cn[2] / cd[2] * 100}%;height:${cn[3] / cd[3] * 100}%">0</b>`;
         b.setAttribute('aria-label', o.label);
+        if (o.kind === 'elem' && o.label === ELEMENTS.fire.name) b.insertAdjacentHTML('beforeend', `<span class="el-cover"></span><span class="el-chip gold a"><b>BOSS FRACO</b></span><span class="el-chip gold b"><b>${window.__elemDef ? 'CORTA 55%' : '1,5x QUEIMA'}</b></span>`);   // o texto do Fogo tambem vira chip, igual aos outros
         if (o.kind === 'elem' && o.label !== ELEMENTS.fire.name) b.insertAdjacentHTML('beforeend', `<span class="el-chip"><b>${window.__elemDef ? 'SEM EFEITO' : 'BOSS IMUNE'}</b></span>`);   // cobre o chip pintado na arte
         if (o.face) b.insertAdjacentHTML('afterbegin', `<img class="tp-face" src="tp_${o.face}.png" alt=""><span class="tp-name"></span><span class="tp-desc"></span><span class="tp-chips">${o.chips || ''}</span>`), b.querySelector('.tp-name').textContent = o.label, b.querySelector('.tp-desc').textContent = o.desc || '';
         if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
@@ -932,10 +934,10 @@ async function bossIntro(ev = {}){
 // ---- alvos, ultimates e marcas ----
 async function pickAlly(k, sk){
   const list = HERO_ORDER.filter(h => h !== k).map(h => state.heroes[h].hp > 0
-    ? {hero:h, desc:`Vida ${state.heroes[h].hp}/${HERO_MAX_HP}`} : {hero:h, desc:'Caído', block:'CAÍDO'});
+    ? {hero:h, desc:`Vida ${state.heroes[h].hp}/${HERO_MAX_HP}`, chips:sk.id === 'pass' ? '<span class="tag mult">1,5x</span>' : ''} : {hero:h, desc:'Caído', block:'CAÍDO'});
   const first = list.find(x => !x.block).hero;
   const t = await chooseTarget(sk.name.toUpperCase(), sk.id === 'pass' ? 'Quem ganha o ataque extra?' : 'Quem será protegido?', list, first,
-    {icon:sk.id === 'pass' ? 'pass' : 'guard', text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'});
+    {icon:sk.id === 'pass' ? 'info' : 'guard', text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'});
   return list.find(x => x.hero === t && !x.block) ? t : first;
 }
 const HERO_ICON = {mage:'orb', knight:'sword', tank:'hammer', assassin:'staff'};
@@ -944,7 +946,7 @@ async function chooseTarget(title, text, list, fallback, note){
     menu:true, panel:'target', title, text, seconds:ACTION_SECONDS, note,
     options: HERO_ORDER.map((h, n) => { const it = list.find(x => x.hero === h), ok = it && !it.block;
       return {label:GROUPS[h], desc:it ? it.desc : '', kind:'util hero-' + h, face:h, slot:[n >> 1, n & 1],
-        chips: ok ? (it.chips || '') : it && it.block ? `<span class="tag block">${it.block}</span>` : '', disabled:!ok}; })
+        chips: ok ? (it.chips || '') : it && it.block ? `<span class="tag block">${it.block}</span>` : !it && h === activeGroup ? '<span class="tag">VOCÊ</span>' : '', disabled:!ok}; })
   });
   return r.idx === null ? fallback : HERO_ORDER[r.idx];
 }
@@ -1472,11 +1474,13 @@ function useInventory(index){
   const others = HERO_ORDER.filter(k => k !== activeGroup && (type === 'phoenix' ? state.heroes[k].hp <= 0 : state.heroes[k].hp > 0));
   if(!giveable(type) || !others.length){ applyItem(index, activeGroup); return; }
   closeTargetPick();
-  const cands = (type === 'phoenix' && state.heroes[activeGroup].hp > 0 ? others : [activeGroup, ...others]);
+  const okList = (type === 'phoenix' && state.heroes[activeGroup].hp > 0 ? others : [activeGroup, ...others]);
+  const cands = [activeGroup, ...HERO_ORDER.filter(k => k !== activeGroup)];   // todos aparecem; quem nao pode receber fica apagado com o motivo
   const card = k => { const h = state.heroes[k], me = k === activeGroup;
-    return `<button type="button" class="pk-card${me ? ' me' : ''}" data-k="${k}"><span class="pk-n">${me ? 'VOCÊ' : GROUPS[k]}</span><i class="pk-bar"><s style="width:${Math.max(0, h.hp)}%"></s></i><i class="pk-bar m"><s style="width:${Math.max(0, h.mp)}%"></s></i><small>${h.hp <= 0 ? 'CAÍDO' : hasAff(type, k) ? 'AFINIDADE' : 'HP ' + h.hp}</small></button>`; };
+    const no = !okList.includes(k);
+    return `<button type="button" class="pk-card${me ? ' me' : ''}${no ? ' off' : ''}"${no ? ' disabled' : ''} data-k="${k}"><span class="pk-n">${me ? 'VOCÊ' : GROUPS[k]}</span><i class="pk-bar"><s style="width:${Math.max(0, h.hp)}%"></s></i><i class="pk-bar m"><s style="width:${Math.max(0, h.mp)}%"></s></i><small>${no ? (h.hp <= 0 ? 'CAÍDO' : 'VIVO') : h.hp <= 0 ? 'CAÍDO' : hasAff(type, k) ? 'AFINIDADE' : 'HP ' + h.hp}</small></button>`; };
   const pu = paperUI(`<div class="ui-t sm">USAR EM QUEM?</div><div class="ui-s"><b>${ITEMS[type].name}</b>: ${ITEMS[type].info || ''}</div><div class="pk">${cands.map(card).join('')}</div><div class="ui-btns"><button type="button" class="sc-btn alt mini" data-x="1">CANCELAR</button></div>`);
-  if (pu) { pu.dataset.kind = 'pick'; pu.onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.x) { closeTargetPick(); return; } const k = b.dataset.k; closeTargetPick(); applyItem(index, k); }; return; }
+  if (pu) { pu.dataset.kind = 'pick'; pu.onclick = e => { const b = e.target.closest('button'); if (!b || b.disabled) return; if (b.dataset.x) { closeTargetPick(); return; } const k = b.dataset.k; closeTargetPick(); applyItem(index, k); }; return; }
   // sem faixa de papiro (tela muito baixa): escolhe automaticamente o próprio herói
   applyItem(index, activeGroup);
 }
