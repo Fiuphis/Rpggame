@@ -81,7 +81,7 @@ function select(id){
   const st = stateOf(done, id), B = BOSSES[id];
   selected = id; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false;
   document.querySelectorAll('.node').forEach(e => e.classList.toggle('sel', e.id === 'nd' + id));
-  $('#panel').hidden = false; $('#p-title').textContent = B.name;
+  $('#panel').hidden = false; $('#p-title').textContent = B.name; placePanel();
   const go = $('#p-go'); const n = voters(), need = Math.floor(n / 2) + 1;
   if ((st === 'next' || st === 'done') && B.play) {
     const again = st === 'done'; $('#p-sub').textContent = (again ? 'Concluído · jogar de novo com outro grupo ou o mesmo' : B.sub) + ' · o grupo vota para entrar'; go.disabled = false; go.className = 'p-go'; go.innerHTML = `${again ? 'REJOGAR' : 'ENTRAR'} <b>0/${need}</b>`;
@@ -91,6 +91,8 @@ function select(id){
 }
 function upd(need){ const go = $('#p-go'); go.innerHTML = `${stateOf(done, selected) === 'done' ? 'REJOGAR' : 'ENTRAR'} <b>${yes}/${need}</b>`; go.classList.toggle('selected', mine); }
 let enterT = 0;
+function placePanel(){ const p = $('#panel'); if (p.hidden) return; const r = $('#map').getBoundingClientRect(), h = p.offsetHeight; p.style.bottom = 'auto'; p.style.top = Math.max(8, Math.min(r.bottom + 8, innerHeight - h - 8)) + 'px'; }
+addEventListener('resize', placePanel);
 function enter(){
   bots.forEach(clearTimeout); const v = $('#veil'); v.classList.remove('out'); $('#map').style.transition = 'transform 1.2s ease-in'; $('#map').style.transform = 'scale(1.5)';
   enterT = setTimeout(() => { location.href = 'game.html' + location.search; }, 1300);
