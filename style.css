@@ -421,3 +421,10 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 
 /* pilha de itens iguais na mochila */
 .inventory-hit{position:absolute}.inv-count{position:absolute;right:6%;bottom:4%;min-width:34%;padding:0 .8cqw;box-sizing:border-box;text-align:center;font:700 3.4cqw/1.15 'Pixelify Sans',monospace;font-style:normal;color:#ffe08a;background:#0a0816;border:1px solid #b8893a;border-radius:.6cqw;text-shadow:0 .2cqw 0 #000;pointer-events:none}
+
+/* evento: arca do tesouro */
+.chest{position:absolute;z-index:43;left:50%;top:38%;width:20%;transform:translate(-50%,0);image-rendering:pixelated;pointer-events:none;animation:chestIn .45s cubic-bezier(.2,1.4,.4,1) both;filter:drop-shadow(0 .8cqw 0 rgba(0,0,0,.55))}
+.chest.opened{filter:drop-shadow(0 0 3cqw #ffd34d) drop-shadow(0 .8cqw 0 rgba(0,0,0,.55))}
+.chest.out{animation:chestOut .45s ease-in both}
+@keyframes chestIn{from{opacity:0;transform:translate(-50%,-60%) scale(.5)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+@keyframes chestOut{to{opacity:0;transform:translate(-50%,20%) scale(.7)}}

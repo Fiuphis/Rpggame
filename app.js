@@ -190,7 +190,7 @@ const skSay = (k, sk) => ({heavy:'heavy', super:'heavy', holy_atk:'holy', mana_a
 const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a6cff' : sk.elem && el ? ELEMENTS[el].color : '#4da3ff';
 
 const state = {
-  shop:null, ib:allBuffs(), phase2:false,
+  shop:null, ib:allBuffs(), phase2:false, chestAt:-9,
   gold:0, question:0, answered:false,
   inventory:saved.inventory, pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
@@ -299,6 +299,12 @@ async function resolveVote(result){
   const action = state.pendingAction; if (!action || state.voteLocked) return;
   state.voteLocked = true; clearBots(); stopVoteTimer(); updateVoteUI();
   let msg;
+  if (action.type === 'chest') {
+    msg = result === 'yes' ? 'Abrir a arca!' : result === 'no' ? 'Ignorada.' : result === 'tie' ? 'Empate. A arca fica.' : 'Tempo esgotado.';
+    showMerchantText(msg); await wait(1000); const done = state.chestDone; closeMerchantVote();
+    if (done) { state.chestDone = null; done(result === 'yes'); }
+    return;
+  }
   if (action.type === 'ult') {
     msg = result === 'yes' ? 'Ultimate liberado!' : result === 'no' ? 'Recusado.' : result === 'tie' ? 'Empate. Guardado.' : 'Tempo esgotado.';
     showMerchantText(msg); await wait(1200); const done = state.ultDone; closeMerchantVote();
@@ -695,6 +701,33 @@ async function maybePhase2(){
   g.animate([{transform:'translate(0,0)'},{transform:'translate(-5px,3px)'},{transform:'translate(5px,-3px)'},{transform:'translate(-3px,-2px)'},{transform:'translate(0,0)'}], {duration:240, iterations:10});
   flashHit(); await wait(3000); hideBanner(); renderHud();
 }
+// Evento: Arca do Tesouro. O grupo vota abrir ou ignorar; pode dar moedas, uma poção ou ser armadilha.
+const CHEST_CHANCE = .22, CHEST_FROM = 3, CHEST_GAP = 4, CHEST_TRAP = 12;
+async function maybeChest(){
+  if (state.over || state.round < CHEST_FROM || state.round - state.chestAt < CHEST_GAP || Math.random() >= CHEST_CHANCE || (TEST_MODE && window.__force === 'nochest')) return;
+  state.chestAt = state.round;
+  const g = $('#game'), img = document.createElement('img');
+  img.className = 'chest'; img.src = 'chest_closed.png'; img.alt = ''; g.appendChild(img);
+  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu: abrir ou ignorar?'); A.sfx && A.sfx('right');
+  while (state.pendingAction || state.voteLocked) await wait(300);
+  const open = await new Promise(res => { state.chestDone = res; openMerchantVote('Abrir a arca?', {type:'chest'}); });
+  hideBanner();
+  if (!open) { img.classList.add('out'); setTimeout(() => img.remove(), 500); return; }
+  img.src = 'chest_open.png'; img.classList.add('opened'); await wait(500);
+  const r = Math.random();
+  if (r < .15) {          // armadilha
+    showBanner('ARMADILHA!', `a arca explode: todos perdem ${CHEST_TRAP} de HP`); flashHit();
+    HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp <= 0) return; const m = itemMit(k, CHEST_TRAP, false); h.hp = Math.max(0, h.hp - m.d); A.play(k, 'hurt', {light:true}); floatText(HERO_X[k], 56, `-${m.d}${m.note}`, '#ff6b81'); });
+    renderHud(); await wait(1800); hideBanner();
+  } else if (r < .45 && (() => { const p = ['hp_s','hp','mana_s','mana']; state.chestPotion = p[Math.floor(Math.random() * p.length)]; return canAdd(state.chestPotion); })()) {   // poção
+    const t = state.chestPotion; state.inventory.push(t); persist(); renderInventoryHits();
+    showBanner('A ARCA TINHA UMA POÇÃO', ITEMS[t].name); await wait(1800); hideBanner();
+  } else {                // moedas
+    const n = 4 + Math.floor(Math.random() * 5); state.gold += n; persist(); goldGain(n);
+    showBanner('A ARCA TINHA MOEDAS', `+${n} moedas`); await wait(1800); hideBanner();
+  }
+  img.classList.add('out'); setTimeout(() => img.remove(), 500);
+}
 async function bossIntro(ev = {}){
   const game = $('#game');
   if (state.hardNext) {
@@ -886,7 +919,7 @@ async function playRound(){
   if (FORCE === 'prep' && !empowered && !enragedNow) { prepWarn = true; tele = null; }
   if (FORCE === 'tele' && !empowered && !enragedNow) { prepWarn = false; tele = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp)[0] || null; }
   await bossIntro({prep:prepWarn, tele, empowered, dazed});
-  if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) await maybeGag('start');
+  if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) { await maybeGag('start'); await maybeChest(); if (aliveHeroes().length === 0) return endGame(false); }
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta S/SS garantida: mantém os ultimates aparecendo
   const q = pickQuestion(state.forceHard ? (Math.random() < .7 ? 4 : 5) : rollDiff());
@@ -1145,7 +1178,7 @@ function beginBattle(delay){
 function restartRun(){
   A.reset(); closeTargetPick();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
-  Object.assign(state, {phase2:false, sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
+  Object.assign(state, {phase2:false, chestAt:-9, sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
   state.shop = newShop(); { const st = $('#m-stage'); if (st) { st.classList.remove('shut','mad'); } } renderShop(); state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null; state.ib = allBuffs();
   $('#end-screen').hidden = true; renderHud(); beginBattle(800);
