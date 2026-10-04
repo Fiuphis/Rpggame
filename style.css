@@ -18,7 +18,7 @@
 
 
 #toast{position:absolute;z-index:46;left:50%;top:85.5%;width:max-content;max-width:84%;box-sizing:border-box;padding:.6cqw 2.2cqw;text-align:center;font:bold 1.8cqw/1.25 monospace;letter-spacing:.05cqw;color:#f1e3b4;background:linear-gradient(180deg,rgba(26,18,44,.94),rgba(9,6,20,.96));border:1px solid #b8923a;border-radius:.9cqw;box-shadow:0 0 0 1px #05050b,0 .4cqw 1cqw rgba(0,0,0,.6);opacity:0;transform:translate(-50%,6px);transition:opacity .2s,transform .2s;pointer-events:none}#toast.show{opacity:1;transform:translate(-50%,0)}
-@media(max-aspect-ratio:2/3){.game{width:100vw;height:auto}}@media(min-aspect-ratio:2/3){.game{height:100vh;width:auto}}
+@media(max-aspect-ratio:2/3){.game{width:100vw;height:auto}}@media(min-aspect-ratio:2/3){.game{height:100vh;height:100dvh;width:auto}}
 
 
 
