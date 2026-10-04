@@ -41,9 +41,9 @@ frame('ui_chip_hi.png', 24, 16, 3, (66, 48, 24), (34, 22, 10), GL, G)
 frame('ui_chip_red.png', 24, 16, 3, (72, 18, 32), (36, 8, 18), (214, 86, 96, 255), (126, 36, 52, 255))
 
 # ---- chips Tipo/Atributo (azul = tipo, roxo = demoniaco, cinza = normal) + icones 9x9 ----
-frame('ui_chip_blue.png', 24, 16, 3, (22, 40, 78), (10, 18, 44), (120, 190, 255, 255), (36, 84, 150, 255))
-frame('ui_chip_purple.png', 24, 16, 3, (52, 22, 84), (24, 10, 46), (200, 130, 255, 255), (96, 48, 150, 255))
-frame('ui_chip_grey.png', 24, 16, 3, (44, 42, 60), (22, 20, 34), (186, 182, 214, 255), (98, 94, 122, 255))
+frame('ui_chip_blue.png', 24, 16, 2, (22, 40, 78), (10, 18, 44), (120, 190, 255, 255), (36, 84, 150, 255))
+frame('ui_chip_purple.png', 24, 16, 2, (52, 22, 84), (24, 10, 46), (200, 130, 255, 255), (96, 48, 150, 255))
+frame('ui_chip_grey.png', 24, 16, 2, (44, 42, 60), (22, 20, 34), (186, 182, 214, 255), (98, 94, 122, 255))
 def icon(name, rows, pal):
     im = Image.new('RGBA', (len(rows[0]), len(rows)), (0, 0, 0, 0))
     for y, r in enumerate(rows):
@@ -58,3 +58,30 @@ DM = ['....W....', '...WSW...', '..WSSSW..', '.WSSSSSW.', 'WSSSSSSSW', '.WSSSSSW
 icon('icon_chip_normal.png', DM, {'W': (244, 241, 255, 255), 'S': (154, 149, 184, 255)})
 ST = ['....Y....', '....Y....', '...YWY...', 'YYYYWYYYY', '.YYWWWYY.', '..YWWWY..', '..YWYWY..', '.YY...YY.', '.Y.....Y.']
 icon('icon_chip_elem.png', ST, {'Y': (255, 170, 60, 255), 'W': (255, 240, 190, 255)})
+
+# ---- chip do tempo (verde) + ampulheta 7x9 ----
+frame('ui_chip_green.png', 24, 16, 2, (14, 52, 50), (6, 24, 28), (110, 240, 200, 255), (24, 120, 104, 255))
+HG = ['WWWWWWW', '.TTTTT.', '..TTT..', '...T...', '...T...', '..T.T..', '.T.TT..', 'TTTTTTT', 'WWWWWWW']
+icon('icon_chip_hourglass.png', HG, {'W': (120, 240, 205, 255), 'T': (61, 224, 176, 255)})
+icon('icon_chip_hourglass_red.png', HG, {'W': (255, 140, 150, 255), 'T': (255, 83, 107, 255)})
+
+# ---- molduras compactas (12x8, borda de 2 px: ferro + filete) para chips pequenos; usar com border-image-slice:2 ----
+def cs(name, top, bot, line):
+    W, H = 12, 8
+    im = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    for y in range(H):
+        for x in range(W):
+            if (x in (0, W - 1)) and (y in (0, H - 1)): continue      # cantos chanfrados
+            e = min(x, W - 1 - x, y, H - 1 - y)
+            if e == 0: c = IRON
+            elif e == 1: c = line
+            else:
+                t = (y - 2) / max(1, H - 5); c = tuple(int(top[i] + (bot[i] - top[i]) * t) for i in range(3)) + (255,)
+            im.putpixel((x, y), c)
+    im.save(name); print(name)
+cs('ui_cs_blue.png', (22, 40, 78), (10, 18, 44), (86, 150, 230, 255))
+cs('ui_cs_purple.png', (52, 22, 84), (24, 10, 46), (170, 100, 235, 255))
+cs('ui_cs_grey.png', (44, 42, 60), (22, 20, 34), (150, 146, 180, 255))
+cs('ui_cs_green.png', (14, 52, 50), (6, 24, 28), (70, 210, 170, 255))
+cs('ui_cs_red.png', (60, 14, 28), (30, 8, 16), (214, 70, 90, 255))
+cs('ui_cs_gold.png', (50, 38, 18), (26, 18, 8), (214, 170, 70, 255))

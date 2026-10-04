@@ -596,31 +596,35 @@ function renderHud(){
 // ===== Painel (pergunta / ação) =====
 function openPanel(){ $('#action-menu').hidden = true; $('#dynamic-question').classList.remove('exiting'); $('#dynamic-ui').hidden = false; $('#dynamic-question').hidden = false; }
 function openSkillMenu(){ $('#dynamic-question').hidden = true; $('#action-menu').hidden = true; const m = $('#skill-menu'); m.classList.remove('exiting'); m.hidden = false; $('#dynamic-ui').hidden = false; }
-const pc = (b, g = 0) => `left:${b[0] - g}%;top:${b[1] - g * .6}%;width:${b[2] + g * 2}%;height:${b[3] + g * 1.2}%`;
+const pc = (b, g = 0, side = 0) => `left:${b[0] - (side > 0 ? 0 : g)}%;top:${b[1] - g * .6}%;width:${b[2] + (side ? g : g * 2)}%;height:${b[3] + g * 1.2}%`;   // side: -1 cresce so p/ esquerda, 1 so p/ direita
+const timerHtml = (s, cls) => `<i class="hg"></i><span id="vote-timer" class="${cls}">${s}s</span>`;
+const attrKind = at => at.attr === 'demon' ? 'demon' : at.attr === 'none' ? 'none' : 'elem';
 const ATTR_ICON = {demon:'icon_chip_demon.png', none:'icon_chip_normal.png', elem:'icon_chip_elem.png'};
 function buildSkillFrame(panel, title, text, at, seconds, note){
   const M = MENU_META[panel], fr = $('#skm-frame'), L = $('#skm-layer');
   fr.src = `menu_${panel}${panel === 'elem' && window.__elemDef ? 'def' : ''}.png`; L.innerHTML = '';
-  const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box, /^sk-(tipo|attr)/.test(cls) ? .7 : 0); d.innerHTML = html; L.appendChild(d); return d; };
+  const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box, /^sk-timer/.test(cls) ? .7 : 0); d.innerHTML = html; L.appendChild(d); return d; };
   if (M.title) add('sk-title' + (panel === 'target' ? ' t2' : ''), M.title, `<b>${title}</b><span>${text}</span>`);
-  if (M.tipo) add('sk-tipo', M.tipo, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
-  if (M.attr && at) { const e = ELEMENTS[at.attr], k = at.attr === 'demon' ? 'demon' : at.attr === 'none' ? 'none' : 'elem', d = add('sk-attr ' + k, M.attr, `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // chip em pixel art cobre o da arte
-  add('sk-time', M.time, `<span id="vote-timer" class="sk-time">${seconds}s</span>`);
+  const A = M.attr, vy = A ? [A[1] - .4, A[3] + .8] : null;   // os dois chips ficam na mesma altura (a arte tinha tamanhos diferentes)
+  if (M.tipo) { const T = M.tipo; add('sk-tipo', A ? [T[0] - .7, vy[0], T[2] + .7, vy[1]] : T, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`); }
+  if (A && at) { const e = ELEMENTS[at.attr], k = attrKind(at), d = add('sk-attr ' + k, [A[0], vy[0], Math.min(A[2] + .7, M.tbox[0] - .6 - A[0]), vy[1]], `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // chip em pixel art cobre o da arte
+  add('sk-timer', M.tbox, timerHtml(seconds, 'sk-time'));
   if (M.info && note) add('tp-note', M.info, `<i class="tn-ico">${note.icon ? `<img src="${pixIcon(note.icon)}" alt="">` : ''}</i><span>${note.text}</span>`);
   fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
   return M;
 }
 function buildQuestionPanel(text, at, seconds, side){
   const Q = MENU_META.question, L = $('#dq-layer'); L.innerHTML = '';
-  const add = (id, cls, box, html) => { const d = document.createElement('div'); if (id) d.id = id; d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
+  const add = (id, cls, box, html) => { const d = document.createElement('div'); if (id) d.id = id; d.className = cls; d.style.cssText = pc(box, /sk-timer|qchip/.test(cls) ? .3 : 0); d.innerHTML = html; L.appendChild(d); return d; };
   const e = at ? ELEMENTS[at.attr] : null;
-  add('', 'dq-val tp', Q.tipo, at ? `<img src="icon_chip_sword.png" alt="">${at.tipo}` : '');
-  const ak = at ? (at.attr === 'demon' ? 'demon' : at.attr === 'none' ? 'none' : 'elem') : '';
-  const ad = add('', 'dq-val sm ' + ak, Q.attr, at ? `<img src="${ATTR_ICON[ak]}" alt="">${e.name}` : ''); if (e) { ad.style.setProperty('--ec', e.color); ad.style.color = e.color; }
+  if (at) {
+    add('', 'qchip tp', Q.ctipo, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at.tipo}</b></div>`);
+    const ak = attrKind(at), ad = add('', 'qchip ' + ak, Q.cattr, `<img src="${ATTR_ICON[ak]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); ad.style.setProperty('--ec', e.color);
+  }
   add('dq-text', '', Q.title, `<span></span>`).firstChild.textContent = text;
   add('', 'dq-coin', Q.coin, side ? side.reward : '0');
   if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 9.6, Q.title[1] + 2.2, 11, 7], `<small>RANK</small><b>${side.rank}</b>`);
-  add('', 'dq-side-timer', Q.time, `<span id="vote-timer" class="dq-side-timer">${seconds}s</span>`);
+  add('', 'sk-timer', Q.tbox, timerHtml(seconds, 'dq-side-timer'));
   return L;
 }
 function fitText(){
@@ -728,7 +732,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     else if (menu) {
       $('#am-title').textContent = title; $('#am-text').textContent = text;
       $('#am-attack').innerHTML = attackChips(attack);
-      $('#am-timer').innerHTML = `<span id="vote-timer" class="dq-side-timer">${seconds}s</span>`;
+      $('#am-timer').innerHTML = timerHtml(seconds, 'dq-side-timer');
       list = $('#am-list'); list.innerHTML = '';
     } else { list = buildQuestionPanel(text, attack, seconds, side); }
     const enabled = options.map((o, i) => o.disabled ? -1 : i).filter(i => i >= 0);
@@ -748,6 +752,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
         b.innerHTML = `<b class="cnt sk-cnt" style="left:${(cn[0] - cd[0]) / cd[2] * 100}%;top:${(cn[1] - cd[1]) / cd[3] * 100}%;width:${cn[2] / cd[2] * 100}%;height:${cn[3] / cd[3] * 100}%">0</b>`;
         b.setAttribute('aria-label', o.label);
+        if (o.kind === 'elem' && o.label !== ELEMENTS.fire.name) b.insertAdjacentHTML('beforeend', `<span class="el-chip">${window.__elemDef ? 'SEM EFEITO' : 'BOSS IMUNE'}</span>`);   // cobre o chip pintado na arte
         if (o.face) b.insertAdjacentHTML('afterbegin', `<img class="tp-face" src="tp_${o.face}.png" alt=""><span class="tp-name"></span><span class="tp-desc"></span><span class="tp-chips">${o.chips || ''}</span>`), b.querySelector('.tp-name').textContent = o.label, b.querySelector('.tp-desc').textContent = o.desc || '';
         if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
       } else if (menu) {
