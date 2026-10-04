@@ -68,21 +68,21 @@ const ITEMS = {
   helm:{name:'Elmo Reforçado', ask:'Comprar Elmo Reforçado?', price:10, kind:'fx', fx:'helm', icon:'item_helm.png', info:'Corta 8 de dano de cada golpe que você recebe por 3 rodadas.'},
   smokebomb:{name:'Bomba de Fumaça', ask:'Comprar Bomba de Fumaça?', price:11, kind:'fx', fx:'smoke', icon:'item_smokebomb.png', info:'Você escapa dos golpes diretos do boss por 2 rodadas (a Onda Sombria ainda acerta).'},
   // cura
-  elixir:{name:'Elixir Completo', ask:'Comprar Elixir Completo?', price:16, kind:'fx', fx:'elixir', icon:'item_elixir.png', info:'Restaura 50 de HP e 50 de mana.'},
+  elixir:{name:'Elixir Completo', ask:'Comprar Elixir Completo?', price:16, kind:'fx', fx:'elixir', icon:'item_elixir.png', info:'Restaura 30 de HP e 30 de mana.'},
   herb:{name:'Erva Curativa', ask:'Comprar Erva Curativa?', price:9, kind:'fx', fx:'herb', icon:'item_herb.png', info:'Cura 8 de HP no fim de cada rodada, por 4 rodadas.'},
   // crítico e dano
   lens:{name:'Lente do Caçador', ask:'Comprar Lente do Caçador?', price:11, kind:'fx', fx:'lens', icon:'item_lens.png', info:'Seu próximo ataque que acertar é CRÍTICO (1,8x de dano).'},
   tonic:{name:'Tônico de Fúria', ask:'Comprar Tônico de Fúria?', price:12, kind:'fx', fx:'tonic', icon:'item_tonic.png', info:'Seus ataques causam +25% de dano por 3 rodadas.'},
   powder:{name:'Pólvora Negra', ask:'Comprar Pólvora Negra?', price:8, kind:'fx', fx:'powder', icon:'item_powder.png', info:'Seu próximo ataque causa +15 de dano.'},
-  blade:{name:'Lâmina Afiada', ask:'Comprar Lâmina Afiada?', price:25, kind:'fx', fx:'blade', icon:'item_blade.png', info:'Permanente: todos os seus ataques causam +4 de dano até o fim da partida.'},
+  blade:{name:'Lâmina Afiada', ask:'Comprar Lâmina Afiada?', price:25, kind:'fx', fx:'blade', rare:true, icon:'item_blade.png', info:'RARO: permanente, todos os seus ataques causam +10 de dano até o fim da partida.'},
   lightbomb:{name:'Bomba de Luz', ask:'Comprar Bomba de Luz?', price:13, kind:'fx', fx:'lightbomb', icon:'item_lightbomb.png', info:'Explode no fim da rodada: 40 de dano direto no boss.'},
   // mana, especial e utilidade
   hourglass:{name:'Ampulheta do Tempo', ask:'Comprar Ampulheta do Tempo?', price:14, kind:'fx', fx:'hourglass', icon:'item_hourglass.png', info:'Zera a recarga de todas as suas habilidades e dá +20 de mana.'},
   luckycoin:{name:'Moeda da Sorte', ask:'Comprar Moeda da Sorte?', price:6, kind:'fx', fx:'lucky', icon:'item_luckycoin.png', info:'+3 moedas a cada acerto nas próximas 3 perguntas.'},
   // raros
-  phoenix:{name:'Pena de Fênix', ask:'Comprar Pena de Fênix?', price:24, kind:'fx', fx:'phoenix', rare:true, icon:'item_phoenix.png', info:'RARO: revive seu herói caído com 60 de HP (só vale se algum aliado ainda estiver de pé).'},
-  dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 3 ataques causam de 0,5x a 3x de dano, sorteado.'},
-  scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói.'}
+  phoenix:{name:'Pena de Fênix', ask:'Comprar Pena de Fênix?', price:24, kind:'fx', fx:'phoenix', rare:true, icon:'item_phoenix.png', info:'RARO: revive seu herói caído com 100 de HP e cura 20 de HP dos aliados (só vale se algum aliado ainda estiver de pé).'},
+  dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 4 ataques causam de 1x a 3x de dano, sorteado.'},
+  scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói e recupera 60 de HP e 80 de mana, e dá +25% de dano por 3 rodadas.'}
 };
 const itemInfo = t => { const it = ITEMS[t]; return it.info || (it.kind === 'hp' ? `Restaura ${it.amount} de HP do seu herói (ou de um aliado).` : `Restaura ${it.amount} de mana do seu herói (ou de um aliado).`); };
 const CAT_LABEL = {heal:'CURA', def:'DEFESA', atk:'ATAQUE', util:'UTILIDADE'};
@@ -143,6 +143,7 @@ const ELEMENTS = {
 // Boss: fraco a FOGO e a SAGRADO (1,5x). Água, ar e terra: imune (a Maga faz o ataque só pelo efeito, dano 0). Sem marcas/reações; escudos só ganham bônus contra o que o fere.
 const BOSS = {weak:['holy','fire'], immune:['water','air','earth']};
 const BURN_TURNS = 2, BURN_MULT = .25;   // fogo marca o boss: dano contínuo de 0,25x do dano normal por 2 perguntas
+const BOSS_WEAK_HOLY = 2, BOSS_WEAK_HOLY_DEF = .8;   // fraqueza a SAGRADO: o Ataque Sagrado causa 2x e a Defesa Sagrada corta 80%. Só vale se o boss for fraco a sagrado (BOSS.weak); contra quem não é, as habilidades sagradas são só normais
 const BOSS_WEAK_MULT = 1.5;   // fogo e sagrado ferem o boss em dobro-ish (1,5x); água, ar e terra: só o efeito visual, dano 0
 const BOSS_FAMILY = 'DEMONÍACO';   // o boss é demônio/vampiro: todo dano dele é demoníaco
 const BOSS_ATTACK = {tipo:'FÍSICO', attr:'demon'};   // o boss ataca fisicamente, com atributo demoníaco/vampírico
@@ -174,9 +175,9 @@ const SKILLS = {
   ],
   assassin:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de cajado. Dano normal.', mana:0, cd:0, mult:1},
-    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'1,5x de dano em demônios, como o boss.', mana:20, cd:1, mult:1.5},
+    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele.', mana:20, cd:1, mult:1, holy:true},
     {id:'def', kind:'def', name:'Defesa Normal', desc:'Ergue as mãos. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
-    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'1,5x de defesa contra demônios.', mana:20, cd:1, reduce:.5, bonus:.65, holy:true},
+    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'Sagrado: corta 80% do dano se o inimigo for fraco a ele.', mana:20, cd:1, reduce:.5, bonus:BOSS_WEAK_HOLY_DEF, holy:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ]
 };
@@ -1148,6 +1149,7 @@ async function playRound(){
           if (sk.elem && el && BOSS.immune.includes(el)) { dmg = 0; sub = `${ELEMENTS[el].name}: o boss é IMUNE!`; }
           else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); state.burn = BURN_TURNS; sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x e fica QUEIMANDO por ${BURN_TURNS} perguntas.`; }
           else if (sk.elem && el) { const r = applyMark(el); if (r) { dmg += r.dmg; sub += ` ${r.name}! +${r.dmg}`; if (r.rage) state.rage = Math.max(0, state.rage + r.rage); } else sub += ` Marca de ${ELEMENTS[el].name.toLowerCase()}.`; }
+          if (sk.holy && BOSS.weak.includes('holy')) { dmg = Math.round(dmg * BOSS_WEAK_HOLY); sub += ` SAGRADO: o boss é FRACO! ${BOSS_WEAK_HOLY}x.`; }
           if (bers) { dmg = Math.round(dmg * 1.5); sub += ' Berserk 1,5x!'; }
           if (dmg > 0 && k === 'tank' && sk.id === 'super') state.dazedNext = true;
           if (dmg > 0 && k === 'mage' && state.buff.bh > 0) { dmg *= 3; sub += ' Buraco Negro x3!'; }
@@ -1159,7 +1161,7 @@ async function playRound(){
         defended = true;
         if (ok) { sub = 'acertou, mas defendeu à toa!'; state.rage = Math.min(RAGE_MAX, state.rage + RAGE_WASTED); }
         else {
-          const red = (sk.holy || (sk.elem && BOSS.weak.includes(el))) && sk.bonus ? sk.bonus : sk.reduce;
+          const red = (sk.holy ? BOSS.weak.includes('holy') : sk.elem && BOSS.weak.includes(el)) && sk.bonus ? sk.bonus : sk.reduce;
           hurt = Math.round(dmgBase * (1 - red)); sub = `errou e cortou ${Math.round(red * 100)}% do dano${red > sk.reduce ? ' (bônus sagrado)' : sk.elem ? ' (elemento sem efeito no boss)' : ''}`; }
       } else if (sk.kind === 'dodge') {
         if (ok) { sub = 'acertou, mas esquivou à toa!'; state.rage = Math.min(RAGE_MAX, state.rage + RAGE_WASTED); }
@@ -1336,7 +1338,7 @@ function itemOff(hero, d){               // dano causado: lâmina, pólvora, tô
   if (b.powder > 0) { const p = b.powder === 2 ? 22 : 15; b.powder = 0; d += p; n.push('POLVORA +' + p); }
   if (b.tonic > 0) { d = Math.round(d * 1.25); n.push('FURIA +25%'); }
   if (b.lens > 0) { const c = b.lens === 2 ? 2.2 : 1.8; b.lens = 0; d = Math.round(d * c); n.push('CRITICO ' + String(c).replace('.', ',') + 'x!'); }
-  if (b.dice > 0) { b.dice--; const L = b.diceAff ? [1, 1.5, 2, 3] : [0.5, 1, 1.5, 2, 3], m = L[Math.floor(Math.random() * L.length)]; d = Math.round(d * m); n.push('DADO ' + String(m).replace('.', ',') + 'x'); }
+  if (b.dice > 0) { b.dice--; const L = b.diceAff ? [1.5, 2, 3, 4] : [1, 1.5, 2, 3], m = L[Math.floor(Math.random() * L.length)]; d = Math.round(d * m); n.push('DADO ' + String(m).replace('.', ',') + 'x'); }
   return {d, note:n.join(' ')};
 }
 async function itemRoundEnd(){          // fim da rodada: bomba de luz, erva, duração dos efeitos
@@ -1359,14 +1361,14 @@ const FX = {
   lens:(b, h, f, t) => { b.lens = f ? 2 : 1; return `Lente pronta: próximo ataque será crítico (${f ? '2,2' : '1,8'}x).`; },
   tonic:(b, h, f, t) => { b.tonic = f ? 5 : 3; return `Fúria: +25% de dano por ${b.tonic} rodadas.`; },
   powder:(b, h, f, t) => { b.powder = f ? 2 : 1; return `Pólvora pronta: próximo ataque +${f ? 22 : 15}.`; },
-  blade:(b, h, f, t) => { b.blade += f ? 6 : 4; return `Lâmina afiada: +${b.blade} de dano permanente.`; },
+  blade:(b, h, f, t) => { b.blade += f ? 15 : 10; return `Lâmina afiada: +${b.blade} de dano permanente.`; },
   lightbomb:(b, h, f, t) => { b.bomb += f ? 60 : 40; return `Bomba armada: explode no fim da rodada (${b.bomb} de dano).`; },
   lucky:(b, h, f, t) => { b.lucky = f ? 5 : 3; b.luckyAmt = f ? 5 : 3; return `Moeda da Sorte: +${b.luckyAmt} moedas por acerto, ${b.lucky} perguntas.`; },
   hourglass:(b, h, f, t) => { state.cd[t] = {}; h.mp = Math.min(100, h.mp + (f ? 40 : 20)); return `Ampulheta: recargas zeradas e +${f ? 40 : 20} de mana.`; },
-  elixir:(b, h, f, t) => { const n = f ? 75 : 50; h.hp = Math.min(HERO_MAX_HP, h.hp + n); h.mp = Math.min(100, h.mp + n); return `Elixir: +${n} de HP e +${n} de mana.`; },
-  scroll:(b, h, f, t) => { state.ultReady[t] = true; state.ultCd[t] = 0; if (f) h.mp = Math.min(100, h.mp + 30); return 'Pergaminho: ULTIMATE carregado!' + (f ? ' +30 de mana.' : ''); },
-  dice:(b, h, f, t) => { b.dice = f ? 4 : 3; b.diceAff = !!f; return `Dado lançado: próximos ${b.dice} ataques com dano sorteado${f ? ' (sem resultado ruim)' : ''}.`; },
-  phoenix:(b, h, f, t) => { h.hp = 60; return 'Pena de Fênix: seu herói voltou com 60 de HP!'; }
+  elixir:(b, h, f, t) => { const n = f ? 45 : 30; h.hp = Math.min(HERO_MAX_HP, h.hp + n); h.mp = Math.min(100, h.mp + n); return `Elixir: +${n} de HP e +${n} de mana.`; },
+  scroll:(b, h, f, t) => { state.ultReady[t] = true; state.ultCd[t] = 0; const hp = f ? 90 : 60, mp = f ? 100 : 80; h.hp = Math.min(HERO_MAX_HP, h.hp + hp); h.mp = Math.min(100, h.mp + mp); b.tonic = f ? 5 : 3; return `Pergaminho: ULTIMATE carregado, +${hp} de HP, +${mp} de mana e +25% de dano por ${b.tonic} rodadas!`; },
+  dice:(b, h, f, t) => { b.dice = f ? 5 : 4; b.diceAff = !!f; return `Dado lançado: próximos ${b.dice} ataques com dano sorteado${f ? ' (de 1,5x a 4x)' : ''}.`; },
+  phoenix:(b, h, f, t) => { h.hp = 100; HERO_ORDER.forEach(k => { if (k !== t && state.heroes[k].hp > 0) state.heroes[k].hp = Math.min(HERO_MAX_HP, state.heroes[k].hp + (f ? 30 : 20)); }); return `Pena de Fênix: seu herói voltou com 100 de HP e os aliados recuperam +${f ? 30 : 20}!`; }
 };
 function applyItem(index, tgt){
   const type=state.inventory[index];if(!type)return;
