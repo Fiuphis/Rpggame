@@ -55,8 +55,8 @@ def panel(name,W=136,H=62):
         diamond(im,sx+dirn*2,cy,4,(30,20,50,255),G); px(im,sx+dirn*2,cy,(80,140,255,255)); px(im,sx+dirn*2,cy-1,(180,210,255,255))
     im.save(name); return im
 # ---------- BOTAO ----------
-def button(name,mid,hi,lo,frame,frame_hi,frame_lo,gemc,W=60,H=22,glow=False):
-    im=new(W,H); pt=7   # pontas em seta
+def button(name,mid,hi,lo,frame,frame_hi,frame_lo,gemc,W=60,H=22,glow=False,pt=7):
+    im=new(W,H)   # pontas em seta
     def inside(x,y):
         if not(0<=x<W and 0<=y<H): return False
         cy=abs(y-(H-1)/2)  # distancia ao centro vertical
@@ -90,3 +90,7 @@ panel('enter_panel.png')
 button('enter_btn.png',(112,22,38,255),(168,44,60,255),(66,12,24,255),(176,138,60,255),(240,206,120,255),(104,76,28,255),((70,140,255,255),(190,220,255,255)))
 button('enter_btn_on.png',(150,34,48,255),(232,84,72,255),(96,18,30,255),(226,184,90,255),(255,236,160,255),(150,110,44,255),((120,255,170,255),(220,255,230,255)))
 button('enter_btn_off.png',(52,48,66,255),(78,72,96,255),(34,30,44,255),(96,88,112,255),(140,132,158,255),(60,54,76,255),((70,66,86,255),(110,104,130,255)))
+
+# botao largo da selecao de classe (ESCOLHA UMA CLASSE / CONFIRMAR)
+button('pick_btn_on.png',(150,34,48,255),(232,84,72,255),(96,18,30,255),(226,184,90,255),(255,236,160,255),(150,110,44,255),((120,255,170,255),(220,255,230,255)),W=118,H=16,pt=6)
+button('pick_btn_off.png',(52,48,66,255),(78,72,96,255),(34,30,44,255),(96,88,112,255),(140,132,158,255),(60,54,76,255),((70,66,86,255),(110,104,130,255)),W=118,H=16,pt=6)

@@ -69,7 +69,7 @@ $('#c-no').onclick = () => { $('#confirm').hidden = true; };
 $('#c-yes').onclick = () => { localStorage.removeItem(KEY); sessionStorage.removeItem('bd1_justwon'); done = []; $('#confirm').hidden = true; deselect(); paint(done, false); };
 // voltar = trocar de grupo (o progresso fica salvo no aparelho)
 let leaving = false;
-function leaveMap() { if (leaving) return; leaving = true; window.HUD && HUD.hide(); LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }); }
+function leaveMap() { if (leaving) return; leaving = true; clearTimeout(enterT); bots.forEach(clearTimeout); $('#panel').hidden = true; selected = null; window.HUD && HUD.hide(); LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }); }
 $('#back').addEventListener('click', e => { e.preventDefault(); leaveMap(); });
 // v137: o "voltar" do celular/navegador faz o mesmo que TROCAR DE GRUPO (nuvens fecham e volta ao menu)
 history.pushState({ mapa: 1 }, '');
@@ -90,8 +90,9 @@ function select(id){
   } else { $('#p-sub').textContent = st === 'done' ? 'Concluído · este guardião já foi derrotado' : st === 'next' ? 'Em breve' : 'Bloqueado · derrote o guardião anterior'; go.disabled = true; go.innerHTML = 'INDISPONÍVEL'; go.onclick = null; }
 }
 function upd(need){ const go = $('#p-go'); go.innerHTML = `${stateOf(done, selected) === 'done' ? 'REJOGAR' : 'ENTRAR'} <b>${yes}/${need}</b>`; go.classList.toggle('selected', mine); }
+let enterT = 0;
 function enter(){
   bots.forEach(clearTimeout); const v = $('#veil'); v.classList.remove('out'); $('#map').style.transition = 'transform 1.2s ease-in'; $('#map').style.transform = 'scale(1.5)';
-  setTimeout(() => { location.href = 'game.html' + location.search; }, 1300);
+  enterT = setTimeout(() => { location.href = 'game.html' + location.search; }, 1300);
 }
 })();
