@@ -60,8 +60,12 @@ try:
         pg.evaluate("()=>{const S=BancoDadosGame.state;S.gold=100;S.shop.slots=['amulet','phoenix','hp','lens'];renderShop();setBag(true)}"); pg.wait_for_timeout(700)
         inner('game',''); common('game')
         g = pg.evaluate("()=>{const q=s=>{const e=document.querySelector(s);if(!e)return null;const r=e.getBoundingClientRect();return [r.left,r.top,r.right,r.bottom]};return {game:q('#game'),scroll:q('.scroll'),h:innerHeight,w:innerWidth}}")
-        if phone and g['game'][1] > 1: fail(f'game em {name}: quadro nao esta colado ao topo ({g["game"][1]:.0f}px)')
-        if phone and abs(g['game'][2]-g['game'][0]-w) > 1: fail(f'game em {name}: quadro nao ocupa a largura toda')
+        if g['game'][1] > 1: fail(f'game em {name}: quadro nao esta colado ao topo ({g["game"][1]:.0f}px)')
+        exp = min(w, (h-140)/1.5)
+        if abs(g['game'][2]-g['game'][0]-exp) > 1.5: fail(f'game em {name}: largura do quadro {g["game"][2]-g["game"][0]:.0f} != esperado {exp:.0f}')
+        if abs((g['game'][0]+g['game'][2])/2 - w/2) > 1.5: fail(f'game em {name}: quadro fora do centro')
+        if g['scroll'] is None or g['scroll'][2]-g['scroll'][0] <= 0: fail(f'game em {name}: sem papiro')
+        elif abs((g['scroll'][2]-g['scroll'][0]) - (g['game'][2]-g['game'][0])) > 1.5: fail(f'game em {name}: papiro com largura diferente do quadro')
         if g['scroll'] and g['scroll'][2]-g['scroll'][0]>0 and g['scroll'][3] > g['h']+1: fail(f'game em {name}: papiro passa do fim da tela')
         # papiro: conteudo (relatorio final e escolha de alvo) tem que caber dentro do papiro em qualquer altura
         PAP = """()=>{const sc=document.querySelector('#scroll');if(!sc||!document.documentElement.classList.contains('paper'))return null;const r=sc.getBoundingClientRect();let bad=[];

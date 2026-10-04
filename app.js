@@ -242,13 +242,13 @@ function fitPaperUI(u){
   if (w.offsetHeight <= room() + 1) return;
   u.classList.add('tight');
   const h = w.offsetHeight; if (h <= room() + 1) return;
-  const k = Math.max(.5, room() / h); w.style.transform = 'scale(' + k.toFixed(3) + ')'; w.style.width = (100 / k).toFixed(1) + '%'; w.style.flex = 'none';
+  const k = Math.max(.5, room() * .92 / h); w.style.transform = 'scale(' + k.toFixed(3) + ')'; w.style.width = (100 / k).toFixed(1) + '%'; w.style.flex = 'none';
 }
 function paperUI(html){ if (!paperOn()) return null; const u = $('#sc-ui'); if (!u) return null; u.innerHTML = '<div class="ui-fit">' + html + '</div>'; $('#scroll').classList.add('ui'); fitPaperUI(u); if (window.Paper) Paper.burst(14); return u; }
 addEventListener('resize', () => { const u = $('#sc-ui'); if (u && $('#scroll').classList.contains('ui')) fitPaperUI(u); });
 const PP_MENU = () => paperOn() && $('#scroll') && $('#scroll').clientHeight - 76 >= 176;
 function paperUIClose(){ const sc = $('#scroll'); if (sc) sc.classList.remove('ui'); const u = $('#sc-ui'); if (u) u.innerHTML = ''; }
-function fitScroll(){ const g = $('#game').getBoundingClientRect(), band = Math.max(0, Math.round(innerHeight - g.bottom)), on = band >= 56, bh = on ? band + Math.round(g.height * .11) : band; document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.classList.toggle('paper', on); }
+function fitScroll(){ const g = $('#game').getBoundingClientRect(), band = Math.max(0, Math.round(innerHeight - g.bottom)), on = band >= 56, bh = on ? band + Math.round(g.height * .11) : band; document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.style.setProperty('--gw', Math.round(g.width) + 'px'); document.documentElement.style.setProperty('--gl', Math.round(g.left) + 'px'); document.documentElement.classList.toggle('paper', on); }
 addEventListener('resize', fitScroll); addEventListener('orientationchange', () => setTimeout(fitScroll, 300)); addEventListener('load', fitScroll); setTimeout(fitScroll, 0);
 function toast(msg){if(!fresh('t:'+msg,4000))return;if(paperOn()){const n=$('#sc-n');scWrite(n,msg);clearTimeout(window.__toast);window.__toast=setTimeout(()=>{n.textContent=''},readMs(msg)+600);return}const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),readMs(msg)+400)}
 let votes = {yes:0, no:0};
