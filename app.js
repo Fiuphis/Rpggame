@@ -322,7 +322,7 @@ async function resolveVote(result){
   let msg;
   if (action.type === 'chest') {
     msg = result === 'yes' ? 'Abrir a arca!' : result === 'no' ? 'Ignorada.' : result === 'tie' ? 'Empate. A arca fica.' : 'Tempo esgotado.';
-    showMerchantText(msg); await wait(1000); const done = state.chestDone; closeMerchantVote();
+    state.chestVote = state.myVote; showMerchantText(msg); await wait(1000); const done = state.chestDone; closeMerchantVote();
     if (done) { state.chestDone = null; done(result === 'yes'); }
     return;
   }
@@ -750,7 +750,7 @@ async function maybePhase2(){
   flashHit(); await wait(3000); hideBanner(); renderHud();
 }
 // Evento: Arca do Tesouro. O grupo vota abrir ou ignorar; pode dar moedas, uma poção ou ser armadilha.
-const CHEST_CHANCE = .22, CHEST_FROM = 3, CHEST_GAP = 4, CHEST_TRAP = 12;
+const CHEST_CHANCE = .22, CHEST_FROM = 3, CHEST_GAP = 4, CHEST_TRAP = 18;
 const CHEST_FRAMES = [0, 1, 2, 3].map(i => `chest_f${i}.png`);
 CHEST_FRAMES.forEach(f => { const i = new Image(); i.src = f; });
 async function chestPlay(img, order, ms = 120){ for (const f of order) { img.src = CHEST_FRAMES[f]; await wait(ms); } }
@@ -769,28 +769,34 @@ async function chestVanish(img){   // some: treme, pisca, vira poeira
   await img.animate([{filter:'brightness(1)'},{filter:'brightness(3)'},{filter:'brightness(1)'},{filter:'brightness(3)'}], {duration:360, easing:'steps(4)'}).finished;
   chestDust(img); img.style.visibility = 'hidden'; await wait(900); img.remove();
 }
-async function maybeChest(){
-  if (state.over || state.round < CHEST_FROM || state.round - state.chestAt < CHEST_GAP || Math.random() >= CHEST_CHANCE || (TEST_MODE && window.__force === 'nochest')) return;
+// Rodada de baú: ocupa a rodada inteira (sem pergunta). O grupo vota abrir ou ignorar; quem votou em abrir leva um item da loja ou uma armadilha.
+const CHEST_ITEM_P = .7, CHEST_RARE_P = .1;
+function chestEligible(){
+  return !state.over && state.round >= CHEST_FROM && state.round - state.chestAt >= CHEST_GAP && Math.random() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest');
+}
+async function runChestRound(){
   state.chestAt = state.round;
   const g = $('#game'), img = document.createElement('img');
   img.className = 'chest'; img.src = CHEST_FRAMES[0]; img.alt = ''; g.appendChild(img);
-  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu: abrir ou ignorar?');
+  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Abrir ou ignorar? (sem pergunta nesta rodada)');
   while (state.pendingAction || state.voteLocked) await wait(300);
+  state.chestVote = null;
   const open = await new Promise(res => { state.chestDone = res; openMerchantVote('Abrir a arca?', {type:'chest'}); });
+  const mine = state.chestVote === 'yes';
   hideBanner();
-  if (!open) { await chestVanish(img); return; }
+  if (!open) { showBanner('ARCA IGNORADA', 'ela se desfaz em poeira'); await chestVanish(img); hideBanner(); return; }
   await chestPlay(img, [1, 2, 3]); chestDust(img, 10); await wait(250);
-  const r = Math.random();
-  if (r < .15) {          // armadilha
-    showBanner('ARMADILHA!', `a arca explode: todos perdem ${CHEST_TRAP} de HP`); flashHit();
-    HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp <= 0) return; const m = itemMit(k, CHEST_TRAP, false); h.hp = Math.max(0, h.hp - m.d); A.play(k, 'hurt', {light:true}); floatText(HERO_X[k], 56, `-${m.d}${m.note}`, '#ff6b81'); });
-    renderHud(); await wait(1800); hideBanner();
-  } else if (r < .45 && (() => { const p = ['hp_s','hp','mana_s','mana']; state.chestPotion = p[Math.floor(Math.random() * p.length)]; return canAdd(state.chestPotion); })()) {   // poção
-    const t = state.chestPotion; state.inventory.push(t); persist(); renderInventoryHits();
-    showBanner('A ARCA TINHA UMA POÇÃO', ITEMS[t].name); await wait(1800); hideBanner();
-  } else {                // moedas
-    const n = 4 + Math.floor(Math.random() * 5); state.gold += n; state.stats.gained += n; persist(); goldGain(n);
-    showBanner('A ARCA TINHA MOEDAS', `+${n} moedas`); await wait(1800); hideBanner();
+  if (!mine) { showBanner('A ARCA ABRIU', 'você votou em ignorar: nada para você'); await wait(1900); hideBanner(); }
+  else if (Math.random() < CHEST_ITEM_P) {   // item aleatório da loja (raro com pouca chance)
+    const t = Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
+    if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); showBanner('A ARCA TINHA UM ITEM', ITEMS[t].name + (ITEMS[t].rare ? ' (RARO)' : '')); }
+    else { const n = ITEMS[t].price; state.gold += n; state.stats.gained += n; persist(); goldGain(n); showBanner('MOCHILA CHEIA', `${ITEMS[t].name} virou ${n} moedas`); }
+    await wait(2300); hideBanner();
+  } else {                                   // armadilha: só para quem abriu
+    const k = activeGroup, h = state.heroes[k];
+    showBanner('ARMADILHA!', `a arca explode em quem abriu: -${CHEST_TRAP} de HP`); flashHit();
+    if (h.hp > 0) { const m = itemMit(k, CHEST_TRAP, false); h.hp = Math.max(0, h.hp - m.d); A.play(k, 'hurt', {light:true}); floatText(HERO_X[k], 56, `-${m.d}${m.note}`, '#ff6b81'); }
+    renderHud(); await wait(2100); hideBanner();
   }
   await chestPlay(img, [2, 1, 0], 130); await wait(250); await chestVanish(img);   // fecha e some
 }
@@ -977,6 +983,13 @@ async function playRound(){
   if (state.over) return;
   await QREADY;
   state.round++;
+  if (chestEligible()) {   // rodada de baú: sem pergunta; a próxima rodada volta ao normal
+    state.round--; state.chestAt = state.round;
+    await runChestRound();
+    if (state.over) return;
+    if (aliveHeroes().length === 0) return endGame(false);
+    turnTimer = setTimeout(playRound, 900); return;
+  }
   const enragedNow = state.hardNext, empowered = state.prepNext && !enragedNow;
   const dazed = state.dazedNext; state.dazedNext = false; if (dazed) state.stun = true;
   let prepWarn = false, tele = null;
@@ -986,7 +999,7 @@ async function playRound(){
   if (FORCE === 'prep' && !empowered && !enragedNow) { prepWarn = true; tele = null; }
   if (FORCE === 'tele' && !empowered && !enragedNow) { prepWarn = false; tele = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp)[0] || null; }
   await bossIntro({prep:prepWarn, tele, empowered, dazed});
-  if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) { await maybeGag('start'); await maybeChest(); if (aliveHeroes().length === 0) return endGame(false); }
+  if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) await maybeGag('start');
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta S/SS garantida: mantém os ultimates aparecendo
   const q = pickQuestion(state.forceHard ? (Math.random() < .7 ? 4 : 5) : rollDiff());
@@ -1335,19 +1348,12 @@ function useInventory(index){
   if(!giveable(type) || !others.length){ applyItem(index, activeGroup); return; }
   closeTargetPick();
   const cands = (type === 'phoenix' && state.heroes[activeGroup].hp > 0 ? others : [activeGroup, ...others]);
-  const pu = paperUI(`<div class="ui-t sm">${ITEMS[type].name}: usar em quem?</div><div class="ui-grid">${cands.map(k => { const h = state.heroes[k]; return `<button type="button" class="sc-btn" data-k="${k}"><b>${k === activeGroup ? 'VOCÊ' : GROUPS[k]}</b><small>HP ${h.hp}  MANA ${h.mp}${hasAff(type, k) ? '  AFINIDADE' : ''}</small></button>`; }).join('')}</div><button type="button" class="sc-btn mini" data-x="1">CANCELAR</button>`);
+  const card = k => { const h = state.heroes[k], me = k === activeGroup;
+    return `<button type="button" class="pk-card${me ? ' me' : ''}" data-k="${k}"><span class="pk-n">${me ? 'VOCÊ' : GROUPS[k]}</span><i class="pk-bar"><s style="width:${Math.max(0, h.hp)}%"></s></i><i class="pk-bar m"><s style="width:${Math.max(0, h.mp)}%"></s></i><small>${h.hp <= 0 ? 'CAÍDO' : hasAff(type, k) ? 'AFINIDADE' : 'HP ' + h.hp}</small></button>`; };
+  const pu = paperUI(`<div class="ui-t sm">USAR EM QUEM?</div><div class="ui-s"><b>${ITEMS[type].name}</b>: ${ITEMS[type].info || ''}</div><div class="pk">${cands.map(card).join('')}</div><div class="ui-btns"><button type="button" class="sc-btn alt mini" data-x="1">CANCELAR</button></div>`);
   if (pu) { pu.dataset.kind = 'pick'; pu.onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.x) { closeTargetPick(); return; } const k = b.dataset.k; closeTargetPick(); applyItem(index, k); }; return; }
-  const box = document.createElement('div'); box.id = 'tgt-pick';
-  box.innerHTML = `<div class="tp-back"></div><div class="tp-box"><b class="tp-title">${ITEMS[type].name}: usar em quem?</b><div class="tp-list"></div></div>`;
-  const list = box.querySelector('.tp-list');
-  (type === 'phoenix' && state.heroes[activeGroup].hp > 0 ? others : [activeGroup, ...others]).forEach(k => {
-    const h = state.heroes[k], b = document.createElement('button'); b.type = 'button';
-    b.innerHTML = `<span>${k === activeGroup ? 'VOCÊ' : GROUPS[k]}</span><small>HP ${h.hp} · MANA ${h.mp}${hasAff(type, k) ? ' · AFINIDADE' : ''}</small>`;
-    b.addEventListener('click', () => { closeTargetPick(); applyItem(index, k); });
-    list.appendChild(b);
-  });
-  box.querySelector('.tp-back').addEventListener('click', closeTargetPick);
-  $('#game').appendChild(box);
+  // sem faixa de papiro (tela muito baixa): escolhe automaticamente o próprio herói
+  applyItem(index, activeGroup);
 }
 // Mochila: 6 slots; itens iguais empilham até 3 por slot (o inventário salvo continua sendo uma lista de ids)
 const BAG_SLOTS = 6, STACK_MAX = 3;
