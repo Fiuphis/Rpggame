@@ -610,7 +610,6 @@ function buildSkillFrame(panel, title, text, at, seconds, note){
   if (M.tipo) { const T = M.tipo; add('sk-tipo', AT ? [T[0] - .7, vy[0], T[2] + .7, vy[1]] : T, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`); }
   if (AT && at) { const e = ELEMENTS[at.attr], k = attrKind(at), d = add('sk-attr ' + k, [AT[0], vy[0], Math.min(AT[2] + .7, M.tbox[0] - .6 - AT[0]), vy[1]], `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // chip em pixel art cobre o da arte
   add('sk-timer', M.tbox, timerHtml(seconds, 'sk-time'));
-  if (M.info && note) add('tp-note', M.info, `<i class="tn-ico">${note.icon ? `<img src="${pixIcon(note.icon)}" alt="">` : ''}</i><span>${note.text}</span>`);
   fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
   return M;
 }
@@ -750,12 +749,13 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.addEventListener('pointerdown', () => { b.__held = false; clearTimeout(ht); ht = setTimeout(showD, 380); });
         ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => clearTimeout(ht)));
       } else if (M) {
-        const [r, c] = o.slot, cd = M.cards[r][c], cn = M.cnt[r * 2 + c];
+        const [r, c] = o.slot || [0, 0], I = M.info, cd = o.back ? I : M.cards[r][c], cn = o.back ? [I[0] + I[2] * .84, I[1] + I[3] * .2, I[2] * .13, I[3] * .6] : M.cnt[r * 2 + c];
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
         b.innerHTML = `<b class="cnt sk-cnt" style="left:${(cn[0] - cd[0]) / cd[2] * 100}%;top:${(cn[1] - cd[1]) / cd[3] * 100}%;width:${cn[2] / cd[2] * 100}%;height:${cn[3] / cd[3] * 100}%">0</b>`;
         b.setAttribute('aria-label', o.label);
         if (o.kind === 'elem' && o.label === ELEMENTS.fire.name) b.insertAdjacentHTML('beforeend', `<span class="el-cover"></span><span class="el-chip gold a"><b>BOSS FRACO</b></span><span class="el-chip gold b"><b>${window.__elemDef ? 'CORTA 55%' : '1,5x QUEIMA'}</b></span>`);   // o texto do Fogo tambem vira chip, igual aos outros
         if (o.kind === 'elem' && o.label !== ELEMENTS.fire.name) b.insertAdjacentHTML('beforeend', `<span class="el-chip"><b>${window.__elemDef ? 'SEM EFEITO' : 'BOSS IMUNE'}</b></span>`);   // cobre o chip pintado na arte
+        if (o.back) b.insertAdjacentHTML('afterbegin', `<span class="bk-fill"></span><img class="bk-ico" src="${pixIcon('back')}" alt=""><span class="bk-txt">VOLTAR</span>`);
         if (o.face) b.insertAdjacentHTML('afterbegin', `<img class="tp-face" src="tp_${o.face}.png" alt=""><span class="tp-name"></span><span class="tp-desc"></span><span class="tp-chips">${o.chips || ''}</span>`), b.querySelector('.tp-name').textContent = o.label, b.querySelector('.tp-desc').textContent = o.desc || '';
         if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
       } else if (menu) {
@@ -938,17 +938,21 @@ async function pickAlly(k, sk){
   const first = list.find(x => !x.block).hero;
   const t = await chooseTarget(sk.name.toUpperCase(), sk.id === 'pass' ? 'Quem ganha o ataque extra?' : 'Quem será protegido?', list, first,
     {icon:sk.id === 'pass' ? 'info' : 'guard', text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'});
+  if (t === 'BACK') return 'BACK';
   return list.find(x => x.hero === t && !x.block) ? t : first;
 }
 const HERO_ICON = {mage:'orb', knight:'sword', tank:'hammer', assassin:'staff'};
-async function chooseTarget(title, text, list, fallback, note){
+async function chooseTarget(title, text, list, fallback, note, endsAt){
+  if (note && note.text) showBanner(title, note.text);   // avisos ficam no papiro
   const r = await runVote({
-    menu:true, panel:'target', title, text, seconds:ACTION_SECONDS, note,
+    menu:true, panel:'target', title, text, seconds:ACTION_SECONDS, endsAt,
     options: HERO_ORDER.map((h, n) => { const it = list.find(x => x.hero === h), ok = it && !it.block;
       return {label:GROUPS[h], desc:it ? it.desc : '', kind:'util hero-' + h, face:h, slot:[n >> 1, n & 1],
         chips: ok ? (it.chips || '') : it && it.block ? `<span class="tag block">${it.block}</span>` : !it && h === activeGroup ? '<span class="tag">VOCÊ</span>' : '', disabled:!ok}; })
+      .concat([{label:'VOLTAR', desc:'Escolher outra habilidade', kind:'back', back:true}])
   });
-  return r.idx === null ? fallback : HERO_ORDER[r.idx];
+  hideBanner();
+  return r.idx === null ? fallback : r.idx === HERO_ORDER.length ? 'BACK' : HERO_ORDER[r.idx];
 }
 const healTargets = () => HERO_ORDER.map(h => { const hp = state.heroes[h].hp;
   return hp <= 0 ? {hero:h, desc:'Caído', chips:`<span class="tag holy attr">REVIVER ${REVIVE_HP}</span>`}
@@ -960,7 +964,8 @@ async function activateUlt(k){
   if (k === 'assassin') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
     const list = healTargets(), valid = list.filter(t => !t.block);
     if (k === activeGroup && state.heroes[k].hp > 0) {
-      const r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {icon:'cross', text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}); await closePanel();
+      let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {icon:'cross', text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}); await closePanel();
+      if (r === 'BACK') return 'BACK';
       if (!r || !valid.some(v => v.hero === r)) { toast('Tempo esgotado: a Luz Sagrada não foi usada e continua disponível.'); return false; }
       cleTarget = r;
     } else cleTarget = valid.slice().sort((x, y) => state.heroes[x.hero].hp - state.heroes[y.hero].hp)[0].hero;
@@ -1039,7 +1044,7 @@ async function chooseSkill(k){
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
     const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts});
     if (r.idx === null) return null;
-    if (r.idx === 0) { await closePanel(); await activateUlt(k); endsAt = null; continue; }   // ultimate ativado: o efeito começa a contar agora
+    if (r.idx === 0) { await closePanel(); if (await activateUlt(k) === 'BACK') continue; endsAt = null; continue; }   // ultimate ativado: o efeito começa a contar agora
     const sk = list[r.idx - 1]; let element = null;
     if (sk.elem) {
       const els = ['fire','water','air','earth'];
@@ -1158,8 +1163,11 @@ async function playRound(){
     const at = state.curAttack;
     if (k === activeGroup) {
       showRing(k); await wait(400);
-      actions[k] = await chooseSkill(k);
-      if (actions[k] && actions[k].skill.target) actions[k].target = await pickAlly(k, actions[k].skill);
+      for (;;) {
+        actions[k] = await chooseSkill(k);
+        if (actions[k] && actions[k].skill.target) { actions[k].target = await pickAlly(k, actions[k].skill); if (actions[k].target === 'BACK') continue; }
+        break;
+      }
       await closePanel(); hideRing();
     } else {
       const av = SKILLS[k].filter(sk => !skillBlock(k, sk));

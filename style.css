@@ -751,3 +751,9 @@ body,button,input{font-family:OpenC,OpenD,monospace}
 .rage .rage-label{font-size:2.2cqw;letter-spacing:.04cqw}
 
 .rage .rage-label{top:0;height:100%;width:29.6%;margin-right:1.9%;font-size:1.8cqw;letter-spacing:.03cqw;border-width:max(1px,.3cqw)!important}
+
+/* v217: barra inferior do seletor de heroi = botao VOLTAR (seta para a esquerda) */
+.sk-card.back{overflow:hidden}
+.sk-card.back .bk-fill{position:absolute;inset:0;background:#0b0d22;border:0;border-style:solid;border-width:max(2px,.45cqw);border-image:url(ui_cs_gold.png) 2 fill/auto stretch;image-rendering:pixelated;pointer-events:none}
+.sk-card.back .bk-ico{position:absolute;left:3.5%;top:50%;height:58%;aspect-ratio:1;transform:translateY(-50%);image-rendering:pixelated;pointer-events:none}
+.sk-card.back .bk-txt{position:absolute;left:14%;top:50%;transform:translateY(-50%);font:bold 2.3cqw/1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.2cqw;color:#ffe08a;text-shadow:0 .2cqw 0 #000;pointer-events:none;white-space:nowrap}
