@@ -414,3 +414,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v169: selo de rank um pouco mais abaixo e à direita (não toca mais na borda dourada nem no texto).
 - v170: Mercador vivo — fala diferente a cada abertura e fica irritado se abrem sem comprar (6 vezes: fecha a loja por 3 perguntas, placa FECHADO em pixel art); luz da lanterna/velas mexendo; item comprado sai da prateleira e é reposto na pergunta seguinte (`SHOP_POOL`).
 - v171: fala do mercador agora no cantinho dele (caixa ao lado do retrato), sem balão grande.
+- v172: placa FECHADO refeita: pixel art 64x40 gasta (madeira com veios, rachaduras, pregos enferrujados, musgo, tinta descascada); gerador em tools/make_sign.py.

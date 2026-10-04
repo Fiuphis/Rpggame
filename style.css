@@ -373,7 +373,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 @keyframes mrage{from{filter:brightness(.8)}to{filter:brightness(1.3)}}
 .m-closed{left:22%;top:0;right:0;bottom:0;opacity:0;transition:opacity .7s;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%);mask-image:linear-gradient(90deg,transparent,#000 16%)}
 .m-empty{position:absolute;inset:0;background:linear-gradient(180deg,#1a0b12,#08050c 60%,#050309)}
-.m-sign{position:absolute;left:28%;top:-6%;width:70%;image-rendering:pixelated;transform-origin:50% 0;animation:msign 3.2s ease-in-out infinite alternate}
+.m-sign{position:absolute;left:20%;top:-5%;width:82%;image-rendering:pixelated;transform-origin:50% 0;animation:msign 3.2s ease-in-out infinite alternate}
 @keyframes msign{from{transform:rotate(-3.5deg)}to{transform:rotate(3.5deg)}}
 .m-stage.shut .m-closed{opacity:1}
 .m-puffs{inset:0}
