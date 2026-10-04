@@ -418,3 +418,6 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 #tgt-pick button{display:flex;flex-direction:column;align-items:center;gap:.3cqw;padding:1.5cqw 1cqw;background:linear-gradient(#2a2145,#150f28);border:1px solid #6b5a2e;border-radius:.9cqw;color:#f1e3b4;font:inherit;font-size:3.6cqw;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0}
 #tgt-pick button small{font-size:2.5cqw;color:#a9a0c4}
 #tgt-pick button:active{border-color:#ffe08a;background:#3a2d5e}
+
+/* pilha de itens iguais na mochila */
+.inventory-hit{position:absolute}.inv-count{position:absolute;right:6%;bottom:4%;min-width:34%;padding:0 .8cqw;box-sizing:border-box;text-align:center;font:700 3.4cqw/1.15 'Pixelify Sans',monospace;font-style:normal;color:#ffe08a;background:#0a0816;border:1px solid #b8893a;border-radius:.6cqw;text-shadow:0 .2cqw 0 #000;pointer-events:none}

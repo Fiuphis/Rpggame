@@ -398,7 +398,7 @@ function requestBuy(slot){
   const item = ITEMS[type];
   if (state.pendingAction || state.voteLocked) { toast('Já existe uma votação aberta.'); return; }
   if (state.gold < item.price) { toast('Moedas insuficientes.'); return; }
-  if (state.inventory.length >= 6) { toast('Mochila cheia.'); return; }
+  if (!canAdd(type)) { toast('Mochila cheia.'); return; }
   if (item.info) toast(item.name + ': ' + item.info + (hasAff(type) ? ' AFINIDADE: +50% de efeito para o seu herói.' : ''));
   openMerchantVote(item.ask, {type:'buy', item:type, slot});
 }
@@ -406,7 +406,7 @@ function executeBuy(type, slot){
   const item = ITEMS[type];
   if (state.shop.closed > 0 || state.shop.slots[slot] !== type) { toast('Item indisponível.'); return false; }
   if (state.gold < item.price) { toast('Moedas insuficientes.'); return false; }
-  if (state.inventory.length >= 6) { toast('Mochila cheia.'); return false; }
+  if (!canAdd(type)) { toast('Mochila cheia.'); return false; }
   state.gold -= item.price; state.inventory.push(type);
   state.shop.slots[slot] = null; state.shop.opens = 0; mMood(0); renderShop({sold:slot, soldType:type}); mBubble(msay('sold'));
   setTimeout(() => { if (state.shop.slots[slot] || state.shop.closed > 0) return; state.shop.slots[slot] = pickNew(type); renderShop({arrive:[slot]}); if (ITEMS[state.shop.slots[slot]].rare) mBubble(msay('rare')); }, 1100);
@@ -1214,9 +1214,25 @@ function useInventory(index){
   box.querySelector('.tp-back').addEventListener('click', closeTargetPick);
   $('#game').appendChild(box);
 }
+// Mochila: 6 slots; itens iguais empilham até 3 por slot (o inventário salvo continua sendo uma lista de ids)
+const BAG_SLOTS = 6, STACK_MAX = 3;
+function inventoryStacks(){
+  const st = [];
+  state.inventory.forEach((type, i) => {
+    let s = st.find(x => x.type === type && x.count < STACK_MAX);
+    if (!s) { s = {type, count:0, idx:i}; st.push(s); }
+    s.count++; s.idx = i;
+  });
+  return st;
+}
+function canAdd(type){ const st = inventoryStacks(); return st.length < BAG_SLOTS || st.some(x => x.type === type && x.count < STACK_MAX); }
 function renderInventoryHits(){
-  const root=$('#inventory-hits');root.innerHTML='';
-  for(let i=0;i<6;i++){const b=document.createElement('button');b.className='inventory-hit';b.type='button';b.setAttribute('aria-label',state.inventory[i]?`Usar ${ITEMS[state.inventory[i]].name}`:'Slot vazio');if(state.inventory[i]){const img=document.createElement('img');img.className='inv-icon';img.src=ITEMS[state.inventory[i]].icon;img.alt='';b.appendChild(img);b.addEventListener('click',()=>useInventory(i))}root.appendChild(b)}
+  const root=$('#inventory-hits');root.innerHTML='';const st=inventoryStacks();
+  for(let i=0;i<BAG_SLOTS;i++){const s=st[i],b=document.createElement('button');b.className='inventory-hit';b.type='button';b.setAttribute('aria-label',s?`Usar ${ITEMS[s.type].name}${s.count>1?' (x'+s.count+')':''}`:'Slot vazio');
+    if(s){const img=document.createElement('img');img.className='inv-icon';img.src=ITEMS[s.type].icon;img.alt='';b.appendChild(img);
+      if(s.count>1){const c=document.createElement('i');c.className='inv-count';c.textContent=s.count;b.appendChild(c)}
+      b.addEventListener('click',()=>useInventory(s.idx))}
+    root.appendChild(b)}
 }
 
 // Optional external realtime adapter. A future Netlify/Supabase layer can replace these functions
@@ -1228,7 +1244,7 @@ window.BancoDadosGame={
   setGroup:g=>{if(!GROUPS[g])return false;localStorage.setItem('bd1_group',g);location.search=`?grupo=${encodeURIComponent(g)}`;return true},
   getGroup:()=>activeGroup,getVotes:()=>({...votes}),
   addItem:(k,item)=>ITEMS[k]=item,
-  addInventoryItem:k=>{if(state.inventory.length<6){state.inventory.push(k);persist();renderInventoryHits()}}
+  addInventoryItem:k=>{if(canAdd(k)){state.inventory.push(k);persist();renderInventoryHits()}}
 };
 
 $('#back-lobby').addEventListener('click',()=>{LOBBY.leave();location.href='index.html'});
