@@ -11,8 +11,8 @@
 <link rel="stylesheet" href="lobby.css">
 <link rel="stylesheet" href="fog.css">
 <title>Selecione sua classe</title>
-<style>.upd-btn{position:fixed;z-index:45;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font:bold 10px/1 monospace;letter-spacing:.06em;color:#ffc449;background:rgba(13,11,28,.82);border:1px solid #8a6a2a;padding:7px 9px;cursor:pointer;transition:opacity .9s ease}
-.upd-btn:disabled{opacity:.6}
+<style>.upd-btn{position:fixed;z-index:45;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font:bold 11px/1 'Pixelify Sans',monospace;letter-spacing:.06em;color:#ffd978;background:none;border:solid transparent;border-width:9px;border-image:url(ui_chip.png) 6 fill/9px stretch;image-rendering:pixelated;padding:0 2px;cursor:pointer;transition:opacity .9s ease}
+.upd-btn:disabled{opacity:.6}.upd-btn:active{border-image-source:url(ui_chip_hi.png)}
 .fogin .upd-btn{opacity:0;pointer-events:none}
 </style>
 </head>
@@ -93,7 +93,7 @@ confirmBtn.onclick=()=>{
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search});
 };
-(()=>{const V='v207',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
+(()=>{const V='v208',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
 b.onclick=async function(){b.disabled=true;b.textContent='ATUALIZANDO…';
 try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}
 if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}
@@ -112,6 +112,6 @@ window.addEventListener('storage',render);
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='updated')location.reload()});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}))}
 </script>
 <a class="ed-link" href="editor.html">EDITOR DE PERGUNTAS</a>
-<style>.ed-link{position:fixed;z-index:44;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));font:bold 10px/1 monospace;letter-spacing:.08em;color:#c9b27a;background:rgba(10,8,22,.85);border:1px solid #6b5a2e;border-radius:4px;padding:7px 10px;text-decoration:none}.fogin .ed-link{opacity:0;pointer-events:none}</style>
+<style>.ed-link{position:fixed;z-index:44;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));font:bold 11px/1 'Pixelify Sans',monospace;letter-spacing:.08em;color:#e0c98a;background:none;border:solid transparent;border-width:9px;border-image:url(ui_chip.png) 6 fill/9px stretch;image-rendering:pixelated;padding:0 4px;text-decoration:none}.ed-link:active{border-image-source:url(ui_chip_hi.png)}.fogin .ed-link{opacity:0;pointer-events:none}</style>
 </body>
 </html>

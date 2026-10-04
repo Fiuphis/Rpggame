@@ -568,13 +568,15 @@ function renderHud(){
 function openPanel(){ $('#action-menu').hidden = true; $('#dynamic-question').classList.remove('exiting'); $('#dynamic-ui').hidden = false; $('#dynamic-question').hidden = false; }
 function openSkillMenu(){ $('#dynamic-question').hidden = true; $('#action-menu').hidden = true; const m = $('#skill-menu'); m.classList.remove('exiting'); m.hidden = false; $('#dynamic-ui').hidden = false; }
 const pc = b => `left:${b[0]}%;top:${b[1]}%;width:${b[2]}%;height:${b[3]}%`;
-function buildSkillFrame(panel, title, text, at, seconds){
+function buildSkillFrame(panel, title, text, at, seconds, note){
   const M = MENU_META[panel], fr = $('#skm-frame'), L = $('#skm-layer');
   fr.src = `menu_${panel}.png`; L.innerHTML = '';
   const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
-  if (M.title) add('sk-title', M.title, `<b>${title}</b><span>${text}</span>`);
-  add('sk-tipo', M.tipo, `<img src="icon_tipo_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
+  if (M.title) add('sk-title' + (panel === 'target' ? ' t2' : ''), M.title, `<b>${title}</b><span>${text}</span>`);
+  if (M.tipo) add('sk-tipo', M.tipo, `<img src="icon_tipo_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
   add('sk-time', M.time, `<span id="vote-timer" class="sk-time">${seconds}s</span>`);
+  if (M.info && note) add('tp-note', M.info, `<i class="tn-ico">${note.icon ? `<img src="${pixIcon(note.icon)}" alt="">` : ''}</i><span>${note.text}</span>`);
+  fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
   return M;
 }
 function buildQuestionPanel(text, at, seconds, side){
@@ -679,7 +681,7 @@ function flashHit(){
 
 // Votação genérica dentro do grupo: mostra contagem ao vivo (o grupo vê entre si), decide por maioria.
 // Empate entre as mais votadas = sorteio; ninguém votou = null. O painel continua aberto ao terminar.
-function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd}){
+function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd, note}){
   return new Promise(resolve => {
     const endsAt = fixedEnd || Date.now() + seconds * 1000; seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
     const voters = groupMembers(), need = majorityOf(voters);
@@ -689,7 +691,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       P = paperUI(`<div class="pp-head"><b>${title || 'ESCOLHA O ELEMENTO'}</b><span>${text || ''}</span><em id="pp-timer" class="pp-timer">${seconds}s</em></div><div class="pp-grid${panel === 'elem' ? ' elem' : ''}"></div><div class="pp-desc" id="pp-desc">Segure um cartão para ler a descrição.</div>`);
       P.dataset.kind = 'menu'; P.onclick = null; list = P.querySelector('.pp-grid');
     }
-    else if (menu && panel) { M = buildSkillFrame(panel, title, text, attack, seconds); list = $('#skm-layer'); }
+    else if (menu && panel) { M = buildSkillFrame(panel, title, text, attack, seconds, note); list = $('#skm-layer'); }
     else if (menu) {
       $('#am-title').textContent = title; $('#am-text').textContent = text;
       $('#am-attack').innerHTML = attackChips(attack);
@@ -713,6 +715,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
         b.innerHTML = `<b class="cnt sk-cnt" style="left:${(cn[0] - cd[0]) / cd[2] * 100}%;top:${(cn[1] - cd[1]) / cd[3] * 100}%;width:${cn[2] / cd[2] * 100}%;height:${cn[3] / cd[3] * 100}%">0</b>`;
         b.setAttribute('aria-label', o.label);
+        if (o.face) b.insertAdjacentHTML('afterbegin', `<img class="tp-face" src="tp_${o.face}.png" alt=""><span class="tp-name"></span><span class="tp-desc"></span><span class="tp-chips">${o.chips || ''}</span>`), b.querySelector('.tp-name').textContent = o.label, b.querySelector('.tp-desc').textContent = o.desc || '';
         if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
       } else if (menu) {
         b.className = `act-card ${o.kind || ''}`;
@@ -862,22 +865,23 @@ async function pickAlly(k, sk){
   const list = HERO_ORDER.filter(h => h !== k).map(h => state.heroes[h].hp > 0
     ? {hero:h, desc:`Vida ${state.heroes[h].hp}/${HERO_MAX_HP}`} : {hero:h, desc:'Caído', block:'CAÍDO'});
   const first = list.find(x => !x.block).hero;
-  const t = await chooseTarget(sk.name.toUpperCase(), sk.id === 'pass' ? 'Quem ganha o ataque extra?' : 'Quem será protegido?', list, first);
+  const t = await chooseTarget(sk.name.toUpperCase(), sk.id === 'pass' ? 'Quem ganha o ataque extra?' : 'Quem será protegido?', list, first,
+    {icon:sk.id === 'pass' ? 'pass' : 'guard', text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'});
   return list.find(x => x.hero === t && !x.block) ? t : first;
 }
 const HERO_ICON = {mage:'orb', knight:'sword', tank:'hammer', assassin:'staff'};
-async function chooseTarget(title, text, list, fallback){
+async function chooseTarget(title, text, list, fallback, note){
   const r = await runVote({
-    menu:true, title, text, seconds:ACTION_SECONDS,
-    options: HERO_ORDER.map(h => { const it = list.find(x => x.hero === h); return it && !it.block
-      ? {label:GROUPS[h], desc:it.desc, kind:'util', icon:HERO_ICON[h], chips:it.chips || ''}
-      : {label:GROUPS[h], desc:it ? it.desc : '', kind:'util', icon:HERO_ICON[h], chips:it && it.block ? `<span class="tag block">${it.block}</span>` : '', disabled:true}; })
+    menu:true, panel:'target', title, text, seconds:ACTION_SECONDS, note,
+    options: HERO_ORDER.map((h, n) => { const it = list.find(x => x.hero === h), ok = it && !it.block;
+      return {label:GROUPS[h], desc:it ? it.desc : '', kind:'util hero-' + h, face:h, slot:[n >> 1, n & 1],
+        chips: ok ? (it.chips || '') : it && it.block ? `<span class="tag block">${it.block}</span>` : '', disabled:!ok}; })
   });
   return r.idx === null ? fallback : HERO_ORDER[r.idx];
 }
 const healTargets = () => HERO_ORDER.map(h => { const hp = state.heroes[h].hp;
-  return hp <= 0 ? {hero:h, desc:'Caído: reviver com 50% de vida', chips:'<span class="tag holy attr">REVIVER</span>'}
-       : hp < HERO_MAX_HP ? {hero:h, desc:`Vida ${hp}/${HERO_MAX_HP}: curar +${HEAL_AMOUNT}`, chips:'<span class="tag attr">CURAR</span>'}
+  return hp <= 0 ? {hero:h, desc:'Caído', chips:`<span class="tag holy attr">REVIVER ${REVIVE_HP}</span>`}
+       : hp < HERO_MAX_HP ? {hero:h, desc:`Vida ${hp}/${HERO_MAX_HP}`, chips:`<span class="tag attr">CURAR +${HEAL_AMOUNT}</span>`}
        : {hero:h, desc:'Vida cheia', block:'VIDA CHEIA'}; });
 function ultUsable(k){ return k !== 'assassin' || healTargets().some(t => !t.block); }
 async function activateUlt(k){
@@ -885,7 +889,7 @@ async function activateUlt(k){
   if (k === 'assassin') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
     const list = healTargets(), valid = list.filter(t => !t.block);
     if (k === activeGroup && state.heroes[k].hp > 0) {
-      const r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null); await closePanel();
+      const r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {icon:'cross', text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}); await closePanel();
       if (!r || !valid.some(v => v.hero === r)) { toast('Tempo esgotado: a Luz Sagrada não foi usada e continua disponível.'); return false; }
       cleTarget = r;
     } else cleTarget = valid.slice().sort((x, y) => state.heroes[x.hero].hp - state.heroes[y.hero].hp)[0].hero;
@@ -1080,9 +1084,12 @@ async function playRound(){
       await closePanel(); hideRing();
     } else {
       const av = SKILLS[k].filter(sk => !skillBlock(k, sk));
-      const sk = av[Math.floor(Math.random() * av.length)];
-      actions[k] = {skill: sk, element: sk.elem ? ['fire','water','air','earth'][Math.floor(Math.random() * 4)] : null};
-      if (sk.target) { const al = aliveHeroes().filter(h => h !== k); actions[k].target = al[Math.floor(Math.random() * al.length)]; }
+      const sk = av.length ? av[Math.floor(Math.random() * av.length)] : null;   // sem mana e esquiva em recarga: não age (antes travava a partida)
+      if (!sk) actions[k] = null;
+      else {
+        actions[k] = {skill: sk, element: sk.elem ? ['fire','water','air','earth'][Math.floor(Math.random() * 4)] : null};
+        if (sk.target) { const al = aliveHeroes().filter(h => h !== k); actions[k].target = al[Math.floor(Math.random() * al.length)]; }
+      }
     }
   }
 
