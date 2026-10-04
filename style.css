@@ -408,3 +408,13 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 /* item raro na prateleira: brilho dourado pulsando */
 .shop.rare .s-icon{filter:drop-shadow(0 0 3px #ffd34d) drop-shadow(0 0 7px #ff9d1a);animation:rarePulse 1.4s ease-in-out infinite}
 @keyframes rarePulse{50%{filter:drop-shadow(0 0 5px #fff2a8) drop-shadow(0 0 12px #ffb02e)}}
+
+/* escolha de alvo ao usar item (aliado ou voce) */
+#tgt-pick{position:absolute;inset:0;z-index:52}
+#tgt-pick .tp-back{position:absolute;inset:0;background:rgba(2,2,10,.6)}
+#tgt-pick .tp-box{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:72%;box-sizing:border-box;padding:2.2cqw 2.6cqw 2.6cqw;background:linear-gradient(#1b1430,#0a0816);border:2px solid #b8893a;border-radius:1.2cqw;box-shadow:0 0 0 2px #05040a,0 0 2.4cqw rgba(255,197,78,.4);font-family:'Pixelify Sans',monospace;text-align:center}
+#tgt-pick .tp-title{display:block;color:#ffe08a;font-size:3.4cqw;margin-bottom:1.8cqw;text-shadow:0 .3cqw 0 #000}
+#tgt-pick .tp-list{display:flex;flex-direction:column;gap:1.3cqw}
+#tgt-pick button{display:flex;flex-direction:column;align-items:center;gap:.3cqw;padding:1.5cqw 1cqw;background:linear-gradient(#2a2145,#150f28);border:1px solid #6b5a2e;border-radius:.9cqw;color:#f1e3b4;font:inherit;font-size:3.6cqw;cursor:pointer;-webkit-tap-highlight-color:transparent;outline:0}
+#tgt-pick button small{font-size:2.5cqw;color:#a9a0c4}
+#tgt-pick button:active{border-color:#ffe08a;background:#3a2d5e}
