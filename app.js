@@ -246,7 +246,7 @@ function fitPaperUI(u){
 }
 function paperUI(html){ if (!paperOn()) return null; const u = $('#sc-ui'); if (!u) return null; u.innerHTML = '<div class="ui-fit">' + html + '</div>'; $('#scroll').classList.add('ui'); fitPaperUI(u); if (window.Paper) Paper.burst(14); return u; }
 addEventListener('resize', () => { const u = $('#sc-ui'); if (u && $('#scroll').classList.contains('ui')) fitPaperUI(u); });
-const PP_MENU = () => paperOn() && $('#scroll') && $('#scroll').clientHeight - 76 >= 176;
+const PP_MENU = () => false;   // menu de habilidades NUNCA no papiro: so na interface propria (arte)
 function paperUIClose(){ const sc = $('#scroll'); if (sc) sc.classList.remove('ui'); const u = $('#sc-ui'); if (u) u.innerHTML = ''; }
 function fitScroll(){ const g = $('#game').getBoundingClientRect(), band = Math.max(0, Math.round(innerHeight - g.bottom)), on = band >= 56, bh = on ? band + Math.round(g.height * .11) : band; document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.style.setProperty('--gw', Math.round(g.width) + 'px'); document.documentElement.style.setProperty('--gl', Math.round(g.left) + 'px'); document.documentElement.classList.toggle('paper', on); }
 addEventListener('resize', fitScroll); addEventListener('orientationchange', () => setTimeout(fitScroll, 300)); addEventListener('load', fitScroll); setTimeout(fitScroll, 0);

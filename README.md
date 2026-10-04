@@ -450,3 +450,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v203: `100vh` -> `100dvh` no quadro da batalha em telas largas; trava de seguranca adicionada.
 - v204: conteudo do papiro (relatorio, escolha de alvo, menus) se ajusta ao tamanho do papiro: modo compacto + reducao proporcional em celulares curtos (360x640); trava de layout passa a testar isso.
 - v205: telas largas/curtas (tablet, celular curto) mantem o jogo no formato de celular com bordas pretas nas laterais e papiro (quadro = min(largura, (altura-140px)/1,5)); papiro com margem clara em volta do conteudo; papiro do celular curto (360x640) passou de 159 para 195px.
+- v206: menu de habilidades nunca mais no papiro; so na interface propria de habilidades (arte).
