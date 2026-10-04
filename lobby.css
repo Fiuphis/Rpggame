@@ -55,5 +55,5 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 .above .ab-title{pointer-events:none;position:absolute;left:1%;top:0;width:98%;height:18.5%;background:url(select_plate.webp) 50% 0/102.04% auto no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 96%,transparent 100%),linear-gradient(to right,transparent 0,#000 3%,#000 97%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 96%,transparent 100%),linear-gradient(to right,transparent 0,#000 3%,#000 97%,transparent 100%);mask-composite:intersect}
 .fogin .above,body.leaving .above{opacity:0;pointer-events:none}
 
-.test-toggle{border:solid transparent!important;border-width:8px!important;border-image:url(ui_chip.png) 6 fill/8px stretch!important;background:none!important;image-rendering:pixelated;padding:0 2px!important;color:#9a8fb8!important;font:11px 'Pixelify Sans',monospace!important}
+.test-toggle{border:solid transparent!important;border-width:8px!important;border-image:url(ui_chip.png) 6 fill/8px stretch!important;background:none!important;image-rendering:pixelated;padding:3px 8px!important;color:#9a8fb8!important;font:11px 'Pixelify Sans',monospace!important}
 .test-toggle{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 40px)!important}

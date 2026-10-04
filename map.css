@@ -87,9 +87,9 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 .panel{bottom:auto;top:calc(100dvh - 330px)}
 
 /* v208: botoes e confirmacao em pixel-art */
-.back{border:solid transparent;border-width:9px;border-image:url(ui_chip.png) 6 fill/9px stretch;background:none;image-rendering:pixelated;padding:0 2px;font:bold 11px/1 'Pixelify Sans',monospace;color:#e8d8a8;letter-spacing:.05em}
+.back{border:solid transparent;border-width:9px;border-image:url(ui_chip.png) 6 fill/9px stretch;background:none;image-rendering:pixelated;padding:3px 6px;font:bold 11px/1 'Pixelify Sans',monospace;color:#e8d8a8;letter-spacing:.05em}
 .back:active{border-image-source:url(ui_chip_hi.png)}
-.reset{border:solid transparent;border-width:8px;border-image:url(ui_chip_red.png) 6 fill/8px stretch;background:none;image-rendering:pixelated;padding:0 2px;font:bold 10px/1 'Pixelify Sans',monospace;color:#ffd6cf}
+.reset{border:solid transparent;border-width:8px;border-image:url(ui_chip_red.png) 6 fill/8px stretch;background:none;image-rendering:pixelated;padding:3px 6px;font:bold 10px/1 'Pixelify Sans',monospace;color:#ffd6cf}
 .c-box{border:solid transparent;border-width:15px;border-image:url(ui_box.png) 9 fill/15px stretch;background:none;box-shadow:none;image-rendering:pixelated}
 .c-t{font-family:'Pixelify Sans',monospace}
 .c-b button{width:132px;height:40px;padding:0;border:0;background:url(btn_wood.png) center/100% 100% no-repeat;image-rendering:pixelated;color:#fff0c8;font:bold 12px 'Pixelify Sans',monospace;text-shadow:1px 1px 0 #2a1a0c}
