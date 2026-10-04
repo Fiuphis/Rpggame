@@ -82,6 +82,8 @@ const ITEMS = {
   // raros
   phoenix:{name:'Pena de Fênix', ask:'Comprar Pena de Fênix?', price:24, kind:'fx', fx:'phoenix', rare:true, icon:'item_phoenix.png', info:'RARO: revive seu herói caído com 100 de HP e cura 20 de HP dos aliados (só vale se algum aliado ainda estiver de pé).'},
   dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 4 ataques causam de 1x a 3x de dano, sorteado.'},
+  watch_s:{name:'Relógio de Bolso', ask:'Comprar Relógio de Bolso?', price:30, kind:'fx', fx:'clock', secs:5, rare:true, legend:true, icon:'item_watch_s.png', info:'LENDÁRIO: só vale durante a pergunta: soma +5s ao tempo de resposta do seu grupo. Não pode ser dado a aliados.'},
+  watch_l:{name:'Relógio Grande', ask:'Comprar Relógio Grande?', price:50, kind:'fx', fx:'clock', secs:10, rare:true, legend:true, icon:'item_watch_l.png', info:'LENDÁRIO: só vale durante a pergunta: soma +10s ao tempo de resposta do seu grupo. Não pode ser dado a aliados.'},
   scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói e recupera 60 de HP e 80 de mana, e dá +25% de dano por 3 rodadas.'}
 };
 const itemInfo = t => { const it = ITEMS[t]; return it.info || (it.kind === 'hp' ? `Restaura ${it.amount} de HP do seu herói (ou de um aliado).` : `Restaura ${it.amount} de mana do seu herói (ou de um aliado).`); };
@@ -396,7 +398,9 @@ async function askUlt(hero){
 
 // ===== Mercador vivo: humor, falas, loja que fecha, prateleira que repõe itens =====
 const SHOP_POOL = Object.keys(ITEMS).filter(k => !ITEMS[k].rare);
-const RARE_POOL = Object.keys(ITEMS).filter(k => ITEMS[k].rare), RARE_CHANCE = 0.12;            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
+const RARE_POOL = Object.keys(ITEMS).filter(k => ITEMS[k].rare && !ITEMS[k].legend), RARE_CHANCE = 0.12;
+const LEGEND_POOL = Object.keys(ITEMS).filter(k => ITEMS[k].legend), LEGEND_CHANCE = 0.025;   // lendários (relógios): bem mais raros que os raros
+let qExtend = null;   // enquanto a pergunta está aberta: soma segundos ao relógio dela            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
 const SHOP_SLOTS = 4, SHOP_CLOSE_AT = 12, SHOP_CLOSED_Q = 3;   // 12 aberturas sem comprar → fecha por 3 perguntas
 const MSAY = {
   hi:['O que deseja?','Bem-vindo, viajante!','Olhe à vontade...','Em que posso ajudar?','Tenho o que você precisa.','Mercadoria de primeira!'],
@@ -418,15 +422,16 @@ const MCOMMENT = {   // comentários sobre o que o jogador já comprou
   atk:['Pegando pesado no boss!','Isso dói de verdade!','Quebre ele por mim!'],
   util:['Esperto, esse aí.','Truque de mercador.']
 };
-const itemCat = t => { const it = ITEMS[t]; if (it.kind === 'hp' || it.kind === 'mp' || it.fx === 'elixir' || it.fx === 'herb' || it.fx === 'phoenix') return 'heal'; if (['shield','amulet','helm','smoke'].includes(it.fx)) return 'def'; if (['hourglass','scroll','lucky'].includes(it.fx)) return 'util'; return 'atk'; };
+const itemCat = t => { const it = ITEMS[t]; if (it.kind === 'hp' || it.kind === 'mp' || it.fx === 'elixir' || it.fx === 'herb' || it.fx === 'phoenix') return 'heal'; if (['shield','amulet','helm','smoke'].includes(it.fx)) return 'def'; if (['hourglass','scroll','lucky','clock'].includes(it.fx)) return 'util'; return 'atk'; };
 const DISCOUNT_AFTER = 3, DISCOUNT = .85;   // bom cliente: a partir da 3a compra (desde a última vez que ele fechou a loja) tudo sai 15% mais barato
 const priceOf = t => { const p = ITEMS[t].price; return state.shop && state.shop.buys >= DISCOUNT_AFTER ? Math.max(1, Math.round(p * DISCOUNT)) : p; };
 const msayLast = {};
 function msay(kind){ const l = MSAY[kind]; let t; do { t = l[Math.floor(Math.random() * l.length)]; } while (l.length > 1 && t === msayLast[kind]); msayLast[kind] = t; return t; }
 function shuffled(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function newShop(){ const slots = shuffled(SHOP_POOL).slice(0, SHOP_SLOTS); if (Math.random() < RARE_CHANCE) slots[Math.floor(Math.random() * SHOP_SLOTS)] = RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)]; return {slots, opens:0, closed:0, buys:0, hist:[]}; }   // prateleira sorteada a cada partida
+function newShop(){ const slots = shuffled(SHOP_POOL).slice(0, SHOP_SLOTS); if (Math.random() < RARE_CHANCE) slots[Math.floor(Math.random() * SHOP_SLOTS)] = RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)]; if (Math.random() < LEGEND_CHANCE) slots[Math.floor(Math.random() * SHOP_SLOTS)] = LEGEND_POOL[Math.floor(Math.random() * LEGEND_POOL.length)]; return {slots, opens:0, closed:0, buys:0, hist:[]}; }   // prateleira sorteada a cada partida
 function pickNew(sold){   // item novo no lugar do vendido: nunca o mesmo, de preferência um que ainda não está na prateleira
   const onShelf = state.shop.slots.filter(Boolean);
+  if (Math.random() < LEGEND_CHANCE) { const r = LEGEND_POOL.filter(t => !onShelf.includes(t)); if (r.length) return r[Math.floor(Math.random() * r.length)]; }
   if (Math.random() < RARE_CHANCE) { const r = RARE_POOL.filter(t => !onShelf.includes(t)); if (r.length) return r[Math.floor(Math.random() * r.length)]; }
   let c = SHOP_POOL.filter(t => t !== sold && !onShelf.includes(t));
   if (!c.length) c = SHOP_POOL.filter(t => t !== sold);
@@ -721,7 +726,7 @@ function flashHit(){
 // Empate entre as mais votadas = sorteio; ninguém votou = null. O painel continua aberto ao terminar.
 function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd, note}){
   return new Promise(resolve => {
-    const endsAt = fixedEnd || Date.now() + seconds * 1000; seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
+    let endsAt = fixedEnd || Date.now() + seconds * 1000; seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
     const voters = groupMembers(), need = majorityOf(voters);
     const sv = options.map(() => 0); let my = null, locked = false, timer = null, bots = [];
     let list, M = null, P = null;
@@ -784,7 +789,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     }
     async function finish(idx, tie){
       if (locked) return; locked = true; clearInterval(timer); bots.forEach(clearTimeout);
-      btns.forEach(b => b.disabled = true); paint(true);
+      qExtend = null; btns.forEach(b => b.disabled = true); paint(true);
       if (idx !== null) { btns[idx].classList.add('chosen'); if (tie) toast(`Empate! ${String.fromCharCode(97 + idx)}) sorteada.`); }
       resolve({idx, btns});
     }
@@ -797,6 +802,14 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       if (left <= 0 && !locked) { clearInterval(timer); const {m, c} = top(); if (m === 0) finish(null, false); else finish(c[Math.floor(Math.random() * c.length)], c.length > 1); }
     };
     tick(); timer = setInterval(tick, 250);
+    if (!menu && !panel) qExtend = secs => {   // item de tempo: so a pergunta; secs=0 so testa se ainda da
+      if (locked) return false; if (!secs) return true;
+      endsAt += secs * 1000; tick();
+      const L = $('#dq-layer'), tb = MENU_META.question.tbox, t = L && L.querySelector('.sk-timer');
+      if (t) { t.classList.remove('bonus'); void t.offsetWidth; t.classList.add('bonus'); }
+      if (L) { const f = document.createElement('div'); f.className = 'tm-bonus'; f.style.cssText = pc(tb, .3); f.innerHTML = `<img src="${secs >= 10 ? 'item_watch_l.png' : 'item_watch_s.png'}" alt=""><b>+${secs}s</b>`; L.appendChild(f); setTimeout(() => f.remove(), 1300); }
+      return true;
+    };
     // modo teste: os outros membros do grupo votam sozinhos
     if (TEST_MODE) for (let i = 0; i < voters - 1; i++) bots.push(setTimeout(() => {
       if (locked) return; sv[enabled[Math.floor(Math.random() * enabled.length)]]++; paint(); check();
@@ -879,7 +892,7 @@ async function chestVanish(img){   // some: treme, pisca, vira poeira
   img.style.visibility = 'hidden'; await sleep(650); timeResume(); await sleep(900); img.remove();
 }
 // Rodada de baú: ocupa a rodada inteira (sem pergunta). O grupo vota abrir ou ignorar; quem votou em abrir leva um item da loja ou uma armadilha.
-const CHEST_ITEM_P = .7, CHEST_RARE_P = .1;
+const CHEST_ITEM_P = .7, CHEST_RARE_P = .1, CHEST_LEGEND_P = .02;
 function chestEligible(){
   return !state.over && state.round >= CHEST_FROM && state.round - state.chestAt >= CHEST_GAP && Math.random() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest');
 }
@@ -898,8 +911,8 @@ async function runChestRound(){
   await chestPlay(img, [1, 2, 3]); chestDust(img, 10); await wait(250);
   if (!mine) { showBanner('A ARCA ABRIU', 'você votou em ignorar: nada para você'); await wait(1900); hideBanner(); }
   else if (Math.random() < CHEST_ITEM_P) {   // item aleatório da loja (raro com pouca chance)
-    const t = Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
-    if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); showBanner('A ARCA TINHA UM ITEM', ITEMS[t].name + (ITEMS[t].rare ? ' (RARO)' : '')); }
+    const t = Math.random() < CHEST_LEGEND_P ? LEGEND_POOL[Math.floor(Math.random() * LEGEND_POOL.length)] : Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
+    if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); showBanner('A ARCA TINHA UM ITEM', ITEMS[t].name + (ITEMS[t].legend ? ' (LENDÁRIO)' : ITEMS[t].rare ? ' (RARO)' : '')); }
     else { const n = ITEMS[t].price; state.gold += n; state.stats.gained += n; persist(); goldGain(n); showBanner('MOCHILA CHEIA', `${ITEMS[t].name} virou ${n} moedas`); }
     await wait(2300); hideBanner();
   } else {                                   // armadilha: só para quem abriu
@@ -1460,6 +1473,7 @@ const FX = {
   elixir:(b, h, f, t) => { const n = f ? 45 : 30; h.hp = Math.min(HERO_MAX_HP, h.hp + n); h.mp = Math.min(100, h.mp + n); return `Elixir: +${n} de HP e +${n} de mana.`; },
   scroll:(b, h, f, t) => { state.ultReady[t] = true; state.ultCd[t] = 0; const hp = f ? 90 : 60, mp = f ? 100 : 80; h.hp = Math.min(HERO_MAX_HP, h.hp + hp); h.mp = Math.min(100, h.mp + mp); b.tonic = f ? 5 : 3; return `Pergaminho: ULTIMATE carregado, +${hp} de HP, +${mp} de mana e +25% de dano por ${b.tonic} rodadas!`; },
   dice:(b, h, f, t) => { b.dice = f ? 5 : 4; b.diceAff = !!f; return `Dado lançado: próximos ${b.dice} ataques com dano sorteado${f ? ' (de 1,5x a 4x)' : ''}.`; },
+  clock:(b, h, f, t, it) => { qExtend(it.secs); return `Relógio: +${it.secs}s para responder a pergunta!`; },
   phoenix:(b, h, f, t) => { h.hp = 100; HERO_ORDER.forEach(k => { if (k !== t && state.heroes[k].hp > 0) state.heroes[k].hp = Math.min(HERO_MAX_HP, state.heroes[k].hp + (f ? 30 : 20)); }); return `Pena de Fênix: seu herói voltou com 100 de HP e os aliados recuperam +${f ? 30 : 20}!`; }
 };
 function applyItem(index, tgt){
@@ -1468,9 +1482,10 @@ function applyItem(index, tgt){
   if(item.kind==='fx'){
     if(item.fx==='phoenix'){ if(hero.hp>0){toast(tgt===activeGroup?'A Pena de Fênix só serve para herói caído.':`${GROUPS[tgt]} não está caído.`);return} if(aliveHeroes().length===0){toast('Sem aliados de pé, a Fênix não responde.');return} }
     else if(hero.hp<=0){toast(tgt===activeGroup?'O herói caiu e não pode usar itens.':`${GROUPS[tgt]} caiu e não pode receber itens.`);return}
+    if(item.fx==='clock'&&(tgt!==activeGroup||!qExtend||!qExtend(0))){toast('O relógio só vale durante a pergunta, no seu próprio grupo.');return}
     if(item.fx==='elixir'&&hero.hp>=HERO_MAX_HP&&hero.mp>=100){toast('HP e mana já estão cheios.');return}
     if(item.fx==='scroll'&&state.ultReady[tgt]){toast('O Ultimate já está carregado.');return}
-    const f=hasAff(type,tgt), msg=FX[item.fx](state.ib[tgt],hero,f,tgt)+(f?' (AFINIDADE)':'');state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(tgt===activeGroup?msg:`${GROUPS[tgt]} recebeu: ${msg}`);return;
+    const f=hasAff(type,tgt), msg=FX[item.fx](state.ib[tgt],hero,f,tgt,item)+(f?' (AFINIDADE)':'');state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(tgt===activeGroup?msg:`${GROUPS[tgt]} recebeu: ${msg}`);return;
   }
   const max = item.kind==='hp' ? HERO_MAX_HP : 100;
   if(hero.hp<=0 && item.kind==='hp'){toast(tgt===activeGroup?'O herói caiu e não pode ser curado.':`${GROUPS[tgt]} caiu e não pode ser curado.`);return}
@@ -1543,8 +1558,8 @@ function showItemTip(slot){
   const it = ITEMS[type], bp = $('#bag-panel'), btn = bp.querySelector('.shop.s' + slot), pr = bp.getBoundingClientRect(), br = btn.getBoundingClientRect();
   const cat = CAT_LABEL[itemCat(type)], aff = (it.aff || []).map(h => GROUPS[h]).join(', ');
   const el = document.createElement('div'); el.id = 'item-tip'; el.className = 'it-tip' + (it.rare ? ' rare' : '');
-  el.innerHTML = `<div class="it-top"><div class="it-ico"><img src="${it.icon}" alt=""></div><div class="it-head"><b class="it-name">${it.name}</b><span class="it-tags"><em class="t-${itemCat(type)}">${cat}</em>${it.rare ? '<em class="t-rare">RARO</em>' : ''}</span></div></div>` +
-    `<p class="it-desc">${itemInfo(type).replace(/^RARO: /, '').replace(/^./, c => c.toUpperCase())}</p>` + (aff ? `<div class="it-aff">AFINIDADE <b>${aff}</b> +50%</div>` : '') +
+  el.innerHTML = `<div class="it-top"><div class="it-ico"><img src="${it.icon}" alt=""></div><div class="it-head"><b class="it-name">${it.name}</b><span class="it-tags"><em class="t-${itemCat(type)}">${cat}</em>${it.legend ? '<em class="t-rare">LENDÁRIO</em>' : it.rare ? '<em class="t-rare">RARO</em>' : ''}</span></div></div>` +
+    `<p class="it-desc">${itemInfo(type).replace(/^(RARO|LENDÁRIO): /, '').replace(/^./, c => c.toUpperCase())}</p>` + (aff ? `<div class="it-aff">AFINIDADE <b>${aff}</b> +50%</div>` : '') +
     `<div class="it-foot"><span>PREÇO</span><img src="icon_coin.png" alt=""><b>${priceOf(type)}</b><small>toque nas moedas para comprar</small></div>`;
   bp.appendChild(el);
   const w = 62, cx = ((br.left + br.width / 2) - pr.left) / pr.width * 100, left = Math.max(2, Math.min(100 - w - 2, cx - w / 2));

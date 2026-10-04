@@ -182,10 +182,49 @@ def luckycoin():
     d.line([(5,10),(8,8)], fill=(255,255,255,255))
     for (x,y) in ((20,4),(2,5),(21,12)): px(d,x,y,G1); px(d,x,y-1,G1); px(d,x,y+1,G1); px(d,x-1,y,G1); px(d,x+1,y,G1)
     return im
+# 17 relogio de bolso (+5s na pergunta)
+CR=(252,246,222,255); CR2=(222,208,170,255); INK=(40,26,30,255)
+def watch_s():
+    im,d=new()
+    d.ellipse([8,2,14,8], outline=G3); d.ellipse([9,3,13,7], outline=G1)   # argola
+    d.rectangle([10,3,12,5], fill=G3); d.rectangle([10,2,12,3], fill=G1); px(d,11,2,(255,255,255,255))   # coroa
+    d.ellipse([2,7,20,29], fill=G3); d.ellipse([3,8,19,28], fill=G2); d.ellipse([4,9,18,27], fill=G1)
+    d.ellipse([5,10,17,26], fill=G3)
+    d.ellipse([6,11,16,25], fill=CR2); d.ellipse([6,11,16,24], fill=CR)
+    for x,y in ((11,12),(11,24),(7,18),(15,18)): d.rectangle([x,y,x,y+1] if x==11 else [x,y,x+1 if x==15 else x,y], fill=INK)
+    for x,y in ((14,13),(8,13),(14,23),(8,23)): px(d,x,y,S3)
+    d.line([(11,18),(11,13)], fill=INK); d.line([(11,18),(14,20)], fill=INK); px(d,12,19,INK)   # ponteiros
+    d.line([(11,18),(8,22)], fill=R1); px(d,11,18,R2)
+    d.line([(5,10),(8,9)], fill=(255,255,255,255)); d.line([(4,12),(4,15)], fill=(255,246,190,255))
+    d.rectangle([2,18,3,19], fill=G3)
+    return im
+# 18 relogio grande (+10s): despertador ornamentado de duas campainhas
+B1=(88,150,230,255); B2=(46,96,176,255); B3=(24,52,110,255)
+def watch_l():
+    im,d=new()
+    d.ellipse([1,1,9,8], fill=G3); d.ellipse([2,1,8,7], fill=G2); d.ellipse([3,2,6,4], fill=G1)      # campainha esq
+    d.ellipse([13,1,21,8], fill=G3); d.ellipse([14,1,20,7], fill=G2); d.ellipse([15,2,18,4], fill=G1) # campainha dir
+    d.line([(5,8),(7,10)], fill=G3, width=2); d.line([(17,8),(15,10)], fill=G3, width=2)
+    d.rectangle([10,1,12,4], fill=S3); d.rectangle([10,1,12,1], fill=S1); d.line([(11,4),(11,9)], fill=S3)  # martelo
+    d.ellipse([10,0,12,2], fill=R1)
+    d.ellipse([0,6,22,29], fill=B3); d.ellipse([1,7,21,28], fill=B2); d.ellipse([2,8,20,27], fill=B1)
+    d.ellipse([3,9,19,26], fill=G3); d.ellipse([4,10,18,25], fill=G1); d.ellipse([5,11,17,24], fill=G2)
+    d.ellipse([6,12,16,23], fill=CR2); d.ellipse([6,12,16,22], fill=CR)
+    import math
+    for k in range(12):
+        a=math.radians(k*30-90); x=round(11+5.2*math.cos(a)); y=round(17+4.6*math.sin(a))
+        px(d,x,y,INK if k%3==0 else S3)
+    d.line([(11,17),(11,13)], fill=INK); d.line([(11,17),(14,19)], fill=INK); d.line([(11,17),(8,20)], fill=R1); px(d,11,17,R2)
+    d.line([(6,10),(9,9)], fill=(255,255,255,255)); d.line([(3,13),(3,17)], fill=(190,225,255,255))
+    d.rectangle([10,27,12,28], fill=G3)
+    d.polygon([(3,27),(6,27),(4,31),(1,31)], fill=G3); d.polygon([(19,27),(16,27),(18,31),(21,31)], fill=G3)   # pes
+    d.line([(2,31),(3,31)], fill=G1); d.line([(19,31),(20,31)], fill=G1)
+    for (x,y) in ((21,10),(1,13)): px(d,x,y,(255,255,255,255)); px(d,x,y-1,(190,225,255,255)); px(d,x,y+1,(190,225,255,255))
+    return im
 FUN = dict(iron_shield=shield, amulet=amulet, helm=helm, elixir=elixir, phoenix=feather, herb=herb, lens=lens, dice=dice,
-           tonic=tonic, powder=powder, blade=blade, hourglass=hourglass, scroll=scroll, lightbomb=lightbomb, smokebomb=smokebomb, luckycoin=luckycoin)
+           tonic=tonic, powder=powder, blade=blade, hourglass=hourglass, scroll=scroll, lightbomb=lightbomb, smokebomb=smokebomb, luckycoin=luckycoin, watch_s=watch_s, watch_l=watch_l)
 if __name__ == '__main__':
     outs = [(n, finish(f(), n)) for n, f in FUN.items()]
-    sheet = Image.new('RGBA', (46*8, 68*2), (3,6,13,255))
-    for i,(n,o) in enumerate(outs): sheet.paste(o, ((i%8)*46, (i//8)*68), o)
+    sheet = Image.new('RGBA', (46*9, 68*2), (3,6,13,255))
+    for i,(n,o) in enumerate(outs): sheet.paste(o, ((i%9)*46, (i//9)*68), o)
     sheet.resize((sheet.width*2, sheet.height*2), Image.NEAREST).save('/tmp/items_sheet.png')
