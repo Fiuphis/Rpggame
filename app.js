@@ -86,7 +86,7 @@ const ITEMS = {
 };
 const itemInfo = t => { const it = ITEMS[t]; return it.info || (it.kind === 'hp' ? `Restaura ${it.amount} de HP do seu herói (ou de um aliado).` : `Restaura ${it.amount} de mana do seu herói (ou de um aliado).`); };
 const CAT_LABEL = {heal:'CURA', def:'DEFESA', atk:'ATAQUE', util:'UTILIDADE'};
-const newStats = () => ({rank:{1:[0,0],2:[0,0],3:[0,0],4:[0,0],5:[0,0]}, gained:0, spent:0, used:0});   // por rank: [acertos, erros]
+const newStats = () => ({rank:{1:[0,0],2:[0,0],3:[0,0],4:[0,0],5:[0,0]}, gained:0, spent:0, used:0, leech:0});   // por rank: [acertos, erros]
 const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, luckyAmt:3, dice:0, bomb:0});
 // Afinidade: o herói indicado ganha +50% no efeito do item (duração, valor ou cargas).
 // Afinidade (+50% no efeito) pelo papel de cada heroi: Maga = mana/magia e pouca defesa; Guerreiro = dano e furia; Tanque = defesa pesada e martelo; Cleriga = cura, luz e fe.
@@ -136,6 +136,7 @@ const REACTIONS = {
 
 // ===== Atributos do ataque do boss =====
 const ELEMENTS = {
+  none:{name:'NORMAL', color:'#9a95b8'},
   fire:{name:'FOGO', color:'#ff7a2e'}, water:{name:'ÁGUA', color:'#3db4ff'},
   air:{name:'AR', color:'#9fe8d0'}, earth:{name:'TERRA', color:'#c19a52'},
   demon:{name:'DEMONÍACO', color:'#b36bff'}, holy:{name:'SAGRADO', color:'#ffe08a'}
@@ -146,7 +147,33 @@ const BURN_TURNS = 2, BURN_MULT = .25;   // fogo marca o boss: dano contínuo de
 const BOSS_WEAK_HOLY = 2, BOSS_WEAK_HOLY_DEF = .8;   // fraqueza a SAGRADO: o Ataque Sagrado causa 2x e a Defesa Sagrada corta 80%. Só vale se o boss for fraco a sagrado (BOSS.weak); contra quem não é, as habilidades sagradas são só normais
 const BOSS_WEAK_MULT = 1.5;   // fogo e sagrado ferem o boss em dobro-ish (1,5x); água, ar e terra: só o efeito visual, dano 0
 const BOSS_FAMILY = 'DEMONÍACO';   // o boss é demônio/vampiro: todo dano dele é demoníaco
-const BOSS_ATTACK = {tipo:'FÍSICO', attr:'demon'};   // o boss ataca fisicamente, com atributo demoníaco/vampírico
+// Ataques do boss (sorteados a cada pergunta; o tipo e o atributo aparecem no cartão da pergunta).
+//  FÍSICO normal: sem atributo. FÍSICO demoníaco: um pouco mais forte, com vampirismo. ELEMENTAL: sempre demoníaco, o mais forte e o que mais suga vida.
+const ATTACKS = {
+  phys:  {id:'phys',  tipo:'FÍSICO',    attr:'none',  mult:.65,  leech:0},
+  demon: {id:'demon', tipo:'FÍSICO',    attr:'demon', mult:.9,   leech:.08},
+  elem:  {id:'elem',  tipo:'ELEMENTAL', attr:'demon', mult:1.15, leech:.15}
+};
+const ATTACK_ODDS = {1:[1,0,0], 2:[.7,.3,0], 3:[.4,.5,.1], 4:[.2,.45,.35], 5:[.05,.4,.55]};   // chance [normal, demoníaco, elemental] por rank da pergunta
+const AOE_LEECH = .1;   // a Onda Sombria suga 10% do que os golpes diretos sugam
+const LEECH_MISS = .02, LEECH_RAGE = .01, LEECH_P2 = .02, RAGE_DMG = .01;   // vampirismo +2% por herói que errou, +1% por ponto de fúria, +2% na fase 2; dano demoníaco +1% por ponto de fúria
+const BOSS_ATTACK = ATTACKS.phys;
+function rollAttack(q, forceElem){
+  if (forceElem) return ATTACKS.elem;
+  const o = ATTACK_ODDS[q.difficulty] || ATTACK_ODDS[1]; let r = Math.random();
+  return r < o[0] ? ATTACKS.phys : r < o[0] + o[1] ? ATTACKS.demon : ATTACKS.elem;
+}
+function leechRate(){
+  const at = state.curAttack; if (!at || !at.leech) return 0;
+  return Math.min(.9, at.leech + LEECH_MISS * (state.missN || 0) + LEECH_RAGE * state.rage + (state.phase2 ? LEECH_P2 : 0));
+}
+// vampirismo: o boss recupera parte da vida que os heróis realmente perderam (defesa, esquiva e itens reduzem o ganho)
+function bossLeech(lost){
+  const r = leechRate(); if (r <= 0 || lost <= 0 || state.bossHp <= 0) return 0;
+  const h = Math.min(Math.round(lost * r), BOSS_MAX_HP - state.bossHp); if (h <= 0) return 0;
+  state.bossHp += h; state.stats.leech = (state.stats.leech || 0) + h;
+  floatText(50, 17, `+${h} VAMPIRISMO`, '#b36bff'); renderHud(); return h;
+}
 
 // ===== Habilidades por classe =====
 // kind: atk | def | dodge | util. mult: multiplicador do dano base. reduce: fração do dano do boss que a defesa corta.
@@ -575,6 +602,7 @@ function buildSkillFrame(panel, title, text, at, seconds, note){
   const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
   if (M.title) add('sk-title' + (panel === 'target' ? ' t2' : ''), M.title, `<b>${title}</b><span>${text}</span>`);
   if (M.tipo) add('sk-tipo', M.tipo, `<img src="icon_tipo_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
+  if (M.attr && at && at.attr !== 'demon') { const e = ELEMENTS[at.attr], d = add('sk-attr', M.attr, `<i></i><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // a arte traz o chip DEMONÍACO; para outros atributos ele é coberto
   add('sk-time', M.time, `<span id="vote-timer" class="sk-time">${seconds}s</span>`);
   if (M.info && note) add('tp-note', M.info, `<i class="tn-ico">${note.icon ? `<img src="${pixIcon(note.icon)}" alt="">` : ''}</i><span>${note.text}</span>`);
   fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
@@ -1047,7 +1075,7 @@ async function playRound(){
   if (isHardQ(q)) state.sinceHard = 0;
   state.forceHard = false; state.curQ = q;
   const meta = DIFFICULTY[q.difficulty];
-  state.curAttack = BOSS_ATTACK;
+  state.curAttack = rollAttack(q, enragedNow);   // fúria cheia: ataque sempre elemental
 
   // ---- 1) pergunta: o grupo vota na alternativa (contagem visível só para o próprio grupo)
   const res = await runVote({
@@ -1065,6 +1093,8 @@ async function playRound(){
   state.stats.rank[q.difficulty][correct[activeGroup] ? 0 : 1]++;
   if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; state.stats.gained += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
+  state.missN = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length;   // quem errou alimenta o vampirismo
+  if (state.curAttack.leech && state.missN > 0) toast(`Ataque ${state.curAttack.tipo.toLowerCase()} demoníaco: o boss suga ${Math.round(leechRate() * 100)}% da vida que tirar.`);
   if (isHardQ(q)) { const miss = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length; if (miss) { state.rage = Math.min(RAGE_MAX, state.rage + miss); toast(`Erro no rank ${meta.rank}: fúria +${miss} e Onda Sombria mais forte.`); } }
   if (isHardQ(q)) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma pergunta S/SS inteira
   await wait(1500);
@@ -1119,7 +1149,8 @@ async function playRound(){
       if (aliveHeroes().length === 0) return endGame(false);
     }
   }
-  const dmgBase = prepWarn ? 0 : Math.round(meta.damage * (empowered ? PREP_MULT : 1));
+  const atkMult = state.curAttack.mult * (state.curAttack.leech ? 1 + RAGE_DMG * state.rage : 1);   // ataque demoníaco: mais forte e cresce com a fúria
+  const dmgBase = prepWarn ? 0 : Math.round(meta.damage * (empowered ? PREP_MULT : 1) * atkMult);
   for (const k of HERO_ORDER) {
     if (state.over) break;
     if (state.heroes[k].hp <= 0) continue;
@@ -1204,8 +1235,9 @@ async function playRound(){
     if (aoe && !state.over) {
       showBanner('ONDA SOMBRIA', `o Lorde das Trevas fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}${state.phase2 ? ' (fase 2 +' + PHASE2_AOE + ')' : ''}${hardMiss ? ' (erro no rank ' + meta.rank + ': +50%)' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
       await Promise.race([A.hit('boss'), wait(2500)]);
-      HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); let a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; const m = itemMit(k, a, false); a = m.d; h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}${m.note}`, '#b36bff'); } });
-      renderHud(); await wait(1100); hideBanner();
+      let lostAoe = 0;
+      HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); let a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; const m = itemMit(k, a, false); a = m.d; lostAoe += Math.min(a, h.hp); h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}${m.note}`, '#b36bff'); } });
+      bossLeech(Math.round(lostAoe * AOE_LEECH)); renderHud(); await wait(1100); hideBanner();
       if (aliveHeroes().length === 0) return endGame(false);
     } }
 
@@ -1273,8 +1305,9 @@ async function bossCounter(hero, dmg, defended){
   else await shoot(50, 26, HERO_X[t], 60, '#ff2d4d', 560);
   const m = itemMit(t, r.dmg, true); r.dmg = m.d; r.note += m.note;
   flashHit();
+  const lost = Math.min(r.dmg, state.heroes[t].hp);
   state.heroes[t].hp = Math.max(0, state.heroes[t].hp - r.dmg); if (!(defended && t === hero)) A.play(t, 'hurt'); A.sayRandom(t, 'hurt', .35);
-  floatText(HERO_X[t], 56, `-${r.dmg}${defended ? ' (defesa)' : ''}${r.note}`, '#ff6b81');
+  floatText(HERO_X[t], 56, `-${r.dmg}${defended ? ' (defesa)' : ''}${r.note}`, '#ff6b81'); bossLeech(lost);
   renderHud(); await wait(500);
 }
 

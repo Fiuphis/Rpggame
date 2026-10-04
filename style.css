@@ -609,3 +609,9 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sk-card .tp-chips .tag{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:3.1cqw;padding:0 1.2cqw!important;font-size:1.25cqw!important;line-height:1!important;padding-top:.15cqw!important}
 .sk-card .tp-chips{bottom:12%}
 .sk-card .tp-desc{top:41%}
+/* v211: chip de atributo sobre a arte (cobre o DEMONÍACO pintado quando o ataque do boss é normal) */
+.sk-attr{display:flex;align-items:center;justify-content:center;gap:1.2cqw;box-sizing:border-box;background:#070512;border:.45cqw solid var(--ec);padding:0 1.4cqw;overflow:hidden}
+.sk-attr i{flex:none;width:1.5cqw;height:1.5cqw;background:var(--ec);transform:rotate(45deg)}
+.sk-attr div{display:flex;flex-direction:column;gap:.5cqw;line-height:1}
+.sk-attr small{font-size:1cqw;color:#9a8fc4;letter-spacing:.1cqw}
+.sk-attr b{font-size:1.45cqw;color:var(--ec);letter-spacing:.05cqw;white-space:nowrap}
