@@ -51,5 +51,5 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 /* v193: titulo e botao CONFIRMAR ficam por cima das nuvens em repouso (camada propria alinhada ao palco) */
 .above{position:fixed;z-index:41;pointer-events:none;container-type:inline-size;transition:opacity .5s}
 .above>*{pointer-events:auto}
-.above .ab-title{pointer-events:none;position:absolute;left:8%;top:0;width:84%;height:18.5%;background:url(select_plate.webp) 50% 0/119.05% auto no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 96%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 96%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);mask-composite:intersect}
+.above .ab-title{pointer-events:none;position:absolute;left:11.72%;top:0;width:76.66%;height:17.9%;background:url(plaque_cut.png) 0 0/100% 100% no-repeat;image-rendering:auto}
 .fogin .above,body.leaving .above{opacity:0;pointer-events:none}

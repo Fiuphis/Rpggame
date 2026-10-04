@@ -436,3 +436,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v191: barra de vida/mana de cada heroi na sua propria altura (acima da pose mais alta dele); icones de efeito de item bem menores, entre a barra e a cabeca; texto de status acima da barra.
 - v192: faixa entre barra e cabeca reduzida ao minimo (34px do grid) sem cobrir os icones.
 - v193: na selecao de classe, o titulo e o botao ESCOLHA UMA CLASSE ficam por cima das nuvens (camada propria; some na transicao).
+- v194: so as duas caixas do topo (titulo e descricao) ficam acima das nuvens, recortadas em PNG (plaque_cut.png); o botao voltou a ficar sob as nuvens.

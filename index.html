@@ -20,11 +20,10 @@
 <div class="fog top" id="fogT"></div><div class="fog bot" id="fogB"></div>
 <main class="stage" id="stage">
   <img class="bg" src="select_plate.webp" alt="Selecione sua classe" draggable="false">
-</main>
-<div class="above" id="above"><div class="ab-title"></div>
   <div id="msg" class="msg" role="status" aria-live="polite"></div>
   <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
-</div>
+</main>
+<div class="above" id="above"><div class="ab-title"></div></div>
 <button id="upd-btn" class="upd-btn" type="button">↻ ATUALIZAR</button>
 <button id="test-toggle" class="test-toggle" type="button"></button>
 <script src="fog.js"></script>
@@ -93,7 +92,7 @@ confirmBtn.onclick=()=>{
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search});
 };
-(()=>{const V='v193',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
+(()=>{const V='v194',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
 b.onclick=async function(){b.disabled=true;b.textContent='ATUALIZANDO…';
 try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}
 if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}
