@@ -231,6 +231,10 @@ function fresh(key,ms){const n=Date.now();if(__seen[key]&&n-__seen[key]<ms)retur
 function scWrite(el, text, cls){ if (window.Paper) Paper.burst(10); el.className = el.className.split(' ')[0] + (cls ? ' ' + cls : ''); el.textContent = ''; const per = Math.max(10, Math.min(24, 1500 / Math.max(1, String(text).length)));
   [...String(text)].forEach((ch, i) => { const s = document.createElement('span'); s.textContent = ch; s.style.animationDelay = (i * per) + 'ms'; el.appendChild(s); }); }
 function paperOn(){ return document.documentElement.classList.contains('paper'); }
+// Conteúdo interativo no papiro (relatório, escolha de alvo...). Retorna o elemento, ou null se a faixa do papiro não existe.
+function paperUI(html){ if (!paperOn()) return null; const u = $('#sc-ui'); if (!u) return null; u.innerHTML = html; $('#scroll').classList.add('ui'); if (window.Paper) Paper.burst(14); return u; }
+const PP_MENU = () => paperOn() && $('#scroll') && $('#scroll').clientHeight - 76 >= 176;
+function paperUIClose(){ const sc = $('#scroll'); if (sc) sc.classList.remove('ui'); const u = $('#sc-ui'); if (u) u.innerHTML = ''; }
 function fitScroll(){ const g = $('#game').getBoundingClientRect(), band = Math.max(0, Math.round(innerHeight - g.bottom)), on = band >= 56, bh = on ? band + Math.round(g.height * .11) : band; document.documentElement.style.setProperty('--bh', bh + 'px'); document.documentElement.classList.toggle('paper', on); }
 addEventListener('resize', fitScroll); addEventListener('orientationchange', () => setTimeout(fitScroll, 300)); addEventListener('load', fitScroll); setTimeout(fitScroll, 0);
 function toast(msg){if(!fresh('t:'+msg,4000))return;if(paperOn()){const n=$('#sc-n');scWrite(n,msg);clearTimeout(window.__toast);window.__toast=setTimeout(()=>{n.textContent=''},readMs(msg)+600);return}const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(()=>el.classList.remove('show'),readMs(msg)+400)}
@@ -565,6 +569,7 @@ function attackChips(at){
 async function closePanel(){
   const m = $('#action-menu'), q = $('#dynamic-question'), ui = $('#dynamic-ui');
   const sm = $('#skill-menu');
+  if ($('#sc-ui') && $('#sc-ui').dataset.kind === 'menu') { paperUIClose(); $('#sc-ui').dataset.kind = ''; }
   const dq = !sm.hidden ? sm : !m.hidden ? m : q; dq.classList.add('exiting'); await wait(250);
   // some por completo (nada fica na tela durante a resolução)
   m.hidden = true; q.hidden = true; sm.hidden = true; ui.hidden = true; m.classList.remove('exiting'); q.classList.remove('exiting'); sm.classList.remove('exiting');
@@ -643,8 +648,12 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     const endsAt = fixedEnd || Date.now() + seconds * 1000; seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
     const voters = groupMembers(), need = majorityOf(voters);
     const sv = options.map(() => 0); let my = null, locked = false, timer = null, bots = [];
-    let list, M = null;
-    if (menu && panel) { M = buildSkillFrame(panel, title, text, attack, seconds); list = $('#skm-layer'); }
+    let list, M = null, P = null;
+    if (menu && PP_MENU()) {   // menus de habilidade/elemento no papiro (se a faixa for alta o bastante)
+      P = paperUI(`<div class="pp-head"><b>${title || 'ESCOLHA O ELEMENTO'}</b><span>${text || ''}</span><em id="pp-timer" class="pp-timer">${seconds}s</em></div><div class="pp-grid${panel === 'elem' ? ' elem' : ''}"></div><div class="pp-desc" id="pp-desc">Segure um cartão para ler a descrição.</div>`);
+      P.dataset.kind = 'menu'; P.onclick = null; list = P.querySelector('.pp-grid');
+    }
+    else if (menu && panel) { M = buildSkillFrame(panel, title, text, attack, seconds); list = $('#skm-layer'); }
     else if (menu) {
       $('#am-title').textContent = title; $('#am-text').textContent = text;
       $('#am-attack').innerHTML = attackChips(attack);
@@ -654,7 +663,16 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     const enabled = options.map((o, i) => o.disabled ? -1 : i).filter(i => i >= 0);
     const btns = options.map((o, i) => {
       const b = document.createElement('button'); b.type = 'button';
-      if (M) {
+      if (P) {
+        b.className = `pp-card ${o.kind || ''}`;
+        b.innerHTML = '<span class="pc-name"></span><span class="pc-chips"></span><b class="cnt">0</b>';
+        b.querySelector('.pc-name').textContent = o.label.replace(/^ESPECIAL: /, 'ESP: '); b.querySelector('.pc-chips').innerHTML = o.chips || '';
+        if (o.block) b.insertAdjacentHTML('beforeend', `<span class="pc-lock">${o.block}</span>`);
+        let ht = null; const dsc = $('#pp-desc');
+        const showD = () => { b.__held = true; if (dsc) dsc.textContent = o.label + ': ' + (o.desc || 'sem descrição'); };
+        b.addEventListener('pointerdown', () => { b.__held = false; clearTimeout(ht); ht = setTimeout(showD, 380); });
+        ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => clearTimeout(ht)));
+      } else if (M) {
         const [r, c] = o.slot, cd = M.cards[r][c], cn = M.cnt[r * 2 + c];
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
         b.innerHTML = `<b class="cnt sk-cnt" style="left:${(cn[0] - cd[0]) / cd[2] * 100}%;top:${(cn[1] - cd[1]) / cd[3] * 100}%;width:${cn[2] / cd[2] * 100}%;height:${cn[3] / cd[3] * 100}%">0</b>`;
@@ -672,7 +690,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.querySelector('.label span').textContent = o.label + (o.note ? `  ${o.note}` : '');
       }
       if (o.disabled) { b.disabled = true; b.classList.add('off'); b.querySelector('.cnt').textContent = ''; }
-      else b.onclick = () => pick(i);
+      else b.onclick = () => { if (b.__held) { b.__held = false; return; } pick(i); };
       list.appendChild(b); return b;
     });
     const total = () => sv.reduce((a, c) => a + c, 0);
@@ -690,9 +708,9 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       if (idx !== null) { btns[idx].classList.add('chosen'); if (tie) toast(`Empate! ${String.fromCharCode(97 + idx)}) sorteada.`); }
       resolve({idx, btns});
     }
-    panel ? openSkillMenu() : menu ? openMenu() : openPanel();
+    if (P) { $('#dynamic-question').hidden = true; $('#action-menu').hidden = true; $('#skill-menu').hidden = true; $('#dynamic-ui').hidden = false; } else panel ? openSkillMenu() : menu ? openMenu() : openPanel();
     fitText();
-    const timerEl = () => $(panel ? '#skm-layer' : menu ? '#am-timer' : '#dq-layer').querySelector('#vote-timer');   // cada painel tem o seu (o id repetido pegava o da pergunta, escondido)
+    const timerEl = () => P ? $('#pp-timer') : $(panel ? '#skm-layer' : menu ? '#am-timer' : '#dq-layer').querySelector('#vote-timer');   // cada painel tem o seu (o id repetido pegava o da pergunta, escondido)
     const tick = () => {
       const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
       const el = timerEl(); if (el) { el.textContent = left + 's'; el.classList.toggle('urgent', left <= 3); }
@@ -733,17 +751,35 @@ async function maybePhase2(){
 }
 // Evento: Arca do Tesouro. O grupo vota abrir ou ignorar; pode dar moedas, uma poção ou ser armadilha.
 const CHEST_CHANCE = .22, CHEST_FROM = 3, CHEST_GAP = 4, CHEST_TRAP = 12;
+const CHEST_FRAMES = [0, 1, 2, 3].map(i => `chest_f${i}.png`);
+CHEST_FRAMES.forEach(f => { const i = new Image(); i.src = f; });
+async function chestPlay(img, order, ms = 120){ for (const f of order) { img.src = CHEST_FRAMES[f]; await wait(ms); } }
+function chestDust(img, n = 18){   // poeira de pixels que sobe e some
+  const g = $('#game'), gr = g.getBoundingClientRect(), r = img.getBoundingClientRect();
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('i'); d.className = 'chest-dust';
+    const x = (r.left - gr.left + r.width * (.1 + Math.random() * .8)) / gr.width * 100, y = (r.top - gr.top + r.height * (.2 + Math.random() * .7)) / gr.height * 100;
+    d.style.left = x + '%'; d.style.top = y + '%'; d.style.background = ['#ffd966','#e8b83a','#fff2a8','#aa7a3c','#94602d'][i % 5];
+    g.appendChild(d);
+    d.animate([{transform:'translate(0,0) scale(1)', opacity:1}, {transform:`translate(${(Math.random() - .5) * 90}px,${-30 - Math.random() * 70}px) scale(.4)`, opacity:0}], {duration:700 + Math.random() * 500, easing:'ease-out', delay:Math.random() * 150}).finished.then(() => d.remove());
+  }
+}
+async function chestVanish(img){   // some: treme, pisca, vira poeira
+  await img.animate([{transform:'translate(-50%,0)'},{transform:'translate(-52%,0)'},{transform:'translate(-48%,0)'},{transform:'translate(-52%,0)'},{transform:'translate(-50%,0)'}], {duration:300}).finished;
+  await img.animate([{filter:'brightness(1)'},{filter:'brightness(3)'},{filter:'brightness(1)'},{filter:'brightness(3)'}], {duration:360, easing:'steps(4)'}).finished;
+  chestDust(img); img.style.visibility = 'hidden'; await wait(900); img.remove();
+}
 async function maybeChest(){
   if (state.over || state.round < CHEST_FROM || state.round - state.chestAt < CHEST_GAP || Math.random() >= CHEST_CHANCE || (TEST_MODE && window.__force === 'nochest')) return;
   state.chestAt = state.round;
   const g = $('#game'), img = document.createElement('img');
-  img.className = 'chest'; img.src = 'chest_closed.png'; img.alt = ''; g.appendChild(img);
-  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu: abrir ou ignorar?'); A.sfx && A.sfx('right');
+  img.className = 'chest'; img.src = CHEST_FRAMES[0]; img.alt = ''; g.appendChild(img);
+  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu: abrir ou ignorar?');
   while (state.pendingAction || state.voteLocked) await wait(300);
   const open = await new Promise(res => { state.chestDone = res; openMerchantVote('Abrir a arca?', {type:'chest'}); });
   hideBanner();
-  if (!open) { img.classList.add('out'); setTimeout(() => img.remove(), 500); return; }
-  img.src = 'chest_open.png'; img.classList.add('opened'); await wait(500);
+  if (!open) { await chestVanish(img); return; }
+  await chestPlay(img, [1, 2, 3]); chestDust(img, 10); await wait(250);
   const r = Math.random();
   if (r < .15) {          // armadilha
     showBanner('ARMADILHA!', `a arca explode: todos perdem ${CHEST_TRAP} de HP`); flashHit();
@@ -756,7 +792,7 @@ async function maybeChest(){
     const n = 4 + Math.floor(Math.random() * 5); state.gold += n; state.stats.gained += n; persist(); goldGain(n);
     showBanner('A ARCA TINHA MOEDAS', `+${n} moedas`); await wait(1800); hideBanner();
   }
-  img.classList.add('out'); setTimeout(() => img.remove(), 500);
+  await chestPlay(img, [2, 1, 0], 130); await wait(250); await chestVanish(img);   // fecha e some
 }
 async function bossIntro(ev = {}){
   const game = $('#game');
@@ -877,8 +913,8 @@ async function chooseSkill(k){
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta rank S/SS
-    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 S/SS' : 'ACERTE RANK S/SS')});
-    list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], disabled:!!b, block:b}); });
+    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:'<span class="tag">SÓ RANK S/SS</span>', disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 S/SS' : 'ACERTE RANK S/SS')});
+    list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
     const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts});
     if (r.idx === null) return null;
     if (r.idx === 0) { await closePanel(); await activateUlt(k); endsAt = null; continue; }   // ultimate ativado: o efeito começa a contar agora
@@ -1197,7 +1233,14 @@ function endGame(win){
     $('#end-stats').innerHTML = `<div class="es-row"><span>Rodadas</span><b>${state.round}</b></div><div class="es-row"><span>Seu acerto</span><b>${tot[0]}/${n} (${pct}%)</b></div>` +
       `<div class="es-ranks">${R.map((r, i) => `<div class="es-r d${i + 1}"><em>${r}</em><span>${st.rank[i + 1][0]} / ${st.rank[i + 1][1]}</span></div>`).join('')}</div>` +
       `<div class="es-cap">certas / erradas por rank</div><div class="es-row"><span>Moedas ganhas / gastas</span><b>${st.gained} / ${st.spent}</b></div><div class="es-row"><span>Itens usados</span><b>${st.used}</b></div>` + (win ? '' : `<div class="es-row"><span>Vida restante do boss</span><b>${bossPct}%</b></div>`); }
-  o.classList.toggle('win', win); o.hidden = false;
+  o.classList.toggle('win', win);
+  const st2 = state.stats, RK = ['C','B','A','S','SS'], t2 = Object.values(st2.rank).reduce((a, [r, w]) => [a[0] + r, a[1] + w], [0, 0]), n2 = t2[0] + t2[1], pc = n2 ? Math.round(t2[0] / n2 * 100) : 0, bp = Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100));
+  const pu = paperUI(`<div class="ui-t ${win ? 'win' : 'lose'}">${win ? 'VITÓRIA!' : 'DERROTA'}</div><div class="ui-s">${win ? 'O Lorde das Trevas foi derrotado.' : 'Todos caíram. Boss com ' + bp + '% de vida.'}</div>` +
+    `<div class="ui-stats"><span>Rodadas <b>${state.round}</b></span><span>Acerto <b>${t2[0]}/${n2} (${pc}%)</b></span><span>Moedas <b>+${st2.gained} / -${st2.spent}</b></span><span>Itens usados <b>${st2.used}</b></span></div>` +
+    `<div class="ui-ranks">${RK.map((r, i) => `<div class="r d${i + 1}"><em>${r}</em><span>${st2.rank[i + 1][0]}/${st2.rank[i + 1][1]}</span></div>`).join('')}</div><div class="ui-cap">certas / erradas por rank</div>` +
+    `<div class="ui-btns"><button type="button" class="sc-btn" data-act="restart">JOGAR DE NOVO</button><button type="button" class="sc-btn alt" data-act="map">${win ? 'VOLTAR AO MAPA' : 'MAPA'}</button></div>`);
+  if (pu) { pu.dataset.kind = 'end'; pu.onclick = e => { const b = e.target.closest('button'); if (b) $(b.dataset.act === 'restart' ? '#restart' : '#to-map').click(); }; o.hidden = true; return; }
+  o.hidden = false;
 }
 // Abertura da batalha (intro.js). Em ?teste=1 fica desligada, a menos que ?intro=1; ?intro=0 sempre desliga.
 const INTRO_ON = (new URLSearchParams(location.search).get('intro') || (TEST_MODE ? '0' : '1')) === '1';
@@ -1212,7 +1255,7 @@ function beginBattle(delay){
   Intro.play({voters:n, need:majorityOf(n), bots:TEST_MODE, onReveal:() => { const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', 'tpBack'); }}).then(() => setTimeout(go, 500));
 }
 function restartRun(){
-  A.reset(); closeTargetPick();
+  A.reset(); closeTargetPick(); paperUIClose();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   state.stats = newStats(); Object.assign(state, {phase2:false, chestAt:-9, sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false});
   HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
@@ -1285,12 +1328,15 @@ function applyItem(index, tgt){
   hero[item.kind]=Math.min(max,hero[item.kind]+item.amount);state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(`${item.name} usada${who}.`);
 }
 function giveable(type){ const it = ITEMS[type]; return it.kind === 'hp' || it.kind === 'mp' || GIVE.has(it.fx); }
-function closeTargetPick(){ const p = $('#tgt-pick'); if (p) p.remove(); }
+function closeTargetPick(){ const p = $('#tgt-pick'); if (p) p.remove(); if ($('#scroll') && $('#scroll').classList.contains('ui') && $('#sc-ui').dataset.kind === 'pick') { paperUIClose(); $('#sc-ui').dataset.kind = ''; } }
 function useInventory(index){
   const type=state.inventory[index];if(!type)return;
   const others = HERO_ORDER.filter(k => k !== activeGroup && (type === 'phoenix' ? state.heroes[k].hp <= 0 : state.heroes[k].hp > 0));
   if(!giveable(type) || !others.length){ applyItem(index, activeGroup); return; }
   closeTargetPick();
+  const cands = (type === 'phoenix' && state.heroes[activeGroup].hp > 0 ? others : [activeGroup, ...others]);
+  const pu = paperUI(`<div class="ui-t sm">${ITEMS[type].name}: usar em quem?</div><div class="ui-grid">${cands.map(k => { const h = state.heroes[k]; return `<button type="button" class="sc-btn" data-k="${k}"><b>${k === activeGroup ? 'VOCÊ' : GROUPS[k]}</b><small>HP ${h.hp}  MANA ${h.mp}${hasAff(type, k) ? '  AFINIDADE' : ''}</small></button>`; }).join('')}</div><button type="button" class="sc-btn mini" data-x="1">CANCELAR</button>`);
+  if (pu) { pu.dataset.kind = 'pick'; pu.onclick = e => { const b = e.target.closest('button'); if (!b) return; if (b.dataset.x) { closeTargetPick(); return; } const k = b.dataset.k; closeTargetPick(); applyItem(index, k); }; return; }
   const box = document.createElement('div'); box.id = 'tgt-pick';
   box.innerHTML = `<div class="tp-back"></div><div class="tp-box"><b class="tp-title">${ITEMS[type].name}: usar em quem?</b><div class="tp-list"></div></div>`;
   const list = box.querySelector('.tp-list');
