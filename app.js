@@ -68,7 +68,11 @@ const ITEMS = {
   dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'item_dice.png', info:'RARO: seus próximos 3 ataques causam de 0,5x a 3x de dano, sorteado.'},
   scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói.'}
 };
-const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, dice:0, bomb:0});
+const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, luckyAmt:3, dice:0, bomb:0});
+// Afinidade: o herói indicado ganha +50% no efeito do item (duração, valor ou cargas).
+const AFFINITY = {mage:['hourglass','scroll','elixir','luckycoin'], knight:['blade','tonic','lightbomb','herb'], tank:['iron_shield','helm','amulet'], assassin:['lens','dice','powder','smokebomb']};
+Object.entries(AFFINITY).forEach(([h, l]) => l.forEach(k => { (ITEMS[k].aff = ITEMS[k].aff || []).push(h); }));
+const hasAff = type => !!(ITEMS[type].aff && ITEMS[type].aff.includes(activeGroup));
 
 // ===== Configuração do combate (ajuste aqui) =====
 const HERO_ORDER = ['mage','knight','tank','assassin'];
@@ -392,7 +396,7 @@ function requestBuy(slot){
   if (state.pendingAction || state.voteLocked) { toast('Já existe uma votação aberta.'); return; }
   if (state.gold < item.price) { toast('Moedas insuficientes.'); return; }
   if (state.inventory.length >= 6) { toast('Mochila cheia.'); return; }
-  if (item.info) toast(item.name + ': ' + item.info);
+  if (item.info) toast(item.name + ': ' + item.info + (hasAff(type) ? ' AFINIDADE: +50% de efeito para o seu herói.' : ''));
   openMerchantVote(item.ask, {type:'buy', item:type, slot});
 }
 function executeBuy(type, slot){
@@ -885,7 +889,7 @@ async function playRound(){
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
-  if (correct[activeGroup]) { let g = meta.reward; if (state.ib.lucky > 0) { g += 3; state.ib.lucky--; } state.gold += g; persist(); goldGain(g); }
+  if (correct[activeGroup]) { let g = meta.reward; if (state.ib.lucky > 0) { g += state.ib.luckyAmt; state.ib.lucky--; } state.gold += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
   if (isHardQ(q)) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma pergunta S/SS inteira
   await wait(1500);
@@ -1137,35 +1141,35 @@ function itemMit(hero, d, direct){      // dano recebido: escudo, fumaça, amule
 function itemOff(hero, d){               // dano causado: lâmina, pólvora, tônico, lente, dado
   const b = state.ib; if (hero !== activeGroup || d <= 0) return {d, note:''};
   const n = [];
-  if (b.blade > 0) d += 4 * b.blade;
-  if (b.powder > 0) { b.powder = 0; d += 15; n.push('POLVORA +15'); }
+  if (b.blade > 0) d += b.blade;
+  if (b.powder > 0) { const p = b.powder === 2 ? 22 : 15; b.powder = 0; d += p; n.push('POLVORA +' + p); }
   if (b.tonic > 0) { d = Math.round(d * 1.25); n.push('FURIA +25%'); }
-  if (b.lens > 0) { b.lens = 0; d = Math.round(d * 1.8); n.push('CRITICO!'); }
-  if (b.dice > 0) { b.dice--; const m = [0.5, 1, 1.5, 2, 3][Math.floor(Math.random() * 5)]; d = Math.round(d * m); n.push('DADO ' + String(m).replace('.', ',') + 'x'); }
+  if (b.lens > 0) { const c = b.lens === 2 ? 2.2 : 1.8; b.lens = 0; d = Math.round(d * c); n.push('CRITICO ' + String(c).replace('.', ',') + 'x!'); }
+  if (b.dice > 0) { b.dice--; const L = b.diceAff ? [1, 1.5, 2, 3] : [0.5, 1, 1.5, 2, 3], m = L[Math.floor(Math.random() * L.length)]; d = Math.round(d * m); n.push('DADO ' + String(m).replace('.', ',') + 'x'); }
   return {d, note:n.join(' ')};
 }
 async function itemRoundEnd(){          // fim da rodada: bomba de luz, erva, duração dos efeitos
   const b = state.ib, h = state.heroes[activeGroup];
-  if (b.bomb > 0) { const n = b.bomb * 40; b.bomb = 0; state.bossHp = Math.max(0, state.bossHp - n); floatText(50, 17, `-${n} BOMBA`, '#fff2a8'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900); }
+  if (b.bomb > 0) { const n = b.bomb; b.bomb = 0; state.bossHp = Math.max(0, state.bossHp - n); floatText(50, 17, `-${n} BOMBA`, '#fff2a8'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900); }
   if (b.herb > 0 && h.hp > 0) { h.hp = Math.min(HERO_MAX_HP, h.hp + 8); floatText(HERO_X[activeGroup], 56, '+8', '#9fe3a8'); renderHud(); }
   ['herb','amulet','helm','smoke','tonic'].forEach(k => { if (b[k] > 0) b[k]--; });
 }
 const FX = {
-  shield:(b) => { b.shield = 1; return 'Escudo de Ferro erguido: o próximo golpe será bloqueado.'; },
-  amulet:(b) => { b.amulet = 3; return 'Amuleto ativo: -30% de dano por 3 rodadas.'; },
-  helm:(b) => { b.helm = 3; return 'Elmo ativo: -8 de dano por golpe, 3 rodadas.'; },
-  smoke:(b) => { b.smoke = 2; return 'Fumaça! Golpes diretos erram por 2 rodadas.'; },
-  herb:(b) => { b.herb = 4; return 'Erva ativa: +8 de HP por rodada, 4 rodadas.'; },
-  lens:(b) => { b.lens = 1; return 'Lente pronta: próximo ataque será crítico.'; },
-  tonic:(b) => { b.tonic = 3; return 'Fúria: +25% de dano por 3 rodadas.'; },
-  powder:(b) => { b.powder = 1; return 'Pólvora pronta: próximo ataque +15.'; },
-  blade:(b) => { b.blade++; return `Lâmina afiada: +${4 * b.blade} de dano permanente.`; },
-  lightbomb:(b) => { b.bomb++; return 'Bomba armada: explode no fim da rodada.'; },
-  lucky:(b) => { b.lucky = 3; return 'Moeda da Sorte: +3 moedas por acerto, 3 perguntas.'; },
-  hourglass:(b, h) => { state.cd[activeGroup] = {}; h.mp = Math.min(100, h.mp + 20); return 'Ampulheta: recargas zeradas e +20 de mana.'; },
-  elixir:(b, h) => { h.hp = Math.min(HERO_MAX_HP, h.hp + 50); h.mp = Math.min(100, h.mp + 50); return 'Elixir: +50 de HP e +50 de mana.'; },
-  scroll:(b) => { state.ultReady[activeGroup] = true; state.ultCd[activeGroup] = 0; return 'Pergaminho: ULTIMATE carregado!'; },
-  dice:(b) => { b.dice = 3; return 'Dado lançado: próximos 3 ataques com dano sorteado.'; },
+  shield:(b, h, f) => { b.shield = f ? 2 : 1; return f ? 'Escudo de Ferro: os próximos 2 golpes serão bloqueados.' : 'Escudo de Ferro erguido: o próximo golpe será bloqueado.'; },
+  amulet:(b, h, f) => { b.amulet = f ? 5 : 3; return `Amuleto ativo: -30% de dano por ${b.amulet} rodadas.`; },
+  helm:(b, h, f) => { b.helm = f ? 5 : 3; return `Elmo ativo: -8 de dano por golpe, ${b.helm} rodadas.`; },
+  smoke:(b, h, f) => { b.smoke = f ? 3 : 2; return `Fumaça! Golpes diretos erram por ${b.smoke} rodadas.`; },
+  herb:(b, h, f) => { b.herb = f ? 6 : 4; return `Erva ativa: +8 de HP por rodada, ${b.herb} rodadas.`; },
+  lens:(b, h, f) => { b.lens = f ? 2 : 1; return `Lente pronta: próximo ataque será crítico (${f ? '2,2' : '1,8'}x).`; },
+  tonic:(b, h, f) => { b.tonic = f ? 5 : 3; return `Fúria: +25% de dano por ${b.tonic} rodadas.`; },
+  powder:(b, h, f) => { b.powder = f ? 2 : 1; return `Pólvora pronta: próximo ataque +${f ? 22 : 15}.`; },
+  blade:(b, h, f) => { b.blade += f ? 6 : 4; return `Lâmina afiada: +${b.blade} de dano permanente.`; },
+  lightbomb:(b, h, f) => { b.bomb += f ? 60 : 40; return `Bomba armada: explode no fim da rodada (${b.bomb} de dano).`; },
+  lucky:(b, h, f) => { b.lucky = f ? 5 : 3; b.luckyAmt = f ? 5 : 3; return `Moeda da Sorte: +${b.luckyAmt} moedas por acerto, ${b.lucky} perguntas.`; },
+  hourglass:(b, h, f) => { state.cd[activeGroup] = {}; h.mp = Math.min(100, h.mp + (f ? 40 : 20)); return `Ampulheta: recargas zeradas e +${f ? 40 : 20} de mana.`; },
+  elixir:(b, h, f) => { const n = f ? 75 : 50; h.hp = Math.min(HERO_MAX_HP, h.hp + n); h.mp = Math.min(100, h.mp + n); return `Elixir: +${n} de HP e +${n} de mana.`; },
+  scroll:(b, h, f) => { state.ultReady[activeGroup] = true; state.ultCd[activeGroup] = 0; if (f) h.mp = Math.min(100, h.mp + 30); return 'Pergaminho: ULTIMATE carregado!' + (f ? ' +30 de mana.' : ''); },
+  dice:(b, h, f) => { b.dice = f ? 4 : 3; b.diceAff = !!f; return `Dado lançado: próximos ${b.dice} ataques com dano sorteado${f ? ' (sem resultado ruim)' : ''}.`; },
   phoenix:(b, h) => { h.hp = 60; return 'Pena de Fênix: seu herói voltou com 60 de HP!'; }
 };
 function useInventory(index){
@@ -1176,7 +1180,7 @@ function useInventory(index){
     else if(hero.hp<=0){toast('O herói caiu e não pode usar itens.');return}
     if(item.fx==='elixir'&&hero.hp>=HERO_MAX_HP&&hero.mp>=100){toast('HP e mana já estão cheios.');return}
     if(item.fx==='scroll'&&state.ultReady[activeGroup]){toast('O Ultimate já está carregado.');return}
-    const msg=FX[item.fx](state.ib,hero);state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(msg);return;
+    const msg=FX[item.fx](state.ib,hero,hasAff(type))+(hasAff(type)?' (AFINIDADE)':'');state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(msg);return;
   }
   const max = item.kind==='hp' ? HERO_MAX_HP : 100;
   if(hero.hp<=0 && item.kind==='hp'){toast('O herói caiu e não pode ser curado.');return}
