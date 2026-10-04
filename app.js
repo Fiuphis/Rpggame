@@ -469,14 +469,16 @@ function startBots(){
 }
 
 // ===== HUD dinâmico: barras de vida/mana dos heróis, vida do boss e fúria =====
-const HUD_W = 220, HUD_Y = 722;   // barra pequena: largura (px do grid 1024) e posição vertical
+const HUD_W = 220, HUD_GAP = 40;   // HUD_GAP: faixa entre a barra e a cabeça (ícone de ult + chips de item)
+const HEAD_TOP = {mage:725, knight:692, tank:684, assassin:792};   // topo da pose mais alta de cada herói (medido, px do grid)
+const hudY = k => Math.round(HEAD_TOP[k] - HUD_GAP - HUD_W * HUD_IMG[k].h / HUD_IMG[k].w);   // barra pequena: largura (px do grid 1024) e posição vertical
 const HUD_IMG = {"mage": {"w": 1419, "h": 259, "hp": [0.2276, 0.7498, 0.3745, 0.1544], "mp": [0.2276, 0.7498, 0.6873, 0.1583]}, "knight": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.3211, 0.1626], "mp": [0.2275, 0.7493, 0.6585, 0.1585]}, "tank": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.313, 0.1585], "mp": [0.2275, 0.7493, 0.6463, 0.1585]}, "assassin": {"w": 1421, "h": 241, "hp": [0.2273, 0.7488, 0.2822, 0.1618], "mp": [0.2273, 0.7488, 0.6224, 0.1618]}};   // proporção e interior das barras (frações) de hud_<herói>.png
 const HUD = {
   boss:{x:251, y:70, w:525, h:19},
   rage:{x:300, y:100, w:424, h:17},
   icons:{}, heroes:{}
 };
-['mage', 'knight', 'tank', 'assassin'].forEach(k => { const m = HUD_IMG[k], x = Math.round(clampHud(HERO_X[k] / 100 * 1024 - HUD_W / 2)); HUD.icons[k] = x; HUD.heroes[k] = [x, HUD_Y, HUD_W, Math.round(HUD_W * m.h / m.w)]; });
+['mage', 'knight', 'tank', 'assassin'].forEach(k => { const m = HUD_IMG[k], x = Math.round(clampHud(HERO_X[k] / 100 * 1024 - HUD_W / 2)); HUD.icons[k] = x; HUD.heroes[k] = [x, hudY(k), HUD_W, Math.round(HUD_W * m.h / m.w)]; });
 function clampHud(x){ return Math.max(6, Math.min(1024 - HUD_W - 6, x)); }
 const pctX = x => (x / 1024 * 100) + '%', pctY = y => (y / 1536 * 100) + '%';
 function mkBar(cls, x, y, w, h){
@@ -496,18 +498,18 @@ function buildHud(){
   HERO_ORDER.forEach(k => {
     const d = document.createElement('div'); d.className = 'ult-icon'; d.dataset.hero = k;
     const ix = HUD.icons[k];
-    const iy = HUD_Y + HUD.heroes[k][3] + 3, IS = 30, ox = {mage:80, knight:318, tank:562, assassin:804}[k];
+    const iy = HUD.heroes[k][1] + HUD.heroes[k][3] + 3, IS = 30, ox = {mage:80, knight:318, tank:562, assassin:804}[k];
     d.style.cssText = `left:${pctX(ix)};top:${pctY(iy)};width:${pctX(IS)};height:${pctY(IS)};background-size:2327% auto;background-position:${ox / 980 * 100}% ${757 / 1492 * 100}%`;
     d.onclick = () => { if (k !== activeGroup || !state.ultReady[k]) return; const c = document.querySelector('#am-list .act-card.ult:not(:disabled)'); if (c) c.click(); else toast('O especial é ativado na vez do seu herói, no menu de habilidades.'); };
     $('#game').appendChild(d); bars['ult_' + k] = d;
   });
   HERO_ORDER.forEach(k => {
     const s = document.createElement('div'); s.className = 'hero-status'; s.hidden = true;
-    s.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD_Y + HUD.heroes[k][3] + 8)};width:${pctX(150)}`; $('#game').appendChild(s); bars['st_' + k] = s;
+    s.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD.heroes[k][1] - 17)};width:${pctX(150)}`; $('#game').appendChild(s); bars['st_' + k] = s;
   });
   HERO_ORDER.forEach(k => {   // ícones pequenos dos efeitos de item ativos (com a duração)
     const c = document.createElement('div'); c.className = 'hero-chips';
-    c.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD_Y + HUD.heroes[k][3] + 26)};width:${pctX(205)}`; $('#game').appendChild(c); bars['ch_' + k] = c;
+    c.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD.heroes[k][1] + HUD.heroes[k][3] + 4)};width:${pctX(186)}`; $('#game').appendChild(c); bars['ch_' + k] = c;
   });
   { const p2 = document.createElement('div'); p2.className = 'p2-badge'; p2.hidden = true; p2.textContent = 'FASE 2'; $('#game').appendChild(p2); bars.p2 = p2; }
   const mk = document.createElement('div'); mk.className = 'boss-marks'; mk.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(122)}`; $('#game').appendChild(mk); bars.marks = mk;

@@ -528,9 +528,9 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 
 /* efeitos de item ativos (icone pequeno + duracao) e selo da fase 2 */
 .hero-chips{position:absolute;z-index:9;pointer-events:none;display:flex;flex-wrap:wrap;gap:.5cqw}
-.hero-chips .bf{position:relative;display:block;width:4.4cqw;height:6.4cqw;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 2px rgba(0,0,0,.8))}
+.hero-chips .bf{position:relative;display:block;width:2.3cqw;height:3.3cqw;filter:drop-shadow(0 1px 0 #000) drop-shadow(0 0 2px rgba(0,0,0,.8))}
 .hero-chips .bf img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
-.hero-chips .bf i{position:absolute;right:-.5cqw;bottom:-.4cqw;min-width:1.9cqw;padding:0 .3cqw;box-sizing:border-box;text-align:center;font:700 1.55cqw/1.2 'Pixelify Sans',monospace;font-style:normal;color:#ffe08a;background:#0a0816;border:1px solid #6b5a2e;border-radius:.3cqw}
+.hero-chips .bf i{position:absolute;right:-.6cqw;bottom:-.5cqw;min-width:1.3cqw;padding:0 .2cqw;box-sizing:border-box;text-align:center;font:700 1.05cqw/1.2 'Pixelify Sans',monospace;font-style:normal;color:#ffe08a;background:#0a0816;border:1px solid #6b5a2e;border-radius:.3cqw}
 .hero-chips .bf i:empty{display:none}
 .p2-badge{position:absolute;z-index:9;left:62%;top:6.7%;padding:.3cqw 1.4cqw;font:700 1.9cqw/1.1 'Pixelify Sans',monospace;letter-spacing:.25cqw;color:#ffd0c8;background:linear-gradient(#5a1018,#2a060c);border:1px solid #ff5a4a;box-shadow:0 0 0 1px #05040a,0 0 1.6cqw rgba(255,70,50,.55);animation:p2pulse 1.1s ease-in-out infinite;pointer-events:none}
 .p2-badge[hidden]{display:none}
