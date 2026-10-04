@@ -782,7 +782,7 @@ async function gagDragon(){
   await wait(1700);
   showBanner('ALERTA: HITKILL!', 'se der certo, mata TODOS os heróis de uma vez');
   flashHit();
-  const al = HERO_ORDER.map(k => { const d = document.createElement('div'); d.className = 'gag-alert'; d.style.left = HERO_X[k] + '%'; d.innerHTML = '<b>☠</b><i>HITKILL</i>'; g.appendChild(d); return d; });
+  const al = HERO_ORDER.map(k => { const d = document.createElement('div'); d.className = 'gag-alert'; d.style.left = HERO_X[k] + '%'; d.innerHTML = '<img src="skel/skel_face.png" alt=""><i>HITKILL</i>'; g.appendChild(d); return d; });
   await Promise.all([cast, wait(2400)]);
   // puf: surge o goblin
   A.fx('boss', 'puff', {x:sp.x, y:sp.y - 30, n:18, r:80});
@@ -799,7 +799,7 @@ async function gagDragon(){
   A.fx('boss', 'puff', {x:sp.x, y:sp.y - 30, n:14, r:70});
   gb.classList.add('gone'); setTimeout(() => gb.remove(), 500);
   await dis;
-  showBanner('DRAGÃO CANCELADO', 'o boss desistiu da invocação... por enquanto 😅');
+  showBanner('DRAGÃO CANCELADO', 'o boss desistiu da invocação... por enquanto');
   await wait(1900); hideBanner();
 }
 function maybeGag(where){
@@ -986,7 +986,7 @@ async function playRound(){
   shopTick();
   if (state.burn > 0) {   // fogo: dano contínuo no boss (0,25x do ataque normal) por 2 perguntas
     const bd = Math.max(1, Math.round(ATTACK_DAMAGE * BURN_MULT)); state.burn--;
-    state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} 🔥`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
+    state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} fogo`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
     if (state.bossHp <= 0) return endGame(true);
   }
   { const b = state.buff;
