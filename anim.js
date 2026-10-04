@@ -105,8 +105,10 @@ function scheduleIdle(w, delay){
     h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, rnd(1500, 4000));
   }, delay);
 }
+const DEATH_MS = {mage:800, knight:1100, tank:900, assassin:900};   // duracao da queda: o cinza so entra quando ela termina
+function grayLater(h, dead){ clearTimeout(h.grayT); if (!dead) { h.cv.classList.remove('dead'); return; } h.grayT = setTimeout(() => { if (h.dead) h.cv.classList.add('dead'); }, DEATH_MS[h.who] || 900); }
 function setDead(w, dead){
-  const h = H[w]; if (!h || h.dead === dead) return; h.dead = dead; if (h.rig) { h.cv.classList.toggle('dead', dead); h.rig.setDead(dead); h.token++; h.cur = null; if (!dead) scheduleIdle(w, 1500); return; } h.cv.classList.toggle('dead', dead);
+  const h = H[w]; if (!h || h.dead === dead) return; h.dead = dead; if (h.rig) { grayLater(h, dead); h.rig.setDead(dead); h.token++; h.cur = null; if (!dead) scheduleIdle(w, 1500); return; } h.cv.classList.toggle('dead', dead);
   if (dead) { const r = resolve(w, 'death'); if (r) playSheet(w, r.s, {hold:true}); }
   else { h.token++; h.cur = null; const r = resolve(w, 'revive'); if (r) playSheet(w, r.s).then(() => scheduleIdle(w, 1500)); else { drawStill(w); scheduleIdle(w, 1500); } }
 }
@@ -114,7 +116,7 @@ function setAura(w, kind){
   const h = H[w]; if (!h) return; if (h.rig && h.rig.setMode) { h.rig.setMode(kind === 'red' && w !== 'boss' ? 'bers' : kind); return; }   // Guerreiro: o modo troca as poses (aura já desenhada)
   ['red', 'blue', 'orange', 'gold'].forEach(c => h.cv.classList.toggle('aura-' + c, c === kind));
 }
-function reset(){ WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
+function reset(){ WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
 window.Anim = {META, play, fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(build, 0)); else setTimeout(build, 0);

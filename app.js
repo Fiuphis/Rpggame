@@ -245,7 +245,7 @@ const guardColor = (sk, el) => sk.holy ? '#ffe08a' : sk.id === 'mana_def' ? '#7a
 const state = {
   shop:null, ib:allBuffs(), phase2:false, chestAt:-9, stats:newStats(),
   gold:0, question:0, answered:false,
-  inventory:saved.inventory, pendingAction:null, myVote:null, voteLocked:false,
+  inventory:[], pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
   heroes:Object.fromEntries(['mage','knight','tank','assassin'].map(k => [k, {hp:100, mp:100}])),
   bossHp:BOSS_MAX_HP, rage:0, hardNext:false, over:false,
@@ -257,6 +257,7 @@ const state = {
   round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false
 };
 function persist(){ localStorage.setItem(SAVE_KEY, JSON.stringify({v:2, gold:state.gold, inventory:state.inventory})); }
+persist();   // toda partida contra o boss começa sem itens (o que sobrou da anterior é descartado)
 
 const $ = s => document.querySelector(s);
 let __readUntil=0;
@@ -559,11 +560,11 @@ function buildHud(){
     const c = document.createElement('div'); c.className = 'hero-chips';
     c.style.cssText = `left:${pctX(HUD.icons[k] + 34)};top:${pctY(HUD.heroes[k][1] + HUD.heroes[k][3] + 3)};width:${pctX(186)}`; $('#game').appendChild(c); bars['ch_' + k] = c;
   });
-  { const p2 = document.createElement('div'); p2.className = 'p2-badge'; p2.hidden = true; p2.textContent = 'FASE 2'; $('#game').appendChild(p2); bars.p2 = p2; }
+  { const p2 = document.createElement('div'); p2.className = 'p2-badge'; p2.hidden = true; p2.textContent = 'FASE 2'; p2.style.cssText = `left:${pctX(HUD.rage.x + HUD.rage.w)};top:${pctY(HUD.rage.y + HUD.rage.h + 5)}`; $('#game').appendChild(p2); bars.p2 = p2; }
   const mk = document.createElement('div'); mk.className = 'boss-marks'; mk.style.cssText = `left:${pctX(HUD.rage.x)};top:${pctY(122)}`; $('#game').appendChild(mk); bars.marks = mk;
   const r = document.createElement('div'); r.className = 'rage';
   r.style.cssText = `left:${pctX(HUD.rage.x - 62)};top:${pctY(HUD.rage.y)};width:${pctX(HUD.rage.w + 62)};height:${pctY(HUD.rage.h)}`;
-  r.innerHTML = '<span class="rage-label">FÚRIA</span><div class="rage-seg">' + '<b></b>'.repeat(RAGE_MAX) + '</div>';
+  r.innerHTML = '<span class="rage-label"><i></i>FÚRIA</span><div class="rage-seg">' + '<b></b>'.repeat(RAGE_MAX) + '</div>';
   $('#game').appendChild(r); bars.rage = r;
 }
 const CHIP_DEF = [['shield','item_iron_shield.png','escudo'],['amulet','item_amulet.png','amuleto'],['helm','item_helm.png','elmo'],['smoke','item_smokebomb.png','fumaça'],['herb','item_herb.png','erva'],['tonic','item_tonic.png','tônico'],['lens','item_lens.png','lente'],['powder','item_powder.png','pólvora'],['dice','item_dice.png','dado'],['bomb','item_lightbomb.png','bomba'],['lucky','item_luckycoin.png','sorte'],['blade','item_blade.png','lâmina']];
@@ -580,7 +581,7 @@ function renderHud(){
   const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x3' : '', knight: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', assassin: ''};
   HERO_ORDER.forEach(k => { const el = bars['st_' + k]; if (!el) return; el.textContent = st[k]; el.hidden = !st[k]; el.classList.toggle('bad', k === 'knight' && b.tired > 0); });
   A.setAura('boss', state.burn > 0 ? 'orange' : state.prepNext ? 'charge' : (state.rage >= RAGE_MAX || state.hardNext) ? 'rage' : null);
-  const mk = bars.marks; if (mk && state.burn > 0) mk.innerHTML = `<span>QUEIMANDO ${state.burn}</span><img src="${pixIcon('fire')}" alt="Fogo">`; else if (mk) mk.innerHTML = state.marks.length ? '<span>MARCAS</span>' + state.marks.map(e => `<img src="${pixIcon({fire:'fire',water:'drop',air:'wind',earth:'rock'}[e])}" alt="${ELEMENTS[e].name}">`).join('') : '';
+  const mk = bars.marks; if (mk && state.burn > 0) mk.innerHTML = `<img src="${pixIcon('fire')}" alt="Queimando" title="Queimando ${state.burn}">`; else if (mk) mk.innerHTML = state.marks.length ? state.marks.map(e => `<img src="${pixIcon({fire:'fire',water:'drop',air:'wind',earth:'rock'}[e])}" alt="${ELEMENTS[e].name}">`).join('') : '';
   bars.boss.style.width = Math.max(0, state.bossHp / BOSS_MAX_HP * 100) + '%';
   HERO_ORDER.forEach(k => {
     bars[k].hp.style.width = Math.max(0, state.heroes[k].hp / HERO_MAX_HP * 100) + '%';
@@ -605,9 +606,9 @@ function buildSkillFrame(panel, title, text, at, seconds, note){
   fr.src = `menu_${panel}${panel === 'elem' && window.__elemDef ? 'def' : ''}.png`; L.innerHTML = '';
   const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box, /^sk-timer/.test(cls) ? .7 : 0); d.innerHTML = html; L.appendChild(d); return d; };
   if (M.title) add('sk-title' + (panel === 'target' ? ' t2' : ''), M.title, `<b>${title}</b><span>${text}</span>`);
-  const A = M.attr, vy = A ? [A[1] - .4, A[3] + .8] : null;   // os dois chips ficam na mesma altura (a arte tinha tamanhos diferentes)
-  if (M.tipo) { const T = M.tipo; add('sk-tipo', A ? [T[0] - .7, vy[0], T[2] + .7, vy[1]] : T, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`); }
-  if (A && at) { const e = ELEMENTS[at.attr], k = attrKind(at), d = add('sk-attr ' + k, [A[0], vy[0], Math.min(A[2] + .7, M.tbox[0] - .6 - A[0]), vy[1]], `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // chip em pixel art cobre o da arte
+  const AT = M.attr, vy = AT ? [AT[1] - .4, AT[3] + .8] : null;   // os dois chips ficam na mesma altura (a arte tinha tamanhos diferentes)
+  if (M.tipo) { const T = M.tipo; add('sk-tipo', AT ? [T[0] - .7, vy[0], T[2] + .7, vy[1]] : T, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`); }
+  if (AT && at) { const e = ELEMENTS[at.attr], k = attrKind(at), d = add('sk-attr ' + k, [AT[0], vy[0], Math.min(AT[2] + .7, M.tbox[0] - .6 - AT[0]), vy[1]], `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // chip em pixel art cobre o da arte
   add('sk-timer', M.tbox, timerHtml(seconds, 'sk-time'));
   if (M.info && note) add('tp-note', M.info, `<i class="tn-ico">${note.icon ? `<img src="${pixIcon(note.icon)}" alt="">` : ''}</i><span>${note.text}</span>`);
   fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
@@ -621,16 +622,16 @@ function buildQuestionPanel(text, at, seconds, side){
     add('', 'qchip tp', Q.ctipo, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at.tipo}</b></div>`);
     const ak = attrKind(at), ad = add('', 'qchip ' + ak, Q.cattr, `<img src="${ATTR_ICON[ak]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); ad.style.setProperty('--ec', e.color);
   }
-  add('dq-text', '', Q.title, `<span></span>`).firstChild.textContent = text;
+  add('dq-text', '', side ? [Q.title[0], Q.title[1], Q.title[2] - 4.2, Q.title[3]] : Q.title, `<span></span>`).firstChild.textContent = text;
   add('', 'dq-coin', Q.coin, side ? side.reward : '0');
-  if (side) add('', 'dq-diff d' + side.d, [Q.title[0] + Q.title[2] - 9.6, Q.title[1] + 2.2, 11, 7], `<small>RANK</small><b>${side.rank}</b>`);
+  if (side) add('', 'dq-diff d' + side.d, [77.2, Q.title[1] + 2.2, 7.0, 7], `<small>RANK</small><b>${side.rank}</b>`);
   add('', 'sk-timer', Q.tbox, timerHtml(seconds, 'dq-side-timer'));
   return L;
 }
 function fitText(){
   const fit = (box, inner, minPx) => { if (!box || !inner) return; let fs = parseFloat(getComputedStyle(box).fontSize); box.style.fontSize = fs + 'px';
     while (inner.offsetHeight > box.clientHeight + 1 && fs > minPx) box.style.fontSize = (fs -= 1) + 'px'; };
-  const t = $('#dq-text'); if (t && !$('#dynamic-question').hidden) fit(t, t.firstChild, 9);
+  const t = $('#dq-text'); if (t && !$('#dynamic-question').hidden) fit(t, t.firstChild, 7);
   document.querySelectorAll('.dq-answer .label').forEach(l => fit(l, l.firstChild, 9));
 }
 function openMenu(){ $('#dynamic-question').hidden = true; const m = $('#action-menu'); m.classList.remove('exiting'); m.hidden = false; $('#dynamic-ui').hidden = false; }
@@ -752,7 +753,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
         b.innerHTML = `<b class="cnt sk-cnt" style="left:${(cn[0] - cd[0]) / cd[2] * 100}%;top:${(cn[1] - cd[1]) / cd[3] * 100}%;width:${cn[2] / cd[2] * 100}%;height:${cn[3] / cd[3] * 100}%">0</b>`;
         b.setAttribute('aria-label', o.label);
-        if (o.kind === 'elem' && o.label !== ELEMENTS.fire.name) b.insertAdjacentHTML('beforeend', `<span class="el-chip">${window.__elemDef ? 'SEM EFEITO' : 'BOSS IMUNE'}</span>`);   // cobre o chip pintado na arte
+        if (o.kind === 'elem' && o.label !== ELEMENTS.fire.name) b.insertAdjacentHTML('beforeend', `<span class="el-chip"><b>${window.__elemDef ? 'SEM EFEITO' : 'BOSS IMUNE'}</b></span>`);   // cobre o chip pintado na arte
         if (o.face) b.insertAdjacentHTML('afterbegin', `<img class="tp-face" src="tp_${o.face}.png" alt=""><span class="tp-name"></span><span class="tp-desc"></span><span class="tp-chips">${o.chips || ''}</span>`), b.querySelector('.tp-name').textContent = o.label, b.querySelector('.tp-desc').textContent = o.desc || '';
         if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
       } else if (menu) {
@@ -966,7 +967,12 @@ async function activateUlt(k){
   showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
   const tx = cleTarget ? HERO_X[cleTarget] / 100 * 1024 : null;
   const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:1098} : {}); A.sayRandom(k, 'ult', 1);
-  if (k === 'mage') { await sleep(2900); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true); await sleep(550); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', true); state.ultCd.mage = 1; }   // 1º estouro 1,5x + 2º estouro 2,5x = 4x
+  if (k === 'mage') {   // cada dano entra junto do seu estouro do buraco negro (1,5x no 1º, 2,5x no 2º = 4x)
+    const onHit = () => Promise.race([A.hit('mage'), sleep(6500)]);
+    await onHit(); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true, true);
+    await onHit(); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', true, true);
+    state.ultCd.mage = 1;
+  }
   else if (k === 'knight') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
@@ -1323,7 +1329,8 @@ async function doAttack(k, an, col, dmg, say){
   await heroAttack(k, dmg, col, true);
   await Promise.race([pl, wait(3500)]);
 }
-async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed = false){
+async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed = false, quick = false){
+  const hold = quick ? sleep : wait;
   const col = colOverride || HERO_COLOR[hero], game = $('#game');
   if (!landed) {
     await shoot(HERO_X[hero], 61, 50, 24, col);
@@ -1331,12 +1338,12 @@ async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed 
     imp.classList.remove('active'); void imp.offsetWidth; imp.classList.add('active');
   }
   game.classList.remove('boss-hit'); void game.offsetWidth; game.classList.add('boss-hit');
-  if (dmg <= 0) { floatText(50, 17, 'IMUNE!', '#b8c4d9'); renderHud(); await wait(600); game.classList.remove('boss-hit'); return; }
+  if (dmg <= 0) { floatText(50, 17, 'IMUNE!', '#b8c4d9'); renderHud(); await hold(600); game.classList.remove('boss-hit'); return; }
   if (state.stun) dmg = Math.round(dmg * STUN_MULT);
   { const o = itemOff(hero, dmg); dmg = o.d; if (o.note) floatText(HERO_X[hero], 50, o.note, '#ffd34d'); }
   state.bossHp = Math.max(0, state.bossHp - dmg); A.play('boss', 'hurt'); A.sayRandom('boss', 'hurt', .3);
   floatText(50, 17, `-${dmg}`, col === '#d9e6ff' ? '#ffffff' : col);
-  renderHud(); await wait(600); game.classList.remove('boss-hit');
+  renderHud(); await hold(600); game.classList.remove('boss-hit');
 }
 async function bossCounter(hero, dmg, defended){
   const r = routeHit(hero, dmg), t = r.to;
