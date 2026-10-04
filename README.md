@@ -416,3 +416,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v171: fala do mercador agora no cantinho dele (caixa ao lado do retrato), sem balão grande.
 - v172: placa FECHADO refeita: pixel art 64x40 gasta (madeira com veios, rachaduras, pregos enferrujados, musgo, tinta descascada); gerador em tools/make_sign.py.
 - v173: sem emojis nos textos do jogo (aviso do dragão, dano de fogo, botões); alerta HITKILL usa caveira em pixel art.
+- v174: emoji da gag removido (resto voltou); mercador: reposição imediata a cada compra com OUTRO item, prateleira sorteada a cada partida, 6 poções (pequena/normal/grande de HP e mana), falas e perguntas se ajustam sozinhas à caixa.

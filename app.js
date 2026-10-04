@@ -40,8 +40,12 @@ const QUESTIONS = [
 
 // Banco de ações do Mercador: cada item vira uma pergunta de votação. Para criar ações novas, adicione aqui.
 const ITEMS = {
+  hp_s:{name:'Poção Pequena de HP', ask:'Poção pequena de HP?', price:5, kind:'hp', amount:20, icon:'potion_hp_s.png'},
   hp:{name:'Poção de HP', ask:'Comprar poção de HP?', price:10, kind:'hp', amount:35, icon:'potion_hp.png'},
-  mana:{name:'Poção de Mana', ask:'Comprar poção de mana?', price:3, kind:'mp', amount:35, icon:'potion_mana.png'}
+  hp_l:{name:'Poção Grande de HP', ask:'Poção grande de HP?', price:18, kind:'hp', amount:70, icon:'potion_hp_l.png'},
+  mana_s:{name:'Poção Pequena de Mana', ask:'Poção pequena de mana?', price:2, kind:'mp', amount:20, icon:'potion_mana_s.png'},
+  mana:{name:'Poção de Mana', ask:'Comprar poção de mana?', price:3, kind:'mp', amount:35, icon:'potion_mana.png'},
+  mana_l:{name:'Poção Grande de Mana', ask:'Poção grande de mana?', price:6, kind:'mp', amount:70, icon:'potion_mana_l.png'}
 };
 
 // ===== Configuração do combate (ajuste aqui) =====
@@ -203,14 +207,14 @@ function updateVoteUI(){
     b.disabled = state.voteLocked;
   });
 }
-function showMerchantText(text){ $('#merchant-question').textContent = text; }
+function showMerchantText(text){ const q = $('#merchant-question'); q.textContent = text; q.style.fontSize = ''; if (text && !$('#bag-panel').hidden) fitBox(q, 1.15, .7, true); }
 
 function openMerchantVote(text, action){
   votes = {yes:0, no:0};
   state.pendingAction = action; state.myVote = null; state.voteLocked = false;
   state.voters = groupMembers(); state.need = majorityOf(state.voters);
   showMerchantText(text);
-  $('#merchant-vote').classList.add('open'); setBag(true);
+  $('#merchant-vote').classList.add('open'); setBag(true); showMerchantText(text);
   updateVoteUI();
   startVoteTimer();
   if (TEST_MODE) startBots();
@@ -284,27 +288,40 @@ async function askUlt(hero){
 }
 
 // ===== Mercador vivo: humor, falas, loja que fecha, prateleira que repõe itens =====
-const SHOP_POOL = ['hp','mana'];            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
+const SHOP_POOL = ['hp_s','hp','hp_l','mana_s','mana','mana_l'];            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
 const SHOP_SLOTS = 4, SHOP_CLOSE_AT = 6, SHOP_CLOSED_Q = 3;   // 6 aberturas sem comprar → fecha por 3 perguntas
 const MSAY = {
   hi:['O que deseja?','Bem-vindo, viajante!','Olhe à vontade...','Em que posso ajudar?','Tenho o que você precisa.','Mercadoria de primeira!'],
-  meh:['Vai comprar alguma coisa?','Já olhou o bastante?','Hm... decidiu algo?','Pode escolher, sem pressa... quase.'],
+  meh:['Vai comprar alguma coisa?','Já olhou o bastante?','Hm... decidiu algo?','Sem pressa... quase.'],
   bad:['Não vai comprar nada, não?','Só vem olhar, é?','Meu tempo vale ouro, sabia?','De novo você...'],
   mad:['Você está me fazendo perder o meu tempo!','Compra ou sai da frente!','Isto aqui não é museu!'],
   close:['CHEGA! Estou fechando a loja!','Já deu! Loja FECHADA!'],
   back:['Voltei! O que vai ser?','Reabri. Vai comprar agora?'],
   sold:['Negócio fechado!','Boa escolha!','Volte sempre!'],
-  no:['Hmpf... indecisos.','Pensem rápido, não tenho o dia todo.'],
+  no:['Hmpf... indecisos.','Pensem rápido, tenho pressa.'],
   stock:['Chegou mercadoria nova!','Acabei de repor a prateleira.'],
   shut:['Fechado! Voltem depois.','A loja está fechada!','Sem mercador, sem compra.']
 };
 const msayLast = {};
 function msay(kind){ const l = MSAY[kind]; let t; do { t = l[Math.floor(Math.random() * l.length)]; } while (l.length > 1 && t === msayLast[kind]); msayLast[kind] = t; return t; }
-function newShop(){ return {slots:Array.from({length:SHOP_SLOTS}, (_, i) => i < 2 ? 'hp' : 'mana'), opens:0, closed:0}; }
+function shuffled(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function newShop(){ return {slots:shuffled(SHOP_POOL).slice(0, SHOP_SLOTS), opens:0, closed:0}; }   // prateleira sorteada a cada partida
+function pickNew(sold){   // item novo no lugar do vendido: nunca o mesmo, de preferência um que ainda não está na prateleira
+  const onShelf = state.shop.slots.filter(Boolean);
+  let c = SHOP_POOL.filter(t => t !== sold && !onShelf.includes(t));
+  if (!c.length) c = SHOP_POOL.filter(t => t !== sold);
+  return c[Math.floor(Math.random() * c.length)];
+}
 let bubbleT = null;
+function fitBox(el, max, min, byWidth){      // reduz a fonte (em cqw) até o texto caber inteiro na caixa
+  const inner = el.firstElementChild || el;
+  let f = max; el.style.fontSize = f + 'cqw';
+  const over = () => byWidth ? el.scrollWidth > el.clientWidth + 1 : (inner.offsetHeight > el.clientHeight + 1 || inner.scrollWidth > el.clientWidth + 1);
+  while (f > min && over()) { f = Math.round((f - .1) * 10) / 10; el.style.fontSize = f + 'cqw'; }
+}
 function mBubble(text, mad){          // fala do mercador: no cantinho dele (mesma caixa da confirmação de compra)
   const b = $('#m-say'); if (!b) return; clearTimeout(bubbleT);
-  b.classList.toggle('mad', !!mad); b.textContent = text; b.classList.remove('say-in'); void b.offsetWidth; b.classList.add('say-in');
+  b.classList.toggle('mad', !!mad); b.innerHTML = '<span></span>'; b.firstChild.textContent = text; fitBox(b, 2, 1.1, false); b.classList.remove('say-in'); void b.offsetWidth; b.classList.add('say-in');
   bubbleT = setTimeout(() => { b.textContent = ''; }, 3200 + text.length * 55);
 }
 function mPuff(){ const p = $('#m-puffs'); if (!p) return; for (let i = 0; i < 6; i++) { const d = document.createElement('i'); d.className = 'm-puff'; d.style.left = (Math.random() * 60) + '%'; d.style.top = (Math.random() * 20) + '%'; d.style.animationDelay = (i * 70) + 'ms'; p.appendChild(d); setTimeout(() => d.remove(), 1500); } }
@@ -335,16 +352,13 @@ function shopClose(){
   mPuff(); setTimeout(() => { $('#m-stage').classList.add('shut'); $('#m-stage').classList.remove('mad'); renderShop(); }, 380);
   toast(`O Mercador fechou a loja por ${SHOP_CLOSED_Q} perguntas.`);
 }
-function shopTick(){               // fim de cada pergunta: reabre a loja e repõe itens
+function shopTick(){               // fim de cada pergunta: conta o tempo da loja fechada
   const sh = state.shop;
   if (sh.closed > 0) {
     sh.closed--;
     if (sh.closed === 0) { mPuff(); $('#m-stage').classList.remove('shut'); mMood(0); renderShop(); toast('O Mercador reabriu a loja.'); if (!$('#bag-panel').hidden) mBubble(msay('back')); }
     return;
   }
-  const arrive = [];
-  sh.slots.forEach((t, i) => { if (!t) { sh.slots[i] = SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)]; arrive.push(i); } });
-  if (arrive.length) { renderShop({arrive}); if (!$('#bag-panel').hidden) mBubble(msay('stock')); }
 }
 function requestBuy(slot){
   if (state.shop.closed > 0) { toast('A loja está fechada.'); mBubble(msay('shut')); return; }
@@ -362,6 +376,7 @@ function executeBuy(type, slot){
   if (state.inventory.length >= 6) { toast('Mochila cheia.'); return false; }
   state.gold -= item.price; state.inventory.push(type);
   state.shop.slots[slot] = null; state.shop.opens = 0; mMood(0); renderShop({sold:slot, soldType:type}); mBubble(msay('sold'));
+  setTimeout(() => { if (state.shop.slots[slot] || state.shop.closed > 0) return; state.shop.slots[slot] = pickNew(type); renderShop({arrive:[slot]}); }, 1100);
   persist(); renderGold(); renderInventoryHits();
   return true;
 }
@@ -782,7 +797,7 @@ async function gagDragon(){
   await wait(1700);
   showBanner('ALERTA: HITKILL!', 'se der certo, mata TODOS os heróis de uma vez');
   flashHit();
-  const al = HERO_ORDER.map(k => { const d = document.createElement('div'); d.className = 'gag-alert'; d.style.left = HERO_X[k] + '%'; d.innerHTML = '<img src="skel/skel_face.png" alt=""><i>HITKILL</i>'; g.appendChild(d); return d; });
+  const al = HERO_ORDER.map(k => { const d = document.createElement('div'); d.className = 'gag-alert'; d.style.left = HERO_X[k] + '%'; d.innerHTML = '<b>☠</b><i>HITKILL</i>'; g.appendChild(d); return d; });
   await Promise.all([cast, wait(2400)]);
   // puf: surge o goblin
   A.fx('boss', 'puff', {x:sp.x, y:sp.y - 30, n:18, r:80});
@@ -986,7 +1001,7 @@ async function playRound(){
   shopTick();
   if (state.burn > 0) {   // fogo: dano contínuo no boss (0,25x do ataque normal) por 2 perguntas
     const bd = Math.max(1, Math.round(ATTACK_DAMAGE * BURN_MULT)); state.burn--;
-    state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} fogo`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
+    state.bossHp = Math.max(0, state.bossHp - bd); floatText(50, 17, `-${bd} 🔥`, '#ff7a2e'); A.play('boss', 'hurt', {light:true}); renderHud(); await wait(900);
     if (state.bossHp <= 0) return endGame(true);
   }
   { const b = state.buff;

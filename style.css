@@ -333,7 +333,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 
 /* gag do dragão esqueleto (v166) */
 .gag-alert{position:absolute;z-index:44;top:51%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none;font-family:'Pixelify Sans',monospace;color:#ff3b30;text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;animation:gagpulse .38s steps(2) infinite}
-.gag-alert img{width:8cqw;height:auto;image-rendering:pixelated;filter:grayscale(1) brightness(.55) sepia(1) saturate(14) hue-rotate(-52deg) drop-shadow(0 0 .6cqw #000)}
+.gag-alert b{font-size:9cqw;line-height:1}
 .gag-alert i{font-style:normal;font-weight:700;font-size:3.4cqw;letter-spacing:.2cqw}
 .gag-alert.out{animation:none;opacity:0;transition:opacity .35s}
 @keyframes gagpulse{0%{transform:translateX(-50%) scale(1)}100%{transform:translateX(-50%) scale(1.14)}}
@@ -398,9 +398,10 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .bag-panel.shut .shop{opacity:.35;filter:grayscale(.85)}
 
 /* v171: fala do mercador no cantinho dele (em vez do balão grande) */
-.m-say{position:absolute;left:73.8%;top:27.4%;width:17.6%;height:17%;display:flex;align-items:center;justify-content:center;text-align:center;z-index:3;pointer-events:none;overflow:hidden;font:700 2cqw/1.08 'Pixelify Sans',monospace;color:#f1dfae;text-shadow:1px 1px 0 #000;-webkit-font-smoothing:none}
+.m-say{position:absolute;left:73.8%;top:33.2%;width:17.6%;height:11.4%;display:flex;align-items:center;justify-content:center;text-align:center;z-index:3;pointer-events:none;overflow:hidden;font:700 2cqw/1.08 'Pixelify Sans',monospace;color:#f1dfae;text-shadow:1px 1px 0 #000;-webkit-font-smoothing:none}
 .m-say.mad{color:#ff8f7e}
 .m-say.say-in{animation:msayin .25s steps(5) both}
 @keyframes msayin{from{opacity:0;transform:translateY(25%)}to{opacity:1;transform:none}}
 .m-say.mad.say-in{animation:msayin .25s steps(5) both,mbub .2s linear 3}
 .bag-panel:has(.merchant-vote.open) .m-say{display:none}
+.m-say>span{display:block;width:100%;overflow-wrap:normal}
