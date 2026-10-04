@@ -597,3 +597,15 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .vote-choice.selected,.bag-panel .vote-choice.selected{background:url(ui_chip_hi.png) center/100% 100% no-repeat}
 .in-skip{border:solid transparent;border-width:10px;border-image:url(ui_chip.png) 6 fill/10px stretch;background:none;image-rendering:pixelated;padding:4px 10px;font:bold 12px/1 'Pixelify Sans',monospace;color:#e8d8a8}
 .in-skip.selected{border-image-source:url(ui_chip_hi.png)}
+
+/* v211: texto do papiro proporcional a largura real da faixa (nao da janela) */
+.sc-in{container-type:inline-size}
+.sc-in .sc-t{font-size:clamp(11px,5.9cqw,22px)!important}
+.sc-in .sc-s{font-size:clamp(9px,4.6cqw,16px)!important}
+.sc-in .sc-n{font-size:clamp(9px,4.2cqw,15px)!important;padding:0 2cqw;box-sizing:border-box}
+.sc-in .sc-t,.sc-in .sc-s,.sc-in .sc-n{max-width:100%;text-align:center;overflow-wrap:anywhere}
+.sc-btn{font-size:11px!important;letter-spacing:.02em!important;white-space:nowrap;padding:0 8px!important}
+/* v211: chips do seletor de alvo com texto centralizado na caixa */
+.sk-card .tp-chips .tag{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:3.1cqw;padding:0 1.2cqw!important;font-size:1.25cqw!important;line-height:1!important;padding-top:.15cqw!important}
+.sk-card .tp-chips{bottom:12%}
+.sk-card .tp-desc{top:41%}
