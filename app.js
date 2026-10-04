@@ -932,12 +932,12 @@ async function bossIntro(ev = {}){
 }
 
 // ---- alvos, ultimates e marcas ----
-async function pickAlly(k, sk){
+async function pickAlly(k, sk, sh){
   const list = HERO_ORDER.filter(h => h !== k).map(h => state.heroes[h].hp > 0
     ? {hero:h, desc:`Vida ${state.heroes[h].hp}/${HERO_MAX_HP}`, chips:sk.id === 'pass' ? '<span class="tag mult">1,5x</span>' : ''} : {hero:h, desc:'Caído', block:'CAÍDO'});
   const first = list.find(x => !x.block).hero;
   const t = await chooseTarget(sk.name.toUpperCase(), sk.id === 'pass' ? 'Quem ganha o ataque extra?' : 'Quem será protegido?', list, first,
-    {icon:sk.id === 'pass' ? 'info' : 'guard', text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'});
+    {icon:sk.id === 'pass' ? 'info' : 'guard', text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'}, sh && sh.endsAt);
   if (t === 'BACK') return 'BACK';
   return list.find(x => x.hero === t && !x.block) ? t : first;
 }
@@ -959,12 +959,12 @@ const healTargets = () => HERO_ORDER.map(h => { const hp = state.heroes[h].hp;
        : hp < HERO_MAX_HP ? {hero:h, desc:`Vida ${hp}/${HERO_MAX_HP}`, chips:`<span class="tag attr">CURAR +${HEAL_AMOUNT}</span>`}
        : {hero:h, desc:'Vida cheia', block:'VIDA CHEIA'}; });
 function ultUsable(k){ return k !== 'assassin' || healTargets().some(t => !t.block); }
-async function activateUlt(k){
+async function activateUlt(k, sh){
   const b = state.buff; let note = ULT_INFO[k], cleTarget = null;
   if (k === 'assassin') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
     const list = healTargets(), valid = list.filter(t => !t.block);
     if (k === activeGroup && state.heroes[k].hp > 0) {
-      let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {icon:'cross', text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}); await closePanel();
+      let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {icon:'cross', text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}, sh && sh.endsAt); await closePanel();
       if (r === 'BACK') return 'BACK';
       if (!r || !valid.some(v => v.hero === r)) { toast('Tempo esgotado: a Luz Sagrada não foi usada e continua disponível.'); return false; }
       cleTarget = r;
@@ -1032,11 +1032,12 @@ const SLOT = {   // posição [linha, coluna] de cada habilidade no quadro do he
   knight:{ult:[0,0], heavy:[1,0], def:[2,0], atk:[0,1], pass:[1,1], dodge:[2,1]},
   tank:{ult:[0,0], super:[1,0], def:[2,0], atk:[0,1], guard:[1,1], dodge:[2,1]}
 };
-async function chooseSkill(k){
+async function chooseSkill(k, sh = {}){
   const at = state.curAttack, list = SKILLS[k];
-  let endsAt = null;   // o relógio da vez é um só: continua descendo ao escolher o elemento e ao voltar
+  let endsAt = sh.endsAt || null;   // o relógio da vez é um só: continua descendo ao escolher o elemento e ao voltar
   for (;;) {
     if (!endsAt) endsAt = Date.now() + ACTION_SECONDS * 1000;
+    sh.endsAt = endsAt;
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta rank S/SS
@@ -1044,7 +1045,7 @@ async function chooseSkill(k){
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
     const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts});
     if (r.idx === null) return null;
-    if (r.idx === 0) { await closePanel(); if (await activateUlt(k) === 'BACK') continue; endsAt = null; continue; }   // ultimate ativado: o efeito começa a contar agora
+    if (r.idx === 0) { await closePanel(); if (await activateUlt(k, sh) === 'BACK') continue; endsAt = null; continue; }   // ultimate ativado: o efeito começa a contar agora
     const sk = list[r.idx - 1]; let element = null;
     if (sk.elem) {
       const els = ['fire','water','air','earth'];
@@ -1163,9 +1164,10 @@ async function playRound(){
     const at = state.curAttack;
     if (k === activeGroup) {
       showRing(k); await wait(400);
+      const sh = {};   // um unico relogio por vez: habilidade -> alvo -> voltar
       for (;;) {
-        actions[k] = await chooseSkill(k);
-        if (actions[k] && actions[k].skill.target) { actions[k].target = await pickAlly(k, actions[k].skill); if (actions[k].target === 'BACK') continue; }
+        actions[k] = await chooseSkill(k, sh);
+        if (actions[k] && actions[k].skill.target) { actions[k].target = await pickAlly(k, actions[k].skill, sh); if (actions[k].target === 'BACK') continue; }
         break;
       }
       await closePanel(); hideRing();
