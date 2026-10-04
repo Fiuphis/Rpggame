@@ -433,3 +433,4 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v188: bau novo em pixel art detalhado (madeira gasta, ferro rebitado) que abre, mostra o tesouro e fecha; se ignorado treme, pisca e vira poeira. Vitoria/derrota, relatorio e escolha de alvo de item agora aparecem no papiro.
 - v188: bau em pixel art com quadros (abre, fecha, some em poeira); rodada de bau sem pergunta (voto abrir/ignorar: item da loja ou armadilha de 18 HP so para quem abriu); vitoria, derrota, relatorio, menus de habilidade e escolha de alvo agora no papiro; botoes e placas em pixel art (btn_*.png).
 - v189: icones pequenos dos efeitos de item ativos (com duracao) embaixo da barra de cada heroi e selo FASE 2 ao lado da barra do boss.
+- v190: loja: tocar no icone do item abre um cartao de descricao em pixel art (nome, categoria, efeito, afinidade, preco); tocar nas moedas tenta comprar.
