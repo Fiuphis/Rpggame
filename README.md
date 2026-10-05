@@ -490,3 +490,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v243: cupula do escudo do Guerreiro maior (cobre o corpo inteiro) e atras dele.
 - v244: cúpula do Guerreiro maior e centrada no corpo; todos os anéis de chão (heróis e boss) em perspectiva (arco de trás atrás do personagem, arco da frente na frente)
 - v245: cúpula do Guerreiro centrada no centro do corpo (mediana do sprite), não nos pés
+- v246: escudo do Guerreiro vira esfera centrada no corpo (peito), não meia-esfera no chão

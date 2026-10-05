@@ -203,7 +203,7 @@ function make(host){
     shield(k){ const f = feet(), gold = /^g/.test(k || ''), cc = gold ? GOLD : BLUE, wide = /5|4|7/.test(k || '');
       E('glow', 1700, u => ({x:f.x, y:f.y - 130, r:wide ? 200 : 160, c:cc, a:.45 * Math.sin(Math.PI * u)}), {back:true});
       if (gold) { E('fx_rn2', 1500, u => ({x:f.x, y:f.y - 4, s:lerp(.25, wide ? .5 : .42, eo(u)), a:.7 * Math.sin(Math.PI * u)})); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
-      else { E('fx_dome', 1600, u => ({x:feet().x + bodyDX, y:f.y + 6, s:lerp(1, wide ? 1.9 : 1.65, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true, back:true}); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
+      else { [1, -1].forEach(fy => E('fx_dome', 1600, u => ({x:feet().x + bodyDX, y:f.y - 112, fy, sy:.78, cr:.84, s:lerp(.7, wide ? 1.4 : 1.2, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true, back:true})); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
       E('ring', 1500, u => ({x:f.x, y:f.y - 6, r:lerp(50, wide ? 140 : 115, eo(u)), c:cc, a:.7 * Math.sin(Math.PI * u)}));
       if (/2|4|6/.test(k || '')) E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:gold ? '255,240,200' : ICE, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
       for (let i = 0; i < 4; i++) { const an = i * 1.3; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:15, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
@@ -274,9 +274,9 @@ function make(host){
       if (e.name === 'streak') { streak(g, s.x, s.y, s.ang, s.len, s.th, s.c, s.a); return true; }
       if (e.name === 'ring') { drawRing(s); return true; }
       if (!ready(e.name)) return true;
-      const w = im.naturalWidth * (s.s || 1), h = im.naturalHeight * (s.s || 1), bot = !!e.bot;
-      g.save(); g.globalAlpha = clamp(s.a == null ? 1 : s.a); g.translate(s.x, s.y); if (s.rot) g.rotate(s.rot);
-      if (e.add === false) { g.imageSmoothingEnabled = false; g.drawImage(im, -w / 2, bot ? -h : -h / 2, w, h); } else FXSoft.draw(g, im, -w / 2, bot ? -h : -h / 2, w, h, 1);
+      const cr = s.cr || 1, w = im.naturalWidth * (s.s || 1), h = im.naturalHeight * cr * (s.s || 1) * (s.sy || 1), bot = !!e.bot;
+      g.save(); g.globalAlpha = clamp(s.a == null ? 1 : s.a); g.translate(s.x, s.y); if (s.fy) g.scale(1, s.fy); if (s.rot) g.rotate(s.rot);
+      if (cr < 1) { g.drawImage(im, 0, 0, im.naturalWidth, im.naturalHeight * cr, -w / 2, bot ? -h : -h / 2, w, h); } else if (e.add === false) { g.imageSmoothingEnabled = false; g.drawImage(im, -w / 2, bot ? -h : -h / 2, w, h); } else FXSoft.draw(g, im, -w / 2, bot ? -h : -h / 2, w, h, 1);
       g.restore(); return true;
     });
     if (shakeT && now >= shakeT) { const u = (now - shakeT) / 450, g = host.shakeEl; if (g) g.style.transform = u < 1 ? `translate(${Math.sin(u * 60) * 1 * (1 - u)}px,${Math.cos(u * 50) * .8 * (1 - u)}px)` : ''; if (u >= 1) shakeT = 0; }
