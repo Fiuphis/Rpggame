@@ -5,7 +5,7 @@
 (() => {
 'use strict';
 const T = {x:517, y:340};                 // ponto de impacto no boss
-const BASE = 262, SZ = 0.9, XOFF = 0;
+const BASE = 262, SZ = 1.03, XOFF = 0;
 const BLUE = '120,180,255', ICE = '190,230,255', GOLD = '255,205,120', RED = '255,60,50', DUST = '230,205,170';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
@@ -203,7 +203,7 @@ function make(host){
     shield(k){ const f = feet(), gold = /^g/.test(k || ''), cc = gold ? GOLD : BLUE, wide = /5|4|7/.test(k || '');
       E('glow', 1700, u => ({x:f.x, y:f.y - 130, r:wide ? 200 : 160, c:cc, a:.45 * Math.sin(Math.PI * u)}), {back:true});
       if (gold) { E('fx_rn2', 1500, u => ({x:f.x, y:f.y - 4, s:lerp(.25, wide ? .5 : .42, eo(u)), a:.7 * Math.sin(Math.PI * u)})); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
-      else { [1, -1].forEach(fy => E('fx_dome', 1600, u => ({x:feet().x + bodyDX, y:f.y - 112, fy, sy:.78, cr:.84, s:lerp(.7, wide ? 1.4 : 1.2, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true, back:true})); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
+      else { [1, -1].forEach(fy => E('fx_dome', 1600, u => ({x:feet().x + bodyDX, y:f.y - 126, fy, sy:.78, cr:.84, s:lerp(.75, wide ? 1.5 : 1.3, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true, back:true})); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
       E('ring', 1500, u => ({x:f.x, y:f.y - 6, r:lerp(50, wide ? 140 : 115, eo(u)), c:cc, a:.7 * Math.sin(Math.PI * u)}));
       if (/2|4|6/.test(k || '')) E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:gold ? '255,240,200' : ICE, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
       for (let i = 0; i < 4; i++) { const an = i * 1.3; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:15, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
