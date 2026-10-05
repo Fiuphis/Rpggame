@@ -896,6 +896,54 @@ const CHEST_ITEM_P = .7, CHEST_RARE_P = .1, CHEST_LEGEND_P = .02;
 function chestEligible(){
   return !state.over && state.round >= CHEST_FROM && state.round - state.chestAt >= CHEST_GAP && Math.random() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest');
 }
+// item da arca voando para a mochila: surge da arca num clarao, flutua brilhando, faz um arco ate o botao da mochila e estoura em faiscas
+function flyItemToBag(type, fromEl){
+  return new Promise(done => {
+    const it = ITEMS[type], tg = $('#bag-toggle'), legend = !!it.legend, rare = !!it.rare;
+    const slotEls = () => { const st = inventoryStacks(), i = st.findIndex(x => x.idx === state.inventory.length - 1), h = $('#inventory-hits').children[i]; return h ? h.querySelectorAll('.inv-icon,.inv-count') : []; };
+    const hide = on => slotEls().forEach(e => e.style.visibility = on ? 'hidden' : '');
+    hide(true);
+    let fin = false;
+    const finish = () => { if (fin) return; fin = true; hide(false); layer.remove(); done(); };
+    const layer = document.createElement('div'); layer.style.cssText = 'position:fixed;inset:0;z-index:300;pointer-events:none;overflow:hidden';
+    document.body.appendChild(layer);
+    const fr = (fromEl && fromEl.getBoundingClientRect().width ? fromEl : $('#game')).getBoundingClientRect(), tr = tg.getBoundingClientRect();
+    const hasT = tr.width > 0, vw = innerWidth, vh = innerHeight;
+    const sz = Math.max(44, Math.min(84, vw * .17)), W = sz * 46 / 68;
+    const sx = fr.left + fr.width / 2, sy = fr.top + fr.height * .35;
+    const ex = hasT ? tr.left + tr.width / 2 : vw / 2, ey = hasT ? tr.top + tr.height / 2 : vh * .9;
+    const lift = Math.min(vh * .16, Math.max(sz * 1.3, fr.height * .5)), hx = sx, hy = Math.max(sz, sy - lift);
+    const cols = legend ? ['#7dffd8','#ffe08a','#ffffff','#c8a8ff'] : rare ? ['#ffe08a','#ffb02e','#fff6c8'] : ['#ffe08a','#fff6c8','#c8a8ff'];
+    const img = document.createElement('img'); img.src = it.icon; img.alt = '';
+    img.style.cssText = `position:absolute;left:0;top:0;width:${W}px;height:${sz}px;image-rendering:pixelated;will-change:transform,opacity;filter:drop-shadow(0 0 6px ${cols[0]}) drop-shadow(0 0 14px ${cols[2] || cols[0]})`;
+    layer.appendChild(img);
+    const spark = (x, y, spread, life, big) => {
+      const d = document.createElement('i'), c = cols[Math.floor(Math.random() * cols.length)], z = (big ? 5 : 3) + Math.floor(Math.random() * 4);
+      d.style.cssText = `position:absolute;left:${x - z / 2}px;top:${y - z / 2}px;width:${z}px;height:${z}px;background:${c};box-shadow:0 0 ${z * 2}px ${c}`;
+      layer.appendChild(d);
+      const a = Math.random() * 6.283, r = spread * (.4 + Math.random() * .8);
+      d.animate([{transform:'translate(0,0) scale(1) rotate(0deg)', opacity:1}, {transform:`translate(${Math.cos(a) * r}px,${Math.sin(a) * r - spread * .4}px) scale(.1) rotate(${Math.random() * 360}deg)`, opacity:0}], {duration:life, easing:'ease-out'}).onfinish = () => d.remove();
+    };
+    const ring = (x, y, size, dur) => { const r = document.createElement('i'); r.style.cssText = `position:absolute;left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px;border-radius:50%;border:3px solid ${cols[0]};box-shadow:0 0 14px ${cols[0]},inset 0 0 12px ${cols[0]}`; layer.appendChild(r); r.animate([{transform:'scale(.2)', opacity:.95}, {transform:'scale(1.5)', opacity:0}], {duration:dur, easing:'ease-out'}).onfinish = () => r.remove(); };
+    const T1 = 520, T2 = 1000, T3 = 1850, easeOut = t => 1 - Math.pow(1 - t, 3), back = t => { const c = 1.9; return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); };
+    ring(sx, sy, sz * 1.6, 700); for (let i = 0; i < 14; i++) spark(sx, sy, sz * 1.8, 800, true);
+    let t0 = performance.now(), lastSp = 0, bursted = false;
+    const frame = now => {
+      if (fin) return;
+      const t = now - t0; let x, y, sc, rot = 0, op = 1;
+      if (t < T1) { const k = t / T1; x = sx; y = sy + (hy - sy) * easeOut(k); sc = back(k) * 1.15; }
+      else if (t < T2) { const k = (t - T1) / (T2 - T1); x = hx + Math.sin(k * 6.283 * 2) * 3; y = hy + Math.sin(k * 6.283) * -4; sc = 1.15 + Math.sin(k * 6.283 * 3) * .05; rot = Math.sin(k * 6.283 * 2) * 9; }
+      else if (t < T3) { const k = (t - T2) / (T3 - T2), e = k * k * (3 - 2 * k), cx = (hx + ex) / 2 + (ex >= hx ? -1 : 1) * vw * .22, cy = Math.min(hy, ey) - vh * .12;
+        x = (1 - e) * (1 - e) * hx + 2 * (1 - e) * e * cx + e * e * ex; y = (1 - e) * (1 - e) * hy + 2 * (1 - e) * e * cy + e * e * ey; sc = 1.15 - .85 * e; rot = e * 540; op = k > .9 ? (1 - k) * 10 : 1; }
+      else { if (!bursted) { bursted = true; tg.classList.remove('bag-pop'); void tg.offsetWidth; tg.classList.add('bag-pop'); setTimeout(() => tg.classList.remove('bag-pop'), 900); ring(ex, ey, sz, 600); for (let i = 0; i < 12; i++) spark(ex, ey, sz * 1.2, 650, false); hide(false); } if (now - t0 > T3 + 300) return finish(); img.style.opacity = 0; requestAnimationFrame(frame); return; }
+      img.style.transform = `translate(${x - W / 2}px,${y - sz / 2}px) rotate(${rot}deg) scale(${sc})`; img.style.opacity = op;
+      if (now - lastSp > (t < T2 ? 45 : 22)) { lastSp = now; spark(x + (Math.random() - .5) * W, y + (Math.random() - .5) * sz, sz * .8, 650, false); }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(now => { t0 = now; frame(now); });
+    setTimeout(finish, 4000);   // trava de seguranca
+  });
+}
 async function runChestRound(){
   state.chestAt = state.round;
   const g = $('#game'), img = document.createElement('img');
@@ -912,9 +960,8 @@ async function runChestRound(){
   if (!mine) { showBanner('A ARCA ABRIU', 'você votou em ignorar: nada para você'); await wait(1900); hideBanner(); }
   else if (Math.random() < CHEST_ITEM_P) {   // item aleatório da loja (raro com pouca chance)
     const t = Math.random() < CHEST_LEGEND_P ? LEGEND_POOL[Math.floor(Math.random() * LEGEND_POOL.length)] : Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
-    if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); showBanner('A ARCA TINHA UM ITEM', ITEMS[t].name + (ITEMS[t].legend ? ' (LENDÁRIO)' : ITEMS[t].rare ? ' (RARO)' : '')); }
-    else { const n = ITEMS[t].price; state.gold += n; state.stats.gained += n; persist(); goldGain(n); showBanner('MOCHILA CHEIA', `${ITEMS[t].name} virou ${n} moedas`); }
-    await wait(2300); hideBanner();
+    if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); await flyItemToBag(t, img); }   // sem aviso no papiro: o item voa para a mochila (segure o item para ler os detalhes)
+    else { const n = ITEMS[t].price; state.gold += n; state.stats.gained += n; persist(); goldGain(n); showBanner('MOCHILA CHEIA', `${ITEMS[t].name} virou ${n} moedas`); await wait(2300); hideBanner(); }
   } else {                                   // armadilha: só para quem abriu
     const k = activeGroup, h = state.heroes[k];
     showBanner('ARMADILHA!', `a arca explode em quem abriu: -${CHEST_TRAP} de HP`); flashHit();
@@ -1485,7 +1532,7 @@ function applyItem(index, tgt){
     if(item.fx==='clock'&&(tgt!==activeGroup||!qExtend||!qExtend(0))){toast('O relógio só vale durante a pergunta, no seu próprio grupo.');return}
     if(item.fx==='elixir'&&hero.hp>=HERO_MAX_HP&&hero.mp>=100){toast('HP e mana já estão cheios.');return}
     if(item.fx==='scroll'&&state.ultReady[tgt]){toast('O Ultimate já está carregado.');return}
-    const f=hasAff(type,tgt), msg=FX[item.fx](state.ib[tgt],hero,f,tgt,item)+(f?' (AFINIDADE)':'');state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(tgt===activeGroup?msg:`${GROUPS[tgt]} recebeu: ${msg}`);return;
+    const f=hasAff(type,tgt), msg=FX[item.fx](state.ib[tgt],hero,f,tgt,item)+(f?' (AFINIDADE)':'');state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();if(item.fx!=='clock')toast(tgt===activeGroup?msg:`${GROUPS[tgt]} recebeu: ${msg}`);return;
   }
   const max = item.kind==='hp' ? HERO_MAX_HP : 100;
   if(hero.hp<=0 && item.kind==='hp'){toast(tgt===activeGroup?'O herói caiu e não pode ser curado.':`${GROUPS[tgt]} caiu e não pode ser curado.`);return}
@@ -1526,7 +1573,11 @@ function renderInventoryHits(){
   for(let i=0;i<BAG_SLOTS;i++){const s=st[i],b=document.createElement('button');b.className='inventory-hit';b.type='button';b.setAttribute('aria-label',s?`Usar ${ITEMS[s.type].name}${s.count>1?' (x'+s.count+')':''}`:'Slot vazio');
     if(s){const img=document.createElement('img');img.className='inv-icon';img.src=ITEMS[s.type].icon;img.alt='';b.appendChild(img);
       if(s.count>1){const c=document.createElement('i');c.className='inv-count';c.textContent=s.count;b.appendChild(c)}
-      b.addEventListener('click',()=>useInventory(s.idx))}
+      let ht = null, held = false;
+      b.addEventListener('pointerdown', () => { held = false; clearTimeout(ht); ht = setTimeout(() => { held = true; showInvTip(s.type, b, s.count); }, 380); });
+      ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => clearTimeout(ht)));
+      b.addEventListener('contextmenu', e => e.preventDefault());
+      b.addEventListener('click', e => { if (held) { held = false; e.stopPropagation(); return; } useInventory(s.idx); })}
     root.appendChild(b)}
 }
 
@@ -1553,14 +1604,21 @@ $('#bag-back').addEventListener('click', () => { setBag(false); mBubble(''); });
 // Loja: tocar no ícone do item mostra a descrição; tocar nas moedas (parte de baixo) tenta comprar.
 function closeItemTip(){ const t = $('#item-tip'); if (t) t.remove(); }
 function showItemTip(slot){
-  closeItemTip();
   const type = state.shop.slots[slot]; if (!type) return;
-  const it = ITEMS[type], bp = $('#bag-panel'), btn = bp.querySelector('.shop.s' + slot), pr = bp.getBoundingClientRect(), br = btn.getBoundingClientRect();
+  const bp = $('#bag-panel'), btn = bp.querySelector('.shop.s' + slot);
+  buildItemTip(type, btn, `<span>PREÇO</span><img src="icon_coin.png" alt=""><b>${priceOf(type)}</b><small>toque nas moedas para comprar</small>`);
+}
+function showInvTip(type, btn, count){   // segurar o item da mochila: mesma ficha do Mercador
+  buildItemTip(type, btn, `<span>QTD</span><b>x${count}</b><small>toque rápido para usar</small>`);
+}
+function buildItemTip(type, btn, foot){
+  closeItemTip();
+  const it = ITEMS[type], bp = $('#bag-panel'), pr = bp.getBoundingClientRect(), br = btn.getBoundingClientRect();
   const cat = CAT_LABEL[itemCat(type)], aff = (it.aff || []).map(h => GROUPS[h]).join(', ');
   const el = document.createElement('div'); el.id = 'item-tip'; el.className = 'it-tip' + (it.rare ? ' rare' : '');
   el.innerHTML = `<div class="it-top"><div class="it-ico"><img src="${it.icon}" alt=""></div><div class="it-head"><b class="it-name">${it.name}</b><span class="it-tags"><em class="t-${itemCat(type)}">${cat}</em>${it.legend ? '<em class="t-rare">LENDÁRIO</em>' : it.rare ? '<em class="t-rare">RARO</em>' : ''}</span></div></div>` +
     `<p class="it-desc">${itemInfo(type).replace(/^(RARO|LENDÁRIO): /, '').replace(/^./, c => c.toUpperCase())}</p>` + (aff ? `<div class="it-aff">AFINIDADE <b>${aff}</b> +50%</div>` : '') +
-    `<div class="it-foot"><span>PREÇO</span><img src="icon_coin.png" alt=""><b>${priceOf(type)}</b><small>toque nas moedas para comprar</small></div>`;
+    `<div class="it-foot">${foot}</div>`;
   bp.appendChild(el);
   const w = 62, cx = ((br.left + br.width / 2) - pr.left) / pr.width * 100, left = Math.max(2, Math.min(100 - w - 2, cx - w / 2));
   el.style.left = left + 'cqw'; el.style.setProperty('--tx', (cx - left) + 'cqw');
