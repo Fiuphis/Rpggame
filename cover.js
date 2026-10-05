@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V = 'v234', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V = 'v235', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }

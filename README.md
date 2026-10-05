@@ -479,3 +479,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v232: Maga: projeteis translucidos com camadas giratorias, rastro que se desfaz e fagulhas em espiral (ataque de mana sem bloco de imagem); mana ambiente, brilho no cajado, circulo magico e carga de mana enquanto espera a leitura; impactos mais leves.
 - v233: Tanque refeito (tank4/): 41 poses de costas da nova arte (idles, ataques, super pesado, escudo, esquiva, dano/queda, vitoria/provocacao), pixelizadas e normalizadas pela cabeca (tools/cut_tank4.py); efeitos novos: ondas de choque, pedras/espinhos/poeira/rachadura/estrela e barreiras de protecao (tools/cut_tank4_fx.py). tank/ antigo mantido ate a aprovacao.
 - v234: Tanque: escala das poses h3 (martelo no alto), i5 e v2 corrigida pelo tamanho da cabeca.
+- v235: Tanque: efeitos de provocacao (aneis de rugido, circulo de runas, coluna de aura, trilha do martelo, fagulhas e rachadura no chao) (E4).

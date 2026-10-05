@@ -7,10 +7,11 @@ from PIL import Image
 from scipy import ndimage as ndi
 SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'tank4'
 # nome: (folha, indice, largura alvo, espelhar)
-FX = {'tsh1':('E3',1,250,0,'add'),'tsh2':('E3',2,250,0,'add'),'tsh3':('E3',3,300,0,'add'),'tsh4':('E3',4,250,0,'add'),'tsh5':('E3',5,250,0,'add'),'tsh6':('E3',6,260,0,'add'),
+FX = {'tring':('E4',1,380,0,'add'),'tcirc':('E4',2,420,0,'add'),'tcol':('E4',3,260,0,'add'),'thm':('E4',4,320,0,'add'),'tspark':('E4',5,360,0,'add'),'tcr2':('E4',6,460,0,'add'),
+ 'tsh1':('E3',1,250,0,'add'),'tsh2':('E3',2,250,0,'add'),'tsh3':('E3',3,300,0,'add'),'tsh4':('E3',4,250,0,'add'),'tsh5':('E3',5,250,0,'add'),'tsh6':('E3',6,260,0,'add'),
  'tbur':('E2',1,420,0,'solid'),'tspk':('E2',2,420,0,'solid'),'tdust':('E2',3,460,0,'solid'),'tcrk':('E2',4,440,0,'solid'),'tstar':('E2',5,380,0,'add'),'trocks':('E2',6,420,0,'solid'),
  'wg1':('E1',1,300,1),'wg2':('E1',2,300,1),'wg3':('E1',3,300,1),'wb1':('E1',4,300,1),'wb2':('E1',5,300,1),'wb3':('E1',6,300,1)}
-GRID = {'E3'}                                            # folhas onde as pecas se encostam: recorta pela grade 3x2
+GRID = {'E3', 'E4'}                                            # folhas onde as pecas se encostam: recorta pela grade 3x2
 def comps(path):
     if os.path.basename(path)[:-4] in GRID:
         a = np.array(Image.open(path).convert('RGB')); h, w = a.shape[:2]
