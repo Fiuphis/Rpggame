@@ -486,3 +486,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v239: removidas as pastas antigas mage3/ e tank/ (efeitos do Tanque movidos para tank4/).
 - v240: ids internos renomeados: knight -> guerreiro, assassin -> cleriga (arquivos, pastas e codigo).
 - v241: Maga com grade de 2 px uniforme (poses completadas a multiplo de 2; antes alguns blocos ficavam com 1 px).
+- v242: Guerreiro refeito com as folhas novas (guerreiro4): poses de costas, grade de 2 px, cabeca do mesmo tamanho, efeitos novos de corte, impacto, escudo e berserk.
