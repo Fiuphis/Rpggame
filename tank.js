@@ -1,5 +1,5 @@
 /* Banco de Dados I — RPG · Tanque (v61)
-   Poses de COSTAS recortadas da folha nova (tank/*.png, tools/cut_tank.py): mesma escala, ancoradas pelo centro dos pés, borda fina.
+   Poses de COSTAS recortadas da folha nova (tank4/*.png, tools/cut_tank4.py): mesma escala, ancoradas pelo centro dos pés, borda fina.
    Habilidades: ataque normal (martelo), ataque super pesado, proteção específica (escudo sobre o aliado), defesa, esquiva, provocação (ult).
    Cada uso sorteia uma variação diferente da anterior (sacola embaralhada). O dano só entra quando o golpe acerta (fireHit). */
 (() => {
@@ -118,7 +118,7 @@ function make(host){
   const cw = cv.width, ch = cv.height, OX = world.x - Px, OY = world.y - Py;
   let M = null; const img = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
-  fetch('tank4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank4/${n}.png`)); FXS.forEach(n => load('fx_' + n, `knight/fx_${n}.png`)); FXD.forEach(n => load('fx_' + n, `tank/fx_${n}.png`)); FXW.forEach(n => load('fx_' + n, `tank4/fx_${n}.png`)); }).catch(() => {});
+  fetch('tank4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank4/${n}.png`)); FXS.forEach(n => load('fx_' + n, `knight/fx_${n}.png`)); FXD.forEach(n => load('fx_' + n, `tank4/fx_${n}.png`)); FXW.forEach(n => load('fx_' + n, `tank4/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;
