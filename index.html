@@ -7,8 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script>try{if(!sessionStorage.getItem('bd1_cover')&&!sessionStorage.getItem('bd1_fog_lobby')&&!/[?&]nocover/.test(location.search)){location.replace('cover.html'+location.search)}
-if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.add('fogin');if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb')}catch(e){}</script>
-<style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
+if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.add('fogin');if(sessionStorage.getItem('bd1_rebuild')){document.documentElement.classList.add('rb');if(sessionStorage.getItem('bd1_rebuild')==='book')document.documentElement.classList.add('rbb')}}catch(e){}</script>
+<style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}html.rbb::after{background:#2a190c}</style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="lobby.css">
 <link rel="stylesheet" href="fog.css">

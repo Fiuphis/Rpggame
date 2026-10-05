@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V = 'v222', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V = 'v223', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -140,10 +140,13 @@ addEventListener('keydown', e => { if (e.key === 'Escape') how.hidden = true; })
 // ---------- JOGAR: zoom nos heróis -> clarão -> a cena vira cinzas de pixels -> seleção reconstrói ----------
 let busy = false;
 const BS = 14;   // tamanho do "pixel" da dissolução (px da tela)
+const MODE = new URLSearchParams(location.search).get('trans') || 'book';   // ?trans=ash usa a transicao de cinzas
+const PAGE_BG = 'radial-gradient(ellipse at 50% 42%,#4a3019 0,#2a190c 55%,#150a05 100%)';
 $('#play').onclick = async () => {
   if (busy) return; busy = true; try { sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
-  const leave = () => { try { sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = 'index.html' + location.search; };
+  const leave = () => { try { sessionStorage.setItem('bd1_rebuild', MODE === 'ash' ? '1' : 'book'); } catch (e) {} location.href = 'index.html'; };
   if (RM) { cv.classList.add('go'); setTimeout(leave, 300); return; }
+  if (MODE === 'book') return playBook(leave);
   how.hidden = true; cv.classList.add('go'); boost = 3.2;
   const ox = .5, oy = .755, S = 3, ZMS = 1700, org = `${ox * 100}% ${oy * 100}%`;
   const vig = document.createElement('div'), fl = document.createElement('div');
@@ -178,6 +181,32 @@ $('#play').onclick = async () => {
     if (!navigated && t > total - 380) { navigated = true; leave(); }
     if (t < total) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
 };
+
+// ---------- transição do livro: a capa é a página de um livro que se abre e revela o capítulo seguinte ----------
+async function playBook(leave) {
+  how.hidden = true; cv.classList.add('go'); boost = 1.6;
+  await new Promise(r => setTimeout(r, 450));
+  const under = document.createElement('div');   // a página de baixo (capítulo I)
+  under.style.cssText = `position:absolute;inset:0;z-index:3;background:${PAGE_BG};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3.2cqw;font-family:var(--F);font-weight:700;text-align:center;color:#e8d3a0;overflow:hidden`;
+  under.innerHTML = `<div style="position:absolute;inset:3.5%;border:.9cqw solid #b8893a;box-shadow:inset 0 0 0 1cqw #2a190c,inset 0 0 0 1.7cqw #8a6a2a,0 0 3cqw rgba(0,0,0,.6);background:rgba(10,4,2,.22)"></div>
+    <small style="position:relative;font-size:3cqw;letter-spacing:1cqw;color:#a98a52">CAPÍTULO I</small>
+    <b style="position:relative;font-size:7.6cqw;letter-spacing:.8cqw;color:#ffd978;text-shadow:0 .7cqw 0 #3a1a06,0 0 3cqw rgba(255,190,80,.5)">A ESCOLHA</b>
+    <span style="position:relative;width:34cqw;height:.7cqw;background:linear-gradient(90deg,transparent,#c8902c,transparent)"></span>
+    <small style="position:relative;font-size:2.8cqw;letter-spacing:.4cqw;color:#bfa570;line-height:1.5">quatro heróis, uma só chance</small>`;
+  const page = document.createElement('div');   // a capa: leva o cenário vivo junto
+  page.style.cssText = 'position:absolute;inset:0;z-index:4;transform-origin:0 50%;transform-style:preserve-3d;backface-visibility:hidden;will-change:transform;overflow:hidden';
+  const shade = document.createElement('div'); shade.style.cssText = 'position:absolute;inset:0;z-index:9;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.8));opacity:0';
+  const cast = document.createElement('div'); cast.style.cssText = 'position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.65),rgba(0,0,0,0) 55%);opacity:0';
+  const wrap = document.createElement('div'); wrap.style.cssText = 'position:absolute;inset:0;perspective:1500px;perspective-origin:100% 50%;z-index:3;overflow:hidden';
+  cv.insertBefore(wrap, $('#ui')); wrap.appendChild(under); under.appendChild(cast); wrap.appendChild(page); page.appendChild(world); page.appendChild(shade);
+  world.style.animation = 'none';
+  const MS = 1700, ease = 'cubic-bezier(.55,.05,.35,1)';
+  page.animate([{transform:'rotateY(0deg)'}, {transform:'rotateY(-24deg)', offset:.22}, {transform:'rotateY(-112deg)'}], {duration:MS, easing:ease, fill:'forwards'});
+  shade.animate([{opacity:0}, {opacity:.35, offset:.4}, {opacity:1}], {duration:MS, easing:'linear', fill:'forwards'});
+  cast.animate([{opacity:0}, {opacity:.2, offset:.2}, {opacity:1}], {duration:MS, easing:'linear', fill:'forwards'});
+  under.animate([{transform:'scale(1.06)', filter:'brightness(.55)'}, {transform:'scale(1)', filter:'none'}], {duration:MS, easing:'ease-out', fill:'forwards'});
+  await new Promise(r => setTimeout(r, MS + 350)); leave();
+}
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
 window.__cover = {EYES, flash};
