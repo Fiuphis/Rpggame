@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V = 'v223', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V = 'v224', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -140,7 +140,7 @@ addEventListener('keydown', e => { if (e.key === 'Escape') how.hidden = true; })
 // ---------- JOGAR: zoom nos heróis -> clarão -> a cena vira cinzas de pixels -> seleção reconstrói ----------
 let busy = false;
 const BS = 14;   // tamanho do "pixel" da dissolução (px da tela)
-const MODE = new URLSearchParams(location.search).get('trans') || 'book';   // ?trans=ash usa a transicao de cinzas
+const MODE = new URLSearchParams(location.search).get('trans') || 'ash';   // ?trans=book usa a transicao do livro
 const PAGE_BG = 'radial-gradient(ellipse at 50% 42%,#4a3019 0,#2a190c 55%,#150a05 100%)';
 $('#play').onclick = async () => {
   if (busy) return; busy = true; try { sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
