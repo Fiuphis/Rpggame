@@ -593,6 +593,7 @@ function renderHud(){
     bars[k].mp.style.width = Math.max(0, state.heroes[k].mp / 100 * 100) + '%';
   });
   HERO_ORDER.forEach(k => A.setDead(k, state.heroes[k].hp <= 0));
+  HERO_ORDER.forEach(k => A.low(k, state.heroes[k].hp > 0 && state.heroes[k].hp / HERO_MAX_HP <= .3));   // pouca vida: pose cansada e pulso vermelho
   A.setAura('mage', b.bh > 0 ? 'blue' : null); A.setAura('guerreiro', b.bers > 0 ? 'red' : b.tired > 0 ? 'tired' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
   HERO_ORDER.forEach(k => bars['ult_' + k].classList.toggle('ready', !!state.ultReady[k]));
   bars.rage.querySelectorAll('.rage-seg b').forEach((el, i) => el.classList.toggle('on', i < state.rage));
@@ -1030,7 +1031,7 @@ async function activateUlt(k, sh){
     const t = cleTarget; await sleep(2500);   // a luz desce sobre o alvo e só então a vida muda
     const h = state.heroes[t];
     if (h.hp <= 0) { h.hp = REVIVE_HP; floatText(HERO_X[t], 56, 'REVIVEU!', '#ffe08a'); }
-    else { h.hp = Math.min(HERO_MAX_HP, h.hp + HEAL_AMOUNT); floatText(HERO_X[t], 56, `+${HEAL_AMOUNT}`, '#9fe3a8'); }
+    else { h.hp = Math.min(HERO_MAX_HP, h.hp + HEAL_AMOUNT); floatText(HERO_X[t], 56, `+${HEAL_AMOUNT}`, '#9fe3a8'); A.extra(t, 'heal'); A.react(t, 'right'); }
     showBanner(`Luz Sagrada: ${GROUPS[t]}`, h.hp === REVIVE_HP ? 'voltou à luta!' : 'vida restaurada');
   }
   renderHud(); await Promise.all([wait(1200), ultPl]); hideBanner(); return true;
@@ -1188,6 +1189,7 @@ async function playRound(){
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
+  state.streak = state.streak || {}; HERO_ORDER.forEach(k => { state.streak[k] = correct[k] ? (state.streak[k] || 0) + 1 : 0; if (state.heroes[k].hp > 0) A.react(k, correct[k] ? 'right' : 'wrong'); });   // reação de cada herói à resposta do seu grupo + sequência de acertos
   state.stats.rank[q.difficulty][correct[activeGroup] ? 0 : 1]++;
   if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; state.stats.gained += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
@@ -1379,7 +1381,8 @@ function shoot(fromX, fromY, toX, toY, color, ms){
 }
 const RIG_HERO = k => k === 'mage' || k === 'cleriga' || k === 'tank' || k === 'guerreiro';   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
-  const pl = A.play(k, an, {color:col}); if (say) A.sayRandom(k, say, .5);
+  const cmb = (state.streak && state.streak[k]) || 0; if (cmb >= 3) floatText(HERO_X[k], 50, `COMBO x${cmb}`, '#ffd34d');
+  const pl = A.play(k, an, {color:col, combo:cmb}); if (say) A.sayRandom(k, say, .5);
   if (!RIG_HERO(k)) { await wait(an === 'heavy' ? 480 : 300); return heroAttack(k, dmg, col); }
   await Promise.race([A.hit(k), wait(4500)]);
   await heroAttack(k, dmg, col, true);
@@ -1403,6 +1406,7 @@ async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed 
 }
 async function bossCounter(hero, dmg, defended){
   const r = routeHit(hero, dmg), t = r.to;
+  if (t !== hero && t === 'tank' && state.heroes.tank.hp > 0) { A.play('tank', 'cover'); A.extra(hero, 'guard'); }   // o Tanque cobre o aliado
   const anim = {1:'slashH', 2:'slashV', 3:'slashH', 4:'summon', 5:'summon'}[state.curQ ? state.curQ.difficulty : 1] || 'slashH';
   if (A.has('boss', anim)) { A.play('boss', anim, {tx:HERO_WX(t), ty:1010}); await Promise.race([A.hit('boss'), wait(3500)]); }
   else await shoot(50, 26, HERO_X[t], 60, '#ff2d4d', 560);
@@ -1440,8 +1444,8 @@ function endGame(win){
 const INTRO_ON = (new URLSearchParams(location.search).get('intro') || (TEST_MODE ? '0' : '1')) === '1';
 const bossCanvas = () => document.querySelector('canvas.hero.boss');
 function beginBattle(delay){
-  clearTimeout(turnTimer);
-  const go = () => { turnTimer = setTimeout(playRound, delay); };
+  clearTimeout(turnTimer); HERO_ORDER.forEach(k => A.enterPrep(k));   // heróis entram em cena quando a batalha começa
+  const go = () => { HERO_ORDER.forEach((k, i) => A.enter(k, i * 200)); turnTimer = setTimeout(playRound, delay + 900); };
   const intro = document.getElementById('intro');
   if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; return go(); }
   const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça

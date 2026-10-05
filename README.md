@@ -491,5 +491,6 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v244: cúpula do Guerreiro maior e centrada no corpo; todos os anéis de chão (heróis e boss) em perspectiva (arco de trás atrás do personagem, arco da frente na frente)
 - v245: cúpula do Guerreiro centrada no centro do corpo (mediana do sprite), não nos pés
 - v246: escudo do Guerreiro vira esfera centrada no corpo (peito), não meia-esfera no chão
+- v249: animações extras dos heróis: reação a acerto/erro, combo de acertos (3+ e 5+), pose de pouca vida (vida abaixo de 30%) com pulso vermelho, entrada em cena, revive com coluna de luz (Clériga e Maga ganham levantar), cobertura do Tanque, luz de cura, rastro de movimento nos golpes, mais ociosas e golpes extras, poeira e rachadura nos golpes da Clériga (extras.js)
 - v248: Clériga refeita com 57 poses novas (costas, 2 px) e 24 efeitos dourados novos; estrela do cajado como origem dos disparos
 - v247: Guerreiro maior (escala 1,03): mais alto que Maga/Clériga e bem menor que o Tanque; esfera de proteção ajustada

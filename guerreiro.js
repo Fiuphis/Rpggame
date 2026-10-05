@@ -63,6 +63,14 @@ const ACT = {
     S(850, [[0,'i2'],[.1,'e6',{dx:-6,dy:2}],[.36,'e7',{dx:2}],[.64,'e8'],[.92,'i2']], [], {tint:true}),
     S(900, [[0,'i1'],[.1,'e6',{dx:-8,rot:-3}],[.36,'e6',{dx:3}],[.64,'e8'],[.92,'i1']], [], {tint:true}),
   ],
+  right:[   // acertou a resposta: ergue a espada
+    S(1000, [[0,'i1'],[.25,'v1',{dy:-2}],[.7,'v1',{dy:-2}],[.95,'i1']], [[.22,'cheer']]),
+    S(1000, [[0,'i1'],[.25,'s8'],[.7,'s8'],[.95,'i1']], [[.22,'cheer']]),
+  ],
+  wrong:[   // errou: um tranco curto, sem machucar
+    S(750, [[0,'i1'],[.2,'e6',{dx:-4}],[.6,'i6'],[.95,'i1']]),
+    S(750, [[0,'i1'],[.2,'i6',{dx:-3}],[.6,'i6'],[.95,'i1']]),
+  ],
   victory:[
     S(3000, [[0,'i1'],[.12,'v1'],[.3,'v1',{dy:-2}],[.5,'v1',{dy:-4}],[.8,'v1',{dy:-2}],[.96,'i1']], [[.3,'cheer'],[.52,'cheer:rise'],[.8,'cheer']]),
     S(3200, [[0,'i2'],[.14,'v2'],[.34,'v2',{dy:-3}],[.6,'v2',{dy:-5}],[.82,'v2',{dy:-3}],[.96,'i1']], [[.36,'cheer:rise'],[.6,'cheer'],[.82,'cheer:rise']]),
@@ -98,7 +106,16 @@ const IDLES = [
   S(3600, [[0,'i1'],[.25,'i7'],[.7,'i7'],[.9,'i1'],[.98,'i1']]),
   S(3600, [[0,'i1'],[.25,'i8'],[.7,'i8'],[.9,'i1'],[.98,'i1']]),
 ];
+IDLES.push(
+  S(3400, [[0,'i1'],[.25,'s1'],[.65,'s1'],[.88,'i1'],[.98,'i1']]),                 // confere o escudo
+  S(3600, [[0,'i1'],[.25,'a8'],[.7,'a8'],[.9,'i1'],[.98,'i1']]),                   // postura de guarda
+  S(3200, [[0,'i1'],[.2,'s8'],[.45,'i5'],[.7,'s8'],[.9,'i1'],[.98,'i1']]),          // ergue e baixa a espada
+);
 IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.5); });
+const IDLES_L = [   // pouca vida: ofegante, ajoelhado
+  S(3600, [[0,'h6'],[.4,'e7'],[.75,'h6'],[.98,'h6']]),
+  S(3400, [[0,'h6'],[.4,'e8'],[.75,'h6'],[.98,'h6']]),
+];
 const IDLES_B = [   // respira dentro da aura do berserk
   S(3200, [[0,'b4'],[.3,'b8'],[.65,'b1'],[.9,'b4'],[.98,'b4']]),
   S(3000, [[0,'b4'],[.3,'b8'],[.7,'b3'],[.92,'b4'],[.98,'b4']]),
@@ -108,6 +125,8 @@ const IDLES_T = [   // exausto: ofegante
   S(3200, [[0,'e7'],[.4,'x1'],[.75,'e7'],[.98,'e7']]),
 ];
 const BASE_POSE = {n:'i1', bers:'b4', tired:'i6'};
+ACT.melee.forEach(a => { a.trail = true; });
+if (typeof BACT !== 'undefined' && BACT.melee) BACT.melee.forEach(a => { a.trail = true; });
 const bags = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };
 const DEATH = [[0,'e6'],[.22,'e7'],[.46,'e8'],[.7,'x1'],[.86,'f1'],[.95,'f2']];     // cai aos poucos: cambaleia → agacha → ajoelha → tomba
@@ -135,13 +154,13 @@ function make(host){
   fetch('guerreiro4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `guerreiro4/${n}.png`)); FXK.forEach(n => load('fx_' + n, `guerreiro4/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, last = 0, t0 = clk(), running = false, mode = null;
-  let deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
+  let low = 0, hist = [], deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back, bot: !!o.bot});
   const pick = a => a[Math.floor(Math.random() * a.length)];
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
   const hand = () => { const f = feet(); return {x:f.x + 44, y:f.y - 190}; };
-  const baseP = () => mode === 'bers' ? BASE_POSE.bers : mode === 'tired' ? BASE_POSE.tired : BASE_POSE.n;
+  const baseP = () => mode === 'bers' ? BASE_POSE.bers : mode === 'tired' ? BASE_POSE.tired : low ? 'h6' : BASE_POSE.n;   // pouca vida: ajoelhado apoiado na espada
 
   function swing(k, style, side = 0, delay = 0){      // onda de corte: sai da espada e voa até o boss (devolve a duração do voo)
     style = style || ''; const sz = k === 3 ? 1.35 : k === 2 ? 1.1 : 1, h0 = hand(), b = T;
@@ -259,6 +278,8 @@ function make(host){
     const f = clamp((now - cur_t) / fade);
     c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P, Py - host.P + (BASE - 266)); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = true;
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 * (cur && cur.light ? .6 : 1) : 0;
+    hist.push({t:now, pose:st.pose, dx:st.dx, dy:st.dy, rot:st.rot, sc:st.sc || 1}); while (hist.length && now - hist[0].t > 260) hist.shift();
+    if (a && a.trail) { [70, 140].forEach((lag, i) => { const h = hist.filter(x => x.t <= now - lag).pop(); if (h && (h.pose !== st.pose || Math.abs(h.dx - st.dx) > 2 || Math.abs(h.dy - st.dy) > 2)) drawPose(h.pose, h.dx, h.dy, h.rot, .2 - i * .1, tm, 0, h.sc, 0); }); }   // rastro de movimento nos golpes rápidos
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);
     drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
@@ -286,12 +307,15 @@ function make(host){
     start(){ if (!running) { running = true; requestAnimationFrame(frame); } },
     play(name, o = {}){
       if (deadTarget) return Promise.resolve(false);
+      if (name === 'right' || name === 'wrong') { if ((cur && !cur.idle) || mode) return Promise.resolve(false); const ra = variant(ACT[name]); return ra ? run(ra) : Promise.resolve(false); }   // reação à resposta: não interrompe ação em curso
       if (name === 'cast') name = 'melee';
       const pool = mode === 'bers' && BACT[name] ? BACT[name] : ACT[name];
       const a = variant(pool); if (!a) return Promise.resolve(false); const p = run(a, {light:!!o.light}); p.then(fireHit); return p;
     },
     nextHit(){ return new Promise(r => hitW.push(r)); },
-    idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(mode === 'bers' ? IDLES_B : mode === 'tired' ? IDLES_T : IDLES)); },
+    idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(mode === 'bers' ? IDLES_B : mode === 'tired' ? IDLES_T : low ? IDLES_L : IDLES), {idle:true}); },
+    feet: () => feet(),
+    setLow(b){ low = b ? 1 : 0; },
     has: n => !!ACT[n] || n === 'cast',
     setMode(m){ mode = m || null; },
     setDead(d){ if (d) { if (cur) cur.done(false); cur = null; reviveT = 0; deadTarget = 1; deadT = clk(); } else if (deadTarget) { deadTarget = 0; reviveT = clk(); } },

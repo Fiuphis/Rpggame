@@ -40,6 +40,7 @@ function build(){
     if (w === 'boss' && window.BossRig) buildMage(H[w], m, P, window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
     if (w === 'cleriga' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
+  if (window.Extras) Extras.init($('#game'), feetOf);
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
     if (cfg && cfg.pad != null) WHO.forEach(w => { if (H[w].rig) return; H[w].cv.width = cellW(w); H[w].cv.height = cellH(w); });
@@ -56,6 +57,8 @@ function buildMage(h, m, P, Rig, cfg){
     shadow:c => shadow(c, h.who), shakeEl:$('#game')});
   h.rig.start();
 }
+const FEET_FB = {mage:[0, 258], guerreiro:[0, 262], tank:[-18, 262], cleriga:[-46, 292], boss:[0, 560]};
+const feetOf = w => { const h = H[w], m = META[w]; if (h && h.rig && h.rig.feet) return h.rig.feet(); const o = FEET_FB[w] || [0, m.h]; return {x:m.x + m.w / 2 + o[0], y:m.y + o[1]}; };
 function drawStill(w){
   const h = H[w]; if (h && h.rig) return; if (!h || !h.still.complete || !h.still.naturalWidth) return; const P = pad();
   h.c.clearRect(0, 0, h.cv.width, h.cv.height); shadow(h.c, w); h.c.drawImage(h.still, P, P);
@@ -91,6 +94,7 @@ function playSheet(w, s, {loop = false, hold = false} = {}){
 async function play(w, name, opts = {}){
   const h = H[w]; if (!h) return false;
   if (h.dead && name !== 'revive') return false;
+  if (opts.combo >= 3 && window.Extras) Extras.fx(w, 'combo', {n:opts.combo});   // sequência de acertos: aura extra no ataque
   if (h.rig) { const n = h.rig.has(name) ? name : h.rig.has('melee') && name !== 'idle' ? 'melee' : null; if (!n) return false; clearTimeout(h.idleT); h.cur = n; await h.rig.play(n, opts); h.cur = null; scheduleIdle(w, w === 'cleriga' ? rnd(9000, 16000) : rnd(1200, 3200)); return true; }
   const r = resolve(w, name); if (!r) return false;
   clearTimeout(h.idleT); h.cur = name;
@@ -108,7 +112,7 @@ function scheduleIdle(w, delay){
 const DEATH_MS = {mage:800, guerreiro:1100, tank:900, cleriga:1300};   // duracao da queda: o cinza so entra quando ela termina
 function grayLater(h, dead){ clearTimeout(h.grayT); if (!dead) { h.cv.classList.remove('dead'); return; } h.grayT = setTimeout(() => { if (h.dead) h.cv.classList.add('dead'); }, DEATH_MS[h.who] || 900); }
 function setDead(w, dead){
-  const h = H[w]; if (!h || h.dead === dead) return; h.dead = dead; if (h.rig) { grayLater(h, dead); h.rig.setDead(dead); h.token++; h.cur = null; if (!dead) scheduleIdle(w, 1500); return; } h.cv.classList.toggle('dead', dead);
+  const h = H[w]; if (!h || h.dead === dead) return; h.dead = dead; if (h.rig) { grayLater(h, dead); h.rig.setDead(dead); h.token++; h.cur = null; if (!dead) { scheduleIdle(w, 1500); if (window.Extras) Extras.fx(w, 'revive'); } else if (window.Extras) Extras.low(w, false); return; } h.cv.classList.toggle('dead', dead);
   if (dead) { const r = resolve(w, 'death'); if (r) playSheet(w, r.s, {hold:true}); }
   else { h.token++; h.cur = null; const r = resolve(w, 'revive'); if (r) playSheet(w, r.s).then(() => scheduleIdle(w, 1500)); else { drawStill(w); scheduleIdle(w, 1500); } }
 }
@@ -116,8 +120,13 @@ function setAura(w, kind){
   const h = H[w]; if (!h) return; if (h.rig && h.rig.setMode) { h.rig.setMode(kind === 'red' && w !== 'boss' ? 'bers' : kind); return; }   // Guerreiro: o modo troca as poses (aura já desenhada)
   ['red', 'blue', 'orange', 'gold'].forEach(c => h.cv.classList.toggle('aura-' + c, c === kind));
 }
-function reset(){ WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
+function react(w, kind){ const h = H[w]; if (!h || h.dead || !h.rig) return; if (window.Extras) Extras.fx(w, kind); if ((!h.cur || h.cur === 'idle') && h.rig.has(kind)) play(w, kind); }
+function low(w, on){ const h = H[w]; if (!h || !h.rig || !h.rig.setLow) return; h.rig.setLow(on && !h.dead); if (window.Extras) Extras.low(w, on && !h.dead); }
+function enterPrep(w){ const h = H[w]; if (h) { h.cv.style.opacity = 0; clearTimeout(h.enT); h.enT = setTimeout(() => { h.cv.style.opacity = ''; }, 6000); } }
+function enter(w, delay = 0){ const h = H[w]; if (!h || !h.cv.animate) { if (h) h.cv.style.opacity = ''; return; }
+  setTimeout(() => { clearTimeout(h.enT); h.cv.style.opacity = ''; h.cv.animate([{transform:'translateY(46px)', opacity:0}, {transform:'translateY(0)', opacity:1}], {duration:650, easing:'cubic-bezier(.2,.8,.3,1)'}); if (window.Extras) Extras.fx(w, 'enter'); }, delay); }
+function reset(){ if (window.Extras) Extras.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
-window.Anim = {META, play, fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
+window.Anim = {META, play, react, low, enter, enterPrep, extra:(w, k, o) => window.Extras && Extras.fx(w, k, o), fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(build, 0)); else setTimeout(build, 0);
 })();

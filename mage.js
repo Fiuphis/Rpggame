@@ -64,6 +64,14 @@ const ACT = {
     S(800, [[0,'idle1'],[.1,'hurt2',{dx:-9,dy:2,rot:-4}],[.34,'hurt2',{dx:4,rot:-1}],[.6,'hurt2',{dx:-2}],[.9,'idle1']], [], {tint:true}),
     S(850, [[0,'idle1'],[.12,'hurt1',{dx:-12,rot:-6}],[.34,'hurt2',{dx:4,rot:-2}],[.6,'kneel',{dx:-2}],[.92,'idle1']], [], {tint:true}),
   ],
+  right:[   // acertou a resposta: ergue o cajado
+    S(1000, [[0,'idle1'],[.25,'raise',{dy:-2}],[.7,'raise',{dy:-2}],[.95,'idle1']], [[.22,'cheer']]),
+    S(1000, [[0,'idle1'],[.25,'wave',{dy:-2}],[.7,'wave',{dy:-2}],[.95,'idle1']], [[.22,'cheer']]),
+  ],
+  wrong:[   // errou: um tranco curto, sem machucar
+    S(750, [[0,'idle1'],[.2,'hurt1',{dx:-4}],[.6,'glance'],[.95,'idle1']]),
+    S(750, [[0,'idle1'],[.2,'idle3',{dx:-4}],[.6,'look'],[.95,'idle1']]),
+  ],
   victory:[
     S(2800, [[0,'idle1'],[.1,'raise'],[.26,'atk3',{dy:-12,rot:2}],[.4,'wave',{dy:-3}],[.56,'raise',{dy:-8,rot:-2}],[.8,'atk3',{dy:-4}],[.96,'idle1']], [[.28,'cheer'],[.58,'cheer']]),
     S(3200, [[0,'idle1'],[.1,'atk1'],[.22,'spin1',{dy:-6}],[.36,'spinwide',{dy:-14,rot:3}],[.5,'stars',{dy:-8}],[.66,'swingr',{dy:-6}],[.8,'atk3',{dy:-10}],[.96,'idle1']], [[.24,'cheer'],[.4,'cheer'],[.56,'cheer'],[.8,'cheer']]),
@@ -72,6 +80,8 @@ const ACT = {
   guard:[S(1900, [], []), S(1900, [], [[.1,'charge'],[.5,'cheer']]), S(1900, [], [[.08,'cheer'],[.45,'charge']])],
 };
 ACT.holy = ACT.cast;
+ACT.melee.push(S(1400, [[0,'idle1'],[.12,'atk2',{dx:-6}],[.3,'swingl',{dx:-2}],[.5,'swingf',{dx:8}],[.8,'swingf',{dx:4}],[.96,'idle1']], [[.26,'charge'],[.52,'shot:comet:1:zig'],[.76,'hit:comet']]));
+ACT.melee.forEach(a => { a.trail = true; });
 const bags = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };   // sacola embaralhada: nunca repete a mesma variação em seguida, e usa todas antes de repetir
 const ELEM = {'#ff7a2e':'fire', '#3db4ff':'water', '#9fe8d0':'air', '#c19a52':'earth'};
@@ -92,6 +102,10 @@ const IDLES = [   // idles extras ocasionais
   S(2900, [[0,'idle1'],[.2,'atk1'],[.38,'spin1',{dy:-4}],[.62,'stars',{dy:-4}],[.85,'atk1'],[.97,'idle1']], [[.3,'charge']]),
 ];
 
+const IDLES_L = [   // pouca vida: ofegante, agachada
+  S(3400, [[0,'kneel'],[.4,'hurt2',{dy:1}],[.75,'kneel'],[.98,'kneel']]),
+  S(3200, [[0,'kneel'],[.4,'idle3',{dx:-3}],[.75,'kneel'],[.98,'kneel']]),
+];
 function glow(g, x, y, r, col, a){
   if (a <= 0.005 || r <= 1) return; const gr = g.createRadialGradient(x, y, 0, x, y, r);
   gr.addColorStop(0, `rgba(255,255,255,${clamp(a * .6)})`); gr.addColorStop(.16, `rgba(${col},${clamp(a)})`); gr.addColorStop(.5, `rgba(${col},${clamp(a * .32)})`); gr.addColorStop(1, `rgba(${col},0)`);
@@ -106,7 +120,7 @@ function make(host){
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
   fetch('mage4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `mage4/${n}.png`)); FXS.forEach(n => load('fx_' + n, `mage4/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
-  let dead = 0, deadTarget = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 60};
+  let low = 0, hist = [], dead = 0, deadTarget = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 60};
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
 
   // ---- efeitos: E(nome, duração, u => estado)
@@ -221,6 +235,7 @@ function make(host){
       if (pe >= 1) { const d = cur; cur = null; d.done(); }
     } else {
       let t = tm % IDLE_CYCLE.reduce((s, b) => s + b[1], 0), n = 'idle1'; for (const [nm, d] of IDLE_CYCLE) { if (t < d) { n = nm; break; } t -= d; }
+      if (low) n = 'kneel';   // pouca vida: agachada, apoiada no cajado
       st = {pose:n, dx:0, dy:0, rot:0, sc:1, since:t};
     }
     if (deadTarget || dead > .02) st = {pose:dead < .5 ? 'fall' : 'down', dx:0, dy:0, rot:0, sc:1, since:0};
@@ -232,6 +247,8 @@ function make(host){
     c.clearRect(0, 0, cw, ch); c.save(); c.translate(Px - host.P, Py - host.P); host.shadow(c); c.restore(); c.imageSmoothingEnabled = false;
     const dRot = 0, dDy = 0, dAl = 1;
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .6 : 0;
+    hist.push({t:now, pose:st.pose, dx:st.dx, dy:st.dy, rot:st.rot, sc:st.sc || 1}); while (hist.length && now - hist[0].t > 260) hist.shift();
+    if (a && a.trail) { [70, 140].forEach((lag, i) => { const h = hist.filter(x => x.t <= now - lag).pop(); if (h && (h.pose !== st.pose || Math.abs(h.dx - st.dx) > 2 || Math.abs(h.dy - st.dy) > 2)) drawPose(h.pose, h.dx, h.dy, h.rot, .2 - i * .1, tm, 0, h.sc, 0); }); }   // rastro de movimento nos golpes rápidos
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI); const gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc || 1); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc || 1); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc);
     const o = drawPose(st.pose, st.dx, st.dy + dDy, st.rot + dRot, (prev && f < 1 ? f : 1) * dAl, tm, tint, st.sc || 1);
@@ -258,12 +275,15 @@ function make(host){
     start(){ if (!running) { running = true; requestAnimationFrame(frame); } },
     play(name, o = {}){
       if (dead > .05) return Promise.resolve(false);
+      if (name === 'right' || name === 'wrong') { if (cur && !cur.idle) return Promise.resolve(false); const ra = variant(ACT[name]); return ra ? run(ra) : Promise.resolve(false); }   // reação à resposta: não interrompe ação em curso
       if (name === 'cast' || name === 'holy') { const e = ELEM[(o.color || '').toLowerCase()]; const p = run(variant(ACT[e || 'cast'])); p.then(fireHit); return p; }
       if (name === 'guard') { const ga = variant(ACT.guard), gi = ACT.guard.indexOf(ga); return run(ga, {gv:gi, guard: GUARD[ELEM[(o.color || '').toLowerCase()] || 'mana']}); }
       const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a); p.then(fireHit); return p;
     },
     nextHit(){ return new Promise(r => hitW.push(r)); },
-    idle(){ if (cur) return Promise.resolve(false); return run(variant(IDLES)); },
+    idle(){ if (cur) return Promise.resolve(false); return run(variant(low ? IDLES_L : IDLES), {idle:true}); },
+    feet: () => ({x:world.x + W / 2, y:world.y + BASE}),
+    setLow(b){ low = b ? 1 : 0; },
     has: n => !!ACT[n],
     setDead(d){ deadTarget = d ? 1 : 0; if (d) { if (cur) cur.done(false); cur = null; } else flashT = clk(); },
     reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; dead = 0; },

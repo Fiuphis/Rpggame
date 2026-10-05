@@ -70,6 +70,18 @@ const ACT = {
     S(850, [[0,'i3'],[.1,'u2',{dx:-8,rot:-3}],[.34,'k1',{dx:3}],[.62,'u2'],[.92,'i1']], [], {tint:true}),
     S(850, [[0,'i1'],[.1,'u1',{dx:-8,rot:-3}],[.34,'u1',{dx:3}],[.62,'e1'],[.92,'i2']], [], {tint:true}),
   ],
+  right:[   // acertou a resposta: ergue o punho
+    S(1000, [[0,'i1'],[.25,'v2',{dy:-2}],[.7,'v2',{dy:-2}],[.95,'i1']], [[.22,'cheer']]),
+    S(1000, [[0,'i1'],[.25,'v1',{dy:-2}],[.7,'v1',{dy:-2}],[.95,'i1']], [[.22,'cheer']]),
+  ],
+  wrong:[   // errou: um tranco curto, sem machucar
+    S(750, [[0,'i1'],[.2,'u1',{dx:-4}],[.6,'u1',{dx:-2}],[.95,'i1']]),
+    S(750, [[0,'i1'],[.2,'e6',{dx:-3}],[.6,'i6'],[.95,'i1']]),
+  ],
+  cover:[   // cobre o aliado: escudo à frente
+    S(1500, [[0,'i1'],[.14,'s6'],[.3,'s4'],[.8,'s4'],[.96,'i1']], [[.24,'shield:d1']]),
+    S(1500, [[0,'i1'],[.14,'s1'],[.3,'s3'],[.8,'s3'],[.96,'i1']], [[.24,'shield:d3']]),
+  ],
   victory:[
     S(3000, [[0,'i1'],[.12,'a1'],[.28,'v1',{dy:-2}],[.5,'v1',{dy:-3}],[.8,'v1',{dy:-2}],[.96,'i2']], [[.3,'cheer'],[.52,'cheer:rise'],[.8,'cheer']]),
     S(3200, [[0,'i2'],[.14,'v2'],[.38,'v2'],[.62,'v1'],[.82,'v1'],[.96,'i1']], [[.36,'cheer:rise'],[.6,'cheer'],[.82,'cheer:rise']]),
@@ -94,7 +106,17 @@ const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
   S(3400, [[0,'i1'],[.25,'i6'],[.75,'i6'],[.98,'i1']]),
   S(4200, [[0,'i1'],[.2,'i3'],[.5,'i4'],[.8,'i6'],[.98,'i1']]),
 ];
+IDLES.push(
+  S(3400, [[0,'i1'],[.25,'a1'],[.6,'a1'],[.85,'i1'],[.98,'i1']]),                 // ajusta a postura
+  S(3400, [[0,'i1'],[.25,'s6'],[.6,'s6'],[.85,'i1'],[.98,'i1']]),                 // confere o escudo
+  S(3800, [[0,'i1'],[.2,'v3'],[.6,'v3'],[.85,'i3'],[.98,'i1']], [[.3,'cheer']]),    // estica os braços
+);
 IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.5); });
+const IDLES_L = [   // pouca vida: ofegante, ajoelhado
+  S(3600, [[0,'k1'],[.4,'k2'],[.75,'k1'],[.98,'k1']]),
+  S(3400, [[0,'k1'],[.35,'u2'],[.7,'k1'],[.98,'k1']]),
+];
+ACT.melee.forEach(a => { a.trail = true; });
 const bags = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };
 const DEATH = [[0,'u2'],[.3,'k1'],[.55,'k2'],[.78,'fl'],[.92,'dn']];      // cambaleia → um joelho → dois joelhos → cai → deitado
@@ -121,7 +143,7 @@ function make(host){
   fetch('tank4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank4/${n}.png`)); FXS.forEach(n => load('fx_' + n, `guerreiro4/fx_${n}.png`)); FXD.forEach(n => load('fx_' + n, `tank4/fx_${n}.png`)); FXW.forEach(n => load('fx_' + n, `tank4/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
-  let deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;
+  let low = 0, hist = [], deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
@@ -221,11 +243,15 @@ function make(host){
       if (pe >= 1) { const d = cur; cur = null; d.done(); }
     } else if (reviveT) { const k = clamp((now - reviveT) / 1100); st = poseAt({steps:REVIVE, dur:1100}, k); if (k >= 1) reviveT = 0; }
     else st = {pose:'i1', dx:0, dy:0, rot:0, sc:1};
+    if (low && !deadTarget && st.pose === 'i1') st = {...st, pose:'k1'};   // pouca vida: base ajoelhada apoiada no martelo
+
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
     lastT = st;
     const f = clamp((now - cur_t) / fade);
     c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P, Py - host.P + (BASE - 266)); c.translate(host.P + W / 2 + XOFF, 0); c.scale(SZ, 1); c.translate(-(host.P + W / 2 + XOFF), 0); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = true;
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 * (cur && cur.light ? .6 : 1) : 0;
+    hist.push({t:now, pose:st.pose, dx:st.dx, dy:st.dy, rot:st.rot, sc:st.sc || 1}); while (hist.length && now - hist[0].t > 260) hist.shift();
+    if (a && a.trail) { [70, 140].forEach((lag, i) => { const h = hist.filter(x => x.t <= now - lag).pop(); if (h && (h.pose !== st.pose || Math.abs(h.dx - st.dx) > 2 || Math.abs(h.dy - st.dy) > 2)) drawPose(h.pose, h.dx, h.dy, h.rot, .2 - i * .1, tm, 0, h.sc, 0); }); }   // rastro de movimento nos golpes rápidos
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);
     drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
@@ -249,13 +275,16 @@ function make(host){
     start(){ if (!running) { running = true; requestAnimationFrame(frame); } },
     play(name, o = {}){
       if (deadTarget) return Promise.resolve(false);
+      if (name === 'right' || name === 'wrong') { if (cur && !cur.idle) return Promise.resolve(false); const ra = variant(ACT[name]); return ra ? run(ra) : Promise.resolve(false); }   // reação à resposta: não interrompe ação em curso
       col = o.color || null;
       if (name === 'guard') { const prot = /ff9d3d/i.test(o.color || ''); return run(variant(prot ? ACT.guard_p : ACT.guard_d)); }
       if (name === 'cast') name = 'melee';
       const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a, {light:!!o.light}); p.then(fireHit); return p;
     },
     nextHit(){ return new Promise(r => hitW.push(r)); },
-    idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(IDLES)); },
+    idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(low ? IDLES_L : IDLES), {idle:true}); },
+    feet: () => feet(),
+    setLow(b){ low = b ? 1 : 0; },
     has: n => !!ACT[n] || n === 'guard' || n === 'cast',
     setDead(d){ if (d) { if (cur) cur.done(false); cur = null; reviveT = 0; deadTarget = 1; deadT = clk(); } else if (deadTarget) { deadTarget = 0; reviveT = clk(); } },
     reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; reviveT = 0; },

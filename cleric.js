@@ -59,15 +59,23 @@ const ACT = {   // poses de COSTAS — base: i1
     S(5600, [[0,'i1'],[.08,'u2'],[.18,'h1'],[.3,'u3'],[.44,'u4',{dy:-14}],[.62,'u5',{dy:-16}],[.82,'u7',{dy:-14}],[.96,'i1']], [[.3,'lightup2'],[.46,'lightpillar2'],[.62,'lightpillar2'],[.78,'lightend']]),
   ],
   dodge:[
-    S(1050, [[0,'i1'],[.1,'e1',{dx:-6}],[.3,'e1',{dx:-34,dy:-2}],[.52,'e2',{dx:-50}],[.72,'e2',{dx:-30}],[.9,'i1']], [], {ghost:true}),
-    S(1050, [[0,'i1'],[.1,'e9',{dx:6}],[.3,'e3',{dx:30,dy:-2}],[.52,'e3',{dx:44}],[.72,'e3',{dx:26}],[.9,'i1']], [], {ghost:true, gdir:-1}),
-    S(1050, [[0,'i1'],[.1,'e9',{dx:-4}],[.3,'e2',{dx:-24,dy:-8}],[.5,'e1',{dx:-40,dy:-2}],[.72,'e9',{dx:-20}],[.9,'i1']], [], {ghost:true}),
+    S(1050, [[0,'i1'],[.1,'e1',{dx:-6}],[.3,'e1',{dx:-34,dy:-2}],[.52,'e2',{dx:-50}],[.72,'e2',{dx:-30}],[.9,'i1']], [[.3,'step'],[.72,'step']], {ghost:true}),
+    S(1050, [[0,'i1'],[.1,'e9',{dx:6}],[.3,'e3',{dx:30,dy:-2}],[.52,'e3',{dx:44}],[.72,'e3',{dx:26}],[.9,'i1']], [[.3,'step'],[.72,'step']], {ghost:true, gdir:-1}),
+    S(1050, [[0,'i1'],[.1,'e9',{dx:-4}],[.3,'e2',{dx:-24,dy:-8}],[.5,'e1',{dx:-40,dy:-2}],[.72,'e9',{dx:-20}],[.9,'i1']], [[.3,'step'],[.72,'step']], {ghost:true}),
   ],
   hurt:[
     S(800, [[0,'i1'],[.1,'e5',{dx:-8,rot:-3}],[.34,'e5',{dx:4}],[.6,'e5',{dx:-2}],[.92,'i1']], [], {tint:true}),
     S(800, [[0,'i1'],[.12,'e7',{dx:-8,rot:-3}],[.36,'e7',{dx:4}],[.62,'e7'],[.92,'i1']], [], {tint:true}),
     S(800, [[0,'i1'],[.12,'e6',{dx:-6,dy:2}],[.36,'e6',{dx:3}],[.62,'e6'],[.92,'i1']], [], {tint:true}),
     S(800, [[0,'i1'],[.12,'e8',{dx:-6,dy:2}],[.36,'e8',{dx:3}],[.62,'e8'],[.92,'i1']], [], {tint:true}),
+  ],
+  right:[   // acertou a resposta
+    S(1000, [[0,'i1'],[.25,'v1',{dy:-2}],[.7,'v1',{dy:-2}],[.95,'i1']], [[.22,'sparkle']]),
+    S(1000, [[0,'i1'],[.25,'h4'],[.7,'h4'],[.95,'i1']], [[.22,'sparkle']]),
+  ],
+  wrong:[   // errou: um tranco curto, sem machucar
+    S(750, [[0,'i1'],[.2,'e6',{dx:-4}],[.6,'i6'],[.95,'i1']]),
+    S(750, [[0,'i1'],[.2,'i6',{dx:-3}],[.6,'i6'],[.95,'i1']]),
   ],
   victory:[
     S(2800, [[0,'i1'],[.14,'h4'],[.36,'v1',{dy:-2}],[.8,'v1',{dy:-2}],[.96,'i1']], [[.14,'cheer'],[.38,'cheer:cross'],[.6,'cheer'],[.82,'cheer:rise']]),
@@ -85,9 +93,20 @@ const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
   S(3200, [[0,'i1'],[.2,'i6'],[.8,'i6'],[.97,'i1']]),
   S(3000, [[0,'i1'],[.2,'i8'],[.8,'i8'],[.97,'i1']]),
 ];
-IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.7); });      // movimentos de ociosa mais lentos
+IDLES.push(
+  S(3400, [[0,'i1'],[.2,'h4'],[.75,'h4'],[.97,'i1']], [[.3,'sparkle']]),            // ergue o cajado de leve
+  S(3200, [[0,'i1'],[.2,'s8'],[.75,'s8'],[.97,'i1']]),
+  S(5200, [[0,'i1'],[.12,'i3'],[.4,'i4'],[.6,'i3'],[.8,'i5'],[.97,'i1']]),          // lê e depois reza
+);
+IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.7); });
+const IDLES_L = [   // pouca vida: curvada, ofegante
+  S(3600, [[0,'i6'],[.4,'e6'],[.75,'i6'],[.98,'i6']]),
+  S(3400, [[0,'i6'],[.4,'e8'],[.75,'i6'],[.98,'i6']]),
+];      // movimentos de ociosa mais lentos
+ACT.melee.forEach(a => { a.trail = true; });
 const bags = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };   // sacola embaralhada: nunca repete a mesma variação em seguida, e usa todas antes de repetir
+const REVIVE = [[0,'f5'],[.2,'f4'],[.4,'f3'],[.6,'f2'],[.8,'f1'],[.95,'i6'],[.99,'i1']];   // levanta na ordem inversa
 const DEATH = [[0,'f1'],[.22,'f2'],[.44,'f3'],[.66,'f4'],[.86,'f5']];
 
 function glow(g, x, y, r, col, a){
@@ -104,7 +123,7 @@ function make(host){
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
   fetch('cleriga4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `cleriga4/${n}.png`)); FXS.forEach(n => load('fx_' + n, `cleriga4/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
-  let dead = 0, deadTarget = 0, deadT = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 40}, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
+  let low = 0, hist = [], reviveT = 0, dead = 0, deadTarget = 0, deadT = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 40}, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const E = (name, d, f, o = {}) => fxl.push({name: name.replace(/^fx_(.*)$/, (_, k) => 'fx_' + (AL[k] || k)), d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const orbPos = () => ({...orbW});
@@ -127,7 +146,7 @@ function make(host){
     if (kind === 'small2') { bl(110, GOLD, .9); bl(70, '255,255,255', .8, 0, 420); E('fx_cross1', 640, u => ({...T, s:lerp(.35, .8, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .9})); E('fx_star4', 520, u => ({...T, s:lerp(.2, .55, eo(u)), rot:u * 1.2, a:1 - u})); }
     else if (kind === 'small3') { bl(120, GOLD, .85); E('fx_ring3', 620, u => ({x:T.x, y:T.y + 40, s:lerp(.3, 1, eo(u)), sy:.6, a:(1 - u) * .8})); for (let i = 0; i < 5; i++) { const an = i * 1.26; E('fx_st4', 600, u => ({x:T.x + Math.cos(an) * 70 * eo(u), y:T.y + Math.sin(an) * 60 * eo(u), s:.45 * (1 - u), a:1 - u})); } }
     else if (kind === 'holy2') { bl(260, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_cross1', 900, u => ({...T, s:lerp(.6, 1.7, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .1, 1)) * .95})); E('fx_pillar', 1000, u => ({x:T.x, y:T.y + 100, s:1.3, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:60}); shakeT = clk(); }
-    else if (kind === 'holy3') { bl(280, GOLD, 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); E('fx_burst', 1000, u => ({x:T.x, y:T.y + 100, s:1.5, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)})); E('fx_ring2', 900, u => ({x:T.x, y:T.y + 80, s:lerp(.4, 1.9, eo(u)), sy:.5, a:(1 - u) * .85})); E('fx_star4', 800, u => ({...T, s:lerp(.4, 1.3, eo(u)), rot:u * 1.6, a:(1 - u) * .9})); shakeT = clk(); }
+    else if (kind === 'holy3') { E('fx_crk', 1100, u => ({x:T.x, y:T.y + 70, s:lerp(.5, 1.1, eo(u)), sy:.42, a:(u < .1 ? u / .1 : 1 - seg(u, .3, 1)) * .9}), {delay:40}); E('fx_dust', 900, u => ({x:T.x, y:T.y + 70, s:lerp(.4, 1.05, eo(u)), sy:.5, a:(1 - u) * .7}), {add:false}); bl(280, GOLD, 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); E('fx_burst', 1000, u => ({x:T.x, y:T.y + 100, s:1.5, sy:lerp(.3, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)})); E('fx_ring2', 900, u => ({x:T.x, y:T.y + 80, s:lerp(.4, 1.9, eo(u)), sy:.5, a:(1 - u) * .85})); E('fx_star4', 800, u => ({...T, s:lerp(.4, 1.3, eo(u)), rot:u * 1.6, a:(1 - u) * .9})); shakeT = clk(); }
     else if (kind === 'small4') { bl(125, GOLD, .9); E('fx_ring1', 640, u => ({x:T.x, y:T.y + 50, s:lerp(.3, 1.1, eo(u)), sy:.5, a:(1 - u) * .9})); E('fx_star4', 640, u => ({...T, s:lerp(.2, .8, eo(u)), rot:-u * 2, a:1 - u})); E('fx_pillar2', 620, u => ({x:T.x, y:T.y + 70, s:.7, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)})); }
     else if (kind === 'holy4') { bl(270, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_lotus', 1100, u => ({x:T.x, y:T.y + 90, s:lerp(.6, 2.2, eo(Math.min(1, u * 1.5))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .4, 1)})); E('fx_ring2', 900, u => ({x:T.x, y:T.y + 80, s:lerp(.4, 2.2, eo(u)), sy:.5, a:(1 - u) * .85})); E('fx_ring2', 800, u => ({x:T.x, y:T.y + 80, s:lerp(.3, 1.5, eo(u)), sy:.5, a:(1 - u) * .8}), {delay:160}); for (let i = 0; i < 8; i++) { const an = i * .785; E('fx_st4', 900, u => ({x:T.x + Math.cos(an) * 140 * eo(u), y:T.y + 20 + Math.sin(an) * 70 * eo(u) - 60 * u, s:.55 * (1 - u * .4), a:Math.sin(Math.PI * u)}), {delay:80}); } shakeT = clk(); }
     else if (kind === 'holy5') { bl(290, GOLD, 1, 0, 1000); bl(170, '255,255,255', .9, 0, 520); for (let i = 0; i < 3; i++) E('fx_pillar', 1000, u => ({x:T.x + (i - 1) * 90, y:T.y + 100, s:1.0, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:i * 120}); E('fx_sunstar', 900, u => ({...T, s:lerp(.5, 2, eo(u)), rot:u, a:(u < .08 ? u / .08 : 1 - seg(u, .08, 1)) * .9}), {delay:200}); E('fx_cross1', 900, u => ({x:T.x, y:T.y - 40, s:lerp(.5, 1.6, eo(u)), a:(1 - u) * .9}), {delay:300}); shakeT = clk(); }
@@ -135,6 +154,7 @@ function make(host){
     else { bl(260, GOLD, 1, 0, 1000); bl(150, '255,255,255', .9, 0, 520); E('fx_sunstar', 800, u => ({...T, s:lerp(.5, 1.7, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .08, 1)) * .9})); E('fx_pillar2', 900, u => ({x:T.x, y:T.y + 80, s:1.1, sy:lerp(.2, 1, eo(Math.min(1, u * 2))), anchorB:1, a:u < .1 ? u / .1 : 1 - seg(u, .3, 1)}), {delay:60}); E('fx_ring1', 800, u => ({x:T.x, y:T.y + 60, s:lerp(.5, 1.8, eo(u)), sy:.45, a:(1 - u) * .8})); shakeT = clk(); }
   }
   const EV = {
+    step(){ const f = feet(); E('fx_dust', 700, u => ({x:f.x + rnd(-4, 4), y:f.y - 4, s:lerp(.18, .4, eo(u)), sy:.7, a:(1 - u) * .6}), {add:false}); },
     charge(){ chargeT = clk(); E('glow', 1000, u => ({...orbPos(), r:lerp(30, 115, eo(u)), c:GOLD, a:.9 * Math.sin(Math.PI * Math.min(1, u * 1.15))}));
       E('fx_ring3', 1100, u => ({x:feet().x, y:feet().y - 4, s:lerp(.6, .9, u), sy:.3, a:.5 * Math.sin(Math.PI * u)}));
       for (let i = 0; i < 8; i++) { const an = i * .79 + rnd(0, .5); E('fx_st4', 760, u => { const r = 100 * (1 - eo(u)) + 8, o = orbPos(); return {x:o.x + Math.cos(an + u * 2) * r, y:o.y + Math.sin(an + u * 2) * r * .8, s:.4 * (.5 + u * .5), rot:u * 3, a:Math.sin(Math.PI * u)}; }, {delay:i * 70}); } },
@@ -180,16 +200,20 @@ function make(host){
     if (!M) return;
     const tm = now - t0; let st, a = cur && cur.a, pe = 0;
     if (deadTarget) { const k = clamp((now - deadT) / 1300); st = poseAt({steps:DEATH, dur:1300}, k); }
+    else if (reviveT) { const k = clamp((now - reviveT) / 1300); st = poseAt({steps:REVIVE, dur:1300}, k); if (k >= 1) reviveT = 0; }
     else if (cur) {
       pe = (now - cur.start) / a.dur; st = poseAt(a, clamp(pe));
       const ev = a.ev || []; while (cur.fired < ev.length && pe >= ev[cur.fired][0]) runEv(ev[cur.fired++][1]);
       if (pe >= 1) { const d = cur; cur = null; d.done(); }
     } else st = {pose:'i1', dx:0, dy:0, rot:0, sc:1};
+    if (low && !deadTarget && !reviveT && st.pose === 'i1') st = {...st, pose:'i6'};   // pouca vida: curvada, apoiada no cajado
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
     lastT = st;
     const f = clamp((now - cur_t) / fade);
     c.clearRect(0, 0, cw, ch); if (!deadTarget) { c.save(); c.translate(Px - host.P + XOFF, Py - host.P + (BASE - 276)); host.shadow(c); c.restore(); } c.imageSmoothingEnabled = false;
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 : 0;
+    hist.push({t:now, pose:st.pose, dx:st.dx, dy:st.dy, rot:st.rot, sc:st.sc || 1}); while (hist.length && now - hist[0].t > 260) hist.shift();
+    if (a && a.trail) { [70, 140].forEach((lag, i) => { const h = hist.filter(x => x.t <= now - lag).pop(); if (h && (h.pose !== st.pose || Math.abs(h.dx - st.dx) > 2 || Math.abs(h.dy - st.dy) > 2)) drawPose(h.pose, h.dx, h.dy, h.rot, .2 - i * .1, tm, 0, h.sc, 0); }); }   // rastro de movimento nos golpes rápidos
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);
     const o = drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
@@ -214,17 +238,20 @@ function make(host){
   return {
     start(){ if (!running) { running = true; requestAnimationFrame(frame); } },
     play(name, o = {}){
-      if (deadTarget) return Promise.resolve(false);
+      if (deadTarget || reviveT) return Promise.resolve(false);
+      if (name === 'right' || name === 'wrong') { if (cur && !cur.idle) return Promise.resolve(false); const ra = variant(ACT[name]); return ra ? run(ra) : Promise.resolve(false); }   // reação à resposta: não interrompe ação em curso
       tgt = name === 'ult' && o.tx != null ? {x:o.tx} : null;
       if (name === 'guard') return run(variant(/ffe08a/i.test(o.color || '') ? ACT.guard_h : ACT.guard_n));
       if (name === 'cast') name = 'holy';
       const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a, name === 'ult' ? {noGlow:true} : undefined); p.then(fireHit); return p;
     },
     nextHit(){ return new Promise(r => hitW.push(r)); },
-    idle(){ if (cur || deadTarget) return Promise.resolve(false); return run(variant(IDLES)); },
+    idle(){ if (cur || deadTarget || reviveT) return Promise.resolve(false); return run(variant(low ? IDLES_L : IDLES), {idle:true}); },
+    feet: () => feet(),
+    setLow(b){ low = b ? 1 : 0; },
     has: n => !!ACT[n] || n === 'guard' || n === 'cast',
-    setDead(d){ if (d) { if (cur) cur.done(false); cur = null; deadTarget = 1; deadT = clk(); } else { deadTarget = 0; flashT = clk(); } },
-    reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; dead = 0; },
+    setDead(d){ if (d) { if (cur) cur.done(false); cur = null; reviveT = 0; deadTarget = 1; deadT = clk(); } else if (deadTarget) { deadTarget = 0; reviveT = clk(); } },
+    reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; reviveT = 0; dead = 0; },
   };
 }
 window.ClericRig = {make};
