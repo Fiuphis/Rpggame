@@ -481,3 +481,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v234: Tanque: escala das poses h3 (martelo no alto), i5 e v2 corrigida pelo tamanho da cabeca.
 - v235: Tanque: efeitos de provocacao (aneis de rugido, circulo de runas, coluna de aura, trilha do martelo, fagulhas e rachadura no chao) (E4).
 - v236: Tanque menos pixelizado (grade 1 px, so a borda fina): mais proximo do Cavaleiro e da Cleriga.
+- v237: Maga de volta a grade de 1 px (mesmo nivel do Tanque), mantendo a borda fina.
