@@ -1,5 +1,5 @@
 /* Banco de Dados I — RPG · Guerreiro (v71)
-   Poses de COSTAS recortadas das 3 folhas novas (knight/*.png, tools/cut_knight.py): mesma escala, ancoradas pelos pés, borda fina.
+   Poses de COSTAS recortadas das 3 folhas novas (guerreiro/*.png, tools/cut_guerreiro.py): mesma escala, ancoradas pelos pés, borda fina.
    Habilidades: ataque normal (espada), ataque pesado (1,5x), passar a vez, defesa (escudo), esquiva, berserk (ult) + modo berserk e modo exausto.
    Cada uso sorteia uma variação diferente da anterior (sacola embaralhada). O dano só entra quando o golpe acerta (fireHit). */
 (() => {
@@ -137,7 +137,7 @@ function make(host){
   const cw = cv.width, ch = cv.height;
   let M = null; const img = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
-  fetch('knight/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `knight/${n}.png`)); FXK.forEach(n => load('fx_' + n, `knight/fx_${n}.png`)); }).catch(() => {});
+  fetch('guerreiro/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `guerreiro/${n}.png`)); FXK.forEach(n => load('fx_' + n, `guerreiro/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, last = 0, t0 = clk(), running = false, mode = null;
   let deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
@@ -279,5 +279,5 @@ function make(host){
     reset(){ if (cur) { const d = cur; cur = null; d.done(false); } fxl = []; deadTarget = 0; reviveT = 0; mode = null; },
   };
 }
-window.KnightRig = {make};
+window.GuerreiroRig = {make};
 })();

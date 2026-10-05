@@ -64,8 +64,8 @@ im.save('menu_target.png', optimize=True)
 print('menu_target.png', im.size)
 
 # --- retratos (caixas quadradas em torno do rosto)
-BOX = {'mage': (240, 290, 940, 990), 'knight': (230, 110, 930, 810),
-       'tank': (230, 190, 930, 890), 'assassin': (210, 20, 970, 780)}
+BOX = {'mage': (240, 290, 940, 990), 'guerreiro': (230, 110, 930, 810),
+       'tank': (230, 190, 930, 890), 'cleriga': (210, 20, 970, 780)}
 for k, b in BOX.items():
     p = Image.open(f'char_{k}.webp').convert('RGBA')
     bg = Image.new('RGBA', p.size, (7, 8, 20, 255)); bg.alpha_composite(p)

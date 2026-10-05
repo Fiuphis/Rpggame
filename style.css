@@ -195,7 +195,7 @@
 .skm-layer .sk-card .tp-face{position:absolute;left:7.1%;top:20%;width:14.5%;height:56%;image-rendering:pixelated;pointer-events:none}
 .sk-card.off .tp-face{filter:grayscale(1) brightness(.55)}
 .sk-card .tp-name{position:absolute;left:25.2%;top:15%;font-size:2.35cqw;line-height:1;font-weight:bold;letter-spacing:.12cqw;color:#ffc54e;text-shadow:0 .2cqw 0 #000;white-space:nowrap;pointer-events:none}
-.sk-card.hero-mage .tp-name{color:#6fb4ff}.sk-card.hero-knight .tp-name{color:#ffb43a}.sk-card.hero-tank .tp-name{color:#e8bd5c}.sk-card.hero-assassin .tp-name{color:#e4ecff}
+.sk-card.hero-mage .tp-name{color:#6fb4ff}.sk-card.hero-guerreiro .tp-name{color:#ffb43a}.sk-card.hero-tank .tp-name{color:#e8bd5c}.sk-card.hero-cleriga .tp-name{color:#e4ecff}
 .sk-card .tp-desc{position:absolute;left:25.2%;right:14%;top:46%;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:1.5cqw;line-height:1.2;color:#9fb0f0;pointer-events:none}
 .sk-card .tp-chips{position:absolute;left:25.2%;bottom:14%;display:flex;gap:.6cqw;pointer-events:none}
 .sk-card .tp-chips .tag{font-size:1.2cqw;padding:.3cqw .9cqw;background:#050612;border:.2cqw solid #2e6aa8;color:#7fc8ff;letter-spacing:.1cqw;line-height:1}

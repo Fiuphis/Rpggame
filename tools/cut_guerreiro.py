@@ -1,12 +1,12 @@
-# Recorta as poses do GUERREIRO (3 folhas, fundo xadrez) usando a segmentação de seg_knight.py -> knight/*.png + knight/meta.json
+# Recorta as poses do GUERREIRO (3 folhas, fundo xadrez) usando a segmentação de seg_guerreiro.py -> guerreiro/*.png + guerreiro/meta.json
 # Corpo (silhueta azul-marinho) em escala única (pose idle de referência = BODY_H), pés ancorados, borda fina escura (RING px) só no corpo.
 import numpy as np, json, os, sys, shutil, cv2
 from PIL import Image
 from scipy import ndimage as ndi
 sys.path.insert(0, os.path.dirname(__file__))
-import seg_knight as SK
+import seg_guerreiro as SK
 import fxsoft
-OUTD = os.environ.get('OUTD', 'knight'); BODY_H = float(os.environ.get('BODY_H', 256)); RING = 2
+OUTD = os.environ.get('OUTD', 'guerreiro'); BODY_H = float(os.environ.get('BODY_H', 256)); RING = 2
 NAVY = np.array([22, 14, 30], np.float32)
 S4 = ndi.generate_binary_structure(2, 1); S8 = ndi.generate_binary_structure(2, 2)
 SEG = json.load(open('/tmp/kn/seg.json'))

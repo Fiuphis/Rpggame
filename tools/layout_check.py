@@ -17,7 +17,7 @@ Q = """(sel)=>{const e=document.querySelector(sel.el),s=document.querySelector(s
 INNER = {   # pagina -> (quadro, [elementos dentro do quadro])
  'index': ('#stage', ['#confirm','.ab-title']),
  'map':   ('#map',   ['#quote','#grays']),
- 'game':  ('#game',  ['.bag','#bag','.shop.s0','.shop.s3','.hero.mage','.hero.knight','.hero.tank','.hero.assassin','.hud-hero[data-hero=mage]','.hud-hero[data-hero=assassin]','.ult-icon[data-hero=tank]','.hero-chips']),
+ 'game':  ('#game',  ['.bag','#bag','.shop.s0','.shop.s3','.hero.mage','.hero.guerreiro','.hero.tank','.hero.cleriga','.hud-hero[data-hero=mage]','.hud-hero[data-hero=cleriga]','.ult-icon[data-hero=tank]','.hero-chips']),
 }
 fails = []
 def fail(m): fails.append(m); print('  FALHA:', m)

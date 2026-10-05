@@ -1,10 +1,10 @@
-# Efeitos soltos do guerreiro (arco de corte, espinhos de gelo, rochas) -> knight/fx_*.png, sem borda, mesma escala do corpo
+# Efeitos soltos do guerreiro (arco de corte, espinhos de gelo, rochas) -> guerreiro/fx_*.png, sem borda, mesma escala do corpo
 import sys, os, numpy as np
 from PIL import Image
 sys.path.insert(0, os.path.dirname(__file__))
-import cut_knight as CK
+import cut_guerreiro as CK
 FX = {'fx_slash':'K2_1', 'fx_ice':'K1_12', 'fx_spike':'K2_12', 'fx_rocksA':'K1_36', 'fx_rocksB':'K1_40', 'fx_slash2':'K2_11'}
-os.makedirs('knight', exist_ok=True)
+os.makedirs('guerreiro', exist_ok=True)
 for out, name in FX.items():
     rgb, a, core = CK.process(name); sh = name.split('_')[0]
     # efeito puro: sem 'núcleo' sólido, alpha só por saturação/escuridão
@@ -17,4 +17,4 @@ for out, name in FX.items():
     if len(ys) == 0: print('vazio', out); continue
     y0, y1, x0, x1 = ys.min(), ys.max() + 1, xs.min(), xs.max() + 1
     im = np.dstack([col, al * 255]).astype(np.uint8)[y0:y1, x0:x1]
-    Image.fromarray(im, 'RGBA').save(f'knight/{out}.png'); print(out, im.shape)
+    Image.fromarray(im, 'RGBA').save(f'guerreiro/{out}.png'); print(out, im.shape)

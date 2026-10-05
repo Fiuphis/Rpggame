@@ -7,7 +7,7 @@
 const POSES = ['at1','at3','stf','ult1','ult2','bp1','bp2','bp3','bg1','bg2','bg3','bg4','br1','br2','br3','br4','br5','br6','bt1','bt2','bt3','bt4','d1','d2','d3','d4'];
 const FXS = ['star1','star2','star3','ring1','ring2','ring3','pillar','lotus','burst','aura','streak1','streak2','streak3','sunstar','star4','pillar2','cross1'];
 const T = {x:517, y:340};
-const BASE = 292, SZ = 0.82, XOFF = -46;      // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
+const BASE = 292, SZ = 0.82, XOFF = -46;      // Maga e Clériga: as duas menores (Guerreiro 261, Tanque 314), mesmo tamanho
 const PS = {ult1:1.12,ult2:1.1,at1:1.04,bp3:0.96,at2:1.13,hat2:1.13,dn2:1.11,dn3:1.14,dg2:1.1,dg3:1.1,v1:1.1,d1:1.1,d2:1.1,d3:1.1,d4:1.1,bg4:1.1};   // poses cuja escala na folha destoa das demais      // pés mais para a frente (baixo) e um pouco maior
 const GOLD = '255,214,120';
 let _c = 0, _p = performance.now();

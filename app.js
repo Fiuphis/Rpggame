@@ -91,33 +91,33 @@ const CAT_LABEL = {heal:'CURA', def:'DEFESA', atk:'ATAQUE', util:'UTILIDADE'};
 const newStats = () => ({rank:{1:[0,0],2:[0,0],3:[0,0],4:[0,0],5:[0,0]}, gained:0, spent:0, used:0, leech:0});   // por rank: [acertos, erros]
 const newBuffs = () => ({shield:0, amulet:0, helm:0, smoke:0, herb:0, lens:0, tonic:0, powder:0, blade:0, lucky:0, luckyAmt:3, dice:0, bomb:0});
 // Afinidade: o herói indicado ganha +50% no efeito do item (duração, valor ou cargas).
-// Afinidade (+50% no efeito) pelo papel de cada heroi: Maga = mana/magia e pouca defesa; Guerreiro = dano e furia; Tanque = defesa pesada e martelo; Cleriga = cura, luz e fe.
+// Afinidade (+50% no efeito) pelo papel de cada heroi: Maga = mana/magia e pouca defesa; Guerreiro = dano e furia; Tanque = defesa pesada e martelo; Clériga = cura, luz e fe.
 const AFFINITY = {
   mage:['hourglass','scroll','elixir','amulet','smokebomb'],        // recarga/mana, ultimate arcano, mana do elixir, amuleto magico, fumaça (esquiva) p/ quem tem pouca defesa
-  knight:['lens','tonic','blade','dice','helm'],                    // critico, furia, espada, aposta de berserker, elmo de combate
+  guerreiro:['lens','tonic','blade','dice','helm'],                    // critico, furia, espada, aposta de berserker, elmo de combate
   tank:['iron_shield','helm','amulet','powder'],                    // escudo, armadura, protecao, polvora no martelo
-  assassin:['herb','elixir','lightbomb','phoenix','luckycoin']      // erva, cura total, luz sagrada, ressurreicao, bencao da sorte (Cleriga)
+  cleriga:['herb','elixir','lightbomb','phoenix','luckycoin']      // erva, cura total, luz sagrada, ressurreicao, bencao da sorte (Clériga)
 };
 Object.entries(AFFINITY).forEach(([h, l]) => l.forEach(k => { (ITEMS[k].aff = ITEMS[k].aff || []).push(h); }));
 const hasAff = (type, hero) => !!(ITEMS[type].aff && ITEMS[type].aff.includes(hero || activeGroup));
-const allBuffs = () => ({mage:newBuffs(), knight:newBuffs(), tank:newBuffs(), assassin:newBuffs()});
+const allBuffs = () => ({mage:newBuffs(), guerreiro:newBuffs(), tank:newBuffs(), cleriga:newBuffs()});
 // itens que podem ser dados a um aliado; os demais valem só para quem usa
 const GIVE = new Set(['shield','amulet','helm','smoke','herb','elixir','phoenix']);
 
 // ===== Configuração do combate (ajuste aqui) =====
-const HERO_ORDER = ['mage','knight','tank','assassin'];
-const HERO_COLOR = {mage:'#4d8dff', knight:'#d9e6ff', tank:'#ff9d3d', assassin:'#ff3d5c'};
-const HERO_X = {mage:10.3, knight:33.2, tank:63.5, assassin:89.7};   // centro do herói (% da largura)
+const HERO_ORDER = ['mage','guerreiro','tank','cleriga'];
+const HERO_COLOR = {mage:'#4d8dff', guerreiro:'#d9e6ff', tank:'#ff9d3d', cleriga:'#ff3d5c'};
+const HERO_X = {mage:10.3, guerreiro:33.2, tank:63.5, cleriga:89.7};   // centro do herói (% da largura)
 const BOSS_MAX_HP = 650, HERO_MAX_HP = 100;
-// Dano base por herói: Cleriga baixo, Maga/Tanque médio, Guerreiro alto. Fraqueza certa (fogo da Maga) = alto; Buraco Negro = extremamente alto.
-const HERO_BASE = {mage:14, knight:21, tank:14, assassin:10};
+// Dano base por herói: Clériga baixo, Maga/Tanque médio, Guerreiro alto. Fraqueza certa (fogo da Maga) = alto; Buraco Negro = extremamente alto.
+const HERO_BASE = {mage:14, guerreiro:21, tank:14, cleriga:10};
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
 const DEFEND_REDUCTION = 0.5;      // defesa reduz o dano pela metade
 const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após errar +1; defender/esquivar após ACERTAR +5 (enche)
 const QUESTION_SECONDS = {1:25, 2:30, 3:35, 4:40, 5:45}, ACTION_SECONDS = 25;   // tempo para responder: C 25s, B 30s, A 35s, S 40s, SS 45s
-const ULT_NAME = {mage:'Buraco Negro', knight:'Berserk', tank:'Provocação', assassin:'Luz Sagrada'};
-const ULT_ICON = {mage:'orb', knight:'sword2', tank:'hammer2', assassin:'cross'};
-const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta rank S/SS, só na seguinte (se acertarem)', knight:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', assassin:'revive ou cura um herói'};
+const ULT_NAME = {mage:'Buraco Negro', guerreiro:'Berserk', tank:'Provocação', cleriga:'Luz Sagrada'};
+const ULT_ICON = {mage:'orb', guerreiro:'sword2', tank:'hammer2', cleriga:'cross'};
+const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta rank S/SS, só na seguinte (se acertarem)', guerreiro:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', cleriga:'revive ou cura um herói'};
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
@@ -188,7 +188,7 @@ const SKILLS = {
     {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; corta 55% se for o elemento fraco do inimigo (contra o Lorde das Trevas, fogo).', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
-  knight:[
+  guerreiro:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de espada. Dano normal.', mana:0, cd:0, mult:1},
     {id:'heavy', kind:'atk', name:'Ataque Pesado', desc:'1,5x o dano normal.', mana:15, cd:1, mult:1.5},
     {id:'pass', kind:'util', name:'Passar a Vez', desc:'Sem ação nem contra-ataque. O aliado escolhido ganha um ataque extra (1,5x) se acertar.', mana:0, cd:0, target:true},
@@ -202,7 +202,7 @@ const SKILLS = {
     {id:'def', kind:'def', name:'Defesa', desc:'Ergue o escudo. Corta 75% do dano.', mana:0, cd:0, reduce:.75},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
-  assassin:[
+  cleriga:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de cajado. Dano normal.', mana:0, cd:0, mult:1},
     {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele (o Lorde das Trevas é).', mana:20, cd:1, mult:1, holy:true},
     {id:'def', kind:'def', name:'Defesa Normal', desc:'Ergue as mãos. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
@@ -213,15 +213,15 @@ const SKILLS = {
 // Tipo/atributo e ícone de cada habilidade (Guerreiro e Tanque: só físico; Maga: mágico + mana/elemento; Clériga: físico, sagrado nas especiais)
 const SKILL_META = {
   mage:{mana_atk:['MÁGICO','MANA','orb'], elem_atk:['MÁGICO','ELEMENTAL','fire'], mana_def:['MÁGICO','MANA','shield'], elem_def:['MÁGICO','ELEMENTAL','drop'], dodge:[null,null,'dodge']},
-  knight:{atk:['FÍSICO',null,'sword'], heavy:['FÍSICO',null,'sword2'], pass:[null,null,'pass'], def:['FÍSICO',null,'shield'], dodge:[null,null,'dodge']},
+  guerreiro:{atk:['FÍSICO',null,'sword'], heavy:['FÍSICO',null,'sword2'], pass:[null,null,'pass'], def:['FÍSICO',null,'shield'], dodge:[null,null,'dodge']},
   tank:{atk:['FÍSICO',null,'hammer'], super:['FÍSICO',null,'hammer2'], guard:[null,null,'guard'], def:['FÍSICO',null,'shield'], dodge:[null,null,'dodge']},
-  assassin:{atk:['FÍSICO',null,'staff'], holy_atk:['FÍSICO','SAGRADO','cross'], def:['FÍSICO',null,'shield'], holy_def:['FÍSICO','SAGRADO','cross'], dodge:[null,null,'dodge']}
+  cleriga:{atk:['FÍSICO',null,'staff'], holy_atk:['FÍSICO','SAGRADO','cross'], def:['FÍSICO',null,'shield'], holy_def:['FÍSICO','SAGRADO','cross'], dodge:[null,null,'dodge']}
 };
 Object.keys(SKILLS).forEach(k => SKILLS[k].forEach(s => { const m = SKILL_META[k][s.id] || []; s.tipo = m[0]; s.attr = m[1]; s.icon = m[2]; }));
 // mana NÃO regenera: só sobe com Poção de Mana
 const KIND_LABEL = {atk:'ATAQUE', def:'DEFESA', dodge:'ESQUIVA', util:'TÁTICA'};
 
-const GROUPS = {mage:'MAGA', knight:'GUERREIRO', tank:'TANQUE', assassin:'CLÉRIGA'};
+const GROUPS = {mage:'MAGA', guerreiro:'GUERREIRO', tank:'TANQUE', cleriga:'CLÉRIGA'};
 const PARAMS = new URLSearchParams(location.search);
 // O grupo vem do lobby (página inicial). ?grupo=... só vale junto com ?teste=1.
 const TEST_MODE = LOBBY.testMode; // simula os outros 6 jogadores votando
@@ -249,12 +249,12 @@ const state = {
   gold:0, question:0, answered:false,
   inventory:[], pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
-  heroes:Object.fromEntries(['mage','knight','tank','assassin'].map(k => [k, {hp:100, mp:100}])),
+  heroes:Object.fromEntries(['mage','guerreiro','tank','cleriga'].map(k => [k, {hp:100, mp:100}])),
   bossHp:BOSS_MAX_HP, rage:0, hardNext:false, over:false,
-  cd:{mage:{},knight:{},tank:{},assassin:{}}, marks:[], burn:0, buff:{bh:0, bers:0, tired:0, taunt:0}, guardFor:null,         // recarga das habilidades (perguntas restantes)
+  cd:{mage:{},guerreiro:{},tank:{},cleriga:{}}, marks:[], burn:0, buff:{bh:0, bers:0, tired:0, taunt:0}, guardFor:null,         // recarga das habilidades (perguntas restantes)
   curAttack:BOSS_ATTACK,
-  ultCd:{mage:0,knight:0,tank:0,assassin:0},
-  ultReady:{mage:false,knight:false,tank:false,assassin:false},   // carrega ao acertar pergunta rank S/SS
+  ultCd:{mage:0,guerreiro:0,tank:0,cleriga:0},
+  ultReady:{mage:false,guerreiro:false,tank:false,cleriga:false},   // carrega ao acertar pergunta rank S/SS
   curQ:null, lastQ:{1:-1,2:-1,3:-1,4:-1,5:-1},
   round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false
 };
@@ -524,15 +524,15 @@ function startBots(){
 
 // ===== HUD dinâmico: barras de vida/mana dos heróis, vida do boss e fúria =====
 const HUD_W = 220, HUD_GAP = 34;   // HUD_GAP: faixa entre a barra e a cabeça (ícone de ult + chips de item)
-const HEAD_TOP = {mage:725, knight:692, tank:684, assassin:792};   // topo da pose mais alta de cada herói (medido, px do grid)
+const HEAD_TOP = {mage:725, guerreiro:692, tank:684, cleriga:792};   // topo da pose mais alta de cada herói (medido, px do grid)
 const hudY = k => Math.round(HEAD_TOP[k] - HUD_GAP - HUD_W * HUD_IMG[k].h / HUD_IMG[k].w);   // barra pequena: largura (px do grid 1024) e posição vertical
-const HUD_IMG = {"mage": {"w": 1419, "h": 259, "hp": [0.2276, 0.7498, 0.3745, 0.1544], "mp": [0.2276, 0.7498, 0.6873, 0.1583]}, "knight": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.3211, 0.1626], "mp": [0.2275, 0.7493, 0.6585, 0.1585]}, "tank": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.313, 0.1585], "mp": [0.2275, 0.7493, 0.6463, 0.1585]}, "assassin": {"w": 1421, "h": 241, "hp": [0.2273, 0.7488, 0.2822, 0.1618], "mp": [0.2273, 0.7488, 0.6224, 0.1618]}};   // proporção e interior das barras (frações) de hud_<herói>.png
+const HUD_IMG = {"mage": {"w": 1419, "h": 259, "hp": [0.2276, 0.7498, 0.3745, 0.1544], "mp": [0.2276, 0.7498, 0.6873, 0.1583]}, "guerreiro": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.3211, 0.1626], "mp": [0.2275, 0.7493, 0.6585, 0.1585]}, "tank": {"w": 1420, "h": 246, "hp": [0.2275, 0.7493, 0.313, 0.1585], "mp": [0.2275, 0.7493, 0.6463, 0.1585]}, "cleriga": {"w": 1421, "h": 241, "hp": [0.2273, 0.7488, 0.2822, 0.1618], "mp": [0.2273, 0.7488, 0.6224, 0.1618]}};   // proporção e interior das barras (frações) de hud_<herói>.png
 const HUD = {
   boss:{x:251, y:70, w:525, h:19},
   rage:{x:400, y:99, w:324, h:24},
   icons:{}, heroes:{}
 };
-['mage', 'knight', 'tank', 'assassin'].forEach(k => { const m = HUD_IMG[k], x = Math.round(clampHud(HERO_X[k] / 100 * 1024 - HUD_W / 2)); HUD.icons[k] = x; HUD.heroes[k] = [x, hudY(k), HUD_W, Math.round(HUD_W * m.h / m.w)]; });
+['mage', 'guerreiro', 'tank', 'cleriga'].forEach(k => { const m = HUD_IMG[k], x = Math.round(clampHud(HERO_X[k] / 100 * 1024 - HUD_W / 2)); HUD.icons[k] = x; HUD.heroes[k] = [x, hudY(k), HUD_W, Math.round(HUD_W * m.h / m.w)]; });
 function clampHud(x){ return Math.max(6, Math.min(1024 - HUD_W - 6, x)); }
 const pctX = x => (x / 1024 * 100) + '%', pctY = y => (y / 1536 * 100) + '%';
 function mkBar(cls, x, y, w, h){
@@ -552,7 +552,7 @@ function buildHud(){
   HERO_ORDER.forEach(k => {
     const d = document.createElement('div'); d.className = 'ult-icon'; d.dataset.hero = k;
     const ix = HUD.icons[k];
-    const iy = HUD.heroes[k][1] + HUD.heroes[k][3] + 3, IS = 30, ox = {mage:80, knight:318, tank:562, assassin:804}[k];
+    const iy = HUD.heroes[k][1] + HUD.heroes[k][3] + 3, IS = 30, ox = {mage:80, guerreiro:318, tank:562, cleriga:804}[k];
     d.style.cssText = `left:${pctX(ix)};top:${pctY(iy)};width:${pctX(IS)};height:${pctY(IS)};background-size:2327% auto;background-position:${ox / 980 * 100}% ${757 / 1492 * 100}%`;
     d.onclick = () => { if (k !== activeGroup || !state.ultReady[k]) return; const c = document.querySelector('#am-list .act-card.ult:not(:disabled)'); if (c) c.click(); else toast('O especial é ativado na vez do seu herói, no menu de habilidades.'); };
     $('#game').appendChild(d); bars['ult_' + k] = d;
@@ -583,8 +583,8 @@ function renderChips(){
 }
 function renderHud(){
   renderChips();
-  const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x3' : '', knight: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', assassin: ''};
-  HERO_ORDER.forEach(k => { const el = bars['st_' + k]; if (!el) return; el.textContent = st[k]; el.hidden = !st[k]; el.classList.toggle('bad', k === 'knight' && b.tired > 0); });
+  const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x3' : '', guerreiro: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', cleriga: ''};
+  HERO_ORDER.forEach(k => { const el = bars['st_' + k]; if (!el) return; el.textContent = st[k]; el.hidden = !st[k]; el.classList.toggle('bad', k === 'guerreiro' && b.tired > 0); });
   A.setAura('boss', state.burn > 0 ? 'orange' : state.prepNext ? 'charge' : (state.rage >= RAGE_MAX || state.hardNext) ? 'rage' : null);
   const mk = bars.marks; if (mk && state.burn > 0) mk.innerHTML = `<img src="${pixIcon('fire')}" alt="Queimando" title="Queimando ${state.burn}">`; else if (mk) mk.innerHTML = state.marks.length ? state.marks.map(e => `<img src="${pixIcon({fire:'fire',water:'drop',air:'wind',earth:'rock'}[e])}" alt="${ELEMENTS[e].name}">`).join('') : '';
   bars.boss.style.width = Math.max(0, state.bossHp / BOSS_MAX_HP * 100) + '%';
@@ -593,7 +593,7 @@ function renderHud(){
     bars[k].mp.style.width = Math.max(0, state.heroes[k].mp / 100 * 100) + '%';
   });
   HERO_ORDER.forEach(k => A.setDead(k, state.heroes[k].hp <= 0));
-  A.setAura('mage', b.bh > 0 ? 'blue' : null); A.setAura('knight', b.bers > 0 ? 'red' : b.tired > 0 ? 'tired' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
+  A.setAura('mage', b.bh > 0 ? 'blue' : null); A.setAura('guerreiro', b.bers > 0 ? 'red' : b.tired > 0 ? 'tired' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
   HERO_ORDER.forEach(k => bars['ult_' + k].classList.toggle('ready', !!state.ultReady[k]));
   bars.rage.querySelectorAll('.rage-seg b').forEach((el, i) => el.classList.toggle('on', i < state.rage));
   bars.rage.classList.toggle('full', state.rage >= RAGE_MAX);
@@ -1002,10 +1002,10 @@ const healTargets = () => HERO_ORDER.map(h => { const hp = state.heroes[h].hp;
   return hp <= 0 ? {hero:h, desc:'Caído', chips:`<span class="tag holy attr">REVIVER ${REVIVE_HP}</span>`}
        : hp < HERO_MAX_HP ? {hero:h, desc:`Vida ${hp}/${HERO_MAX_HP}`, chips:`<span class="tag attr">CURAR +${HEAL_AMOUNT}</span>`}
        : {hero:h, desc:'Vida cheia', block:'VIDA CHEIA'}; });
-function ultUsable(k){ return k !== 'assassin' || healTargets().some(t => !t.block); }
+function ultUsable(k){ return k !== 'cleriga' || healTargets().some(t => !t.block); }
 async function activateUlt(k, sh){
   const b = state.buff; let note = ULT_INFO[k], cleTarget = null;
-  if (k === 'assassin') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
+  if (k === 'cleriga') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
     const list = healTargets(), valid = list.filter(t => !t.block);
     if (k === activeGroup && state.heroes[k].hp > 0) {
       let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}, sh && sh.endsAt); await closePanel();
@@ -1024,7 +1024,7 @@ async function activateUlt(k, sh){
     await onHit(); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', true, true);
     state.ultCd.mage = 1;
   }
-  else if (k === 'knight') { b.bers = 2; b.tired = 0; }
+  else if (k === 'guerreiro') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
     const t = cleTarget; await sleep(2500);   // a luz desce sobre o alvo e só então a vida muda
@@ -1047,7 +1047,7 @@ function routeHit(hero, dmg){
   let to = hero, d = dmg, note = '';
   if (tankUp && b.taunt > 0) { to = 'tank'; d = Math.round(d * 0.5); note = ' (provocado)'; }
   else if (tankUp && hero !== 'tank' && state.guardFor === hero) { to = 'tank'; d = Math.round(d * 0.6); note = ' (protegido)'; }
-  if (to === 'knight') { if (b.bers > 0) { d = Math.round(d * 0.5); note += ' (berserk)'; } else if (b.tired > 0) { d = Math.round(d * 1.5); note += ' (exausto)'; } }
+  if (to === 'guerreiro') { if (b.bers > 0) { d = Math.round(d * 0.5); note += ' (berserk)'; } else if (b.tired > 0) { d = Math.round(d * 1.5); note += ' (exausto)'; } }
   return {to, dmg:d, note};
 }
 
@@ -1069,11 +1069,11 @@ function skillChips(sk, block){
   return h;
 }
 // Menu de ações do herói: o grupo vota numa habilidade (e, se for elemental, depois no elemento).
-const ARTICLE = {mage:'DA', knight:'DO', tank:'DO', assassin:'DA'};
+const ARTICLE = {mage:'DA', guerreiro:'DO', tank:'DO', cleriga:'DA'};
 const SLOT = {   // posição [linha, coluna] de cada habilidade no quadro do herói
-  assassin:{ult:[0,0], holy_atk:[1,0], holy_def:[2,0], atk:[0,1], def:[1,1], dodge:[2,1]},
+  cleriga:{ult:[0,0], holy_atk:[1,0], holy_def:[2,0], atk:[0,1], def:[1,1], dodge:[2,1]},
   mage:{ult:[0,0], elem_atk:[1,0], elem_def:[2,0], mana_atk:[0,1], mana_def:[1,1], dodge:[2,1]},
-  knight:{ult:[0,0], heavy:[1,0], def:[2,0], atk:[0,1], pass:[1,1], dodge:[2,1]},
+  guerreiro:{ult:[0,0], heavy:[1,0], def:[2,0], atk:[0,1], pass:[1,1], dodge:[2,1]},
   tank:{ult:[0,0], super:[1,0], def:[2,0], atk:[0,1], guard:[1,1], dodge:[2,1]}
 };
 async function chooseSkill(k, sh = {}){
@@ -1276,7 +1276,7 @@ async function playRound(){
         continue;
       }
       if (sk.kind === 'atk') {
-        const bers = k === 'knight' && state.buff.bers > 0;
+        const bers = k === 'guerreiro' && state.buff.bers > 0;
         if (ok || bers) {
           dmg = Math.round(HERO_BASE[k] * sk.mult); sub = ok ? 'acertou e atacou!' : 'errou, mas o Berserk atacou!';
           if (sk.elem && el && BOSS.immune.includes(el)) { dmg = 0; sub = `${ELEMENTS[el].name}: o boss é IMUNE!`; }
@@ -1304,7 +1304,7 @@ async function playRound(){
     const col = el ? ELEMENTS[el].color : null;
     showBanner(`${nm}: ${sk ? sk.name : 'sem ação'}${el ? ' · ' + ELEMENTS[el].name : ''}`, sub); await wait(1100);
     if (sk && sk.id === 'guard') { A.play(k, 'guard', {color:'#ff9d3d'}); A.sayRandom(k, 'guard', .6); }
-    if (dmg > 0 || (sk && sk.kind === 'atk' && sk.elem && el && BOSS.immune.includes(el) && (ok || (k === 'knight' && state.buff.bers > 0)))) { await doAttack(k, skAnim(k, sk), col, dmg, skSay(k, sk)); }   // elemental no boss imune: faz o ataque (efeito visível), dano 0
+    if (dmg > 0 || (sk && sk.kind === 'atk' && sk.elem && el && BOSS.immune.includes(el) && (ok || (k === 'guerreiro' && state.buff.bers > 0)))) { await doAttack(k, skAnim(k, sk), col, dmg, skSay(k, sk)); }   // elemental no boss imune: faz o ataque (efeito visível), dano 0
     else if (hurt > 0) { if (defended) { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .5); await wait(250); } await bossCounter(k, hurt, defended); }
     else if (sk && sk.kind === 'dodge') { A.play(k, 'dodge'); A.sayRandom(k, 'dodge', .55); if (!ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8'); }
     else if (sk && sk.kind === 'def') { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .4); }
@@ -1377,7 +1377,7 @@ function shoot(fromX, fromY, toX, toY, color, ms){
     {left:toX+'%', top:toY+'%', opacity:1, transform:'translate(-50%,-50%) scale(1.3)'}
   ], {duration:ms || 620, easing:'ease-in', fill:'forwards'}).finished.then(() => p.remove());
 }
-const RIG_HERO = k => k === 'mage' || k === 'assassin' || k === 'tank' || k === 'knight';   // têm animação própria com projétil/efeito: o dano só entra no impacto
+const RIG_HERO = k => k === 'mage' || k === 'cleriga' || k === 'tank' || k === 'guerreiro';   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
   const pl = A.play(k, an, {color:col}); if (say) A.sayRandom(k, say, .5);
   if (!RIG_HERO(k)) { await wait(an === 'heavy' ? 480 : 300); return heroAttack(k, dmg, col); }
@@ -1414,7 +1414,7 @@ async function bossCounter(hero, dmg, defended){
   renderHud(); await wait(500);
 }
 
-const pickAlive = () => { const l = HERO_ORDER.filter(k => state.heroes[k].hp > 0); return l[Math.floor(Math.random() * l.length)] || 'knight'; };
+const pickAlive = () => { const l = HERO_ORDER.filter(k => state.heroes[k].hp > 0); return l[Math.floor(Math.random() * l.length)] || 'guerreiro'; };
 function endGame(win){
   state.over = true; if (state.tsOv) timeResume(); clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
   if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }

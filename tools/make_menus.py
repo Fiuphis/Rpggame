@@ -9,13 +9,13 @@ W_OUT = 1280
 META = {}
 # nome: (arquivo, título[x0,y0,x1,y1], tipo, tempo, contadores[(x,y)], cartões(cols x, rows y), extras a apagar)
 CFG = {
- 'assassin': dict(f='3dfd042c', title=(235,185,720,285), tipo=(905,212,1088,276), time=(1415,225,1488,270),
+ 'cleriga': dict(f='3dfd042c', title=(235,185,720,285), tipo=(905,212,1088,276), time=(1415,225,1488,270),
     cnt=[(780,360),(1440,360),(780,528),(1442,530),(780,720),(1442,722)],
     cols=[(195,818),(843,1483)], rows=[(320,478),(495,662),(682,850)]),
  'mage': dict(f='f627950f', title=(195,180,650,275), tipo=(862,198,1043,262), time=(1380,205,1455,252),
     cnt=[(763,362),(1424,362),(764,548),(1427,550),(766,762),(1424,764)],
     cols=[(158,802),(822,1462)], rows=[(320,488),(503,705),(720,900)]),
- 'knight': dict(f='6ea52175', title=(210,160,745,255), tipo=(893,178,1058,245), time=(1405,190,1478,238),
+ 'guerreiro': dict(f='6ea52175', title=(210,160,745,255), tipo=(893,178,1058,245), time=(1405,190,1478,238),
     cnt=[(763,337),(1433,337),(763,532),(1431,531),(761,725),(1433,725)],
     cols=[(147,803),(828,1475)], rows=[(297,468),(490,660),(683,848)]),
  'tank': dict(f='478aefaa', title=(235,180,660,270), tipo=(917,195,1083,262), time=(1405,205,1470,255),
@@ -41,7 +41,7 @@ def build(name, c, debug=False):
         for (x,y) in c['cnt']: fill(a, (x-22,y-22,x+22,y+22))
         for b in c.get('extra', []): fill(a, b)
     im = Image.fromarray(a)
-    if name == 'knight':   # "Dano hormal." -> "Dano normal."
+    if name == 'guerreiro':   # "Dano hormal." -> "Dano normal."
         from PIL import ImageFont
         fill(a, (1015,364,1395,392)); im = Image.fromarray(a); d = ImageDraw.Draw(im)
         f = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf', 23)

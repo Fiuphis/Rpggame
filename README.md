@@ -7,7 +7,7 @@ Esta versão usa a arte original `game.png` como camada visual principal e coloc
 - tocar numa classe seleciona: o card dá uma "saltada", fica mais claro e com borda colorida; tocar de novo desfaz a seleção (com outra saltada);
 - a contagem "n/7" da classe escolhida sobe +1 em verde só na sua tela; só conta de verdade ao confirmar (botão "CONFIRMAR: CLASSE" no rodapé, sem botões A/B);
 - classe com 7 jogadores fica escura com "7/7" em vermelho e não pode ser escolhida;
-- internamente as chaves continuam `mage`, `knight`, `tank`, `assassin` (Guerreiro = antigo Cavaleiro, Clériga = antigo Assassino); a arte da batalha ainda é a antiga.
+- internamente as chaves continuam `mage`, `guerreiro`, `tank`, `cleriga` (Guerreiro = antigo Guerreiro, Clériga = antigo Clérigao); a arte da batalha ainda é a antiga.
 
 ## Etapa 6 — Novo combate (regras e barras)
 Rodada: pergunta → cada grupo vota na alternativa → rodada dos heróis (ataque básico, defesa ou esquiva) → resolução herói por herói.
@@ -24,7 +24,7 @@ Rodada: pergunta → cada grupo vota na alternativa → rodada dos heróis (ataq
 - números para ajustar no topo do `app.js`: `BOSS_MAX_HP`, `HERO_MAX_HP`, `ATTACK_DAMAGE`, `DEFEND_REDUCTION`, `RAGE_*`, `DIFFICULTY`.
 
 ## Etapa 5 — Fase de ataque dos heróis
-- depois da pergunta do boss, cada herói tem a vez (Maga → Cavaleiro → Tanque → Assassino), marcada por um anel dourado no chão;
+- depois da pergunta do boss, cada herói tem a vez (Maga → Guerreiro → Tanque → Clérigao), marcada por um anel dourado no chão;
 - no herói do SEU grupo aparece o painel com 3 habilidades (a, b, c) para o grupo votar, com contador por opção e cronômetro de 10s;
 - regras: maioria (metade + 1) decide na hora; se todos votaram, vence a mais votada; empate entre as mais votadas = sorteio; ninguém votou = o herói perde a vez;
 - depois do voto o herói dispara um ataque na cor dele no boss (impacto, tremor e número de dano) e passa para o próximo; no fim o boss ataca de novo;
@@ -48,12 +48,12 @@ Rodada: pergunta → cada grupo vota na alternativa → rodada dos heróis (ataq
 - retratos recortados com segmentação (sem perder partes escuras dos personagens).
 
 ## Etapa 2 — Lobby de grupos (retratos + confirmação)
-- página inicial (`index.html`) sem título, com os 4 retratos (Mago, Cavaleiro, Tanque, Assassino) e a contagem x/7 de cada grupo;
+- página inicial (`index.html`) sem título, com os 4 retratos (Mago, Guerreiro, Tanque, Clérigao) e a contagem x/7 de cada grupo;
 - tocar num card só **seleciona**: borda dourada e fundo do retrato fica branco; o botão "CONFIRMAR" só então entra no jogo;
 - grupo com 7 jogadores aparece "CHEIO" e não pode ser selecionado;
 - o botão "◀ GRUPOS" no jogo libera a vaga e volta ao lobby;
 - moedas, inventário e votos são do grupo; o Mercador é o mesmo para todos.
-- **Modo teste:** botão no rodapé do lobby liga/desliga jogadores simulados nos grupos (Cavaleiro lotado) e votos automáticos no Mercador.
+- **Modo teste:** botão no rodapé do lobby liga/desliga jogadores simulados nos grupos (Guerreiro lotado) e votos automáticos no Mercador.
 - **Limitação:** a contagem usa `localStorage` (só um aparelho). Contar gente de verdade entre celulares precisa de backend (adaptador `LOBBY` em `lobby.js`).
 
 ## Etapa 1 — Mercador
@@ -148,7 +148,7 @@ Contribuição de cada ultimate na vitória (simulação, +pontos de % de vitór
 - 3 ociosos sorteados por personagem (respirar, balançar e um gesto próprio: orbe da Maga, espada do Guerreiro, ombros do Tanque, oração da Clériga; boss: respirar, capa, chama dos olhos/espada).
 - Ações: ataque corpo a corpo, pesado, magia, sagrado, passar a vez, defesa (escudo colorido por tipo), esquiva (com rastro), dano, queda (cinza com caveira), reviver, especial, vitória; boss: ataque, fúria, onda sombria, risada, derrota.
 - Falas em balão pixel-art (sorteadas, ~30-60% das ações) e sons 8-bit sintetizados (botão 🔊 no canto esquerdo; preferência salva).
-- Para trocar por quadros desenhados: `Anim.useSheet('knight','melee',{src:'knight_melee.webp',frames:6,fps:12})` (sprite sheet horizontal com o mesmo enquadramento do `spr_knight.webp`).
+- Para trocar por quadros desenhados: `Anim.useSheet('guerreiro','melee',{src:'guerreiro_melee.webp',frames:6,fps:12})` (sprite sheet horizontal com o mesmo enquadramento do `spr_guerreiro.webp`).
 
 ## v31–v34 — sem áudio, piso reconstruído e protótipo "puppet"
 - Áudio removido por completo.
@@ -217,7 +217,7 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Maga: borda voltou à versão fina (1px por fora). Clériga: removida a linha clara que ficava entre o corpo e o contorno (pixels claros até 6px da beirada viram a cor do contorno).
 
 ## v53
-- Clériga centralizada no círculo da vez (HERO_X.assassin 81%, anel um pouco mais baixo).
+- Clériga centralizada no círculo da vez (HERO_X.cleriga 81%, anel um pouco mais baixo).
 
 ## v54
 - Heróis na mesma linha (pés em y=1098) e espaçamento igual (~247px); anel/feixe/seta seguem HERO_X novo.
@@ -275,7 +275,7 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 - Escala única de todas as poses do Tanque (`SZ = 1.2` em tank.js): corpo ~314px, contra 262–284 dos outros heróis; sombra e ponto de saída da onda acompanham a escala.
 
 ## v68 — Maga e Clériga: tamanho padronizado + variações com efeitos distintos
-- Tamanho: Maga e Clériga com a mesma altura (~225, menores que o Cavaleiro 261 e o Tanque 314). Poses destoantes corrigidas (Maga: castdef/fogo/água/ar/terra ×1,2; Clériga: ult1/ult2/at1/bp3).
+- Tamanho: Maga e Clériga com a mesma altura (~225, menores que o Guerreiro 261 e o Tanque 314). Poses destoantes corrigidas (Maga: castdef/fogo/água/ar/terra ×1,2; Clériga: ult1/ult2/at1/bp3).
 - Maga: projéteis (orbe, cometa, raio, estrela dupla, cristal, redemoinho, cruz) com trajetórias (arco, reto, zigue-zague, duplo) e impactos próprios (raio, cristais, cruz, redemoinho, cometa, estrelas). Elementos: 4 variações cada com efeitos diferentes (3 colunas/chuva/meteoro de fogo; colunas/onda/anéis de água; ciclones duplos/ascendente; espinhos triplos/varredura/chuva de pedras).
 - Clériga: ataque normal 7, sagrado 6 — projéteis (raios, estrela, cruz, sol) em arco/reto/zigue-zague/duplo e impactos novos (small4, holy4 lótus+anéis, holy5 três pilares).
 
@@ -285,14 +285,14 @@ Animações por código removidas de vez. `anim.js` toca sprite sheets desenhado
 ## v70 — Queimadura do fogo
 - Fogo da Maga acertando o boss: dano 1,5x e marca QUEIMANDO por 2 perguntas — no fim de cada pergunta o boss leva 0,25x do ataque normal (`BURN_TURNS`, `BURN_MULT` em app.js). Indicador "QUEIMANDO n" no HUD e brilho laranja no boss; acertar fogo de novo renova a duração.
 
-## v71 — Guerreiro (knight.js)
-Rig novo do Guerreiro com as 3 folhas novas (tools/seg_knight.py → cut_knight.py → knight/*.png, efeitos via cut_knight_fx.py). Tamanho 272 (2º maior). 7 ataques normais, 6 pesados, 7 defesas, 6 esquivas, 5 passar a vez, 5 hurt, 5 vitórias, 4 ativações de Berserk; modo Berserk (poses vermelhas, golpes vermelhos) e modo Exausto. Sacola embaralhada, dano só no impacto, queda em 3 poses. Rochas (knight/fx_rock*) também usadas pelo Tanque (os arquivos antigos não existiam).
+## v71 — Guerreiro (guerreiro.js)
+Rig novo do Guerreiro com as 3 folhas novas (tools/seg_guerreiro.py → cut_guerreiro.py → guerreiro/*.png, efeitos via cut_guerreiro_fx.py). Tamanho 272 (2º maior). 7 ataques normais, 6 pesados, 7 defesas, 6 esquivas, 5 passar a vez, 5 hurt, 5 vitórias, 4 ativações de Berserk; modo Berserk (poses vermelhas, golpes vermelhos) e modo Exausto. Sacola embaralhada, dano só no impacto, queda em 3 poses. Rochas (guerreiro/fx_rock*) também usadas pelo Tanque (os arquivos antigos não existiam).
 
 ## v72
 Guerreiro menor (256) e poses padronizadas (escala por altura nas poses em pé, por área nas de ação); heróis mais afastados (META/HERO_X); barras de vida/mana trocadas pelas da imagem nova (hud_*.png + game_nohud.png, pequenas, sobre cada herói; ícone do especial logo abaixo).
 
 ## v73
-Guerreiro: tamanhos das poses reajustados pela altura visível (incluindo cabelo): fator por pose e por folha em tools/cut_knight.py.
+Guerreiro: tamanhos das poses reajustados pela altura visível (incluindo cabelo): fator por pose e por folha em tools/cut_guerreiro.py.
 
 ## v74
 Efeitos de ataque de todos os heróis suavizados: sprites de efeito desenhados borrados/aditivos/mais translúcidos (fxsoft.js); efeitos embutidos nas poses do Guerreiro e do Tanque suavizados no recorte (tools/fxsoft.py); anéis mais macios.
@@ -316,7 +316,7 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - Painel de pergunta novo (`question_panel.png`): TIPO, ATRIBUTO, enunciado, moedas, tempo e alternativas a) b) c) d) com votos.
 - MAGO → MAGA em todo o jogo. Ataque Super Pesado do Tanque custa 20 de mana (como no quadro). Escolha de alvo (Passar a Vez, Proteção, Luz Sagrada) segue no menu simples antigo.
 
-## v80 — Guerreiro: rolamento/esquiva/dano menores (escala da família ROLL ~0,8x em `tools/cut_knight.py`, ancoragem mantida).
+## v80 — Guerreiro: rolamento/esquiva/dano menores (escala da família ROLL ~0,8x em `tools/cut_guerreiro.py`, ancoragem mantida).
 
 ## v81 — menu menor, marcador de vez só com seta, inventário/mercador escondidos
 - Menu de habilidades a 68% da largura. Marcador de vez: sem retângulo amarelo e sem círculo no chão; só a seta (menor).
@@ -329,7 +329,7 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 
 ## v86 — tamanhos padronizados por herói
 - Alturas (cabeça→pés, escala do jogo): Tanque ~309 > Guerreiro ~250 (SZ 0,9) > Maga ≈ Clériga ~225 (MSZ 0,91 / SZ 0,82).
-- Tabelas `PM` (tank.js, knight.js) e `PS` (mage.js, cleric.js): multiplicador por pose, calculado pela altura da cabeça e pela área do corpo (sem os efeitos) em relação à pose ociosa de referência (`a_i1`, `K2_3`, `idle1`, `at1`).
+- Tabelas `PM` (tank.js, guerreiro.js) e `PS` (mage.js, cleric.js): multiplicador por pose, calculado pela altura da cabeça e pela área do corpo (sem os efeitos) em relação à pose ociosa de referência (`a_i1`, `K2_3`, `idle1`, `at1`).
 
 ## v87 — Boss animado e novas habilidades
 - `boss.js` (BossRig) + `boss/B_1..12.png` (tools/cut_boss.py): idle, Golpe Horizontal (fácil, 18), Golpe Vertical (média, 32), Invocação Demoníaca (difícil, 50), Estocada, Onda Sombria (AoE 3/5/9), Enfurecer, Preparando Habilidade, Teleporte, dano, morte, risada. Dano só entra quando o golpe chega (A.hit('boss')).
@@ -420,7 +420,7 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v175: 16 itens novos no mercador com efeito real (defesa: Escudo de Ferro, Amuleto, Elmo, Bomba de Fumaca; cura: Elixir, Erva; critico/dano: Lente, Tonico, Polvora, Lamina, Bomba de Luz; utilidade: Ampulheta, Moeda da Sorte; raros com brilho dourado: Pena de Fenix, Dado do Destino, Pergaminho Arcano). Tocar num item na loja mostra o que ele faz.
 - v176: mercador agora aguenta 12 aberturas sem compra antes de se irritar e fechar a loja (humor sobe em 4 faixas: simpatico, impaciente, azedo, furioso).
 - v177: economia equilibrada: moedas por rank C1/B2/A3/S5/SS8; pocoes de mana 4/6/10; raros 24/20/22.
-- v178: afinidade de itens: Maga (Ampulheta, Pergaminho, Elixir, Moeda), Guerreiro (Lamina, Tonico, Bomba de Luz, Erva), Tanque (Escudo, Elmo, Amuleto), Assassina (Lente, Dado, Polvora, Fumaca) ganham +50% de efeito.
+- v178: afinidade de itens: Maga (Ampulheta, Pergaminho, Elixir, Moeda), Guerreiro (Lamina, Tonico, Bomba de Luz, Erva), Tanque (Escudo, Elmo, Amuleto), Clérigaa (Lente, Dado, Polvora, Fumaca) ganham +50% de efeito.
 - v179: itens podem ser dados a aliados (pocoes, Escudo, Amuleto, Elmo, Fumaca, Erva, Elixir, Pena de Fenix revive aliado caido); buffs agora sao por heroi e a afinidade vale para quem recebe.
 - v180: itens iguais empilham ate 3 por slot da mochila (numero no canto).
 - v181: errar pergunta rank S ou SS deixa a Onda Sombria 50% mais forte nessa rodada e enche a furia (+1 por heroi que errou).
@@ -451,13 +451,13 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v204: conteudo do papiro (relatorio, escolha de alvo, menus) se ajusta ao tamanho do papiro: modo compacto + reducao proporcional em celulares curtos (360x640); trava de layout passa a testar isso.
 - v205: telas largas/curtas (tablet, celular curto) mantem o jogo no formato de celular com bordas pretas nas laterais e papiro (quadro = min(largura, (altura-140px)/1,5)); papiro com margem clara em volta do conteudo; papiro do celular curto (360x640) passou de 159 para 195px.
 - v206: menu de habilidades nunca mais no papiro; so na interface propria de habilidades (arte).
-- v207: abertura do boss cobre a tela desde o primeiro quadro (antes o jogo e os icones da mochila/mercador apareciam por um instante); afinidades redefinidas por papel: Maga (Ampulheta, Pergaminho Arcano, Elixir, Amuleto, Bomba de Fumaca), Guerreiro (Lente do Cacador, Tonico de Furia, Lamina Afiada, Dado do Destino, Elmo), Tanque (Escudo de Ferro, Elmo, Amuleto, Polvora Negra), Cleriga (Erva Curativa, Elixir, Bomba de Luz, Pena de Fenix, Moeda da Sorte); removidas do cache offline 4 imagens inexistentes; novo `tools/check_assets.py` (rode junto com `tools/layout_check.py`).
+- v207: abertura do boss cobre a tela desde o primeiro quadro (antes o jogo e os icones da mochila/mercador apareciam por um instante); afinidades redefinidas por papel: Maga (Ampulheta, Pergaminho Arcano, Elixir, Amuleto, Bomba de Fumaca), Guerreiro (Lente do Cacador, Tonico de Furia, Lamina Afiada, Dado do Destino, Elmo), Tanque (Escudo de Ferro, Elmo, Amuleto, Polvora Negra), Clériga (Erva Curativa, Elixir, Bomba de Luz, Pena de Fenix, Moeda da Sorte); removidas do cache offline 4 imagens inexistentes; novo `tools/check_assets.py` (rode junto com `tools/layout_check.py`).
 - v208: escolha de alvo (Luz Sagrada, Protecao Especifica, Passar a Vez) refeita na moldura de pixel-art do menu de elementos, com o retrato de cada heroi (`menu_target.png`, `tp_*.png`, `tools/make_target.py`); botoes e caixas simples (GRUPOS, TROCAR DE GRUPO, REINICIAR, ATUALIZAR, EDITOR, SIM/NAO do mercador, aviso, fim de jogo, confirmar reinicio, pular abertura) agora em pixel-art (`ui_box/ui_chip*.png`, `tools/make_ui.py`); corrigido travamento quando a Maga simulada ficava sem mana com a esquiva em recarga; texto de reviver usa o valor real (35).
 - v209: Ataque Sagrado (2x) e Defesa Sagrada (corta 80%) da Claeriga so valem pela fraqueza do boss a sagrado (`BOSS.weak`); contra boss sem essa fraqueza ficam normais. Itens mais raros ficaram mais fortes: Dado (4 ataques de 1x a 3x), Pena de Fenix (100 de HP + 20 aos aliados), Lamina Afiada (agora rara, +10), Pergaminho Arcano (ultimate + 60 HP + 80 mana + 25% de dano); Elixir enfraquecido (30/30). Texto do menu da Claeriga atualizado. Simulacao no motor real do jogo (500 partidas por item): raros +12 a +22 pontos de vitoria, comuns +3 a +11.
 - v211: Revisao de texto centralizado e folga nas bordas: botoes pequenos em moldura pixel-art (Grupos, Atualizar, Editor, Trocar de grupo, Reiniciar, Modo teste, Pular) ganharam mais respiro lateral; titulos e rotulo de tipo dos menus de habilidade nao ultrapassam mais a caixa em nenhum tamanho de tela.
 - v211: texto do papiro (mensagens como "Tempo esgotado") agora proporcional a largura da faixa, nao da janela: antes encostava nas bordas em desktop e telas estreitas. Botoes JOGAR DE NOVO / VOLTAR AO MAPA com mais folga. Chips do seletor de alvo (Luz Sagrada / Protecao Especifica) com texto centralizado na caixa.
 - v212: ataques do boss variados, sorteados a cada pergunta conforme o rank (C sempre normal; SS quase sempre demoníaco/elemental). FISICO normal (0,65x do dano, sem atributo), FISICO DEMONIACO (0,9x, vampirismo 8%) e ELEMENTAL (1,15x, sempre demoniaco, vampirismo 15%). Vampirismo: o boss recupera parte da vida que os herois realmente perdem (defesa, esquiva e itens reduzem o ganho); sobe +2% por heroi que errou, +1% por ponto de furia e +2% na fase 2; o dano demoniaco cresce +1% por ponto de furia; com a furia cheia o ataque e sempre elemental. Onda Sombria suga so 10% do normal. Chip de atributo dos menus mostra NORMAL quando nao e demoniaco. Simulacao no motor real (250 partidas por nivel de acerto do grupo): vitorias 7,6% / 34% / 77% / 95% com 50/60/70/80% de acertos (antes 13,6% / 42% / 75% / 98%); o boss recupera em media 30 a 7 de vida por partida.
-- v213: atraso entre animacao e dano corrigido (especial da Maga e da Cleriga agora sincronizam por tempo fixo, sem esperar a leitura do aviso). Bau: aparece no chao a frente do boss, a tela escurece, o bau brilha em destaque e o tempo para (efeitos de paralisacao); ao se desfazer em po dourado o tempo volta ao normal. Textos: escudo elemental mostra o bonus do elemento (fogo, fraqueza do boss) e nao mais 'bonus sagrado'; revisados avisos de todos os herois; emojis removidos de avisos; menu do escudo com arte propria. Lobby/mapa: botoes e paineis somem suavemente antes das nuvens fecharem (ida e volta); os 4 paineis do mapa so aparecem destacados depois que as nuvens abrem. Chips de Tipo/Atributo refeitos em pixel art (moldura 9-slice azul/roxa/cinza + icones 9x9) nos 5 menus, na pergunta e nos cards.
+- v213: atraso entre animacao e dano corrigido (especial da Maga e da Clériga agora sincronizam por tempo fixo, sem esperar a leitura do aviso). Bau: aparece no chao a frente do boss, a tela escurece, o bau brilha em destaque e o tempo para (efeitos de paralisacao); ao se desfazer em po dourado o tempo volta ao normal. Textos: escudo elemental mostra o bonus do elemento (fogo, fraqueza do boss) e nao mais 'bonus sagrado'; revisados avisos de todos os herois; emojis removidos de avisos; menu do escudo com arte propria. Lobby/mapa: botoes e paineis somem suavemente antes das nuvens fecharem (ida e volta); os 4 paineis do mapa so aparecem destacados depois que as nuvens abrem. Chips de Tipo/Atributo refeitos em pixel art (moldura 9-slice azul/roxa/cinza + icones 9x9) nos 5 menus, na pergunta e nos cards.
 - v214: relogio (ampulheta + tempo) refeito como chip pixel art proprio, com folga fixa entre borda, icone e numero, cobrindo o da arte em todos os menus de habilidades, seletor de alvo/elementos e painel de pergunta. Chips Tipo/Atributo do painel de pergunta refeitos em pixel art (icone + rotulo + valor), e nos menus os dois chips ficam na mesma altura, sem encostar no relogio. Icone do atributo (bolinha/chama/losango) centralizado na mesma altura da palavra. 'SEM EFEITO'/'BOSS IMUNE' do seletor de elementos agora sao chips de codigo identicos nos 3 cards (antes eram da arte, desalinhados e com borda falhando). Molduras compactas 12x8 (ui_cs_*.png, borda de 2 px). Fonte pixel propria so para C/Ç/c/ç (fonts/openc*.woff2, tools/make_openc.py) com abertura bem visivel, usada antes de Pixelify Sans/monospace em todas as telas.
 - v215: especial da Maga: cada dano entra junto do seu estouro do buraco negro (1,5x no 1o e 2,5x no 2o), disparado pelos proprios eventos da animacao (antes o 2o dano esperava o tempo de leitura do aviso). Itens zerados a cada partida contra o boss. Marca de queimadura so com o icone de fogo, abaixo do comeco da barra de furia; rotulo FURIA refeito (pixel, contorno e chama); FASE 2 abaixo do fim da barra (nao cobre mais o 5o segmento). Personagens que caem ficam cinza quando a queda termina (a aura de Provocacao do tanque nao segura mais a cor). Rank da pergunta afastado do texto. Chips vermelhos (SEM EFEITO, BOSS IMUNE, RECARGA, SEM MANA) com o mesmo visual pixel e texto sempre dentro da borda; o da arte e coberto por inteiro. Digitos 0-9 em fonte pixel propria (fonts/opend.woff2) onde o 2 e o 5 da Pixelify Sans lembravam S.
 - v216: seletor de alvo: icone do painel de informacao trocado de seta para 'i' (nao e botao de voltar); 'Passar a Vez' mostra o chip 1,5x em todos os aliados de pe; chips CAIDO/VOCE/1,5x em pixel art e sem ficarem escurecidos pelo card apagado. Itens que dao para escolher heroi: todos os herois aparecem, os que nao podem receber ficam apagados com CAIDO/VIVO. Seletor de elementos: o card de Fogo tambem vira chips (BOSS FRACO + 1,5x QUEIMA / CORTA 55%) iguais aos SEM EFEITO/BOSS IMUNE. Placa FURIA maior, a esquerda da barra (barra mais curta e mais alta), com moldura pixel e texto centralizado dentro; marca de fogo abaixo do comeco da barra e FASE 2 abaixo do fim.
@@ -480,7 +480,8 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v233: Tanque refeito (tank4/): 41 poses de costas da nova arte (idles, ataques, super pesado, escudo, esquiva, dano/queda, vitoria/provocacao), pixelizadas e normalizadas pela cabeca (tools/cut_tank4.py); efeitos novos: ondas de choque, pedras/espinhos/poeira/rachadura/estrela e barreiras de protecao (tools/cut_tank4_fx.py). tank/ antigo mantido ate a aprovacao.
 - v234: Tanque: escala das poses h3 (martelo no alto), i5 e v2 corrigida pelo tamanho da cabeca.
 - v235: Tanque: efeitos de provocacao (aneis de rugido, circulo de runas, coluna de aura, trilha do martelo, fagulhas e rachadura no chao) (E4).
-- v236: Tanque menos pixelizado (grade 1 px, so a borda fina): mais proximo do Cavaleiro e da Cleriga.
+- v236: Tanque menos pixelizado (grade 1 px, so a borda fina): mais proximo do Guerreiro e da Clériga.
 - v237: Maga de volta a grade de 1 px (mesmo nivel do Tanque), mantendo a borda fina.
 - v238: Maga e Tanque na grade de 2 px (mais proximo dos outros herois).
 - v239: removidas as pastas antigas mage3/ e tank/ (efeitos do Tanque movidos para tank4/).
+- v240: ids internos renomeados: knight -> guerreiro, assassin -> cleriga (arquivos, pastas e codigo).

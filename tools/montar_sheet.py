@@ -4,7 +4,7 @@ Os quadros são ordenados pelo nome (ex.: maga_melee_01.png ... _06.png). Saída
 import sys, glob, json, os
 from PIL import Image
 pasta,heroi,anim=sys.argv[1:4]; fps=int(sys.argv[4]) if len(sys.argv)>4 else 12
-META={"mage":(209,284),"knight":(210,262),"tank":(244,264),"assassin":(196,282),"boss":(848,589)}
+META={"mage":(209,284),"guerreiro":(210,262),"tank":(244,264),"cleriga":(196,282),"boss":(848,589)}
 mw,mh=META[heroi]; cw,ch=mw+120,mh+120
 fr=sorted(glob.glob(os.path.join(pasta,'*.png')))
 if not fr: sys.exit('nenhum PNG em '+pasta)

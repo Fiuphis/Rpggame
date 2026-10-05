@@ -5,9 +5,9 @@
 */
 const LOBBY_GROUPS = {
   mage:{name:'MAGA', color:'#4da3ff'},
-  knight:{name:'GUERREIRO', color:'#ff5a4d'},
+  guerreiro:{name:'GUERREIRO', color:'#ff5a4d'},
   tank:{name:'TANQUE', color:'#cfd8ff'},
-  assassin:{name:'CLÉRIGA', color:'#ffd24d'}
+  cleriga:{name:'CLÉRIGA', color:'#ffd24d'}
 };
 const LOBBY_MAX = 7;
 
@@ -23,9 +23,9 @@ const LOBBY = (() => {
   const empty = () => Object.fromEntries(Object.keys(LOBBY_GROUPS).map(g => [g, []]));
   function read(){ try { const d = JSON.parse(localStorage.getItem(KEY)); if (d) return {...empty(), ...d}; } catch {} return empty(); }
   function write(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
-  // ?teste=1 → finge que outros jogadores já entraram (o cavaleiro aparece lotado).
+  // ?teste=1 → finge que outros jogadores já entraram (o guerreiro aparece lotado).
   if (TEST && !localStorage.getItem(SEED)) {
-    const d = read(); const fill = {mage:4, knight:7, tank:5, assassin:2};
+    const d = read(); const fill = {mage:4, guerreiro:7, tank:5, cleriga:2};
     for (const g in fill) for (let i = d[g].filter(x => x !== myId).length; i < fill[g]; i++) d[g].push(`bot-${g}-${i}`);
     write(d); localStorage.setItem(SEED, '1');
   }

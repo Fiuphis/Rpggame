@@ -2,7 +2,7 @@
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
-const GROUPS = {mage:'MAGA', knight:'GUERREIRO', tank:'TANQUE', assassin:'CLÉRIGA'};
+const GROUPS = {mage:'MAGA', guerreiro:'GUERREIRO', tank:'TANQUE', cleriga:'CLÉRIGA'};
 const P = new URLSearchParams(location.search), TEST = LOBBY.testMode;
 const grp = (TEST && GROUPS[P.get('grupo')]) ? P.get('grupo') : LOBBY.myGroup();
 if (!grp) { location.replace('index.html'); return; }

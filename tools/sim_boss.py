@@ -4,12 +4,12 @@ P = dict(boss_hp=700, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20
 DIFF = {1:(18,3), 2:(32,5), 3:(50,9)}
 SK = {
  'mage':[('mana_atk','atk',10,0,1),('elem_atk','atk',20,1,1.3),('mana_def','def',10,0,.35),('elem_def','def',20,1,.55),('dodge','dodge',0,1,0)],
- 'knight':[('atk','atk',0,0,1),('heavy','atk',15,1,1.5),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
+ 'guerreiro':[('atk','atk',0,0,1),('heavy','atk',15,1,1.5),('def','def',0,0,.5),('dodge','dodge',0,1,0)],
  'tank':[('atk','atk',0,0,1),('super','atk',20,3,2),('guard','util',20,2,0),('def','def',0,0,.75),('dodge','dodge',0,1,0)],
- 'assassin':[('atk','atk',0,0,1),('holy_atk','atk',20,1,1.5),('def','def',0,0,.5),('holy_def','def',20,1,.65),('dodge','dodge',0,1,0)],
+ 'cleriga':[('atk','atk',0,0,1),('holy_atk','atk',20,1,1.5),('def','def',0,0,.5),('holy_def','def',20,1,.65),('dodge','dodge',0,1,0)],
 }
-BASE = {'mage':14,'knight':21,'tank':14,'assassin':10}
-ORDER = ['mage','knight','tank','assassin']
+BASE = {'mage':14,'guerreiro':21,'tank':14,'cleriga':10}
+ORDER = ['mage','guerreiro','tank','cleriga']
 def game(acc, rng, policy, p=P):
     hp = {k:100 for k in ORDER}; mp = {k:100 for k in ORDER}; cd = {k:{} for k in ORDER}
     boss = p['boss_hp']; rage = 0; hardNext = False; since = 0; ult = {k:False for k in ORDER}
@@ -44,17 +44,17 @@ def game(acc, rng, policy, p=P):
         for k in alive():
             # ult
             if ult[k] and (policy == 'smart' or rng.random() < .5):
-                if k == 'assassin':
+                if k == 'cleriga':
                     tg = [h for h in ORDER if hp[h] <= 0] or [h for h in ORDER if hp[h] < 70]
                     if tg: t = tg[0]; (hp.__setitem__(t, 35) if hp[t] <= 0 else hp.__setitem__(t, min(100, hp[t] + 25))); ult[k] = False
                 else:
                     ult[k] = False
                     if k == 'mage': boss -= 56; mcd = 1
-                    if k == 'knight': bers = 2; tired = 0
+                    if k == 'guerreiro': bers = 2; tired = 0
                     if k == 'tank': taunt = 2
             av = [s for s in SK[k] if cd[k].get(s[0], 0) <= 0 and mp[k] >= s[2]]
             if policy == 'smart':
-                if ok[k] or (k == 'knight' and bers > 0):
+                if ok[k] or (k == 'guerreiro' and bers > 0):
                     atks = [s for s in av if s[1] == 'atk']; s = max(atks, key=lambda s: s[4] * (1.5 if s[0] == 'elem_atk' else 1)) if atks else None
                     if s is None: s = ([x for x in av if x[1] != 'util'] or [None])[0]
                     # tanque guarda o mais fraco às vezes
@@ -86,7 +86,7 @@ def game(acc, rng, policy, p=P):
             if s[1] == 'none':
                 if not ok[k]: hurt = base
             elif s[1] == 'atk':
-                if ok[k] or (k == 'knight' and bers > 0):
+                if ok[k] or (k == 'guerreiro' and bers > 0):
                     dealt = BASE[k] * s[4]
                     if s[0] == 'elem_atk':
                         if policy == 'smart': dealt *= 1.5; burn = 2
@@ -95,7 +95,7 @@ def game(acc, rng, policy, p=P):
                             if e < .25: dealt *= 1.5; burn = 2
                             elif e < .75: dealt = 0
                     if k == 'tank' and s[0] == 'super': dazed = True
-                    if k == 'knight' and bers > 0: dealt *= 1.5
+                    if k == 'guerreiro' and bers > 0: dealt *= 1.5
                     if k == 'mage' and bh: dealt *= 3
                 if not ok[k]: hurt = base
             elif s[1] == 'def':
@@ -108,7 +108,7 @@ def game(acc, rng, policy, p=P):
             if hurt:
                 t = k; dm = hurt
                 if hp['tank'] > 0 and taunt > 0: t = 'tank'; dm = round(dm * .5)
-                if t == 'knight': dm = round(dm * (.5 if bers > 0 else 1.5 if tired > 0 else 1))
+                if t == 'guerreiro': dm = round(dm * (.5 if bers > 0 else 1.5 if tired > 0 else 1))
                 hit(t, dm)
             if boss <= 0: return True, rnd, falls
             if not alive(): return False, rnd, falls

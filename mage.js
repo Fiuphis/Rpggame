@@ -7,7 +7,7 @@
 const POSES = ['idle1','idle2','idle3','idle4','look','skirt','side','hip','stars','raise','glance','wave','scroll','potion','atk1','atk2','atk3','swingl','swingf','swingr','fire','air','water','earth','castdef','defmana','deffire','defwater','defair','defearth','spin1','spinwide','bh1','bh2','open','reach','kneel','dodge1','dodge2','dodge3','dodge4','dodge5','dodge6','hurt1','hurt2','fall','down'];
 const FXS = ['comet','orbb','fire_fall','water_pillar','air_swirl','earth_spikes','rock','bh_seed','bh_small','bh_spikes','bh_big','bh_big2','bh_smoke','bolt','cross','crystal','whirl','mana_aura','orb_red','orb_orange','orb_blue','star_big','star_small','rocks','fire_burst','water_burst','air_burst','ring_floor','sh_mana','sh_fire','sh_water','sh_air','sh_earth'];
 const T = {x:517, y:340};                                    // alvo no chefe (design 1024x1536)
-const BASE = 258, MSZ = 0.91;                                  // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
+const BASE = 258, MSZ = 0.91;                                  // Maga e Clériga: as duas menores (Guerreiro 261, Tanque 314), mesmo tamanho
 const PS = {fire:.93,air:.92,water:.9,earth:.95,atk2:.95,atk3:.93,spin1:.93,open:.93,defair:.9,dodge2:.93,swingr:.95,defmana:.95,castdef:.95,dodge3:.86,dodge4:.9,defwater:.88,kneel:.92,deffire:.94,spinwide:.9,dodge1:.95,defearth:.95};   // escala de cada pose ja embutida nos PNGs de mage4 (tools/cut_maga4.py)
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
