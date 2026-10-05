@@ -60,7 +60,7 @@ const smoke = [], embers = [], sparks = [], bolts = [];
 const LOW = innerWidth < 380 || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
 const NSM = LOW ? 14 : 26, NEM = LOW ? 50 : 100;
 const newSmoke = (age0) => { const [x, y] = pick(TOWERS); return {x:x + rnd(-14, 14), y:y + rnd(-6, 6), vx:rnd(3, 12), vy:-rnd(12, 26), r:rnd(16, 26), life:rnd(7, 12), age:age0 || 0, a:rnd(.55, 1)}; };
-const newEmber = (age0) => ({x:rnd(110, 840), y:rnd(960, 1290), vx:rnd(-8, 12), vy:-rnd(26, 70), s:rnd(1.4, 3.6), life:rnd(2.6, 6), age:age0 || 0, ph:rnd(0, 6.28), c:pick(['#ffb347', '#ff7a1a', '#ffd86b', '#ff5a2a'])});
+const newEmber = (age0) => { const low = Math.random() < .35; return {x:rnd(60, 880), y:low ? rnd(1320, 1650) : rnd(960, 1290), vx:rnd(-8, 12), vy:-rnd(low ? 14 : 26, low ? 40 : 70), s:rnd(1.4, 3.6), life:rnd(2.6, 6), age:age0 || 0, ph:rnd(0, 6.28), c:pick(['#ffb347', '#ff7a1a', '#ffd86b', '#ff5a2a'])}; };
 for (let i = 0; i < NSM; i++) smoke.push(newSmoke(rnd(0, 10)));
 for (let i = 0; i < NEM; i++) embers.push(newEmber(rnd(0, 5)));
 const ORBS = [[145, 1070, '#9fc8ff'], [735, 1148, '#ffd98a']];
@@ -91,6 +91,17 @@ const frame = now => {
 };
 requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
+
+// ---------- atualizar (versão do jogo) ----------
+{ const V = 'v222', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+  b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
+    try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
+      if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
+      const t = await (await fetch('sw.js', {cache:'reload'})).text(), m = t.match(/const CACHE='([^']+)'/);
+      const fs = [...new Set((t.match(/'\.\/[^']+\.(?:html|js|css|json|webmanifest)'/g) || []).map(s => s.slice(1, -1)))].concat(['./', './sw.js']);
+      await Promise.all(fs.map(f => fetch(f, {cache:'reload'}).catch(() => 0)));
+      b.textContent = 'OK · ' + (m ? m[1].replace('bd1-rpg-', '') : ''); } catch (e) { b.textContent = 'ERRO · TENTE DE NOVO'; }
+    setTimeout(() => location.replace(location.pathname + location.search), 500); }; }
 
 // ---------- mensagens ----------
 const MSGS = [
@@ -126,36 +137,45 @@ $('#prev').onclick = () => go(pi - 1); $('#next').onclick = () => go(pi + 1);
 how.addEventListener('click', e => { if (e.target === how) how.hidden = true; });
 addEventListener('keydown', e => { if (e.key === 'Escape') how.hidden = true; });
 
-// ---------- JOGAR: zoom nos heróis -> a cena vira pixels -> seleção reconstrói ----------
+// ---------- JOGAR: zoom nos heróis -> clarão -> a cena vira cinzas de pixels -> seleção reconstrói ----------
 let busy = false;
 const BS = 14;   // tamanho do "pixel" da dissolução (px da tela)
 $('#play').onclick = async () => {
   if (busy) return; busy = true; try { sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
   const leave = () => { try { sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = 'index.html' + location.search; };
   if (RM) { cv.classList.add('go'); setTimeout(leave, 300); return; }
-  how.hidden = true; cv.classList.add('go'); boost = 3;
-  const ox = .5, oy = .76, S = 2.7, ZMS = 1250;   // câmera entra no grupo de heróis
-  world.style.animation = 'none'; const t0 = performance.now();
-  const an = world.animate([{transform:'scale(1)', transformOrigin:`${ox * 100}% ${oy * 100}%`}, {transform:`scale(${S})`, transformOrigin:`${ox * 100}% ${oy * 100}%`}], {duration:ZMS, easing:'cubic-bezier(.55,.05,.85,.4)', fill:'forwards'});
+  how.hidden = true; cv.classList.add('go'); boost = 3.2;
+  const ox = .5, oy = .755, S = 3, ZMS = 1700, org = `${ox * 100}% ${oy * 100}%`;
+  const vig = document.createElement('div'), fl = document.createElement('div');
+  vig.style.cssText = 'position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse 62% 58% at 50% 75.5%,transparent 25%,rgba(3,0,6,.92) 100%);opacity:0';
+  fl.style.cssText = `position:absolute;left:${ox * 100 - 40}%;top:${oy * 100 - 22}%;width:80%;height:44%;z-index:5;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse at center,rgba(255,236,170,.95) 0,rgba(255,150,60,.55) 32%,transparent 68%);opacity:0`;
+  cv.appendChild(vig); cv.appendChild(fl);
+  world.style.animation = 'none';
+  const an = world.animate([{transform:'scale(1)', transformOrigin:org}, {transform:`scale(${S})`, transformOrigin:org}], {duration:ZMS, easing:'cubic-bezier(.5,.02,.7,.25)', fill:'forwards'});
+  vig.animate([{opacity:0}, {opacity:1}], {duration:ZMS, easing:'ease-in', fill:'forwards'});
+  fl.animate([{opacity:0, transform:'scale(.4)'}, {opacity:.35, transform:'scale(.8)', offset:.55}, {opacity:1, transform:'scale(1.15)'}], {duration:ZMS, easing:'ease-in', fill:'forwards'});
   await an.finished.catch(() => {});
-  // quadro congelado do zoom final -> blocos
+  // quadro congelado do zoom final (com vinheta e clarão) -> blocos
   const r = cv.getBoundingClientRect(), cw = Math.round(r.width), ch = Math.round(r.height), px = $('#px');
   px.width = cw; px.height = ch; px.style.cssText = `display:block;left:${r.left}px;top:${r.top}px;width:${cw}px;height:${ch}px;image-rendering:pixelated`;
   const snap = document.createElement('canvas'); snap.width = cw; snap.height = ch; const sc = snap.getContext('2d');
   const dx = cw * ox - S * cw * ox, dy = ch * oy - S * ch * oy;
   sc.drawImage($('#art'), dx, dy, cw * S, ch * S); sc.drawImage(fx, dx, dy, cw * S, ch * S);
-  world.style.visibility = 'hidden'; $('#ui').style.visibility = 'hidden';
-  const pc = px.getContext('2d'), cols = Math.ceil(cw / BS), rows = Math.ceil(ch / BS), blocks = [], cx = cw * .5, cy = ch * .7, maxd = Math.hypot(cw, ch);
+  let g = sc.createRadialGradient(cw * ox, ch * oy, cw * .12, cw * ox, ch * oy, cw * .85); g.addColorStop(0, 'rgba(3,0,6,0)'); g.addColorStop(1, 'rgba(3,0,6,.92)'); sc.fillStyle = g; sc.fillRect(0, 0, cw, ch);
+  sc.globalCompositeOperation = 'lighter'; g = sc.createRadialGradient(cw * ox, ch * oy, 0, cw * ox, ch * oy, cw * .5); g.addColorStop(0, 'rgba(255,236,170,.95)'); g.addColorStop(.32, 'rgba(255,150,60,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); sc.fillStyle = g; sc.fillRect(0, 0, cw, ch);
+  world.style.visibility = 'hidden'; vig.remove(); fl.remove(); $('#ui').style.visibility = 'hidden';
+  const pc = px.getContext('2d'), cols = Math.ceil(cw / BS), rows = Math.ceil(ch / BS), blocks = [], cx = cw * ox, cy = ch * oy, maxd = Math.hypot(cw, ch) * .75;
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const bx = i * BS, by = j * BS, d = Math.hypot(bx + BS / 2 - cx, by + BS / 2 - cy) / maxd;
-    blocks.push({bx, by, del:d * 1100 + rnd(0, 360), dur:rnd(520, 820), up:rnd(30, 110), sx:rnd(-30, 30), rot:rnd(-1, 1)}); }
+    blocks.push({bx, by, del:d * 1250 + rnd(0, 380), dur:rnd(700, 1150), up:rnd(60, 230), sx:rnd(-120, -20), rot:rnd(-2.4, 2.4), col:pick(['#ffe08a', '#ffb347', '#ff7a1a', '#ff5a2a'])}); }
   const total = Math.max(...blocks.map(b => b.del + b.dur)), T0 = performance.now(); let navigated = false;
   await new Promise(done => { const step = now => { const t = now - T0; pc.clearRect(0, 0, cw, ch);
     blocks.forEach(b => { const p = (t - b.del) / b.dur; if (p >= 1) return; if (p <= 0) { pc.drawImage(snap, b.bx, b.by, BS, BS, b.bx, b.by, BS, BS); return; }
-      const e = p * p, s = 1 - e * .75, x = b.bx + b.sx * e, y = b.by - b.up * e;
-      pc.globalAlpha = (1 - p) * (1 - p); pc.drawImage(snap, b.bx, b.by, BS, BS, x + BS * (1 - s) / 2, y + BS * (1 - s) / 2, BS * s, BS * s);
-      if (p < .35) { pc.globalAlpha = (.35 - p) * 2.2; pc.fillStyle = p < .15 ? '#ffe08a' : '#ff7a1a'; pc.fillRect(x, y, BS * s, BS * s); } });
+      const e = p * p, s = 1 - e * .6, x = b.bx + b.sx * e + Math.sin(p * 7 + b.bx) * 4 * p, y = b.by - b.up * e;
+      pc.save(); pc.translate(x + BS / 2, y + BS / 2); pc.rotate(b.rot * e); pc.globalAlpha = Math.pow(1 - p, 1.4);
+      pc.drawImage(snap, b.bx, b.by, BS, BS, -BS * s / 2, -BS * s / 2, BS * s, BS * s);
+      if (p < .5) { pc.globalAlpha = (.5 - p) * 1.6; pc.fillStyle = p < .18 ? '#fff0b8' : b.col; pc.fillRect(-BS * s / 2, -BS * s / 2, BS * s, BS * s); } pc.restore(); });
     pc.globalAlpha = 1;
-    if (!navigated && t > total - 250) { navigated = true; leave(); }
+    if (!navigated && t > total - 380) { navigated = true; leave(); }
     if (t < total) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
 };
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });

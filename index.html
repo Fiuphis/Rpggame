@@ -13,11 +13,6 @@ if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.ad
 <link rel="stylesheet" href="lobby.css">
 <link rel="stylesheet" href="fog.css">
 <title>Selecione sua classe</title>
-<style>.upd-btn{position:fixed;z-index:45;right:max(10px,env(safe-area-inset-right));top:max(10px,env(safe-area-inset-top));font:bold 11px/1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.06em;color:#ffd978;background:none;border:solid transparent;border-width:9px;border-image:url(ui_chip.png) 6 fill/9px stretch;image-rendering:pixelated;padding:3px 7px;cursor:pointer;transition:opacity .9s ease}
-.upd-btn:disabled{opacity:.6}.upd-btn:active{border-image-source:url(ui_chip_hi.png)}
-.fogin .upd-btn{opacity:0;pointer-events:none}
-body.leaving .upd-btn,body.leaving .ed-link,body.leaving .test-toggle{opacity:0!important;pointer-events:none;transition:opacity .45s ease!important}
-</style>
 </head>
 <body>
 <div class="fog top" id="fogT"></div><div class="fog bot" id="fogB"></div>
@@ -28,8 +23,6 @@ body.leaving .upd-btn,body.leaving .ed-link,body.leaving .test-toggle{opacity:0!
   <div id="msg" class="msg" role="status" aria-live="polite"></div>
   <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
 </div>
-<button id="upd-btn" class="upd-btn" type="button">↻ ATUALIZAR</button>
-<button id="test-toggle" class="test-toggle" type="button"></button>
 <script src="fog.js"></script>
 <script src="lobby.js"></script>
 <script>
@@ -42,7 +35,7 @@ const CARDS=[
   {key:'tank',    cnt:[405,1136,47,28], bg:'#010610', fg:'#f3f5f8'},
   {key:'assassin',cnt:[840,1136,47,28], bg:'#060609', fg:'#faf9f7'}
 ];
-const stage=document.getElementById('stage'), msg=document.getElementById('msg'), confirmBtn=document.getElementById('confirm'), testBtn=document.getElementById('test-toggle');
+const stage=document.getElementById('stage'), msg=document.getElementById('msg'), confirmBtn=document.getElementById('confirm');
 const pc=(v,t)=>(v/t*100)+'%';
 let selected=LOBBY.myGroup();
 const els={};
@@ -88,7 +81,6 @@ function render(){
   confirmBtn.disabled=!selected;
   confirmBtn.style.setProperty('--c',selected?LOBBY_GROUPS[selected].color:'#6e6580');
   confirmBtn.textContent=selected?`CONFIRMAR: ${LOBBY_GROUPS[selected].name}`:'ESCOLHA UMA CLASSE';
-  testBtn.textContent=LOBBY.testMode?'MODO TESTE: LIGADO (toque para desligar)':'MODO TESTE: DESLIGADO';
 }
 confirmBtn.onclick=()=>{
   if(!selected)return;
@@ -96,16 +88,6 @@ confirmBtn.onclick=()=>{
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search})},520);   /* os botões somem antes das nuvens fecharem */
 };
-(()=>{const V='v221',b=document.getElementById('upd-btn');b.textContent='↻ ATUALIZAR · '+V;
-b.onclick=async function(){b.disabled=true;b.textContent='ATUALIZANDO…';
-try{if('serviceWorker' in navigator){const rs=await navigator.serviceWorker.getRegistrations();await Promise.all(rs.map(r=>r.unregister()))}
-if(window.caches){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)))}
-const t=await (await fetch('sw.js',{cache:'reload'})).text();const m=t.match(/const CACHE='([^']+)'/);
-const fs=[...new Set((t.match(/'\.\/[^']+\.(?:html|js|css|json|webmanifest)'/g)||[]).map(s=>s.slice(1,-1)))].concat(['./','./sw.js']);
-await Promise.all(fs.map(f=>fetch(f,{cache:'reload'}).catch(()=>0)));
-b.textContent='OK · '+(m?m[1].replace('bd1-rpg-',''):'')}catch(e){b.textContent='ERRO · TENTE DE NOVO'}
-setTimeout(()=>location.replace(location.pathname+location.search),500)}})();
-testBtn.onclick=()=>{LOBBY.setTest(!LOBBY.testMode);location.href='index.html'};
 render();
 const _st=document.getElementById('stage');
 if(sessionStorage.getItem('bd1_fog_lobby')){sessionStorage.removeItem('bd1_fog_lobby');setTimeout(()=>Fog.open(_st,2600),700)}else Fog.rest(_st);
@@ -114,8 +96,6 @@ addEventListener('resize',()=>{if(!document.documentElement.classList.contains('
 window.addEventListener('storage',render);
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='updated')location.reload()});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}))}
 </script>
-<a class="ed-link" href="editor.html">EDITOR DE PERGUNTAS</a>
-<style>.ed-link{position:fixed;z-index:44;left:50%;transform:translateX(-50%);bottom:max(10px,env(safe-area-inset-bottom));font:bold 11px/1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.08em;color:#e0c98a;background:none;border:solid transparent;border-width:9px;border-image:url(ui_chip.png) 6 fill/9px stretch;image-rendering:pixelated;padding:3px 9px;text-decoration:none}.ed-link:active{border-image-source:url(ui_chip_hi.png)}.fogin .ed-link{opacity:0;pointer-events:none}</style>
 <script src="rebuild.js"></script>
 </body>
 </html>
