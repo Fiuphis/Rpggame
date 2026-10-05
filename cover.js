@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V = 'v225', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V = 'v226', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -136,6 +136,10 @@ $('#hclose').onclick = () => { how.hidden = true; };
 $('#prev').onclick = () => go(pi - 1); $('#next').onclick = () => go(pi + 1);
 how.addEventListener('click', e => { if (e.target === how) how.hidden = true; });
 addEventListener('keydown', e => { if (e.key === 'Escape') how.hidden = true; });
+
+// voltou da seleção de classe (botão voltar): a capa se reconstrói em blocos de brasa, sem zoom
+{ let back = false; try { back = !!sessionStorage.getItem('bd1_cover_back'); sessionStorage.removeItem('bd1_cover_back'); } catch (e) {}
+  if (back && window.PxT && !RM) PxT.reveal(.5, .78); else document.documentElement.classList.remove('rb'); }
 
 // ---------- JOGAR: zoom nos heróis -> clarão -> a cena vira cinzas de pixels -> seleção reconstrói ----------
 let busy = false;

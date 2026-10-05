@@ -7,6 +7,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
+<script>try{if(sessionStorage.getItem('bd1_cover_back'))document.documentElement.classList.add('rb')}catch(e){}</script>
+<style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
 <link rel="stylesheet" href="cover.css">
 <title>Crônicas do Saber</title>
 </head>
@@ -38,6 +40,7 @@
   </div>
 </main>
 <canvas id="px"></canvas>
+<script src="rebuild.js"></script>
 <script src="cover.js"></script>
 </body>
 </html>
