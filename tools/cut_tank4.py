@@ -7,7 +7,7 @@ import numpy as np, json, sys, os, shutil
 from PIL import Image
 from scipy import ndimage as ndi
 SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'tank4'
-K = float(os.environ.get('K', 3)); BODY_H = 262.0
+K = float(os.environ.get('K', 1)); BODY_H = 262.0
 # nome: (arquivo, indice 1-based em ordem de leitura (0 = imagem unica), espelhar)
 POSES = {
  'i1':('T1',1,0),'i2':('T1',2,0),'i3':('T1',3,0),'i4':('T1',4,0),'i5':('T1_p5',0,0),'i6':('T1',6,0),
