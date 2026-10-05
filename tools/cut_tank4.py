@@ -19,7 +19,7 @@ POSES = {
  'v1':('T7',1,0),'v2':('T7_p2',0,0),'v3':('T7',3,0),'v4':('T7',4,0),'v5':('T7',5,0),'v6':('T7',6,1),
 }
 # poses sem cabeca visivel (ou muito deformada): escala por altura relativa ao idle1 (ajuste manual)
-MULT = {'i5':.8,'h3':1.55,'v2':1.15}
+MULT = {'i5':.88,'v2':1.12}
 NOHEAD = {'e3':1.0,'fl':1.0,'dn':1.0}
 
 def components(path):
@@ -65,7 +65,7 @@ def pose_crop(name):
     return c
 
 # diametro da cabeca (px da folha original) por folha: mediana das poses onde a cabeca foi detectada; T4/T6 pelo tamanho medio das poses (relacao cabeca/area das outras folhas); imagens unicas medidas na propria imagem
-HS = {'T1':40.2,'T2':29.1,'T3':29.7,'T4':32.1,'T5':29.9,'T6':28.2,'T7':30.75,'T1_p5':70.9,'T7_p2':86.9,'T3_p3':72.0}
+HS = {'T1':40.2,'T2':29.1,'T3':29.7,'T4':32.1,'T5':29.9,'T6':28.2,'T7':30.75,'T1_p5':70.9,'T7_p2':86.9,'T3_p3':47.4}
 cache = {}; crops = {n: pose_crop(n) for n in POSES}
 HREF = HS['T1']; x = crops['i1']; ys0 = np.where((x.min(2) < 235).any(1))[0]
 F0 = BODY_H / (ys0.max() - ys0.min() + 1)                          # idle1 com a altura do corpo do tanque antigo
