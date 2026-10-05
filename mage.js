@@ -1,14 +1,14 @@
 /* Banco de Dados I — RPG · Maga (v43)
-   Poses de COSTAS recortadas da folha de fundo branco (mage3/*.png), todas na mesma escala e ancoradas no chão pelo mesmo ponto,
-   trocadas com transição suave + movimento (deslocar, inclinar, respirar) e os efeitos originais da folha (mage3/fx_*.png).
+   Poses de COSTAS recortadas da folha de fundo branco (mage4/*.png), todas na mesma escala e ancoradas no chão pelo mesmo ponto,
+   trocadas com transição suave + movimento (deslocar, inclinar, respirar) e os efeitos originais da folha (mage4/fx_*.png).
    Só a Maga usa isto; os outros personagens continuam como imagem/sprite sheets. */
 (() => {
 'use strict';
-const POSES = ['idle1','idle2','idle3','idle4','atk1','atk2','atk3','fire','water','air','earth','castdef','defmana','deffire','defwater','defair','defearth','dodge1','dodge2','dodge3','dodge4','bh1','bh2','spin1','stars','spinwide','swingf','swingl','swingr'];
-const FXS = ['comet','orbb','fire_fall','water_pillar','air_swirl','earth_spikes','rock','bh_small','bh_spikes','bh_big','bh_big2','bolt','cross','crystal','whirl','mana_aura','orb_red','orb_orange','orb_blue','star_big','star_small','rocks'];
+const POSES = ['idle1','idle2','idle3','idle4','look','skirt','side','tired','hip','stars','raise','glance','wave','scroll','potion','atk1','atk2','atk3','swingl','swingf','swingr','fire','air','water','earth','castdef','defmana','deffire','defwater','defair','defearth','spin1','spinwide','bh1','bh2','open','reach','kneel','dodge1','dodge2','dodge3','dodge4','dodge5','dodge6','hurt1','hurt2','fall','down'];
+const FXS = ['comet','orbb','fire_fall','water_pillar','air_swirl','earth_spikes','rock','bh_seed','bh_small','bh_spikes','bh_big','bh_big2','bh_smoke','bolt','cross','crystal','whirl','mana_aura','orb_red','orb_orange','orb_blue','star_big','star_small','rocks','fire_burst','water_burst','air_burst','ring_floor','sh_mana','sh_fire','sh_water','sh_air','sh_earth'];
 const T = {x:517, y:340};                                    // alvo no chefe (design 1024x1536)
 const BASE = 258, MSZ = 0.91;                                  // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
-const PS = {castdef:1.2,fire:1.2,water:1.2,air:1.2,earth:1.2,dodge2:1.09,dodge3:1.12,spin1:1.1,swingl:1.1};   // poses recortadas menores na folha: ajuste p/ ficarem do mesmo tamanho das outras                                            // linha da barra do manto dentro do sprite 209x284
+const PS = {fire:.93,air:.92,water:.9,earth:.95,atk2:.95,atk3:.93,spin1:.93,open:.93,defair:.9,dodge2:.93,swingr:.95,defmana:.95,castdef:.95,dodge3:.86,dodge4:.9,defwater:.88,tired:.92,kneel:.92,deffire:.94,spinwide:.9,dodge1:.95,defearth:.95};   // escala de cada pose ja embutida nos PNGs de mage4 (tools/cut_maga4.py)
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
 const ease = u => u < .5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2, eo = u => 1 - Math.pow(1 - u, 3), ei = u => u * u * u;
@@ -47,8 +47,8 @@ const ACT = {
   air:elemV('air'),
   earth:elemV('earth'),
   ult:[
-    S(5200, [[0,'idle1'],[.06,'atk1',{dx:-4}],[.14,'stars',{dy:-6}],[.22,'spin1',{dy:-10}],[.3,'bh1',{dy:-8,rot:-2}],[.38,'bh2',{dy:-12,rot:2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.16,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
-    S(5200, [[0,'idle1'],[.06,'atk2',{dx:-6}],[.14,'castdef',{dy:-4}],[.22,'swingf',{dx:4}],[.3,'bh1',{dy:-8,rot:2}],[.38,'bh2',{dy:-12,rot:-2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.14,'cheer'],[.22,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
+    S(5200, [[0,'idle1'],[.06,'atk1',{dx:-4}],[.14,'stars',{dy:-6}],[.22,'reach',{dy:-4}],[.3,'bh1',{dy:-8,rot:-2}],[.38,'bh2',{dy:-12,rot:2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.16,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
+    S(5200, [[0,'idle1'],[.06,'atk2',{dx:-6}],[.14,'castdef',{dy:-4}],[.22,'open',{dy:-4}],[.3,'bh1',{dy:-8,rot:2}],[.38,'bh2',{dy:-12,rot:-2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.14,'cheer'],[.22,'charge'],[.3,'bhopen'],[.5,'bhbig'],[.76,'bhend']]),
     S(5400, [[0,'idle1'],[.06,'atk2',{dx:-6}],[.14,'spinwide',{dy:-12,rot:3}],[.22,'swingl',{dx:2}],[.3,'bh1',{dy:-8,rot:-2}],[.38,'bh2',{dy:-12,rot:2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.16,'cheer'],[.28,'charge'],[.3,'bhopen2'],[.5,'bhbig'],[.76,'bhend2']]),
     S(5400, [[0,'idle1'],[.05,'castdef'],[.12,'defmana',{dy:-4}],[.22,'stars',{dy:-8}],[.3,'bh1',{dy:-8,rot:2}],[.38,'bh2',{dy:-12,rot:-2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.05,'charge'],[.14,'charge'],[.24,'cheer'],[.3,'bhopen'],[.5,'bhbig2'],[.76,'bhend']]),
     S(5600, [[0,'idle1'],[.06,'atk1',{dx:-4}],[.14,'swingr',{dx:-2}],[.22,'swingl',{dx:4}],[.3,'bh1',{dy:-8}],[.38,'bh2',{dy:-12,rot:-2}],[.84,'bh2',{dy:-8}],[.95,'idle1']], [[.06,'charge'],[.16,'charge'],[.24,'cheer'],[.3,'bhopen2'],[.5,'bhbig2'],[.76,'bhend2']]),
@@ -56,16 +56,16 @@ const ACT = {
   ],
   dodge:[
     S(1050, [[0,'idle1'],[.08,'dodge1',{dx:-6}],[.26,'dodge2',{dx:-40,dy:-4}],[.46,'dodge3',{dx:-56,dy:2}],[.66,'dodge4',{dx:-30}],[.88,'idle1']], [], {ghost:true}),
-    S(1050, [[0,'idle1'],[.08,'dodge1',{dx:6}],[.26,'dodge2',{dx:40,dy:-4}],[.46,'dodge3',{dx:56,dy:2}],[.66,'dodge4',{dx:30}],[.88,'idle1']], [], {ghost:true, gdir:-1}),
-    S(1100, [[0,'idle1'],[.08,'dodge1',{dx:-4}],[.26,'dodge2',{dx:-24,dy:-14}],[.46,'dodge3',{dx:-44,dy:-8}],[.68,'dodge4',{dx:-22,dy:-2}],[.9,'idle1']], [[.3,'cheer']], {ghost:true}),
+    S(1050, [[0,'idle1'],[.08,'dodge1~',{dx:6}],[.26,'dodge2~',{dx:40,dy:-4}],[.46,'dodge3~',{dx:56,dy:2}],[.66,'dodge4~',{dx:30}],[.88,'idle1']], [], {ghost:true, gdir:-1}),
+    S(1100, [[0,'idle1'],[.08,'dodge1',{dx:-4}],[.26,'dodge5',{dx:-24,dy:-8}],[.5,'dodge6',{dx:-44,dy:-4}],[.7,'dodge4',{dx:-22,dy:-2}],[.9,'idle1']], [[.3,'cheer']], {ghost:true}),
   ],
   hurt:[
-    S(750, [[0,'idle1'],[.1,'idle3',{dx:-10,rot:-7}],[.32,'idle3',{dx:6,rot:-3}],[.55,'idle3',{dx:-2}],[.9,'idle1']], [], {tint:true}),
-    S(800, [[0,'idle1'],[.1,'idle2',{dx:-9,dy:2,rot:-6}],[.34,'idle2',{dx:4,rot:-2}],[.6,'idle4',{dx:-2}],[.9,'idle1']], [], {tint:true}),
-    S(850, [[0,'idle1'],[.12,'dodge3',{dx:-12,rot:-8}],[.34,'dodge3',{dx:4,rot:-3}],[.6,'dodge4',{dx:-2}],[.92,'idle1']], [], {tint:true}),
+    S(750, [[0,'idle1'],[.1,'hurt1',{dx:-10,rot:-4}],[.32,'hurt1',{dx:4,rot:-2}],[.55,'hurt1',{dx:-2}],[.9,'idle1']], [], {tint:true}),
+    S(800, [[0,'idle1'],[.1,'hurt2',{dx:-9,dy:2,rot:-4}],[.34,'hurt2',{dx:4,rot:-1}],[.6,'hurt2',{dx:-2}],[.9,'idle1']], [], {tint:true}),
+    S(850, [[0,'idle1'],[.12,'hurt1',{dx:-12,rot:-6}],[.34,'hurt2',{dx:4,rot:-2}],[.6,'hurt2',{dx:-2}],[.92,'idle1']], [], {tint:true}),
   ],
   victory:[
-    S(2800, [[0,'idle1'],[.1,'atk1'],[.26,'atk3',{dy:-12,rot:2}],[.4,'atk2',{dy:-3}],[.56,'atk3',{dy:-14,rot:-2}],[.8,'atk3',{dy:-4}],[.96,'idle1']], [[.28,'cheer'],[.58,'cheer']]),
+    S(2800, [[0,'idle1'],[.1,'raise'],[.26,'atk3',{dy:-12,rot:2}],[.4,'wave',{dy:-3}],[.56,'raise',{dy:-8,rot:-2}],[.8,'atk3',{dy:-4}],[.96,'idle1']], [[.28,'cheer'],[.58,'cheer']]),
     S(3200, [[0,'idle1'],[.1,'atk1'],[.22,'spin1',{dy:-6}],[.36,'spinwide',{dy:-14,rot:3}],[.5,'stars',{dy:-8}],[.66,'swingr',{dy:-6}],[.8,'atk3',{dy:-10}],[.96,'idle1']], [[.24,'cheer'],[.4,'cheer'],[.56,'cheer'],[.8,'cheer']]),
     S(3000, [[0,'idle1'],[.1,'atk2'],[.28,'stars',{dy:-10}],[.46,'swingl',{dy:-4}],[.64,'spin1',{dy:-8}],[.82,'atk3',{dy:-8}],[.96,'idle1']], [[.3,'cheer'],[.5,'charge'],[.66,'cheer'],[.84,'cheer']]),
   ],
@@ -82,6 +82,13 @@ const IDLES = [   // idles extras ocasionais
   S(3000, [[0,'idle1'],[.2,'idle3',{dx:-6,rot:-1.5}],[.55,'idle3',{dx:-6,rot:-1.5}],[.8,'idle2'],[.96,'idle1']]),
   S(2800, [[0,'idle1'],[.18,'atk1',{dx:-3}],[.4,'stars',{dy:-3}],[.7,'stars'],[.9,'atk1'],[.97,'idle1']], [[.4,'cheer']]),
   S(2600, [[0,'idle1'],[.2,'swingr',{dx:-2}],[.6,'swingr',{dx:2}],[.88,'atk1'],[.97,'idle1']]),
+  S(2800, [[0,'idle1'],[.18,'look'],[.7,'look'],[.9,'glance'],[.97,'idle1']]),
+  S(2800, [[0,'idle1'],[.18,'scroll'],[.75,'scroll'],[.97,'idle1']]),
+  S(2400, [[0,'idle1'],[.2,'hip'],[.75,'hip'],[.97,'idle1']]),
+  S(2600, [[0,'idle1'],[.2,'side'],[.5,'skirt'],[.8,'side'],[.97,'idle1']]),
+  S(2600, [[0,'idle1'],[.2,'potion'],[.75,'potion'],[.97,'idle1']]),
+  S(2400, [[0,'idle1'],[.2,'wave'],[.75,'wave'],[.97,'idle1']]),
+  S(2800, [[0,'idle1'],[.2,'tired'],[.8,'tired'],[.97,'idle1']]),
   S(3200, [[0,'idle1'],[.15,'idle2'],[.35,'idle4',{dx:4}],[.6,'idle3',{dx:-4}],[.85,'idle2'],[.97,'idle1']]),
   S(2900, [[0,'idle1'],[.2,'atk1'],[.38,'spin1',{dy:-4}],[.62,'stars',{dy:-4}],[.85,'atk1'],[.97,'idle1']], [[.3,'charge']]),
 ];
@@ -98,7 +105,7 @@ function make(host){
   const cw = cv.width, ch = cv.height, OX = world.x - Px, OY = world.y - Py;      // canvas da Maga → coordenadas do design
   let M = null; const img = {}, fxm = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
-  fetch('mage3/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `mage3/${n}.png`)); FXS.forEach(n => load('fx_' + n, `mage3/fx_${n}.png`)); }).catch(() => {});
+  fetch('mage4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `mage4/${n}.png`)); FXS.forEach(n => load('fx_' + n, `mage4/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let dead = 0, deadTarget = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 60};
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
@@ -137,19 +144,19 @@ function make(host){
       for (let i = 0; i < 8; i++) { const an = i * .79 + rnd(0, .5); E('fx_star_small', 760, u => { const r = 100 * (1 - eo(u)) + 8, o = orbPos(); return {x:o.x + Math.cos(an + u * 2) * r, y:o.y + Math.sin(an + u * 2) * r * .8, s:.6 * (.5 + u * .5), rot:u * 3, a:Math.sin(Math.PI * u)}; }, {delay:i * 70}); }
     },
     cheer(){ E('fx_star_big', 700, u => ({...orbPos(), s:lerp(.3, 1.2, eo(u)), a:1 - u})); E('fx_cross', 600, u => ({...orbPos(), s:lerp(.3, 1, eo(u)), a:1 - u})); for (let i = 0; i < 4; i++) E('fx_star_small', 800, u => ({x:orbPos().x + Math.cos(i * 1.7) * 50 * eo(u), y:orbPos().y + Math.sin(i * 1.7) * 40 * eo(u) - 20 * u, s:.7 * (1 - u), a:1 - u}), {delay:i * 90}); },
-    fire(k){ const fall = (x, dl, sc = 1) => { E('fx_fire_fall', 760, u => ({x:T.x + x, y:lerp(T.y - 360, T.y + 30, ei(u)), s:lerp(1.1, 1.5, u) * sc, a:u > .94 ? (1 - u) / .06 : 1}), {delay:dl}); E('fx_orb_orange', 700, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 700}); E('fx_orb_red', 600, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 720}); };
+    fire(k){ const fall = (x, dl, sc = 1) => { E('fx_fire_fall', 760, u => ({x:T.x + x, y:lerp(T.y - 360, T.y + 30, ei(u)), s:lerp(1.1, 1.5, u) * sc, a:u > .94 ? (1 - u) / .06 : 1}), {delay:dl}); E('fx_fire_burst', 700, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 700}); E('fx_fire_burst', 600, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 720}); };
       if (k === 'tri') { fall(-90, 0, .8); fall(90, 140, .8); fall(0, 280, 1); shakeT = clk() + 980; }
       else if (k === 'rain') { for (let i = 0; i < 6; i++) fall(-130 + i * 52 + rnd(-10, 10), i * 130, .6); shakeT = clk() + 1300; }
-      else if (k === 'meteor') { E('fx_fire_fall', 1100, u => ({x:T.x, y:lerp(T.y - 520, T.y + 30, ei(u)), s:lerp(1.6, 2.6, u), a:u > .96 ? (1 - u) / .04 : 1})); E('glow', 800, u => ({...T, r:lerp(120, 380, eo(u)), c:'255,120,40', a:.95 * (1 - u)}), {delay:1050}); E('fx_orb_orange', 900, u => ({x:T.x, y:T.y + 20, s:lerp(.6, 2.6, eo(u)), a:1 - u}), {delay:1050}); E('fx_orb_red', 800, u => ({x:T.x, y:T.y + 20, s:lerp(.5, 2.2, eo(u)), a:1 - u}), {delay:1070}); shakeT = clk() + 1050; }
+      else if (k === 'meteor') { E('fx_fire_fall', 1100, u => ({x:T.x, y:lerp(T.y - 520, T.y + 30, ei(u)), s:lerp(1.6, 2.6, u), a:u > .96 ? (1 - u) / .04 : 1})); E('glow', 800, u => ({...T, r:lerp(120, 380, eo(u)), c:'255,120,40', a:.95 * (1 - u)}), {delay:1050}); E('fx_fire_burst', 900, u => ({x:T.x, y:T.y + 20, s:lerp(.6, 2.6, eo(u)), a:1 - u}), {delay:1050}); E('fx_fire_burst', 800, u => ({x:T.x, y:T.y + 20, s:lerp(.5, 2.2, eo(u)), a:1 - u}), {delay:1070}); shakeT = clk() + 1050; }
       else { fall(0, 0); shakeT = clk() + 700; } },
-    water(k){ const pil = (x, dl, sc = 1) => { E('fx_water_pillar', 1100, u => ({x:T.x + x, y:T.y + 90, s:1.4 * sc, sy:lerp(.15, 1, eo(Math.min(1, u * 2.2))), anchorB:1, a:u < .1 ? u / .1 : u > .7 ? (1 - u) / .3 : 1}), {delay:dl}); E('fx_orb_blue', 700, u => ({x:T.x + x, y:T.y - 20, s:lerp(.4, 2, eo(u)) * sc, a:1 - u}), {delay:dl + 350}); };
+    water(k){ const pil = (x, dl, sc = 1) => { E('fx_water_pillar', 1100, u => ({x:T.x + x, y:T.y + 90, s:1.4 * sc, sy:lerp(.15, 1, eo(Math.min(1, u * 2.2))), anchorB:1, a:u < .1 ? u / .1 : u > .7 ? (1 - u) / .3 : 1}), {delay:dl}); E('fx_water_burst', 700, u => ({x:T.x + x, y:T.y - 20, s:lerp(.4, 2, eo(u)) * sc, a:1 - u}), {delay:dl + 350}); };
       if (k === 'tri') { pil(-95, 0, .85); pil(95, 120, .85); pil(0, 240, 1.1); }
       else if (k === 'wave') { for (let i = 0; i < 6; i++) pil(-150 + i * 60, i * 110, .7); }
       else if (k === 'ring') { pil(0, 0, 1.2); E('fx_ring_floor', 1000, u => ({x:T.x, y:T.y + 70, s:lerp(.5, 3.2, eo(u)), a:(1 - u) * .9}), {delay:250}); E('fx_ring_floor', 900, u => ({x:T.x, y:T.y + 70, s:lerp(.4, 2.2, eo(u)), a:(1 - u) * .8}), {delay:450}); E('glow', 800, u => ({...T, r:lerp(80, 300, eo(u)), c:'70,170,255', a:.8 * (1 - u)}), {delay:350}); }
       else pil(0, 0); },
-    air(k){ const sw = (x, y, dl, sc = 1, dir = 1) => { E('fx_air_swirl', 1300, u => ({x:T.x + x, y:T.y + y, s:lerp(.6, 2.1, eo(Math.min(1, u * 1.5))) * sc, rot:u * 7 * dir, a:u < .1 ? u / .1 : u > .65 ? (1 - u) / .35 : 1}), {delay:dl}); E('fx_whirl', 1200, u => ({x:T.x + x, y:T.y + y, s:lerp(.5, 1.6, eo(u)) * sc, rot:-u * 6 * dir, a:(u < .15 ? u / .15 : 1 - seg(u, .15, 1)) * .8}), {delay:dl + 100}); };
+    air(k){ const sw = (x, y, dl, sc = 1, dir = 1) => { E('fx_air_swirl', 1300, u => ({x:T.x + x, y:T.y + y, s:lerp(.6, 2.1, eo(Math.min(1, u * 1.5))) * sc, rot:u * 7 * dir, a:u < .1 ? u / .1 : u > .65 ? (1 - u) / .35 : 1}), {delay:dl}); E('fx_air_burst', 1200, u => ({x:T.x + x, y:T.y + y, s:lerp(.5, 1.6, eo(u)) * sc, rot:-u * 6 * dir, a:(u < .15 ? u / .15 : 1 - seg(u, .15, 1)) * .8}), {delay:dl + 100}); };
       if (k === 'twin') { sw(-90, 10, 0, .75, 1); sw(90, -10, 150, .75, -1); }
-      else if (k === 'rise') { for (let i = 0; i < 3; i++) E('fx_whirl', 1100, u => ({x:T.x, y:lerp(T.y + 120, T.y - 120, eo(u)), s:lerp(.6, 1.7, eo(u)), rot:u * 9 * (i % 2 ? -1 : 1), a:(u < .15 ? u / .15 : 1 - seg(u, .5, 1)) * .85}), {delay:i * 160}); sw(0, 0, 420, 1, 1); }
+      else if (k === 'rise') { for (let i = 0; i < 3; i++) E('fx_air_burst', 1100, u => ({x:T.x, y:lerp(T.y + 120, T.y - 120, eo(u)), s:lerp(.6, 1.7, eo(u)), rot:u * 9 * (i % 2 ? -1 : 1), a:(u < .15 ? u / .15 : 1 - seg(u, .5, 1)) * .85}), {delay:i * 160}); sw(0, 0, 420, 1, 1); }
       else if (k === 'tri') { sw(-110, 20, 0, .6); sw(110, 20, 130, .6, -1); sw(0, -20, 260, .9); }
       else sw(0, 0, 0); },
     earth(k){ const sp = (x, dl, sc = 1, y = 0) => { E('fx_earth_spikes', 1100, u => ({x:T.x + x, y:T.y + 90 + y, s:1.6 * sc, sy:lerp(.1, 1, eo(Math.min(1, u * 2.6))), anchorB:1, a:u > .72 ? (1 - u) / .28 : 1}), {add:false, delay:dl}); };
@@ -175,13 +182,13 @@ function make(host){
     return {pose:A[1], dx:lerp(ta.dx || 0, tb.dx || 0, u), dy:lerp(ta.dy || 0, tb.dy || 0, u), rot:lerp(ta.rot || 0, tb.rot || 0, u), sc:lerp(ta.sc == null ? 1 : ta.sc, tb.sc == null ? 1 : tb.sc, u), since:(pe - A[0]) * a.dur, next:B[1], u};
   }
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1){
-    const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return null;
+    const fl = name.endsWith('~'); if (fl) name = name.slice(0, -1); const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return null;
     const br = Math.sin(tm / 1000 * 2.2), fx = Px + W / 2 + dx, fy = Py + BASE + dy;
-    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(MSZ * (PS[name] || 1) * sc * (1 - .004 * br), MSZ * (PS[name] || 1) * sc * (1 + .010 * br));
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale((fl ? -1 : 1) * MSZ * (PS[name] || 1) * sc * (1 - .004 * br), MSZ * (PS[name] || 1) * sc * (1 + .010 * br));
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
-    if (m.orb) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (m.orb[0] - m.cx) * MSZ * (PS[name] || 1), oy = (m.orb[1] - m.gy) * MSZ * (PS[name] || 1); return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
+    if (m.orb) { const k = Math.cos(rot * Math.PI / 180), s = Math.sin(rot * Math.PI / 180), ox = (fl ? -1 : 1) * (m.orb[0] - m.cx) * MSZ * (PS[name] || 1), oy = (m.orb[1] - m.gy) * MSZ * (PS[name] || 1); return {x:OX + fx + ox * k - oy * s, y:OY + fy + ox * s + oy * k}; }
     return null;
   }
   function frame(){
@@ -199,13 +206,14 @@ function make(host){
       let t = tm % IDLE_CYCLE.reduce((s, b) => s + b[1], 0), n = 'idle1'; for (const [nm, d] of IDLE_CYCLE) { if (t < d) { n = nm; break; } t -= d; }
       st = {pose:n, dx:0, dy:0, rot:0, sc:1, since:t};
     }
+    if (deadTarget || dead > .02) st = {pose:dead < .5 ? 'fall' : 'down', dx:0, dy:0, rot:0, sc:1, since:0};
     // transição suave entre quadros (cross-fade curto)
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:cur ? lastT.dx : 0, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = (cur ? 90 : 240); }
     lastT = st;
     const f = clamp((now - cur_t) / fade);
     dead += (deadTarget - dead) * .1;
     c.clearRect(0, 0, cw, ch); c.save(); c.translate(Px - host.P, Py - host.P); host.shadow(c); c.restore(); c.imageSmoothingEnabled = false;
-    const dRot = -dead * 82, dDy = dead * 6, dAl = 1 - dead * .25;
+    const dRot = 0, dDy = 0, dAl = 1;
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .6 : 0;
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI); const gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc || 1); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc || 1); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc);
