@@ -203,7 +203,7 @@ function make(host){
     shield(k){ const f = feet(), gold = /^g/.test(k || ''), cc = gold ? GOLD : BLUE, wide = /5|4|7/.test(k || '');
       E('glow', 1700, u => ({x:f.x, y:f.y - 130, r:wide ? 200 : 160, c:cc, a:.45 * Math.sin(Math.PI * u)}), {back:true});
       if (gold) { E('fx_rn2', 1500, u => ({x:f.x, y:f.y - 4, s:lerp(.25, wide ? .5 : .42, eo(u)), a:.7 * Math.sin(Math.PI * u)})); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
-      else { E('fx_dome', 1600, u => ({x:f.x, y:f.y + 6, s:lerp(.34, wide ? .52 : .45, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true}); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
+      else { E('fx_dome', 1600, u => ({x:f.x, y:f.y + 6, s:lerp(.8, wide ? 1.25 : 1.12, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true, back:true}); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
       E('ring', 1500, u => ({x:f.x, y:f.y - 6, r:lerp(50, wide ? 140 : 115, eo(u)), c:cc, a:.7 * Math.sin(Math.PI * u)}));
       if (/2|4|6/.test(k || '')) E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:gold ? '255,240,200' : ICE, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
       for (let i = 0; i < 4; i++) { const an = i * 1.3; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:15, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
