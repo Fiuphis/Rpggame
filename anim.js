@@ -105,7 +105,7 @@ function scheduleIdle(w, delay){
     h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, rnd(1500, 4000));
   }, delay);
 }
-const DEATH_MS = {mage:800, guerreiro:1100, tank:900, cleriga:900};   // duracao da queda: o cinza so entra quando ela termina
+const DEATH_MS = {mage:800, guerreiro:1100, tank:900, cleriga:1300};   // duracao da queda: o cinza so entra quando ela termina
 function grayLater(h, dead){ clearTimeout(h.grayT); if (!dead) { h.cv.classList.remove('dead'); return; } h.grayT = setTimeout(() => { if (h.dead) h.cv.classList.add('dead'); }, DEATH_MS[h.who] || 900); }
 function setDead(w, dead){
   const h = H[w]; if (!h || h.dead === dead) return; h.dead = dead; if (h.rig) { grayLater(h, dead); h.rig.setDead(dead); h.token++; h.cur = null; if (!dead) scheduleIdle(w, 1500); return; } h.cv.classList.toggle('dead', dead);
