@@ -113,34 +113,42 @@ function make(host){
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false});
   const orbPos = () => ({...orbW});
   const dir = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
-  function shot(name, size, style = '', ko = null){                    // projétil de luz: halo, rastro suave e fagulhas. estilos: arco (padrão), flat (reto e rápido), zig (zigue-zague), twin (dois)
+  function shot(name, size, style = '', ko = null){                    // projétil de mana: núcleo de luz, camadas translúcidas giratórias, rastro que se desfaz e fagulhas em espiral. estilos: arco (padrão), flat (reto e rápido), zig (zigue-zague), twin (dois)
     if (style === 'twin' && ko == null) { shot(name, size * .85, '', -38); shot(name, size * .85, '', 38); return; }
     const a = orbPos(), b = T, dist = Math.hypot(b.x - a.x, b.y - a.y), flat = style === 'flat', zig = style === 'zig', d = (flat ? 380 : zig ? 620 : 560) + dist * (flat ? .35 : .55), ang = dir(a, b), col = GLOW[name] || '120,180,255', k = ko != null ? ko : rnd(-1, 1) * 26, lift = flat ? 6 : 46;
     const path = u => { const e = Math.pow(u, flat ? 1.2 : 1.8), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + k * w + Math.sin(u * 11) * 6 * w + (zig ? Math.sin(u * 22) * 46 * w : 0), y:lerp(a.y, b.y, e) - w * lift}; };
-    const fade = u => u < .1 ? u / .1 : u > .94 ? (1 - u) / .06 : 1;
-    E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:(70 + 22 * Math.sin(u * 28)) * size * (.6 + .6 * u), c:col, a:.85 * fade(u)}; });
-    E('fx_' + name, d, u => { const p = path(u), q = path(Math.min(1, u + .03)); return {x:p.x, y:p.y, s:size * (name === 'orbb' || name === 'comet' ? 1.5 : 1.0) * (.55 + .55 * Math.sin(Math.min(1, u * 1.3) * 1.57)), rot:name === 'comet' ? Math.atan2(q.y - p.y, q.x - p.x) + 1.57 : name === 'orb_red' ? Math.atan2(q.y - p.y, q.x - p.x) + Math.PI + .93 : name === 'bolt' ? Math.atan2(q.y - p.y, q.x - p.x) : name === 'whirl' ? u * 14 : name === 'star_big' ? u * 6 : Math.sin(u * 6) * .35, a:fade(u) * .95}; });
-    for (let i = 1; i <= 11; i++) { const ut = i / 12, p = path(ut); E('glow', 520, v => ({x:p.x + Math.sin(i * 3) * 6 * v, y:p.y - 12 * v, r:(54 * size) * (1 - v * .6), c:col, a:.5 * (1 - v)}), {delay:ut * d}); }
-    for (let i = 0; i < 9; i++) { const ut = (i + .5) / 9 * .95, p = path(ut), ox = rnd(-18, 18), oy = rnd(-18, 18); E('fx_star_small', 600, v => ({x:p.x + ox * v, y:p.y + oy * v - 16 * v, s:.55 * (1 - v), rot:v * 2, a:1 - v}), {delay:ut * d}); }
+    const fade = u => u < .1 ? u / .1 : u > .94 ? (1 - u) / .06 : 1, grow = u => .55 + .55 * Math.sin(Math.min(1, u * 1.3) * 1.57);
+    const hd = u => { const p = path(u), q = path(Math.min(1, u + .03)); return Math.atan2(q.y - p.y, q.x - p.x); };
+    const pulse = u => 1 + .14 * Math.sin(u * 40);
+    E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:(78 + 24 * Math.sin(u * 28)) * size * grow(u), c:col, a:.62 * fade(u)}; });
+    E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:26 * size * grow(u) * pulse(u), c:'255,255,255', a:.55 * fade(u)}; });
+    const sprite = name !== 'orbb' && name !== 'orb_red';                    // orbb (esfera de mana) é desenhada só com luz e símbolos girando, sem bloco de imagem
+    const rotOf = (n, u) => n === 'comet' ? hd(u) + 1.57 : n === 'bolt' ? hd(u) : n === 'orb_red' ? hd(u) + Math.PI + .93 : n === 'whirl' ? u * 14 : n === 'star_big' ? u * 6 : Math.sin(u * 6) * .35;
+    if (sprite) for (let i = 0; i < 3; i++) { const lag = i * .035; E('fx_' + name, d, u => { const uu = Math.max(0, u - lag), p = path(uu); return {x:p.x, y:p.y, s:size * (name === 'comet' ? 1.5 : 1.0) * grow(uu) * (1 - i * .12) * pulse(u), rot:rotOf(name, uu), a:fade(u) * (.62 - i * .2)}; }); }
+    else if (name === 'orbb') { E('fx_cross', d, u => { const p = path(u); return {x:p.x, y:p.y, s:.34 * size * grow(u) * pulse(u), rot:u * 16, a:fade(u) * .6}; }); E('fx_star_big', d, u => { const p = path(u); return {x:p.x, y:p.y, s:.3 * size * grow(u), rot:-u * 11, a:fade(u) * .5}; }); E('fx_star_small', d, u => { const p = path(u); return {x:p.x, y:p.y, s:1.1 * size * grow(u), rot:u * 9, a:fade(u)}; }); }
+    else { E('fx_orb_red', d, u => { const p = path(u); return {x:p.x, y:p.y, s:size * grow(u) * pulse(u), rot:rotOf('orb_red', u), a:fade(u) * .72}; }); E('fx_orb_red', d, u => { const uu = Math.max(0, u - .05), p = path(uu); return {x:p.x, y:p.y, s:size * grow(uu) * .8, rot:rotOf('orb_red', uu), a:fade(u) * .35}; }); }
+    for (let i = 1; i <= 16; i++) { const ut = i / 17, p = path(ut); E('glow', 640, v => ({x:p.x + Math.sin(i * 3) * 8 * v, y:p.y - 16 * v, r:(48 * size) * (1 - v * .65), c:col, a:.32 * (1 - v)}), {delay:ut * d}); }
+    for (let i = 0; i < 22; i++) { const ut = (i + .5) / 22 * .95, p = path(ut), ph = i * 1.9, rr = rnd(10, 26); E('fx_star_small', 760, v => ({x:p.x + Math.cos(ph + v * 5) * rr * (.4 + v), y:p.y + Math.sin(ph + v * 5) * rr * (.4 + v) - 18 * v, s:.5 * (1 - v) * (.7 + .5 * Math.sin(v * 24)), rot:v * 3, a:(1 - v) * .9}), {delay:ut * d}); }
   }
+  function mist(p, n, col){ for (let i = 0; i < n; i++) { const an = i / n * 6.28 + rnd(0, .4), r = rnd(50, 130), dl = rnd(0, 120); E('fx_star_small', 800, u => ({x:p.x + Math.cos(an) * r * eo(u), y:p.y + Math.sin(an) * r * .7 * eo(u) - 24 * u, s:.8 * (1 - u * .6) * (.7 + .5 * Math.sin(u * 22)), rot:u * 4, a:1 - u}), {delay:dl}); } E('glow', 700, u => ({...p, r:lerp(40, 150, eo(u)), c:col, a:.5 * (1 - u)})); }
   function hit(kind){
     const bl = (r, c, a, dl = 0, d = 650) => E('glow', d, u => ({...T, r:r * (.4 + eo(u) * .9), c, a:a * (1 - u) * (u < .08 ? u / .08 : 1)}), {delay:dl});
-    if (kind === 'small') { bl(120, '140,190,255', .9); E('fx_star_big', 560, u => ({...T, s:lerp(.4, .95, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .8})); }
+    if (kind === 'small') { bl(120, '140,190,255', .9); E('fx_star_big', 560, u => ({...T, s:lerp(.4, .95, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .55, rot:u * 3})); mist(T, 12, '140,190,255'); }
     else if (kind === 'bolt') { bl(150, '255,240,120', .95, 0, 700); bl(90, '255,255,255', .9, 0, 380); for (let i = 0; i < 4; i++) E('fx_bolt', 360, u => ({x:T.x + (i - 1.5) * 26, y:T.y - 10 + (i % 2) * 18, s:lerp(.6, 1.5, eo(u)), rot:-.9 + i * .6, a:1 - u}), {delay:i * 70}); flashT = clk(); }
     else if (kind === 'crystal') { bl(160, '150,230,255', .95, 0, 800); for (let i = 0; i < 5; i++) E('fx_crystal', 700, u => ({x:T.x + (i - 2) * 36, y:T.y + 30 - 20 * eo(u) + Math.abs(i - 2) * 8, s:lerp(.3, 1.2 - Math.abs(i - 2) * .12, eo(Math.min(1, u * 2))), rot:(i - 2) * .22, a:1 - seg(u, .5, 1)}), {delay:i * 50}); }
     else if (kind === 'cross') { bl(170, '255,230,160', .95, 0, 800); bl(100, '255,255,255', .85, 0, 420); E('fx_cross', 720, u => ({...T, s:lerp(.4, 1.7, eo(u)), a:(1 - u) * .95})); E('fx_ring_floor', 800, u => ({x:T.x, y:T.y + 60, s:lerp(.5, 2.4, eo(u)), a:(1 - u) * .9})); }
     else if (kind === 'whirl') { bl(150, '150,235,210', .9, 0, 800); E('fx_whirl', 800, u => ({...T, s:lerp(.4, 1.5, eo(u)), rot:u * 8, a:(1 - seg(u, .3, 1)) * .95})); E('fx_whirl', 700, u => ({...T, s:lerp(.3, 1.1, eo(u)), rot:-u * 6, a:(1 - seg(u, .3, 1)) * .8}), {delay:100}); }
     else if (kind === 'comet') { bl(170, '170,140,255', .95, 0, 800); E('fx_comet', 520, u => ({x:T.x - 60 + 60 * u, y:lerp(T.y - 340, T.y, u * u), s:1.1, rot:.2, a:u > .93 ? (1 - u) / .07 : 1})); E('fx_star_big', 560, u => ({...T, s:lerp(.4, 1.4, eo(u)), a:1 - u}), {delay:500}); shakeT = clk() + 480; }
     else if (kind === 'star') { bl(160, '255,225,170', .95, 0, 800); E('fx_star_big', 700, u => ({...T, s:lerp(.3, 1.6, eo(u)), rot:u * 2, a:1 - u})); E('fx_star_big', 600, u => ({...T, s:lerp(.2, 1.1, eo(u)), rot:-u * 3, a:1 - u}), {delay:120}); for (let i = 0; i < 8; i++) { const an = i * .785; E('fx_star_small', 700, u => ({x:T.x + Math.cos(an) * 120 * eo(u), y:T.y + Math.sin(an) * 90 * eo(u), s:.7 * (1 - u * .5), a:1 - u}), {delay:60}); } }
-    else if (kind === 'mana') { bl(190, '120,180,255', 1, 0, 800); bl(120, '255,255,255', .8, 0, 450); E('fx_star_big', 700, u => ({...T, s:lerp(.4, 1.5, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .8})); E('fx_orb_blue', 650, u => ({...T, s:lerp(.5, 1.5, eo(u)), a:(1 - u) * .8})); E('fx_cross', 520, u => ({...T, s:lerp(.4, 1.3, eo(u)), a:(1 - u) * .8})); }
+    else if (kind === 'mana') { bl(170, '120,180,255', .8, 0, 900); bl(100, '255,255,255', .6, 0, 450); E('fx_ring_floor', 900, u => ({x:T.x, y:T.y + 50, s:lerp(.3, 2.2, eo(u)), a:(1 - u) * .55})); E('fx_star_big', 800, u => ({...T, s:lerp(.3, 1.3, eo(u)), rot:u * 2.5, a:(u < .1 ? u / .1 : 1 - seg(u, .1, 1)) * .5})); E('fx_orb_blue', 800, u => ({...T, s:lerp(.4, 1.5, eo(u)), rot:u * 4, a:(1 - u) * .45})); E('fx_cross', 700, u => ({...T, s:lerp(.3, 1.2, eo(u)), rot:-u * 2, a:(1 - u) * .5})); mist(T, 18, '150,200,255'); }
     else { bl(280, '170,140,255', 1, 0, 1000); bl(160, '255,255,255', .9, 0, 520); bl(220, '120,180,255', .7, 120, 900); E('fx_star_big', 900, u => ({...T, s:lerp(.5, 2.1, eo(u)), a:(u < .08 ? u / .08 : 1 - seg(u, .08, 1)) * .85})); E('fx_mana_aura', 800, u => ({...T, s:lerp(.4, 2, eo(u)), a:(1 - u) * .7})); E('fx_cross', 650, u => ({...T, s:lerp(.4, 1.9, eo(u)), a:(1 - u) * .8})); E('fx_crystal', 550, u => ({x:T.x, y:T.y - 20, s:lerp(.5, 1.7, eo(u)), a:(1 - u) * .8}), {delay:80}); shakeT = clk(); }
   }
   const EV = {
     charge(){
       chargeT = clk(); const col = (cur && cur.a.col) || '120,180,255';
       E('glow', 1000, u => ({...orbPos(), r:lerp(30, 120, eo(u)), c:col, a:.9 * Math.sin(Math.PI * Math.min(1, u * 1.15))}));
-      E('fx_mana_aura', 1100, u => ({x:world.x + W / 2, y:world.y + BASE - 4, s:lerp(.6, .85, u), sy:.3, a:.5 * Math.sin(Math.PI * u)}));
-      for (let i = 0; i < 8; i++) { const an = i * .79 + rnd(0, .5); E('fx_star_small', 760, u => { const r = 100 * (1 - eo(u)) + 8, o = orbPos(); return {x:o.x + Math.cos(an + u * 2) * r, y:o.y + Math.sin(an + u * 2) * r * .8, s:.6 * (.5 + u * .5), rot:u * 3, a:Math.sin(Math.PI * u)}; }, {delay:i * 70}); }
+      E('fx_mana_aura', 1100, u => ({x:world.x + W / 2, y:world.y + BASE - 4, s:lerp(.6, .9, u), sy:.4, a:.6 * Math.sin(Math.PI * u)})); E('fx_ring_floor', 1100, u => ({x:world.x + W / 2, y:world.y + BASE - 2, s:lerp(.4, .85, eo(u)), a:.5 * Math.sin(Math.PI * u)}));
+      for (let i = 0; i < 14; i++) { const an = i * .79 + rnd(0, .5); E('fx_star_small', 900, u => { const r = 100 * (1 - eo(u)) + 8, o = orbPos(); return {x:o.x + Math.cos(an + u * 2) * r, y:o.y + Math.sin(an + u * 2) * r * .8, s:.6 * (.5 + u * .5), rot:u * 3, a:Math.sin(Math.PI * u)}; }, {delay:i * 55}); }
     },
     cheer(){ E('fx_star_big', 700, u => ({...orbPos(), s:lerp(.3, 1.2, eo(u)), a:1 - u})); E('fx_cross', 600, u => ({...orbPos(), s:lerp(.3, 1, eo(u)), a:1 - u})); for (let i = 0; i < 4; i++) E('fx_star_small', 800, u => ({x:orbPos().x + Math.cos(i * 1.7) * 50 * eo(u), y:orbPos().y + Math.sin(i * 1.7) * 40 * eo(u) - 20 * u, s:.7 * (1 - u), a:1 - u}), {delay:i * 90}); },
     fire(k){ const fall = (x, dl, sc = 1) => { E('fx_fire_fall', 760, u => ({x:T.x + x, y:lerp(T.y - 360, T.y + 30, ei(u)), s:lerp(1.1, 1.5, u) * sc, a:u > .94 ? (1 - u) / .06 : 1}), {delay:dl}); E('fx_fire_burst', 700, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 700}); E('fx_fire_burst', 600, u => ({x:T.x + x, y:T.y + 20, s:lerp(.4, 1.5, eo(u)) * sc, a:1 - u}), {delay:dl + 720}); };
@@ -172,6 +180,16 @@ function make(host){
   };
   const HITD = {fire:560, water:320, air:380, earth:260}, HITX = {tri:260, rain:600, meteor:480, wave:420, ring:80, twin:150, rise:420, sweep:340};   // atraso até o efeito elemental acertar o boss
   function runEv(e){ if (typeof e === 'function') return e(); const [k, a, b] = e.split(':'); const [,, , st] = e.split(':'); if (k === 'shot') shot(a, +b, st); else if (k === 'hit') { hit(a); fireHit(); } else if (EV[k]) { EV[k](a); if (HITD[k] != null) setTimeout(fireHit, HITD[k] + (HITX[a] || 0)); } }
+
+  // ---- mana ambiente: fagulhas ao redor do corpo, brilho no cajado e carga de mana enquanto ela espera (tempo de leitura da pergunta)
+  let ambT = 0, ambN = 0, pulseT = 0;
+  function ambient(now){
+    if (dead > .2 || !M || now - ambT < 95) return; ambT = now; ambN++; const idle = !cur, bx = world.x + W / 2, by = world.y + BASE, o = orbPos(), col = (cur && cur.a.col) || '120,170,255';
+    { const ph = rnd(0, 6.28), x0 = bx + rnd(-58, 58), y0 = by - rnd(10, 150); E('fx_star_small', rnd(1300, 1900), u => ({x:x0 + Math.sin(u * 6 + ph) * 12, y:y0 - u * 80, s:.55 * (.5 + .5 * Math.sin(u * 18 + ph)) * (1 - u * .4), rot:u * 3, a:Math.sin(Math.PI * u) * .85})); }
+    if (ambN % 2 === 0 && orbVis > .3) { const ox = rnd(-14, 14), oy = rnd(-14, 14); E('fx_star_small', 650, u => ({x:o.x + ox * u, y:o.y + oy * u - 10 * u, s:.7 * (1 - u) * (.6 + .6 * Math.sin(u * 26)), rot:u * 4, a:1 - u})); }
+    if (idle && orbVis > .3) { const an = rnd(0, 6.28), r0 = rnd(80, 130); E('fx_star_small', 1000, u => { const r = r0 * (1 - eo(u)) + 6; return {x:o.x + Math.cos(an + u * 4) * r, y:o.y + Math.sin(an + u * 4) * r * .8, s:.55 * (.5 + u * .5), rot:u * 5, a:Math.sin(Math.PI * Math.min(1, u * 1.05))}; }); }
+    if (idle && now - pulseT > 3200) { pulseT = now; E('glow', 2200, u => ({...orbPos(), r:lerp(24, 100, Math.sin(Math.PI * u * .5)), c:col, a:.7 * Math.sin(Math.PI * u)})); E('fx_mana_aura', 2400, u => ({x:bx, y:by - 4, s:lerp(.55, .8, u), sy:.4, a:.5 * Math.sin(Math.PI * u)})); E('fx_ring_floor', 2600, u => ({x:bx, y:by - 2, s:lerp(.45, .65, u), a:.32 * Math.sin(Math.PI * u)})); }
+  }
 
   // ---- corpo
   function poseAt(a, pe){                                              // pose + transformações no instante pe
@@ -219,7 +237,7 @@ function make(host){
     const o = drawPose(st.pose, st.dx, st.dy + dDy, st.rot + dRot, (prev && f < 1 ? f : 1) * dAl, tm, tint, st.sc || 1);
     if (o) orbW = o; orbVis += ((o ? 1 : 0) - orbVis) * .18;
     // ---- efeitos (camada da frente, coordenadas do design)
-    fc.clearRect(0, 0, front.width, front.height);
+    fc.clearRect(0, 0, front.width, front.height); ambient(now);
     if (orbVis > .02 && dead < .3) { const cb = Math.max(0, 1 - (now - chargeT) / 1100), col = (cur && cur.a.col) || '120,180,255', pulse = .5 + .5 * Math.sin(tm / 330);
       glow(fc, orbW.x, orbW.y, (30 + 7 * pulse + 40 * cb) * (cur ? 1.15 : 1), col, orbVis * (.42 + .2 * pulse + .35 * cb)); }
     fxl = fxl.filter(e => {

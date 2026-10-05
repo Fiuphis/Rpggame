@@ -476,3 +476,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v229: Maga refeita com as novas poses e efeitos (mage4/): 48 poses na escala correta (ajuste de cabeca/corpo por pose), hurt/queda/chao proprios, esquiva espelhada, idles novos e efeitos de fogo/agua/ar/terra/Buraco Negro das novas folhas. mage3 mantida ate a aprovacao.
 - v230: Maga com borda fina azul-marinho (tools/outline_maga4.py) cobrindo a linha branca do recorte.
 - v231: Maga: removida a pose invertida (tired), poses pixelizadas em grade de 3 px com borda (tools/pixel_maga4.py), rastro da bola de fogo virado para a maga, kneel usada no dano.
+- v232: Maga: projeteis translucidos com camadas giratorias, rastro que se desfaz e fagulhas em espiral (ataque de mana sem bloco de imagem); mana ambiente, brilho no cajado, circulo magico e carga de mana enquanto espera a leitura; impactos mais leves.
