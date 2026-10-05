@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050308">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="cover.css">
+<title>Crônicas do Saber</title>
+</head>
+<body>
+<img class="blurbg" src="cover_bg.webp" alt="" draggable="false">
+<main id="cv">
+  <div id="world">
+    <img id="art" src="cover_bg.webp" alt="Crônicas do Saber: seis reinos, seis lendas, um só destino" draggable="false">
+    <div id="fxd"></div>
+    <canvas id="fx"></canvas>
+  </div>
+  <div id="ui">
+    <div class="dock" id="dock">
+      <button id="play" class="c-play" type="button"><span>JOGAR</span></button>
+      <button id="how-btn" class="c-how" type="button"><i class="ic-book"></i><span>COMO JOGAR</span></button>
+      <div class="c-msg" aria-live="polite"><i class="ic-gem"></i><p id="msg"></p></div>
+    </div>
+  </div>
+  <div id="how" class="how" hidden role="dialog" aria-modal="true" aria-label="Como jogar">
+    <div class="hw">
+      <div class="hw-head"><i class="ic-book"></i><b>COMO JOGAR</b></div>
+      <div class="hw-tabs" id="tabs"></div>
+      <div class="hw-body" id="hbody"></div>
+      <div class="hw-foot"><button id="prev" class="chip" type="button">ANTERIOR</button><span id="pg" class="pg"></span><button id="next" class="chip" type="button">PRÓXIMO</button></div>
+      <button id="hclose" class="chip close" type="button">FECHAR</button>
+    </div>
+  </div>
+</main>
+<canvas id="px"></canvas>
+<script src="cover.js"></script>
+</body>
+</html>
