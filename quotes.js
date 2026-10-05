@@ -2,7 +2,7 @@
 (() => {
 const Q = [   // até 2 linhas de frase + o nome (como a do Guarda do Portão): folga igual em cima, embaixo e nos lados
   ['Poder é continuar, mesmo depois de tudo.', '???'],
-  ['Quem ousa invadir o meu castelo?', 'Lorde das Trevas'],
+  ['Quem ousa invadir o meu castelo?', 'Malgorath, Lorde das Trevas'],
   ['Cada resposta errada fecha uma porta.', 'Escriba do Reino'],
   ['Dica: o grupo decide tudo por votação.', 'Escriba do Reino'],
   ['Já vi heróis melhores virarem pó.', 'Mercador Errante'],
@@ -11,7 +11,7 @@ const Q = [   // até 2 linhas de frase + o nome (como a do Guarda do Portão): 
   ['Dica: cada classe joga de um jeito. Experimente todas.', 'Bardo Cego'],
   ['As trevas não temem a força. Elas temem quem estudou a lição.', 'Guarda do Portão'],
   ['Dica: vença um guardião para abrir o próximo caminho.', 'Cartógrafa Anciã'],
-  ['O Lorde das Trevas nunca revisou a matéria.', 'Bardo Cego'],
+  ['Malgorath, Lorde das Trevas, nunca revisou a matéria.', 'Bardo Cego'],
   ['Errar faz parte. Desistir, não.', 'Guarda do Portão'],
   ['Dica: SELECT consulta, UPDATE altera, DELETE apaga.', 'Escriba do Reino'],
   ['Seis caminhos, seis lendas, um só destino.', '???']

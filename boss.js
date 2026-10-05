@@ -1,4 +1,4 @@
-/* Banco de Dados I — RPG · Lorde das Trevas (v87)
+/* Banco de Dados I — RPG · Malgorath, Lorde das Trevas (v87)
    12 poses recortadas da folha (boss/B_*.png, tools/cut_boss.py) + efeitos desenhados em canvas.
    Habilidades: intro, Golpe Horizontal, Golpe Vertical, Invocação Demoníaca (mão), Estocada, Onda Sombria (AoE), Enfurecer,
    Preparando Habilidade, Teleporte (some / aparece atrás do herói), dano leve/pesado, morte e risada.

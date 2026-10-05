@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V = 'v249', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V = 'v250', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -107,7 +107,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
 const MSGS = [
   'Os seis senhores despertaram. Agora, o mundo repousa sobre a coragem de quatro heróis. E a esperança... está em suas mãos.',
   'Quatro heróis. Uma única resposta certa. Votem juntos e vençam juntos.',
-  'O Lorde das Trevas ainda ri. Quanto tempo até a primeira resposta errada?',
+  'Malgorath, Lorde das Trevas, ainda ri. Quanto tempo até a primeira resposta errada?',
   'O conhecimento é a única arma que nunca quebra.',
   'A Maga queima, o Guerreiro corta, o Tanque resiste e a Clériga cura. Falta o seu grupo decidir.',
   'Ranks S e SS rendem o poder máximo, mas um erro desperta a fúria do inimigo.',
@@ -120,7 +120,7 @@ showMsg(); setInterval(() => { if (!document.hidden && !cv.classList.contains('g
 
 // ---------- Como jogar ----------
 const GUARDS = [
-  {n:'LORDE', h:'Castelo do Lorde das Trevas', b:`<p>O primeiro guardião: um demônio vampiro com 650 de vida. Todo o dano dele é demoníaco.</p>
+  {n:'MALGORATH', h:'Castelo de Malgorath', b:`<p>O primeiro guardião: um demônio vampiro com 650 de vida. Todo o dano dele é demoníaco.</p>
 <h4>FRAQUEZAS</h4><ul><li><b class="r">FOGO</b>A Maga causa 1,5x de dano e ainda queima o boss por 2 perguntas</li><li><b class="g">SAGRADO</b>O Ataque Sagrado da Clériga causa 2x e a Defesa Sagrada corta 80% do dano</li><li><b>IMUNE</b>Água, ar e terra não causam dano (só efeito visual). Não gastem mana nisso</li></ul>
 <h4>ATAQUES</h4><ul><li><b>FÍSICO</b>Golpe comum, o mais fraco</li><li><b class="p">DEMONÍACO</b>Mais forte e rouba vida: ele cura parte do que vocês perderem</li><li><b class="r">ELEMENTAL</b>O mais forte e o que mais rouba vida. Aparece mais nos ranks altos</li><li><b>ONDA SOMBRIA</b>Fere os quatro heróis de uma vez, mais forte nos ranks altos</li></ul>
 <h4>HABILIDADES</h4><ul><li><b>PREPARANDO</b>Aviso na tela: a rodada seguinte tem golpes 50% mais fortes. Defendam</li><li><b>TELEPORTE</b>Depois da 4ª pergunta ele some e ataca o herói mais fraco. Esquivar anula e deixa o boss atordoado (+25% de dano nele)</li><li><b>ESTOCADA</b>Fura Provocação e Proteção Específica. Só aparece quando uma delas está ativa</li></ul>
@@ -142,7 +142,7 @@ function renderBoss(el) {
   el.querySelectorAll('.gt').forEach(b => b.onclick = () => { gi = +b.dataset.i; renderBoss(el); el.scrollTop = 0; });
 }
 const PAGES = [
-  {t:'OBJETIVO', h:'A Jornada dos Heróis', b:`<p>Seis guardiões dominam o reino, cada um com seus próprios ataques, fraquezas e habilidades. Vocês enfrentam um por vez, seguindo o mapa. Por enquanto só o Lorde das Trevas, o primeiro deles, está liberado.</p><p>Cada classe (Maga, Guerreiro, Tanque e Clériga) é um grupo de até 7 jogadores. Dentro do grupo, a maioria dos votos decide tudo. Moedas, itens e votos são do grupo.</p><p>Derrubem o guardião antes que os quatro heróis caiam.</p>`},
+  {t:'OBJETIVO', h:'A Jornada dos Heróis', b:`<p>Seis guardiões dominam o reino, cada um com seus próprios ataques, fraquezas e habilidades. Vocês enfrentam um por vez, seguindo o mapa. Por enquanto só Malgorath, Lorde das Trevas, o primeiro deles, está liberado.</p><p>Cada classe (Maga, Guerreiro, Tanque e Clériga) é um grupo de até 7 jogadores. Dentro do grupo, a maioria dos votos decide tudo. Moedas, itens e votos são do grupo.</p><p>Derrubem o guardião antes que os quatro heróis caiam.</p>`},
   {t:'PERGUNTAS', h:'Perguntas e votação', b:`<p>Toda rodada começa com uma pergunta de Banco de Dados. O grupo vota em uma alternativa antes do relógio zerar.</p><ul><li><b>RANK C</b>25s para responder, 1 moeda</li><li><b>RANK B</b>30s, 2 moedas</li><li><b>RANK A</b>35s, 3 moedas</li><li><b class="g">RANK S</b>40s, 5 moedas</li><li><b class="g">RANK SS</b>45s, 8 moedas</li></ul><p>Acertar rende moedas. Acertar um rank S ou SS carrega o poder especial do herói. Errar nesses ranks enche a fúria do inimigo e deixa o ataque dele mais forte.</p>`},
   {t:'HERÓIS', h:'Os quatro heróis', b:`<p>Depois da pergunta, o grupo escolhe a ação do herói: atacar, defender, esquivar ou usar uma habilidade. A escolha também é por votação. Acertou a pergunta, o ataque acerta. Errou, o herói fica exposto.</p><ul><li><b>MAGA</b>Ataques de mana e de elementos: fogo, água, ar e terra. Cada inimigo tem fraqueza a um elemento diferente. Especial: Buraco Negro, dano direto enorme.</li><li><b class="r">GUERREIRO</b>O maior dano base. Pode passar a vez para dar um ataque extra a um aliado. Especial: Berserk, ataca até errando.</li><li><b class="g">TANQUE</b>A melhor defesa (corta 75%). Protege um aliado e deixa o inimigo desnorteado. Especial: Provocação, todo o dano vai nele.</li><li><b class="v">CLÉRIGA</b>Dano baixo, mas o Sagrado vale em dobro contra quem é fraco a ele. Especial: Luz Sagrada, que cura ou revive.</li></ul><p>Defender ou esquivar depois de acertar a pergunta desperdiça o ataque e enche a fúria do inimigo.</p>`},
   {t:'ITENS', h:'Mercador, mochila e arcas', b:`<p>Entre as perguntas o Mercador vende itens pelas moedas do grupo. A mochila tem 6 espaços e itens iguais empilham até 3. Toda batalha começa com a mochila vazia.</p><ul><li><b>TOQUE</b>Toque rápido num item da mochila para usar</li><li><b>SEGURAR</b>Segure o dedo num item para ler os detalhes</li><li><b class="p">RARO</b>Itens poderosos e permanentes que aparecem pouco</li><li><b class="g">LENDÁRIO</b>Os relógios dão tempo extra na pergunta (+5s ou +10s) e quase nunca aparecem</li></ul><p>Às vezes surge uma arca misteriosa. Ela pode trazer um item... ou uma armadilha.</p>`},

@@ -183,9 +183,9 @@ function bossLeech(lost){
 const SKILLS = {
   mage:[
     {id:'mana_atk', kind:'atk', name:'Ataque de Mana', desc:'Raio de mana. Dano normal.', mana:10, cd:0, mult:1},
-    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. Cada inimigo tem fraquezas próprias. Contra o Lorde das Trevas: fogo causa 1,5x e queima por 2 perguntas; água, ar e terra não causam dano (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
+    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. Cada inimigo tem fraquezas próprias. Contra Malgorath, Lorde das Trevas: fogo causa 1,5x e queima por 2 perguntas; água, ar e terra não causam dano (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
     {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 35% do dano.', mana:10, cd:0, reduce:.35},
-    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; corta 55% se for o elemento fraco do inimigo (contra o Lorde das Trevas, fogo).', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
+    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; corta 55% se for o elemento fraco do inimigo (contra Malgorath, Lorde das Trevas, fogo).', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
   guerreiro:[
@@ -204,9 +204,9 @@ const SKILLS = {
   ],
   cleriga:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de cajado. Dano normal.', mana:0, cd:0, mult:1},
-    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele (o Lorde das Trevas é).', mana:20, cd:1, mult:1, holy:true},
+    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele (Malgorath, Lorde das Trevas, é).', mana:20, cd:1, mult:1, holy:true},
     {id:'def', kind:'def', name:'Defesa Normal', desc:'Ergue as mãos. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
-    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'Sagrado: corta 80% do dano se o inimigo for fraco a ele (o Lorde das Trevas é).', mana:20, cd:1, reduce:.5, bonus:BOSS_WEAK_HOLY_DEF, holy:true},
+    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'Sagrado: corta 80% do dano se o inimigo for fraco a ele (Malgorath, Lorde das Trevas, é).', mana:20, cd:1, reduce:.5, bonus:BOSS_WEAK_HOLY_DEF, holy:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ]
 };
@@ -818,7 +818,7 @@ const aliveHeroes = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 async function maybePhase2(){
   if (state.phase2 || state.over || state.bossHp <= 0 || state.bossHp > BOSS_MAX_HP * PHASE2_AT) return;
   state.phase2 = true;
-  showBanner('FASE 2', `o Lorde das Trevas despertou: Onda Sombria +${PHASE2_AOE} até o fim`);
+  showBanner('FASE 2', `Malgorath, Lorde das Trevas, despertou: Onda Sombria +${PHASE2_AOE} até o fim`);
   A.play('boss', 'enrage');
   const g = $('#game'), fl = document.createElement('div');
   fl.style.cssText = 'position:absolute;inset:0;z-index:39;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 18%,#ffffff,#b9ccff 45%,#5a3cff 100%);mix-blend-mode:screen';
@@ -1130,7 +1130,7 @@ async function gagDragon(){
   showBanner('...UM GOBLIN?', 'pequeno e fraquinho. O boss não entendeu nada');
   const bub = document.createElement('div'); bub.className = 'gag-bubble'; bub.textContent = '?!'; g.appendChild(bub);
   await A.play('boss', 'gagLook'); bub.remove();
-  showBanner('DESINVOCANDO...', 'o Lorde das Trevas manda o goblin de volta');
+  showBanner('DESINVOCANDO...', 'Malgorath, Lorde das Trevas, manda o goblin de volta');
   const dis = A.play('boss', 'gagDismiss');
   await wait(750);
   A.fx('boss', 'puff', {x:sp.x, y:sp.y - 30, n:14, r:70});
@@ -1337,7 +1337,7 @@ async function playRound(){
   { const hardMiss = isHardQ(q) ? HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length : 0;   // erro em rank S/SS: Onda Sombria +50%
     const aoe = Math.round((meta.aoe + (state.enraged ? ENRAGE_AOE : 0) + (state.phase2 ? PHASE2_AOE : 0)) * (hardMiss ? HARD_MISS_AOE : 1));
     if (aoe && !state.over) {
-      showBanner('ONDA SOMBRIA', `o Lorde das Trevas fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}${state.phase2 ? ' (fase 2 +' + PHASE2_AOE + ')' : ''}${hardMiss ? ' (erro no rank ' + meta.rank + ': +50%)' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
+      showBanner('ONDA SOMBRIA', `Malgorath, Lorde das Trevas, fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}${state.phase2 ? ' (fase 2 +' + PHASE2_AOE + ')' : ''}${hardMiss ? ' (erro no rank ' + meta.rank + ': +50%)' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
       await Promise.race([A.hit('boss'), wait(2500)]);
       let lostAoe = 0;
       HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); let a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; const m = itemMit(k, a, false); a = m.d; lostAoe += Math.min(a, h.hp); h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}${m.note}`, '#b36bff'); } });
@@ -1424,7 +1424,7 @@ function endGame(win){
   if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }
   else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
   const o = $('#end-screen'); o.querySelector('h2').textContent = win ? 'VITÓRIA!' : 'DERROTA';
-  o.querySelector('p').textContent = win ? 'O Lorde das Trevas foi derrotado.' : 'Todos os heróis caíram.';
+  o.querySelector('p').textContent = win ? 'Malgorath, Lorde das Trevas, foi derrotado.' : 'Todos os heróis caíram.';
   if (win) { try { const d = JSON.parse(localStorage.getItem('bd1_progress')) || {done:[]}; if (!d.done.includes(0)) d.done.push(0); localStorage.setItem('bd1_progress', JSON.stringify(d)); sessionStorage.setItem('bd1_justwon', '0'); } catch {} }
   $('#to-map').textContent = win ? 'VOLTAR AO MAPA' : 'MAPA';
   { const st = state.stats, R = ['C','B','A','S','SS'], tot = Object.values(st.rank).reduce((a, [r, w]) => [a[0] + r, a[1] + w], [0, 0]), n = tot[0] + tot[1], pct = n ? Math.round(tot[0] / n * 100) : 0, bossPct = Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100));
@@ -1433,7 +1433,7 @@ function endGame(win){
       `<div class="es-cap">certas / erradas por rank</div><div class="es-row"><span>Moedas ganhas / gastas</span><b>${st.gained} / ${st.spent}</b></div><div class="es-row"><span>Itens usados</span><b>${st.used}</b></div>` + (win ? '' : `<div class="es-row"><span>Vida restante do boss</span><b>${bossPct}%</b></div>`); }
   o.classList.toggle('win', win);
   const st2 = state.stats, RK = ['C','B','A','S','SS'], t2 = Object.values(st2.rank).reduce((a, [r, w]) => [a[0] + r, a[1] + w], [0, 0]), n2 = t2[0] + t2[1], pc = n2 ? Math.round(t2[0] / n2 * 100) : 0, bp = Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100));
-  const pu = paperUI(`<div class="ui-t ${win ? 'win' : 'lose'}">${win ? 'VITÓRIA!' : 'DERROTA'}</div><div class="ui-s">${win ? 'O Lorde das Trevas foi derrotado.' : 'Todos caíram. Boss com ' + bp + '% de vida.'}</div>` +
+  const pu = paperUI(`<div class="ui-t ${win ? 'win' : 'lose'}">${win ? 'VITÓRIA!' : 'DERROTA'}</div><div class="ui-s">${win ? 'Malgorath, Lorde das Trevas, foi derrotado.' : 'Todos caíram. Boss com ' + bp + '% de vida.'}</div>` +
     `<div class="ui-stats"><span>Rodadas <b>${state.round}</b></span><span>Acerto <b>${t2[0]}/${n2} (${pc}%)</b></span><span>Moedas <b>+${st2.gained} / -${st2.spent}</b></span><span>Itens usados <b>${st2.used}</b></span></div>` +
     `<div class="ui-ranks">${RK.map((r, i) => `<div class="r d${i + 1}"><em>${r}</em><span>${st2.rank[i + 1][0]}/${st2.rank[i + 1][1]}</span></div>`).join('')}</div><div class="ui-cap">certas / erradas por rank</div>` +
     `<div class="ui-btns"><button type="button" class="sc-btn" data-act="restart">JOGAR DE NOVO</button><button type="button" class="sc-btn alt" data-act="map">${win ? 'VOLTAR AO MAPA' : 'MAPA'}</button></div>`);

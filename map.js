@@ -7,7 +7,7 @@ const P = new URLSearchParams(location.search), TEST = LOBBY.testMode;
 const grp = (TEST && GROUPS[P.get('grupo')]) ? P.get('grupo') : LOBBY.myGroup();
 if (!grp) { location.replace('index.html'); return; }
 const BOSSES = {   // ordem da jornada: 0 → 1 → 2 → 5 → 4 → 3 (ids = regiões na arte)
-  0:{name:'CASTELO DO LORDE DAS TREVAS', play:true,  sub:'Lorde das Trevas · o primeiro guardião'},
+  0:{name:'CASTELO DE MALGORATH', play:true,  sub:'Malgorath, Lorde das Trevas · o primeiro guardião'},
   1:{name:'TÚMULO DO REI GELADO',        play:false, sub:'Em breve'},
   2:{name:'COVIL DO DRAGÃO VERMELHO',    play:false, sub:'Em breve'},
   5:{name:'ABISMO CELESTIAL',            play:false, sub:'Em breve'},

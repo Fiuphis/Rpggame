@@ -11,7 +11,7 @@ O jogo toca **quadros desenhados por você** (Aseprite, etc.). Sem sheet, o pers
 | Guerreiro | `guerreiro` / `guerreiro` | 330 × 382 |
 | Tanque | `tanque` / `tank` | 364 × 384 |
 | Clériga | `cleriga` / `cleriga` | 316 × 402 |
-| Lorde das Trevas | `boss` / `boss` | 968 × 709 |
+| Malgorath, Lorde das Trevas | `boss` / `boss` | 968 × 709 |
 
    - Amarelo = limite da célula · ciano = onde o sprite fica parado · vermelho = linha dos pés · branco = centro.
    - `<personagem>_base.png` é o sprite atual já na célula: use como quadro 1 e desenhe os demais por cima.

@@ -170,7 +170,7 @@ Animações, falas e o rig da Maga/Clériga removidos a pedido: o jogo volta ao 
 Animações por código removidas de vez. `anim.js` toca sprite sheets desenhados (veja ANIMACOES.md, `gabaritos/`, `tools/`). Sem sheets, os heróis ficam parados (cenário sem heróis + sprites `spr_*.webp`).
 
 ## v39 — novo cenário, personagens em camadas e Maga animada
-- Cenário novo (sala do trono) sem personagens no fundo; HUD e painel inferior nos mesmos pixels. Heróis e Lorde das Trevas são camadas separadas (`spr_*.webp`) com sombra no chão.
+- Cenário novo (sala do trono) sem personagens no fundo; HUD e painel inferior nos mesmos pixels. Heróis e Malgorath, Lorde das Trevas, são camadas separadas (`spr_*.webp`) com sombra no chão.
 - **Maga animada** (`mage.js`): corpo deformado por linhas (respiração, manto, ponta do chapéu, inclinação, salto) + efeitos azuis **extraídos da folha de referência** (`fx/*.png`, gerados por `tools/extrair_fx.py`): círculo rúnico, anel arcano, projétil, cristal, coluna, explosão, chama, estrelas, fios de energia.
 - Animações: 4 idles aleatórios, ataque, magia, sagrado, pesado, ultimate, defesa (anel), esquiva (rastro), dano, passar, vitória, morte/reviver.
 - Os outros personagens seguem estáticos (ou com sheets, como em v38).
@@ -491,6 +491,7 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v244: cúpula do Guerreiro maior e centrada no corpo; todos os anéis de chão (heróis e boss) em perspectiva (arco de trás atrás do personagem, arco da frente na frente)
 - v245: cúpula do Guerreiro centrada no centro do corpo (mediana do sprite), não nos pés
 - v246: escudo do Guerreiro vira esfera centrada no corpo (peito), não meia-esfera no chão
+- v250: primeiro chefe renomeado para Malgorath, Lorde das Trevas (textos, HUD e imagem de fundo); removidas as pastas antigas clr/ e guerreiro/
 - v249: animações extras dos heróis: reação a acerto/erro, combo de acertos (3+ e 5+), pose de pouca vida (vida abaixo de 30%) com pulso vermelho, entrada em cena, revive com coluna de luz (Clériga e Maga ganham levantar), cobertura do Tanque, luz de cura, rastro de movimento nos golpes, mais ociosas e golpes extras, poeira e rachadura nos golpes da Clériga (extras.js)
 - v248: Clériga refeita com 57 poses novas (costas, 2 px) e 24 efeitos dourados novos; estrela do cajado como origem dos disparos
 - v247: Guerreiro maior (escala 1,03): mais alto que Maga/Clériga e bem menor que o Tanque; esfera de proteção ajustada
