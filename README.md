@@ -475,3 +475,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v228: Como jogar refeito: aba GUARDIOES com 6 guardioes (so o Lorde liberado, com fraquezas fogo e sagrado, imunidades, ataques, habilidades, furia e fase 2; os outros bloqueados); dicas reescritas; textos de habilidades e da capa deixam de generalizar a fraqueza do Lorde para todos os inimigos.
 - v229: Maga refeita com as novas poses e efeitos (mage4/): 48 poses na escala correta (ajuste de cabeca/corpo por pose), hurt/queda/chao proprios, esquiva espelhada, idles novos e efeitos de fogo/agua/ar/terra/Buraco Negro das novas folhas. mage3 mantida ate a aprovacao.
 - v230: Maga com borda fina azul-marinho (tools/outline_maga4.py) cobrindo a linha branca do recorte.
+- v231: Maga: removida a pose invertida (tired), poses pixelizadas em grade de 3 px com borda (tools/pixel_maga4.py), rastro da bola de fogo virado para a maga, kneel usada no dano.

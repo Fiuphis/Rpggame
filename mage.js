@@ -4,11 +4,11 @@
    Só a Maga usa isto; os outros personagens continuam como imagem/sprite sheets. */
 (() => {
 'use strict';
-const POSES = ['idle1','idle2','idle3','idle4','look','skirt','side','tired','hip','stars','raise','glance','wave','scroll','potion','atk1','atk2','atk3','swingl','swingf','swingr','fire','air','water','earth','castdef','defmana','deffire','defwater','defair','defearth','spin1','spinwide','bh1','bh2','open','reach','kneel','dodge1','dodge2','dodge3','dodge4','dodge5','dodge6','hurt1','hurt2','fall','down'];
+const POSES = ['idle1','idle2','idle3','idle4','look','skirt','side','hip','stars','raise','glance','wave','scroll','potion','atk1','atk2','atk3','swingl','swingf','swingr','fire','air','water','earth','castdef','defmana','deffire','defwater','defair','defearth','spin1','spinwide','bh1','bh2','open','reach','kneel','dodge1','dodge2','dodge3','dodge4','dodge5','dodge6','hurt1','hurt2','fall','down'];
 const FXS = ['comet','orbb','fire_fall','water_pillar','air_swirl','earth_spikes','rock','bh_seed','bh_small','bh_spikes','bh_big','bh_big2','bh_smoke','bolt','cross','crystal','whirl','mana_aura','orb_red','orb_orange','orb_blue','star_big','star_small','rocks','fire_burst','water_burst','air_burst','ring_floor','sh_mana','sh_fire','sh_water','sh_air','sh_earth'];
 const T = {x:517, y:340};                                    // alvo no chefe (design 1024x1536)
 const BASE = 258, MSZ = 0.91;                                  // Maga e Clériga: as duas menores (Cavaleiro 261, Tanque 314), mesmo tamanho
-const PS = {fire:.93,air:.92,water:.9,earth:.95,atk2:.95,atk3:.93,spin1:.93,open:.93,defair:.9,dodge2:.93,swingr:.95,defmana:.95,castdef:.95,dodge3:.86,dodge4:.9,defwater:.88,tired:.92,kneel:.92,deffire:.94,spinwide:.9,dodge1:.95,defearth:.95};   // escala de cada pose ja embutida nos PNGs de mage4 (tools/cut_maga4.py)
+const PS = {fire:.93,air:.92,water:.9,earth:.95,atk2:.95,atk3:.93,spin1:.93,open:.93,defair:.9,dodge2:.93,swingr:.95,defmana:.95,castdef:.95,dodge3:.86,dodge4:.9,defwater:.88,kneel:.92,deffire:.94,spinwide:.9,dodge1:.95,defearth:.95};   // escala de cada pose ja embutida nos PNGs de mage4 (tools/cut_maga4.py)
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
 const ease = u => u < .5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2, eo = u => 1 - Math.pow(1 - u, 3), ei = u => u * u * u;
@@ -62,7 +62,7 @@ const ACT = {
   hurt:[
     S(750, [[0,'idle1'],[.1,'hurt1',{dx:-10,rot:-4}],[.32,'hurt1',{dx:4,rot:-2}],[.55,'hurt1',{dx:-2}],[.9,'idle1']], [], {tint:true}),
     S(800, [[0,'idle1'],[.1,'hurt2',{dx:-9,dy:2,rot:-4}],[.34,'hurt2',{dx:4,rot:-1}],[.6,'hurt2',{dx:-2}],[.9,'idle1']], [], {tint:true}),
-    S(850, [[0,'idle1'],[.12,'hurt1',{dx:-12,rot:-6}],[.34,'hurt2',{dx:4,rot:-2}],[.6,'hurt2',{dx:-2}],[.92,'idle1']], [], {tint:true}),
+    S(850, [[0,'idle1'],[.12,'hurt1',{dx:-12,rot:-6}],[.34,'hurt2',{dx:4,rot:-2}],[.6,'kneel',{dx:-2}],[.92,'idle1']], [], {tint:true}),
   ],
   victory:[
     S(2800, [[0,'idle1'],[.1,'raise'],[.26,'atk3',{dy:-12,rot:2}],[.4,'wave',{dy:-3}],[.56,'raise',{dy:-8,rot:-2}],[.8,'atk3',{dy:-4}],[.96,'idle1']], [[.28,'cheer'],[.58,'cheer']]),
@@ -88,7 +88,6 @@ const IDLES = [   // idles extras ocasionais
   S(2600, [[0,'idle1'],[.2,'side'],[.5,'skirt'],[.8,'side'],[.97,'idle1']]),
   S(2600, [[0,'idle1'],[.2,'potion'],[.75,'potion'],[.97,'idle1']]),
   S(2400, [[0,'idle1'],[.2,'wave'],[.75,'wave'],[.97,'idle1']]),
-  S(2800, [[0,'idle1'],[.2,'tired'],[.8,'tired'],[.97,'idle1']]),
   S(3200, [[0,'idle1'],[.15,'idle2'],[.35,'idle4',{dx:4}],[.6,'idle3',{dx:-4}],[.85,'idle2'],[.97,'idle1']]),
   S(2900, [[0,'idle1'],[.2,'atk1'],[.38,'spin1',{dy:-4}],[.62,'stars',{dy:-4}],[.85,'atk1'],[.97,'idle1']], [[.3,'charge']]),
 ];
@@ -120,7 +119,7 @@ function make(host){
     const path = u => { const e = Math.pow(u, flat ? 1.2 : 1.8), w = Math.sin(Math.PI * u); return {x:lerp(a.x, b.x, e) + k * w + Math.sin(u * 11) * 6 * w + (zig ? Math.sin(u * 22) * 46 * w : 0), y:lerp(a.y, b.y, e) - w * lift}; };
     const fade = u => u < .1 ? u / .1 : u > .94 ? (1 - u) / .06 : 1;
     E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:(70 + 22 * Math.sin(u * 28)) * size * (.6 + .6 * u), c:col, a:.85 * fade(u)}; });
-    E('fx_' + name, d, u => { const p = path(u), q = path(Math.min(1, u + .03)); return {x:p.x, y:p.y, s:size * (name === 'orbb' || name === 'comet' ? 1.5 : 1.0) * (.55 + .55 * Math.sin(Math.min(1, u * 1.3) * 1.57)), rot:name === 'comet' ? Math.atan2(q.y - p.y, q.x - p.x) + 1.57 : name === 'bolt' ? Math.atan2(q.y - p.y, q.x - p.x) : name === 'whirl' ? u * 14 : name === 'star_big' ? u * 6 : Math.sin(u * 6) * .35, a:fade(u) * .95}; });
+    E('fx_' + name, d, u => { const p = path(u), q = path(Math.min(1, u + .03)); return {x:p.x, y:p.y, s:size * (name === 'orbb' || name === 'comet' ? 1.5 : 1.0) * (.55 + .55 * Math.sin(Math.min(1, u * 1.3) * 1.57)), rot:name === 'comet' ? Math.atan2(q.y - p.y, q.x - p.x) + 1.57 : name === 'orb_red' ? Math.atan2(q.y - p.y, q.x - p.x) + Math.PI + .93 : name === 'bolt' ? Math.atan2(q.y - p.y, q.x - p.x) : name === 'whirl' ? u * 14 : name === 'star_big' ? u * 6 : Math.sin(u * 6) * .35, a:fade(u) * .95}; });
     for (let i = 1; i <= 11; i++) { const ut = i / 12, p = path(ut); E('glow', 520, v => ({x:p.x + Math.sin(i * 3) * 6 * v, y:p.y - 12 * v, r:(54 * size) * (1 - v * .6), c:col, a:.5 * (1 - v)}), {delay:ut * d}); }
     for (let i = 0; i < 9; i++) { const ut = (i + .5) / 9 * .95, p = path(ut), ox = rnd(-18, 18), oy = rnd(-18, 18); E('fx_star_small', 600, v => ({x:p.x + ox * v, y:p.y + oy * v - 16 * v, s:.55 * (1 - v), rot:v * 2, a:1 - v}), {delay:ut * d}); }
   }
