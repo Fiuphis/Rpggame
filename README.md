@@ -471,3 +471,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v224: a transicao padrao do JOGAR voltou a ser a de cinzas (v222); o livro fica em cover.html?trans=book.
 - v225: limpeza de codigo: transicao do livro removida; sem uso foram retirados 7 arquivos de imagem (bag_panel, icon_attack, icon_tipo_sword, plaque_cut, ui_chip_green/grey/purple), os estilos .tp-note e .test-toggle, 15 sprites de icone nao usados, HERO_ICON e o atalho de depuracao da capa.
 - v226: transicao capa -> selecao sem esticar o menu e sem perder as nuvens (removida a animacao de escala em #stage); botao voltar do celular na selecao faz os blocos de brasa cobrirem a tela e a capa se reconstroi, sem zoom.
+- v227: botao do mapa (azul/verde) ganha selecao: borda dourada e icone maior ao tocar; tocar de novo desfaz.

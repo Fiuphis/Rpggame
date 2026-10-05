@@ -56,7 +56,7 @@ function build(){
 function paint(dn, instant){
   for (const id in meta.nodes) {
     const st = stateOf(dn, +id), ic = $('#ic' + id), gr = $('#gray' + id), nd = $('#nd' + id);
-    ic.src = st === 'done' ? 'map/ic_done.webp' : st === 'next' ? 'map/ic_next.webp' : 'map/ic_lock.webp'; ic.className = 'ic ' + st;
+    ic.src = st === 'done' ? 'map/ic_done.webp' : st === 'next' ? 'map/ic_next.webp' : 'map/ic_lock.webp'; ic.className = 'ic ' + st + (selected === +id ? ' sel' : '');
     gr.classList.toggle('off', st !== 'locked');
     nd.classList.toggle('ok', (st === 'next' || st === 'done') && BOSSES[id].play);
     const h = $('#halo' + id); if (h) h.style.opacity = (id === '0' && st === 'next') || (id === '1' && st === 'done') ? 1 : 0;
@@ -75,12 +75,12 @@ $('#back').addEventListener('click', e => { e.preventDefault(); leaveMap(); });
 history.pushState({ mapa: 1 }, '');
 addEventListener('popstate', () => { const c = $('#confirm'); if (c && !c.hidden) { c.hidden = true; history.pushState({ mapa: 1 }, ''); return; } leaveMap(); });
 function voters(){ return Math.max(1, LOBBY.counts()[grp] || 0); }
-function deselect(){ selected = null; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false; $('#panel').hidden = true; document.querySelectorAll('.node').forEach(e => e.classList.remove('sel')); }
+function deselect(){ selected = null; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false; $('#panel').hidden = true; document.querySelectorAll('.node,.ic').forEach(e => e.classList.remove('sel')); }
 function select(id){
   if (selected === id) return deselect();   // tocar de novo tira a seleção
   const st = stateOf(done, id), B = BOSSES[id];
   selected = id; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false;
-  document.querySelectorAll('.node').forEach(e => e.classList.toggle('sel', e.id === 'nd' + id));
+  document.querySelectorAll('.node').forEach(e => e.classList.toggle('sel', e.id === 'nd' + id)); document.querySelectorAll('.ic').forEach(e => e.classList.toggle('sel', e.id === 'ic' + id));
   $('#panel').hidden = false; $('#p-title').textContent = B.name; placePanel();
   const go = $('#p-go'); const n = voters(), need = Math.floor(n / 2) + 1;
   if ((st === 'next' || st === 'done') && B.play) {

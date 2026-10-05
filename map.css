@@ -24,6 +24,10 @@ mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 97%,transparent 
 .node.ok{pointer-events:auto;cursor:pointer}
 .node.ok::after{content:"";position:absolute;inset:8%;border:2px solid rgba(120,190,255,.9);border-radius:50%;opacity:0;animation:pulse 1.8s ease-out infinite}
 .node.sel::after{border-color:#ffd34d}
+.node.sel::before{content:"";position:absolute;inset:14%;border:3px solid #ffd34d;border-radius:50%;box-shadow:0 0 10px 2px rgba(255,211,77,.75),inset 0 0 8px rgba(255,211,77,.5);animation:selIn .22s ease-out both}
+@keyframes selIn{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.ic{transition:opacity .9s ease,transform .22s cubic-bezier(.3,1.5,.5,1),filter .22s ease}
+.ic.sel{transform:translate(-50%,-50%) scale(1.3);filter:drop-shadow(0 0 8px #ffd34d) drop-shadow(0 0 3px var(--g,transparent))}
 @keyframes pulse{0%{transform:scale(.7);opacity:.9}100%{transform:scale(1.7);opacity:0}}
 .back{z-index:3;position:fixed;left:max(10px,env(safe-area-inset-left));top:max(10px,env(safe-area-inset-top));font:11px/1 OpenC,OpenD,monospace;color:#cdbfdc;text-decoration:none;background:rgba(5,7,17,.72);border:1px solid #4b4560;padding:8px 10px}
 .panel{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(92vw,460px);z-index:45;padding:16px 16px 14px;text-align:center;
