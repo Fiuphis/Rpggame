@@ -488,3 +488,4 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v241: Maga com grade de 2 px uniforme (poses completadas a multiplo de 2; antes alguns blocos ficavam com 1 px).
 - v242: Guerreiro refeito com as folhas novas (guerreiro4): poses de costas, grade de 2 px, cabeca do mesmo tamanho, efeitos novos de corte, impacto, escudo e berserk.
 - v243: cupula do escudo do Guerreiro maior (cobre o corpo inteiro) e atras dele.
+- v244: cúpula do Guerreiro maior e centrada no corpo; todos os anéis de chão (heróis e boss) em perspectiva (arco de trás atrás do personagem, arco da frente na frente)

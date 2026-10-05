@@ -128,7 +128,7 @@ function streak(g, x, y, ang, len, th, col, a){
 
 function make(host){
   const {c, cv, Px, Py, W, Hh, world, layers} = host, front = layers.front, fc = front.getContext('2d'), back = layers.back, bc = back.getContext('2d');
-  let backUsed = false;
+  let backUsed = false, bodyDX = 0;
   const cw = cv.width, ch = cv.height;
   let M = null; const img = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
@@ -203,7 +203,7 @@ function make(host){
     shield(k){ const f = feet(), gold = /^g/.test(k || ''), cc = gold ? GOLD : BLUE, wide = /5|4|7/.test(k || '');
       E('glow', 1700, u => ({x:f.x, y:f.y - 130, r:wide ? 200 : 160, c:cc, a:.45 * Math.sin(Math.PI * u)}), {back:true});
       if (gold) { E('fx_rn2', 1500, u => ({x:f.x, y:f.y - 4, s:lerp(.25, wide ? .5 : .42, eo(u)), a:.7 * Math.sin(Math.PI * u)})); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
-      else { E('fx_dome', 1600, u => ({x:f.x, y:f.y + 6, s:lerp(.8, wide ? 1.25 : 1.12, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true, back:true}); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
+      else { E('fx_dome', 1600, u => ({x:feet().x + bodyDX, y:f.y + 6, s:lerp(1, wide ? 1.9 : 1.65, eo(Math.min(1, u * 1.6))), a:.7 * Math.sin(Math.PI * u)}), {bot:true, back:true}); E('fx_fls', 700, u => ({x:f.x - 50, y:f.y - 130, s:lerp(.22, .45, eo(Math.min(1, u * 1.5))), a:.9 * (1 - u)}), {delay:200}); }
       E('ring', 1500, u => ({x:f.x, y:f.y - 6, r:lerp(50, wide ? 140 : 115, eo(u)), c:cc, a:.7 * Math.sin(Math.PI * u)}));
       if (/2|4|6/.test(k || '')) E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:gold ? '255,240,200' : ICE, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
       for (let i = 0; i < 4; i++) { const an = i * 1.3; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:15, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
@@ -230,6 +230,8 @@ function make(host){
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
   }
+  // anel no chao em perspectiva: meio arco de tras na camada de tras (as pernas cobrem), meio arco da frente na camada da frente
+  const drawRing = s => { backUsed = true; [[bc, 3.1416, 6.2832], [fc, 0, 3.1416]].forEach(([g, a0, a1]) => { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 10; g.strokeStyle = `rgba(${s.c},${clamp(s.a * .7)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 30; g.beginPath(); g.arc(0, 0, s.r, a0, a1); g.stroke(); g.restore(); }); };
   function frame(){
     if (!running) return; requestAnimationFrame(frame); const now = clk();
     if (document.hidden || now - last < 16) return; last = now;
@@ -249,7 +251,7 @@ function make(host){
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 * (cur && cur.light ? .6 : 1) : 0;
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);
-    drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
+    bodyDX = st.dx || 0; drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
     fc.clearRect(0, 0, front.width, front.height);
     if (backUsed) { bc.clearRect(0, 0, back.width, back.height); backUsed = false; }
     if (mode === 'bers' && !deadTarget) { const ft = feet(); glow(bc, ft.x, ft.y - 120, 190 + 14 * Math.sin(tm / 260), RED, .28 + .08 * Math.sin(tm / 200)); backUsed = true;
@@ -260,7 +262,7 @@ function make(host){
       if (!s) return true;
       if (e.name === 'glow') { glow(g, s.x, s.y, s.r, s.c, s.a); return true; }
       if (e.name === 'streak') { streak(g, s.x, s.y, s.ang, s.len, s.th, s.c, s.a); return true; }
-      if (e.name === 'ring') { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 10; g.strokeStyle = `rgba(${s.c},${clamp(s.a * .7)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 30; g.beginPath(); g.arc(0, 0, s.r, 0, 6.2832); g.stroke(); g.restore(); return true; }
+      if (e.name === 'ring') { drawRing(s); return true; }
       if (!ready(e.name)) return true;
       const w = im.naturalWidth * (s.s || 1), h = im.naturalHeight * (s.s || 1), bot = !!e.bot;
       g.save(); g.globalAlpha = clamp(s.a == null ? 1 : s.a); g.translate(s.x, s.y); if (s.rot) g.rotate(s.rot);

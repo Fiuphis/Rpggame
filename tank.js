@@ -207,6 +207,8 @@ function make(host){
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
   }
+  // anel no chao em perspectiva: meio arco de tras na camada de tras (as pernas cobrem), meio arco da frente na camada da frente
+  const drawRing = s => { backUsed = true; [[bc, 3.1416, 6.2832], [fc, 0, 3.1416]].forEach(([g, a0, a1]) => { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 10; g.strokeStyle = `rgba(${s.c},${clamp(s.a * .7)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 30; g.beginPath(); g.arc(0, 0, s.r, a0, a1); g.stroke(); g.restore(); }); };
   function frame(){
     if (!running) return; requestAnimationFrame(frame); const now = clk();
     if (document.hidden || now - last < 16) return; last = now;
@@ -235,7 +237,7 @@ function make(host){
       if (!s) return true;
       if (e.name === 'glow') { glow(g, s.x, s.y, s.r, s.c, s.a); return true; }
       if (e.name === 'streak') { streak(g, s.x, s.y, s.ang, s.len, s.th, s.c, s.a); return true; }
-      if (e.name === 'ring') { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 10; g.strokeStyle = `rgba(${s.c},${clamp(s.a * .7)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 30; g.beginPath(); g.arc(0, 0, s.r, 0, 6.2832); g.stroke(); g.restore(); return true; }
+      if (e.name === 'ring') { drawRing(s); return true; }
       if (!ready(e.name)) return true;
       const w = im.naturalWidth * (s.s || 1), h = im.naturalHeight * (s.s || 1);
       g.save(); g.globalAlpha = clamp(s.a == null ? 1 : s.a); g.translate(s.x, s.y); if (s.rot) g.rotate(s.rot); FXSoft.draw(g, im, -w / 2, -h / 2, w, h, 1); g.restore(); return true;

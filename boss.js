@@ -162,6 +162,8 @@ const EYES = {B_1:[[351,107],[381,108]],B_2:[[322,106],[351,110]],B_3:[[263,102]
     if (tint) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(255,40,40,${tint})`; g.fillRect(-m.cx, -m.gy, m.w, m.h); }
     g.restore();
   }
+  // anel no chao em perspectiva: meio arco de tras na camada de tras (as pernas cobrem), meio arco da frente na camada da frente
+  const drawRing = s => { backUsed = true; [[bc, 3.1416, 6.2832], [fc, 0, 3.1416]].forEach(([g, a0, a1]) => { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 10; g.strokeStyle = `rgba(${s.c},${clamp(s.a * .7)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 30; g.beginPath(); g.arc(0, 0, s.r, a0, a1); g.stroke(); g.restore(); }); };
   function frame(){
     if (!running) return; requestAnimationFrame(frame); const now = clk();
     if (document.hidden || now - last < 16) return; last = now;
@@ -204,7 +206,7 @@ const EYES = {B_1:[[351,107],[381,108]],B_2:[[322,106],[351,110]],B_3:[[263,102]
       if (!s) return true;
       if (e.name === 'glow') glow(g, s.x, s.y, s.r, s.c, s.a);
       else if (e.name === 'streak') streak(g, s.x, s.y, s.ang, s.len, s.th, s.c, s.a);
-      else if (e.name === 'ring') { g.save(); g.translate(s.x, s.y); g.scale(1, .3); g.globalCompositeOperation = 'lighter'; g.lineWidth = 10; g.strokeStyle = `rgba(${s.c},${clamp(s.a * .7)})`; g.shadowColor = `rgba(${s.c},.9)`; g.shadowBlur = 30; g.beginPath(); g.arc(0, 0, s.r, 0, 6.2832); g.stroke(); g.restore(); }
+      else if (e.name === 'ring') { drawRing(s); }
       else if (e.name === 'smoke') smokeBlob(g, s.x, s.y, s.r, s.a, '38,6,52');
       else if (e.name === 'orb') { glow(g, s.x, s.y, s.r * 2.1, RED, .35 * s.a); smokeBlob(g, s.x, s.y, s.r * 1.15, clamp(s.a), '10,0,14'); smokeBlob(g, s.x, s.y, s.r * .8, clamp(s.a), '0,0,0'); glow(g, s.x, s.y, s.r * 1.5, VIO, .18 * s.a); }
       else if (e.name === 'sigil') { g.save(); g.translate(s.x, s.y); g.scale(1, .28); g.globalCompositeOperation = 'lighter'; g.strokeStyle = `rgba(${RED},${s.a})`; g.shadowColor = `rgba(${RED},1)`; g.shadowBlur = 24; g.lineWidth = 8;
