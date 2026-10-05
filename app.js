@@ -657,23 +657,8 @@ async function closePanel(){
 // ===== Pixel art gerado em código (sprites 11x11 em string -> imagem sem suavização) =====
 const PAL = {k:'#0b0814',W:'#f4f1ff',S:'#9aa3c2',Y:'#ffc54e',y:'#ffe9a0',B:'#7a4a22',R:'#e0392d',O:'#ff8a2a',b:'#2f6fe0',l:'#6fb4ff',c:'#8fe8d4',t:'#a8864a',T:'#7a5e30',D:'#4d3a1c',G:'#c9d4ff',P:'#b36bff',g:'#5ee08a'};
 const SPR = {
-  sword:['.........WW','........WWS','.......WWS.','......WWS..','.....WWS...','.Y..WWS....','..YWWS.....','...YYY.....','..BYYY.....','.BB.Y......','BB.........'],
-  info:['...bbbbb...','.blllllllb.','bllllWllllb','blllllllllb','bllllWllllb','bllllWllllb','bllllWllllb','bllllWllllb','blllWWWlllb','.blllllllb.','...bbbbb...'],
-  sword2:['.........WW','.......RWWS','......RWWS.','.....RWWS..','....RWWS...','.Y.RWWS....','..YWWS.....','...YYY.....','..BYYY.....','.BB.Y......','BB.........'],
-  hammer:['.TTTTTTT...','TTGGGGGTT..','TTGGGGGTT..','.TTTTTTT...','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......'],
-  hammer2:['RTTTTTTTR..','TTGGGGGTT..','TTGGWWGTT..','RTTTTTTTR..','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......','...BB......'],
-  shield:['.YYYYYYYYY.','YllllbbbbbY','YllllbbbbbY','YllllbbbbbY','YllllbbbbbY','.YlllbbbbY.','.YlllbbbbY.','..YllbbbY..','...YlbbY...','....YbY....','.....Y.....'],
-  guard:['.YYYYYYYYY.','YllllWbbbbY','YllllWbbbbY','YlWWWWWWbbY','YllllWbbbbY','.YlllWbbbY.','.YlllWbbbY.','..YllWbbY..','...YlbbY...','....YbY....','.....Y.....'],
-  orb:['....bbb....','..bbllllb..','.bllWWllbb.','.blWWlllbb.','bllWllllllb','bllllllllbb','bllllllllbb','.bllllllbb.','.bbllllbb..','..bbbbbb...','....bbb....'],
   back:['...........','...WW......','..WW.......','.WWWWWWWWW.','WWWWWWWWWWW','.WWWWWWWWW.','..WW.......','...WW......','...........','...........','...........'],
-  dodge:['...........','gg....gg...','.gg....gg..','..gg....gg.','...gg....gg','....gg....g','...gg....gg','..gg....gg.','.gg....gg..','gg....gg...','...........'],
-  pass:['.....G.....','.....GG....','.....GGG...','GGGGGGGGG..','GGGGGGGGGG.','GGGGGGGGG..','.....GGG...','.....GG....','.....G.....','...........','...........'],
   fire:['.....R.....','....RR.....','...RRRR....','...RROR.R..','..RRROORR..','.RRROOOORR.','.RROOYYORR.','.RROYYYYOR.','.RROYYYYOR.','..RROYYOR..','...RRRRR...'],
-  drop:['.....b.....','.....b.....','....bbb....','....bbb....','...bbllb...','..bbllllb..','.bbllWlllb.','.bblWWlllb.','.bbllllllb.','..bbllllb..','...bbbbb...'],
-  wind:['...........','..cccccc...','.c......c..','.......cc..','.cccccc....','...........','cccccccc...','.......c...','.c....cc...','..cccc.....','...........'],
-  rock:['...........','....tttt...','...tGGGtt..','..tGGGGTtt.','.tGGGGGTTt.','.tGGGTTTTt.','tGGGTTTTTTt','tGTTTTTTTDt','.tTTTTTDDt.','..ttDDDDt..','....tttt...'],
-  cross:['....YYY....','....YWY....','....YWY....','YYYYYWYYYYY','YWWWWWWWWWY','YYYYYWYYYYY','....YWY....','....YWY....','....YWY....','....YWY....','....YYY....'],
-  staff:['.....y.....','....yYy....','.....y.....','.....Y.....','.....B.....','.....B.....','.....B.....','.....B.....','.....B.....','.....B.....','.....B.....'],
   arrow:['kkkkkkkkkkkkk','kYYYYYYYYYYYk','.kYYyYYYYYYk.','..kYYyYYYYk..','...kYYYYYk...','....kYYYk....','.....kYk.....','......k......']
 };
 const _pix = {};
@@ -997,11 +982,10 @@ async function pickAlly(k, sk, sh){
     ? {hero:h, desc:`Vida ${state.heroes[h].hp}/${HERO_MAX_HP}`, chips:sk.id === 'pass' ? '<span class="tag mult">1,5x</span>' : ''} : {hero:h, desc:'Caído', block:'CAÍDO'});
   const first = list.find(x => !x.block).hero;
   const t = await chooseTarget(sk.name.toUpperCase(), sk.id === 'pass' ? 'Quem ganha o ataque extra?' : 'Quem será protegido?', list, first,
-    {icon:sk.id === 'pass' ? 'info' : 'guard', text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'}, sh && sh.endsAt);
+    {text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'}, sh && sh.endsAt);
   if (t === 'BACK') return 'BACK';
   return list.find(x => x.hero === t && !x.block) ? t : first;
 }
-const HERO_ICON = {mage:'orb', knight:'sword', tank:'hammer', assassin:'staff'};
 async function chooseTarget(title, text, list, fallback, note, endsAt){
   if (note && note.text) showBanner(title, note.text);   // avisos ficam no papiro
   const r = await runVote({
@@ -1024,7 +1008,7 @@ async function activateUlt(k, sh){
   if (k === 'assassin') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
     const list = healTargets(), valid = list.filter(t => !t.block);
     if (k === activeGroup && state.heroes[k].hp > 0) {
-      let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {icon:'cross', text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}, sh && sh.endsAt); await closePanel();
+      let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}, sh && sh.endsAt); await closePanel();
       if (r === 'BACK') return 'BACK';
       if (!r || !valid.some(v => v.hero === r)) { toast('Tempo esgotado: a Luz Sagrada não foi usada e continua disponível.'); return false; }
       cleTarget = r;

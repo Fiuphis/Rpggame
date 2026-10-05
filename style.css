@@ -202,9 +202,6 @@
 .sk-card .tp-chips .tag.holy{border-color:#8a6a1a;color:#ffe08a}
 .sk-card .tp-chips .tag.block{border-color:#a02a3c;color:#ff6b80}
 .sk-card.tgt-card::after{border-radius:.6cqw}
-.tp-note{display:flex;align-items:center;gap:1.6cqw;padding:0 2.4cqw 0 1.2cqw;color:#7fe0d0;font-size:1.7cqw;line-height:1.25;pointer-events:none}
-.tp-note .tn-ico{flex:none;width:7.2cqw;height:100%;display:flex;align-items:center;justify-content:center}
-.tp-note .tn-ico img{width:5.4cqw;height:5.4cqw;image-rendering:pixelated}
 .sk-title.t2{gap:.3cqw}.sk-title.t2 b{font-size:2.4cqw}.sk-title.t2 span{font-size:1.4cqw}
 /* ===== Menu de habilidades (arte por herói) ===== */
 .skm{position:absolute;z-index:28;left:16%;width:68%;top:13%;pointer-events:auto;container-type:inline-size;font-family:OpenC,OpenD,monospace;animation:dq-in .34s ease-out both}

@@ -42,8 +42,6 @@ frame('ui_chip_red.png', 24, 16, 3, (72, 18, 32), (36, 8, 18), (214, 86, 96, 255
 
 # ---- chips Tipo/Atributo (azul = tipo, roxo = demoniaco, cinza = normal) + icones 9x9 ----
 frame('ui_chip_blue.png', 24, 16, 2, (22, 40, 78), (10, 18, 44), (120, 190, 255, 255), (36, 84, 150, 255))
-frame('ui_chip_purple.png', 24, 16, 2, (52, 22, 84), (24, 10, 46), (200, 130, 255, 255), (96, 48, 150, 255))
-frame('ui_chip_grey.png', 24, 16, 2, (44, 42, 60), (22, 20, 34), (186, 182, 214, 255), (98, 94, 122, 255))
 def icon(name, rows, pal):
     im = Image.new('RGBA', (len(rows[0]), len(rows)), (0, 0, 0, 0))
     for y, r in enumerate(rows):
@@ -60,7 +58,6 @@ ST = ['....Y....', '....Y....', '...YWY...', 'YYYYWYYYY', '.YYWWWYY.', '..YWWWY.
 icon('icon_chip_elem.png', ST, {'Y': (255, 170, 60, 255), 'W': (255, 240, 190, 255)})
 
 # ---- chip do tempo (verde) + ampulheta 7x9 ----
-frame('ui_chip_green.png', 24, 16, 2, (14, 52, 50), (6, 24, 28), (110, 240, 200, 255), (24, 120, 104, 255))
 HG = ['WWWWWWW', '.TTTTT.', '..TTT..', '...T...', '...T...', '..T.T..', '.T.TT..', 'TTTTTTT', 'WWWWWWW']
 icon('icon_chip_hourglass.png', HG, {'W': (120, 240, 205, 255), 'T': (61, 224, 176, 255)})
 icon('icon_chip_hourglass_red.png', HG, {'W': (255, 140, 150, 255), 'T': (255, 83, 107, 255)})

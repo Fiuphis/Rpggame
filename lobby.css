@@ -36,13 +36,11 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100vh;padd
 .confirm:active:not(:disabled){transform:translateY(.4cqw) scale(.985)}
 .msg{position:absolute;z-index:6;left:50%;top:89.4%;transform:translate(-50%,6px);padding:1.2cqw 3cqw;background:rgba(5,5,14,.95);border:1px solid #ffc54e;color:#ffc54e;font-size:2.5cqw;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
 .msg.show{opacity:1;transform:translate(-50%,0)}
-.test-toggle{appearance:none;-webkit-appearance:none;margin:10px auto 0;font-family:OpenC,OpenD,monospace;font-size:10px;color:#6e6580;background:none;border:1px dashed #2f2948;padding:6px 10px;cursor:pointer}
 /* v96: seleção de classe centralizada na página; as faixas escuras viram um fundo desfocado da própria arte, com degradê nas bordas do palco */
 html{background:#050711}
 body{min-height:100vh;min-height:100dvh;justify-content:center;padding:0;position:relative;overflow-x:hidden;background:transparent}
 body::before{content:"";position:fixed;inset:-40px;z-index:-1;background:#050711 url(select_plate.webp) center/cover no-repeat;filter:blur(22px) brightness(.62) saturate(1.1)}
 .stage{-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 95%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 5%,#000 95%,transparent 100%),linear-gradient(to right,transparent 0,#000 4%,#000 96%,transparent 100%);mask-composite:intersect}
-.test-toggle{position:fixed;left:50%;bottom:max(10px,env(safe-area-inset-bottom));transform:translateX(-50%);margin:0;background:rgba(5,7,17,.7)}
 
 
 /* v117: transição lobby → mapa (escurece e aproxima) */
@@ -58,5 +56,3 @@ body.leaving::before{filter:blur(22px) brightness(.15)}
 .above .ab-title{pointer-events:none;position:absolute;left:1%;top:0;width:98%;height:18.5%;background:url(select_plate.webp) 50% 0/102.04% auto no-repeat;-webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 96%,transparent 100%),linear-gradient(to right,transparent 0,#000 3%,#000 97%,transparent 100%);-webkit-mask-composite:source-in;mask-image:linear-gradient(to bottom,transparent 0,#000 3%,#000 96%,transparent 100%),linear-gradient(to right,transparent 0,#000 3%,#000 97%,transparent 100%);mask-composite:intersect}
 .fogin .above,body.leaving .above{opacity:0;pointer-events:none}
 
-.test-toggle{border:solid transparent!important;border-width:8px!important;border-image:url(ui_chip.png) 6 fill/8px stretch!important;background:none!important;image-rendering:pixelated;padding:3px 8px!important;color:#9a8fb8!important;font:11px OpenC,OpenCl,OpenD,'Pixelify Sans',monospace!important}
-.test-toggle{bottom:calc(max(10px,env(safe-area-inset-bottom)) + 40px)!important}
