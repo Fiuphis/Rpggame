@@ -183,9 +183,9 @@ function bossLeech(lost){
 const SKILLS = {
   mage:[
     {id:'mana_atk', kind:'atk', name:'Ataque de Mana', desc:'Raio de mana. Dano normal.', mana:10, cd:0, mult:1},
-    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. O boss é fraco a FOGO (1,5x e queima por 2 perguntas); água, ar e terra ele ignora (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
+    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. Cada inimigo tem fraquezas próprias. Contra o Lorde das Trevas: fogo causa 1,5x e queima por 2 perguntas; água, ar e terra não causam dano (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
     {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 35% do dano.', mana:10, cd:0, reduce:.35},
-    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; fogo (fraqueza do boss) corta 55%.', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
+    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; corta 55% se for o elemento fraco do inimigo (contra o Lorde das Trevas, fogo).', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
   knight:[
@@ -204,9 +204,9 @@ const SKILLS = {
   ],
   assassin:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de cajado. Dano normal.', mana:0, cd:0, mult:1},
-    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele.', mana:20, cd:1, mult:1, holy:true},
+    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele (o Lorde das Trevas é).', mana:20, cd:1, mult:1, holy:true},
     {id:'def', kind:'def', name:'Defesa Normal', desc:'Ergue as mãos. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
-    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'Sagrado: corta 80% do dano se o inimigo for fraco a ele.', mana:20, cd:1, reduce:.5, bonus:BOSS_WEAK_HOLY_DEF, holy:true},
+    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'Sagrado: corta 80% do dano se o inimigo for fraco a ele (o Lorde das Trevas é).', mana:20, cd:1, reduce:.5, bonus:BOSS_WEAK_HOLY_DEF, holy:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ]
 };

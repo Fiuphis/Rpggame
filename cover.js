@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V = 'v227', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V = 'v228', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -110,7 +110,7 @@ const MSGS = [
   'O Lorde das Trevas ainda ri. Quanto tempo até a primeira resposta errada?',
   'O conhecimento é a única arma que nunca quebra.',
   'A Maga queima, o Guerreiro corta, o Tanque resiste e a Clériga cura. Falta o seu grupo decidir.',
-  'Ranks S e SS rendem o poder máximo, mas um erro desperta a fúria do boss.',
+  'Ranks S e SS rendem o poder máximo, mas um erro desperta a fúria do inimigo.',
   'Cada moeda guardada hoje é uma poção salva amanhã. O Mercador não perdoa os indecisos.',
   'Dizem que existem relógios lendários nas sombras. Quem achar um ganha tempo, o bem mais raro do reino.'
 ];
@@ -119,17 +119,39 @@ const showMsg = () => { msg.classList.remove('on'); setTimeout(() => { msg.textC
 showMsg(); setInterval(() => { if (!document.hidden && !cv.classList.contains('go')) showMsg(); }, 6200);
 
 // ---------- Como jogar ----------
+const GUARDS = [
+  {n:'LORDE', h:'Castelo do Lorde das Trevas', b:`<p>O primeiro guardião: um demônio vampiro com 650 de vida. Todo o dano dele é demoníaco.</p>
+<h4>FRAQUEZAS</h4><ul><li><b class="r">FOGO</b>A Maga causa 1,5x de dano e ainda queima o boss por 2 perguntas</li><li><b class="g">SAGRADO</b>O Ataque Sagrado da Clériga causa 2x e a Defesa Sagrada corta 80% do dano</li><li><b>IMUNE</b>Água, ar e terra não causam dano (só efeito visual). Não gastem mana nisso</li></ul>
+<h4>ATAQUES</h4><ul><li><b>FÍSICO</b>Golpe comum, o mais fraco</li><li><b class="p">DEMONÍACO</b>Mais forte e rouba vida: ele cura parte do que vocês perderem</li><li><b class="r">ELEMENTAL</b>O mais forte e o que mais rouba vida. Aparece mais nos ranks altos</li><li><b>ONDA SOMBRIA</b>Fere os quatro heróis de uma vez, mais forte nos ranks altos</li></ul>
+<h4>HABILIDADES</h4><ul><li><b>PREPARANDO</b>Aviso na tela: a rodada seguinte tem golpes 50% mais fortes. Defendam</li><li><b>TELEPORTE</b>Depois da 4ª pergunta ele some e ataca o herói mais fraco. Esquivar anula e deixa o boss atordoado (+25% de dano nele)</li><li><b>ESTOCADA</b>Fura Provocação e Proteção Específica. Só aparece quando uma delas está ativa</li></ul>
+<h4>FÚRIA E FASE 2</h4><ul><li><b class="r">FÚRIA</b>Cada herói que erra rank S ou SS enche a barra. Acertar e defender ou esquivar à toa enche tudo de uma vez. Cheia, a Onda Sombria bate mais forte</li><li><b class="r">FASE 2</b>Com metade da vida o boss desperta: raios, Onda Sombria mais forte até o fim</li></ul>`},
+  {n:'GELO', lock:'TÚMULO DO REI GELADO'},
+  {n:'DRAGÃO', lock:'COVIL DO DRAGÃO VERMELHO'},
+  {n:'ABISMO', lock:'ABISMO CELESTIAL'},
+  {n:'TEMPLO', lock:'TEMPLO DOS ANTIGOS'},
+  {n:'RAINHA', lock:'PÂNTANO DA RAINHA ESPECTRAL'}
+];
+let gi = 0;
+function renderBoss(el) {
+  const g = GUARDS[gi];
+  const row = GUARDS.map((x, i) => `<button type="button" class="chip gt${i === gi ? ' on' : ''}${x.lock ? ' lk' : ''}" data-i="${i}">${x.lock ? '? ' : ''}${x.n}</button>`).join('');
+  const body = g.lock
+    ? `<h3>${g.lock}</h3><div class="lockbox"><p><b class="r">BLOQUEADO</b></p><p>Derrote o guardião anterior na Jornada dos Heróis para descobrir as fraquezas, os ataques e as habilidades deste inimigo. Cada guardião luta de um jeito, então o que funciona contra um pode não funcionar contra o outro.</p></div>`
+    : `<h3>${g.h}</h3>${g.b}`;
+  el.innerHTML = `<div class="gtabs">${row}</div>${body}`;
+  el.querySelectorAll('.gt').forEach(b => b.onclick = () => { gi = +b.dataset.i; renderBoss(el); el.scrollTop = 0; });
+}
 const PAGES = [
-  {t:'OBJETIVO', h:'Derrote o Lorde das Trevas', b:`<p>O Lorde das Trevas tem 650 de vida. Derrubem o boss antes que os quatro heróis caiam.</p><p>Cada classe (Maga, Guerreiro, Tanque e Clériga) é um grupo de até 7 jogadores. Dentro do grupo, a maioria dos votos decide tudo. Moedas, itens e votos são do grupo.</p>`},
-  {t:'PERGUNTAS', h:'Perguntas e votação', b:`<p>Toda rodada começa com uma pergunta de Banco de Dados. O grupo vota em uma alternativa antes do relógio zerar.</p><ul><li><b>RANK C</b>25s para responder, 1 moeda</li><li><b>RANK B</b>30s, 2 moedas</li><li><b>RANK A</b>35s, 3 moedas</li><li><b class="g">RANK S</b>40s, 5 moedas</li><li><b class="g">RANK SS</b>45s, 8 moedas</li></ul><p>Acertar rende moedas. Acertar um rank S ou SS carrega o poder especial do herói. Errar nesses ranks enfurece o boss.</p>`},
-  {t:'HERÓIS', h:'Os quatro heróis', b:`<p>Depois da pergunta, o seu grupo escolhe a ação do herói: atacar, defender, esquivar ou usar uma habilidade. A escolha também é por votação.</p><ul><li><b>MAGA</b>Ataques de mana e de elementos. O boss é fraco a fogo. Especial: Buraco Negro.</li><li><b class="r">GUERREIRO</b>O maior dano. Pode passar a vez para dar um ataque extra a um aliado. Especial: Berserk.</li><li><b class="g">TANQUE</b>A melhor defesa. Protege aliados e desnorteia o boss. Especial: Provocação.</li><li><b class="v">CLÉRIGA</b>Ataque sagrado e defesa sagrada. Especial: Luz Sagrada, que cura ou revive.</li></ul>`},
-  {t:'ITENS', h:'Mercador, mochila e arcas', b:`<p>Entre as perguntas o Mercador vende itens pelas moedas do grupo. A mochila tem 6 espaços e itens iguais empilham até 3.</p><ul><li><b>TOQUE</b>Toque rápido num item da mochila para usar</li><li><b>SEGURAR</b>Segure o dedo num item para ler os detalhes</li><li><b class="p">RARO</b>Itens poderosos que aparecem pouco</li><li><b class="g">LENDÁRIO</b>Os relógios dão tempo extra na pergunta e quase nunca aparecem</li></ul><p>Às vezes surge uma arca misteriosa. Ela pode trazer um item... ou uma armadilha.</p>`},
-  {t:'BOSS', h:'O Lorde das Trevas', b:`<p>O boss ataca a cada rodada. A Onda Sombria acerta todo mundo e fica mais forte nos ranks altos.</p><ul><li><b class="r">FÚRIA</b>Sobe com os erros e, ao encher, ele se enfurece</li><li><b class="r">FASE 2</b>Com metade da vida o boss desperta, com raios e golpes mais fortes</li><li><b>TELEPORTE</b>Ele some e surge atrás de alguém: use Esquiva</li><li><b>PREPARANDO</b>O golpe seguinte vem mais forte: defendam</li></ul>`},
-  {t:'DICAS', h:'Dicas de sobrevivência', b:`<ul><li><b>TEMPO</b>Respondam rápido: quando o relógio zera, o voto não conta</li><li><b>MANA</b>Habilidades fortes gastam mana e têm recarga</li><li><b>DEFESA</b>Defender e esquivar também enchem a fúria... para o seu lado</li><li><b>EQUIPE</b>Quatro grupos jogam juntos. Cuidem uns dos outros</li><li><b class="g">ESPECIAL</b>Acertem perguntas difíceis para liberar os poderes</li></ul>`}
+  {t:'OBJETIVO', h:'A Jornada dos Heróis', b:`<p>Seis guardiões dominam o reino, cada um com seus próprios ataques, fraquezas e habilidades. Vocês enfrentam um por vez, seguindo o mapa. Por enquanto só o Lorde das Trevas, o primeiro deles, está liberado.</p><p>Cada classe (Maga, Guerreiro, Tanque e Clériga) é um grupo de até 7 jogadores. Dentro do grupo, a maioria dos votos decide tudo. Moedas, itens e votos são do grupo.</p><p>Derrubem o guardião antes que os quatro heróis caiam.</p>`},
+  {t:'PERGUNTAS', h:'Perguntas e votação', b:`<p>Toda rodada começa com uma pergunta de Banco de Dados. O grupo vota em uma alternativa antes do relógio zerar.</p><ul><li><b>RANK C</b>25s para responder, 1 moeda</li><li><b>RANK B</b>30s, 2 moedas</li><li><b>RANK A</b>35s, 3 moedas</li><li><b class="g">RANK S</b>40s, 5 moedas</li><li><b class="g">RANK SS</b>45s, 8 moedas</li></ul><p>Acertar rende moedas. Acertar um rank S ou SS carrega o poder especial do herói. Errar nesses ranks enche a fúria do inimigo e deixa o ataque dele mais forte.</p>`},
+  {t:'HERÓIS', h:'Os quatro heróis', b:`<p>Depois da pergunta, o grupo escolhe a ação do herói: atacar, defender, esquivar ou usar uma habilidade. A escolha também é por votação. Acertou a pergunta, o ataque acerta. Errou, o herói fica exposto.</p><ul><li><b>MAGA</b>Ataques de mana e de elementos: fogo, água, ar e terra. Cada inimigo tem fraqueza a um elemento diferente. Especial: Buraco Negro, dano direto enorme.</li><li><b class="r">GUERREIRO</b>O maior dano base. Pode passar a vez para dar um ataque extra a um aliado. Especial: Berserk, ataca até errando.</li><li><b class="g">TANQUE</b>A melhor defesa (corta 75%). Protege um aliado e deixa o inimigo desnorteado. Especial: Provocação, todo o dano vai nele.</li><li><b class="v">CLÉRIGA</b>Dano baixo, mas o Sagrado vale em dobro contra quem é fraco a ele. Especial: Luz Sagrada, que cura ou revive.</li></ul><p>Defender ou esquivar depois de acertar a pergunta desperdiça o ataque e enche a fúria do inimigo.</p>`},
+  {t:'ITENS', h:'Mercador, mochila e arcas', b:`<p>Entre as perguntas o Mercador vende itens pelas moedas do grupo. A mochila tem 6 espaços e itens iguais empilham até 3. Toda batalha começa com a mochila vazia.</p><ul><li><b>TOQUE</b>Toque rápido num item da mochila para usar</li><li><b>SEGURAR</b>Segure o dedo num item para ler os detalhes</li><li><b class="p">RARO</b>Itens poderosos e permanentes que aparecem pouco</li><li><b class="g">LENDÁRIO</b>Os relógios dão tempo extra na pergunta (+5s ou +10s) e quase nunca aparecem</li></ul><p>Às vezes surge uma arca misteriosa. Ela pode trazer um item... ou uma armadilha.</p>`},
+  {t:'GUARDIÕES', h:'Os seis guardiões', render: renderBoss},
+  {t:'DICAS', h:'Dicas de sobrevivência', b:`<ul><li><b>TEMPO</b>Se o relógio zerar, o voto não conta. Combinem antes de votar</li><li><b>FRAQUEZA</b>Leiam o aviso do inimigo e usem o elemento certo. Dano errado é mana jogada fora</li><li><b>MANA</b>Habilidades fortes gastam mana e têm recarga. Ataque normal e defesa normal são de graça</li><li><b>DEFESA</b>Defendam na rodada de Preparando e esquivem do Teleporte. Fora disso, ataquem</li><li><b>CURA</b>Quem vampiriza cura mais quando vocês sofrem mais dano. Defesa e esquiva também negam a cura dele</li><li><b>ESPECIAL</b>Acertem perguntas S e SS para liberar os poderes, mas lembrem que errar nelas dói</li><li><b>EQUIPE</b>Quatro grupos jogam juntos. Cuidem uns dos outros</li></ul>`}
 ];
 const how = $('#how'), tabs = $('#tabs'), hb = $('#hbody'); let pi = 0;
 PAGES.forEach((p, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = p.t; b.onclick = () => go(i); tabs.appendChild(b); });
-function go(i) { pi = Math.max(0, Math.min(PAGES.length - 1, i)); const p = PAGES[pi]; hb.innerHTML = `<h3>${p.h}</h3>${p.b}`; hb.scrollTop = 0;
+function go(i) { pi = Math.max(0, Math.min(PAGES.length - 1, i)); const p = PAGES[pi]; if (p.render) { gi = 0; p.render(hb); } else hb.innerHTML = `<h3>${p.h}</h3>${p.b}`; hb.scrollTop = 0;
   [...tabs.children].forEach((b, j) => b.classList.toggle('on', j === pi)); $('#pg').textContent = `${pi + 1}/${PAGES.length}`; $('#prev').disabled = pi === 0; $('#next').disabled = pi === PAGES.length - 1; }
 $('#how-btn').onclick = () => { go(0); how.hidden = false; };
 $('#hclose').onclick = () => { how.hidden = true; };
