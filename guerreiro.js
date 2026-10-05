@@ -221,11 +221,21 @@ function make(host){
     const ta = A[2] || {}, tb = B[2] || {};
     return {pose:A[1], dx:lerp(ta.dx || 0, tb.dx || 0, u), dy:lerp(ta.dy || 0, tb.dy || 0, u), rot:lerp(ta.rot || 0, tb.rot || 0, u), sc:1};
   }
+  const CEN = {};  // centro de massa horizontal (px do sprite) de cada pose: a cupula centra no corpo, nao nos pes
+  function centroid(name, im){
+    if (CEN[name] != null) return CEN[name];
+    const cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight; const x = cv.getContext('2d'); x.drawImage(im, 0, 0);
+    const d = x.getImageData(0, 0, cv.width, cv.height).data, col = new Array(cv.width).fill(0); let n = 0;
+    for (let j = 0; j < cv.height; j++) for (let i = 0; i < cv.width; i++) if (d[(j * cv.width + i) * 4 + 3] > 100) { col[i]++; n++; }
+    let acc = 0, med = M.poses[name].cx; for (let i = 0; i < col.length; i++) { acc += col[i]; if (acc >= n / 2) { med = i; break; } }   // mediana: espada/escudo esticados nao puxam o centro
+    return CEN[name] = med;
+  }
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1, br0 = 1){
     const fl = name.endsWith('~'); if (fl) name = name.slice(0, -1);
     const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return;
     const br = Math.sin(tm / 1000 * 2.0) * br0, fx = Px + W / 2 + XOFF + dx, fy = Py + BASE + dy;
     c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale((fl ? -1 : 1) * SZ * sc * (1 - .004 * br), SZ * sc * (1 + .008 * br));
+    if (br0 && alpha >= .99) bodyDX = dx + (centroid(name, im) - m.cx) * SZ * sc * (fl ? -1 : 1);
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
@@ -251,7 +261,7 @@ function make(host){
     const tint = a && a.tint ? Math.sin(clamp(pe) * Math.PI) * .55 * (cur && cur.light ? .6 : 1) : 0;
     if (a && a.ghost) { const g = Math.sin(clamp(pe) * Math.PI), gd = a.gdir || 1; drawPose(st.pose, st.dx + 46 * g * gd, st.dy, st.rot, .18 * g, tm, 0, st.sc, 0); drawPose(st.pose, st.dx + 90 * g * gd, st.dy, st.rot, .10 * g, tm, 0, st.sc, 0); }
     if (prev && f < 1) drawPose(prev.pose, prev.dx, prev.dy, prev.rot, 1, tm, tint, prev.sc, deadTarget ? 0 : 1);
-    bodyDX = st.dx || 0; drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
+    drawPose(st.pose, st.dx, st.dy, st.rot, prev && f < 1 ? f : 1, tm, tint, st.sc || 1, deadTarget ? 0 : 1);
     fc.clearRect(0, 0, front.width, front.height);
     if (backUsed) { bc.clearRect(0, 0, back.width, back.height); backUsed = false; }
     if (mode === 'bers' && !deadTarget) { const ft = feet(); glow(bc, ft.x, ft.y - 120, 190 + 14 * Math.sin(tm / 260), RED, .28 + .08 * Math.sin(tm / 200)); backUsed = true;
