@@ -4,12 +4,11 @@
    Cada uso sorteia uma variação diferente da anterior (sacola embaralhada). O dano só entra quando o golpe acerta (fireHit). */
 (() => {
 'use strict';
-const POSES = ['n1','n2','n3','a_i1','a_i2','a_hh','a_sw','a_rd','a_cr','a_lo','a_s1','a_s2','a_bub','a_swl','a_rl1','a_rl2','a_dust','p1','tA','tB','tC','v1','v2','v3','v4','d_i1','d_i2','d_i3','d_a1','d_a2','d_a3','d_a4','d_h1','d_h2','d_h3','d_h4','d_u1','d_u2','d_p1','d_p3','d_f1','d_f2','d_f3','d_e1','d_e2','d_e3','d_e4','d_m1','d_m2','d_m3','d_m4'];
-const FXS = ['rock1','rock2','rock3','rock4'], FXD = ['bring','bspike','earth','rockburst'];
+const POSES = ['i1','i2','i3','i4','i5','i6','a1','a2','a3','a4','a5','a6','h1','h2','h3','h4','h5','h6','s1','s2','s3','s4','s6','e1','e2','e3','e4','e5','e6','u1','u2','k1','k2','fl','dn','v1','v2','v3','v4','v5','v6'];
+const FXS = ['rock1','rock2','rock3','rock4'], FXD = ['bring','bspike','earth','rockburst'], FXW = ['wg1','wg2','wg3','wb1','wb2','wb3','tbur','tspk','tdust','tcrk','tstar','trocks','tsh1','tsh2','tsh3','tsh4','tsh5','tsh6'];
 const T = {x:517, y:340};                 // ponto de impacto no boss
 const BASE = 262, SZ = 1.2, XOFF = -18;
-const PM = {n1:1.2,n2:1.13,n3:1.16,p1:1.07,a_hh:1.05,a_sw:1.11,a_rd:1.18,a_cr:1.06,a_lo:1.09,a_s1:1.12,a_s2:1.12,a_bub:1.1,a_swl:1.12,a_rl1:1.12,a_rl2:1.12,a_dust:1.13,tA:0.93,tC:0.93,v4:0.93,d_i2:1.06,d_a2:1.1,d_a3:1.18,d_a4:1.12,d_h1:1.19,d_h4:1.16,d_u2:1.1,d_p3:1.19,d_f1:1.13,d_f2:1.15,d_f3:1.16,d_e1:1.07,d_e2:1.18,d_e3:1.13,d_e4:1.16,d_m1:1.15,d_m2:1.15,d_m3:1.15,d_m4:1.15};   // ajuste por pose: todas do mesmo tamanho do corpo (tools/ajuste_escala)
-     // SZ: o Tanque é o maior dos heróis     // pés (y) e escala do corpo
+const PM = {};      // escala por pose ja embutida nos PNGs de tank4 (tools/cut_tank4.py)
 const GOLD = '255,200,110', FIRE = '255,150,60', BLUE = '120,180,255';
 let _c = 0, _p = performance.now();
 const clk = () => { const n = performance.now(); _c += (n - _p) * (window.__ts == null ? 1 : window.__ts); _p = n; return _c; };
@@ -20,89 +19,86 @@ const S = (d, steps, ev = [], o = {}) => ({dur:d, steps, ev, ...o});
 
 // ---- animações (passos [t, pose, {dx,dy,rot,sc}], eventos [t, 'nome:arg']) ----
 const ACT = {
-  // Todas as poses seguram o martelo (ou mostram só o escudo). Cada variação usa poses de golpe e efeitos diferentes:
-  // onda dourada (a_sw/n3) ou azul (d_a3/d_m1); estilos da onda: reta, drop (cai do alto), ground (pelo chão), twin (dupla)
+  // Poses de COSTAS da folha nova (tank4/): i = idles, a = ataque (T2), h = super pesado (T3), s = escudo (T4), e = esquiva (T5), u/k/fl/dn = dano e queda (T6), v = vitória e provocação (T7).
+  // '~' no fim do nome espelha a pose. Cada variação usa poses e efeitos diferentes (onda dourada ou azul; estilos: reta, drop, ground, twin).
   melee:[
-    S(2100, [[0,'a_i1'],[.1,'a_rd',{dx:-3}],[.24,'a_hh',{dx:-4}],[.31,'a_hh',{dx:-6,dy:-2}],[.38,'a_sw',{dx:8}],[.62,'a_sw',{dx:4}],[.74,'a_lo'],[.92,'a_i1']], [[.2,'wind'],[.33,'swing:1:small']]),
-    S(2200, [[0,'d_i1'],[.1,'d_a2',{dx:-3}],[.26,'d_a1',{dx:-4}],[.36,'d_a3',{dx:6}],[.62,'d_a3',{dx:4}],[.78,'d_a2'],[.93,'d_i2']], [[.2,'wind'],[.36,'swing:2:small2:blue']]),
-    S(2300, [[0,'d_i2'],[.1,'d_a2'],[.24,'d_m1',{dx:4}],[.4,'d_m1',{dx:8}],[.52,'d_a4',{dx:2,dy:2}],[.74,'d_a4'],[.88,'d_a2'],[.95,'d_i1']], [[.2,'wind'],[.34,'swing:2:small3:blue'],[.5,'spike']]),
-    S(2300, [[0,'d_i3'],[.1,'d_a2'],[.22,'d_m3',{dx:-2,dy:-2}],[.32,'d_m3',{dx:-4,dy:-4}],[.42,'d_a3',{dx:6}],[.62,'d_a3',{dx:4}],[.76,'d_m4'],[.93,'d_i1']], [[.2,'wind'],[.36,'swing:1:small3:blue:twin']]),
-    S(2200, [[0,'a_i2'],[.1,'a_cr',{dx:-4}],[.24,'a_lo',{dx:-6}],[.36,'a_sw',{dx:6,dy:2}],[.62,'a_sw',{dx:4}],[.76,'a_lo'],[.92,'a_i2']], [[.2,'wind'],[.34,'swing:2:small4:ground']]),
-    S(2400, [[0,'d_i1'],[.1,'d_a2'],[.22,'d_h2',{dx:-2,dy:-2}],[.34,'d_h2',{dy:-4}],[.44,'d_a4',{dy:3}],[.66,'d_a4',{dy:2}],[.8,'d_a2'],[.94,'d_i2']], [[.18,'wind'],[.4,'swing:2:small2:drop'],[.46,'quake']]),
-    S(2300, [[0,'a_i1'],[.1,'d_a2'],[.22,'d_a1',{dx:-3}],[.34,'a_sw',{dx:8}],[.5,'d_m2',{dx:4}],[.68,'d_m2',{dx:2}],[.8,'a_rd'],[.93,'a_i1']], [[.2,'wind'],[.34,'swing:1:small4:twin']]),
-    S(2500, [[0,'d_i2'],[.1,'d_a2'],[.2,'d_m3',{dx:-3,dy:-2}],[.3,'d_m1',{dx:6}],[.44,'d_m1',{dx:8}],[.52,'d_a3',{dx:8}],[.66,'d_a3',{dx:4}],[.8,'d_m4'],[.94,'d_i3']], [[.18,'wind'],[.3,'swing:1:small:blue'],[.5,'swing:2:small2:blue:drop']]),
-    S(2400, [[0,'d_i3'],[.1,'d_a2'],[.24,'d_a1',{dx:-4}],[.34,'d_a3',{dx:6}],[.5,'d_a3'],[.58,'d_a4',{dx:2,dy:2}],[.78,'d_a4'],[.9,'d_a2'],[.95,'d_i1']], [[.2,'wind'],[.34,'swing:2:small3:blue'],[.56,'swing:3:small2:blue:drop'],[.6,'spike']]),
-    S(2200, [[0,'a_i2'],[.1,'a_lo'],[.24,'n1'],[.32,'n2',{dx:-6}],[.4,'n3',{dx:6}],[.64,'n3',{dx:4}],[.78,'a_rd'],[.93,'a_i1']], [[.2,'wind'],[.35,'swing:3:small:drop']]),
+    S(2100, [[0,'i1'],[.1,'a1',{dx:-3}],[.26,'a2',{dx:-4}],[.36,'a3',{dx:6}],[.46,'a4',{dx:8}],[.62,'a4',{dx:4}],[.78,'a5'],[.92,'i1']], [[.2,'wind'],[.4,'swing:1:small']]),
+    S(2200, [[0,'i2'],[.1,'a1',{dx:-3}],[.24,'a2',{dx:-4}],[.36,'a3',{dx:6}],[.5,'a4',{dx:6}],[.66,'a6'],[.8,'i1'],[.94,'i1']], [[.2,'wind'],[.4,'swing:2:small2:blue']]),
+    S(2300, [[0,'i3'],[.1,'a2'],[.26,'a3',{dx:4}],[.4,'a4',{dx:8}],[.56,'a5',{dx:2}],[.74,'a6'],[.9,'i1']], [[.2,'wind'],[.36,'swing:2:small3:blue'],[.5,'spike']]),
+    S(2300, [[0,'i1'],[.1,'a1'],[.24,'a2',{dx:-2,dy:-2}],[.38,'a4',{dx:6}],[.56,'a5'],[.74,'a6'],[.92,'i6']], [[.2,'wind'],[.38,'swing:1:small3:blue:twin']]),
+    S(2200, [[0,'i4'],[.1,'a1',{dx:-4}],[.26,'a3',{dx:4}],[.38,'a4',{dx:8,dy:2}],[.62,'a5',{dx:4}],[.78,'a6'],[.93,'i1']], [[.2,'wind'],[.36,'swing:2:small4:ground']]),
+    S(2400, [[0,'i2'],[.1,'a6'],[.22,'a2',{dx:-2,dy:-3}],[.34,'a2',{dy:-4}],[.46,'a4',{dy:3}],[.66,'a4',{dy:2}],[.82,'a5'],[.94,'i1']], [[.18,'wind'],[.42,'swing:2:small2:drop'],[.48,'quake']]),
+    S(2300, [[0,'i6'],[.1,'a1'],[.24,'a3',{dx:-3}],[.36,'a4',{dx:8}],[.52,'a5',{dx:4}],[.7,'a6'],[.84,'i1'],[.94,'i1']], [[.2,'wind'],[.36,'swing:1:small4:twin']]),
   ],
-  heavy:[   // super pesado (2x): marreta no alto → explosão de pedras (poses da folha nova), cada uma com impacto diferente
-    S(3200, [[0,'d_i1'],[.08,'d_h1',{dx:-3}],[.2,'d_h2',{dy:-2}],[.32,'d_h2',{dy:-5}],[.44,'d_h3',{dy:2}],[.6,'d_h3'],[.74,'d_h4'],[.88,'d_a2'],[.95,'d_i1']], [[.18,'wind'],[.32,'wind'],[.42,'swing:4:big'],[.5,'burst']]),
-    S(3300, [[0,'d_i2'],[.08,'d_h1'],[.2,'d_h2',{dy:-3}],[.34,'d_h2',{dy:-5}],[.44,'d_h3'],[.58,'d_a4',{dy:2}],[.76,'d_a4'],[.88,'d_a2'],[.95,'d_i1']], [[.18,'wind'],[.32,'wind'],[.43,'swing:4:big2:blue'],[.52,'spike'],[.58,'quake']]),
-    S(3300, [[0,'a_i1'],[.08,'a_rd'],[.2,'d_h2',{dy:-3}],[.34,'d_h2',{dy:-5}],[.46,'d_h3',{dy:2}],[.62,'d_h4'],[.78,'d_h4'],[.9,'d_h1'],[.95,'d_i2']], [[.18,'wind'],[.34,'wind'],[.45,'swing:4:big3:drop'],[.52,'burst']]),
-    S(3400, [[0,'d_i3'],[.08,'d_a2'],[.18,'d_a1',{dy:-2}],[.3,'d_m3',{dy:-4}],[.4,'d_h2',{dy:-5}],[.5,'d_h3'],[.66,'d_h4'],[.84,'d_a2'],[.95,'d_i1']], [[.16,'wind'],[.34,'wind'],[.47,'swing:4:big:twin'],[.56,'quake']]),
-    S(3300, [[0,'d_i1'],[.08,'d_a2'],[.2,'d_m1',{dx:2}],[.32,'d_h2',{dy:-5}],[.44,'d_h3'],[.6,'d_h3'],[.76,'d_h4'],[.9,'d_h1'],[.95,'d_i2']], [[.18,'wind'],[.34,'wind'],[.45,'swing:4:big4:blue:drop'],[.52,'burst'],[.54,'spike']]),
-    S(3500, [[0,'a_i2'],[.08,'a_hh',{dy:-2}],[.2,'d_h2',{dy:-4}],[.32,'d_h2',{dy:-5}],[.44,'d_h3'],[.58,'d_h4'],[.7,'d_a1'],[.82,'a_sw',{dx:6}],[.92,'a_rd'],[.96,'a_i1']], [[.16,'wind'],[.32,'wind'],[.42,'swing:4:big2'],[.5,'burst'],[.74,'swing:3:small2:twin']]),
-    S(3400, [[0,'d_i2'],[.08,'d_a2'],[.2,'d_m3',{dy:-3}],[.32,'d_h2',{dy:-5}],[.44,'d_h3'],[.56,'d_a4',{dy:2}],[.72,'d_a4'],[.86,'d_h1'],[.95,'d_i3']], [[.16,'wind'],[.34,'wind'],[.44,'swing:4:big3:ground'],[.52,'quake'],[.6,'spike']]),
+  heavy:[   // super pesado (2x): marreta no alto → pancada no chão → explosão de pedras
+    S(3200, [[0,'i1'],[.08,'h1',{dx:-3}],[.2,'h2',{dy:-2}],[.32,'h3',{dy:-4}],[.44,'h4',{dy:2}],[.52,'h5'],[.68,'h5'],[.82,'h6'],[.95,'i1']], [[.18,'wind'],[.32,'wind'],[.43,'swing:4:big'],[.52,'burst']]),
+    S(3300, [[0,'i2'],[.08,'h1'],[.2,'h2',{dy:-3}],[.34,'h3',{dy:-5}],[.44,'h4'],[.54,'h5',{dy:2}],[.72,'h5'],[.86,'h6'],[.95,'i1']], [[.18,'wind'],[.32,'wind'],[.45,'swing:4:big2:blue'],[.54,'spike'],[.58,'quake']]),
+    S(3300, [[0,'i1'],[.08,'a1'],[.2,'h2',{dy:-3}],[.34,'h3',{dy:-5}],[.46,'h4',{dy:2}],[.56,'h5'],[.74,'h6'],[.9,'a6'],[.95,'i1']], [[.18,'wind'],[.34,'wind'],[.47,'swing:4:big3:drop'],[.54,'burst']]),
+    S(3400, [[0,'i3'],[.08,'a2'],[.2,'h2',{dy:-3}],[.32,'h3',{dy:-5}],[.44,'h4'],[.52,'h5'],[.66,'h6'],[.84,'a6'],[.95,'i1']], [[.16,'wind'],[.34,'wind'],[.47,'swing:4:big:twin'],[.56,'quake']]),
+    S(3300, [[0,'i1'],[.08,'h1'],[.2,'h2'],[.32,'h3',{dy:-5}],[.44,'h4'],[.52,'h5'],[.62,'h5'],[.76,'h6'],[.9,'a2'],[.95,'i1']], [[.18,'wind'],[.34,'wind'],[.45,'swing:4:big4:blue:drop'],[.52,'burst'],[.54,'spike']]),
+    S(3500, [[0,'i4'],[.08,'h1',{dy:-2}],[.2,'h2',{dy:-4}],[.32,'h3',{dy:-5}],[.44,'h4'],[.54,'h5'],[.68,'h6'],[.78,'a3'],[.86,'a5',{dx:6}],[.95,'i1']], [[.16,'wind'],[.32,'wind'],[.42,'swing:4:big2'],[.5,'burst'],[.76,'swing:3:small2:twin']]),
+    S(3400, [[0,'i2'],[.08,'a1'],[.2,'a2',{dy:-3}],[.32,'h3',{dy:-5}],[.44,'h4'],[.52,'h5'],[.7,'h5'],[.86,'h6'],[.95,'i1']], [[.16,'wind'],[.34,'wind'],[.44,'swing:4:big3:ground'],[.52,'quake'],[.6,'spike']]),
   ],
   guard_p:[ // proteção específica (escudo sobre o aliado)
-    S(2000, [[0,'d_i1'],[.14,'d_p1'],[.34,'d_p3',{dy:-1}],[.8,'d_p3'],[.96,'d_i2']], [[.3,'shield:p1']]),
-    S(2000, [[0,'a_i2'],[.14,'d_p1'],[.34,'a_s1',{dy:-1}],[.8,'a_s1'],[.96,'a_i1']], [[.3,'shield:p2']]),
-    S(2100, [[0,'d_i3'],[.12,'d_p1'],[.3,'a_s2'],[.8,'a_s2'],[.96,'d_i1']], [[.28,'shield:p3']]),
-    S(2100, [[0,'a_i1'],[.14,'p1'],[.3,'a_bub'],[.8,'a_bub'],[.96,'d_i2']], [[.3,'shield:p4']]),
-    S(2100, [[0,'d_i2'],[.12,'d_p1'],[.3,'a_s1'],[.5,'d_p3'],[.82,'d_p3'],[.96,'a_i1']], [[.28,'shield:p2'],[.5,'shield:p4']]),
-    S(2000, [[0,'d_i1'],[.12,'d_p3'],[.3,'d_p1'],[.5,'a_s2'],[.82,'a_s2'],[.96,'d_i3']], [[.28,'shield:p1'],[.5,'shield:p3']]),
+    S(2000, [[0,'i1'],[.14,'s2'],[.34,'s2',{dy:-1}],[.8,'s2'],[.96,'i2']], [[.3,'shield:p1']]),
+    S(2000, [[0,'i2'],[.14,'s6'],[.34,'s1',{dy:-1}],[.8,'s1'],[.96,'i1']], [[.3,'shield:p2']]),
+    S(2100, [[0,'i3'],[.12,'s2'],[.3,'s3'],[.8,'s3'],[.96,'i1']], [[.28,'shield:p3']]),
+    S(2100, [[0,'i1'],[.14,'s6'],[.3,'s1'],[.8,'s1'],[.96,'i2']], [[.3,'shield:p4']]),
+    S(2100, [[0,'i2'],[.12,'s1'],[.3,'s2'],[.5,'s3'],[.82,'s3'],[.96,'i1']], [[.28,'shield:p2'],[.5,'shield:p4']]),
+    S(2000, [[0,'i1'],[.12,'s3'],[.3,'s2'],[.5,'s1'],[.82,'s1'],[.96,'i3']], [[.28,'shield:p1'],[.5,'shield:p3']]),
   ],
   guard_d:[ // defesa com escudo
-    S(1900, [[0,'d_i1'],[.12,'d_f1'],[.3,'d_f2'],[.88,'d_f2'],[.98,'d_i2']], [[.26,'shield:d1']]),
-    S(1900, [[0,'d_i2'],[.12,'d_f1'],[.3,'d_f3'],[.88,'d_f3'],[.98,'d_i1']], [[.26,'shield:d2']]),
-    S(1900, [[0,'d_i3'],[.12,'d_f3'],[.3,'d_f2'],[.88,'d_f2'],[.98,'d_i1']], [[.26,'shield:d3']]),
-    S(1900, [[0,'a_i1'],[.12,'a_rd'],[.3,'a_s2'],[.88,'a_s2'],[.98,'a_i1']], [[.26,'shield:d4']]),
-    S(2000, [[0,'d_i1'],[.12,'d_f1'],[.3,'d_f3'],[.6,'a_swl'],[.88,'a_swl'],[.98,'d_i2']], [[.26,'shield:d2'],[.58,'shield:d4']]),
-    S(2000, [[0,'a_i2'],[.12,'d_f1'],[.3,'a_s1'],[.6,'d_f2'],[.88,'d_f2'],[.98,'a_i1']], [[.26,'shield:d3'],[.58,'shield:d1']]),
+    S(1900, [[0,'i1'],[.12,'s6'],[.3,'s4'],[.88,'s4'],[.98,'i2']], [[.26,'shield:d1']]),
+    S(1900, [[0,'i2'],[.12,'s1'],[.3,'s4'],[.88,'s4'],[.98,'i1']], [[.26,'shield:d2']]),
+    S(1900, [[0,'i3'],[.12,'s6'],[.3,'s3'],[.88,'s3'],[.98,'i1']], [[.26,'shield:d3']]),
+    S(1900, [[0,'i1'],[.12,'s2'],[.3,'s3'],[.88,'s3'],[.98,'i1']], [[.26,'shield:d4']]),
+    S(2000, [[0,'i1'],[.12,'s6'],[.3,'s4'],[.6,'s1'],[.88,'s1'],[.98,'i2']], [[.26,'shield:d2'],[.58,'shield:d4']]),
+    S(2000, [[0,'i2'],[.12,'s1'],[.3,'s3'],[.6,'s4'],[.88,'s4'],[.98,'i1']], [[.26,'shield:d3'],[.58,'shield:d1']]),
   ],
-  dodge:[   // esquiva: rolamento da folha nova, com vento e poeira
-    S(1300, [[0,'d_i1'],[.1,'d_e1',{dx:-6}],[.26,'d_e2',{dx:-44,dy:-2}],[.48,'d_e3',{dx:-66}],[.7,'d_e4',{dx:-44}],[.86,'d_e1',{dx:-10}],[.98,'d_i1']], [], {ghost:true}),
-    S(1300, [[0,'d_i2'],[.1,'d_e1',{dx:6}],[.26,'d_e2',{dx:44}],[.48,'d_e3',{dx:66}],[.7,'d_e4',{dx:44}],[.86,'d_e1',{dx:8}],[.98,'d_i1']], [], {ghost:true, gdir:-1}),
-    S(1250, [[0,'a_i1'],[.1,'a_rd',{dx:-6}],[.26,'a_rl1',{dx:-44,dy:-2}],[.48,'a_rl2',{dx:-66}],[.7,'a_dust',{dx:-44}],[.86,'a_rd',{dx:-10}],[.98,'a_i1']], [], {ghost:true}),
-    S(1300, [[0,'d_i3'],[.1,'d_e1',{dx:-6}],[.28,'d_e4',{dx:-40,dy:-2}],[.52,'d_e3',{dx:-62}],[.74,'d_e2',{dx:-34}],[.88,'d_e1'],[.98,'d_i1']], [], {ghost:true}),
-    S(1250, [[0,'a_i2'],[.1,'a_cr',{dx:6}],[.26,'a_rl2',{dx:44}],[.48,'a_rl1',{dx:64,dy:-2}],[.7,'a_dust',{dx:40}],[.86,'a_rd',{dx:8}],[.98,'a_i1']], [], {ghost:true, gdir:-1}),
-    S(1250, [[0,'d_i1'],[.1,'d_e1',{dx:4}],[.28,'d_e2',{dx:40,dy:-8}],[.5,'d_e4',{dx:64,dy:-4}],[.72,'d_e3',{dx:36}],[.88,'d_e1',{dx:6}],[.98,'d_i2']], [], {ghost:true, gdir:-1}),
+  dodge:[   // esquiva: desvio e rolamento (poses espelhadas para o outro lado), com vento e poeira
+    S(1300, [[0,'i1'],[.1,'e1',{dx:-6}],[.26,'e2',{dx:-44,dy:-2}],[.48,'e3',{dx:-66}],[.7,'e4',{dx:-44}],[.86,'e1',{dx:-10}],[.98,'i1']], [], {ghost:true}),
+    S(1300, [[0,'i2'],[.1,'e1~',{dx:6}],[.26,'e2~',{dx:44}],[.48,'e3~',{dx:66}],[.7,'e4~',{dx:44}],[.86,'e1~',{dx:8}],[.98,'i1']], [], {ghost:true, gdir:-1}),
+    S(1250, [[0,'i3'],[.1,'e6',{dx:-6}],[.26,'e1',{dx:-44,dy:-2}],[.48,'e3',{dx:-66}],[.7,'e4',{dx:-44}],[.86,'e6',{dx:-10}],[.98,'i1']], [], {ghost:true}),
+    S(1300, [[0,'i1'],[.1,'e5',{dx:6}],[.28,'e5',{dx:40,dy:-2}],[.52,'e3~',{dx:62}],[.74,'e4~',{dx:34}],[.88,'e1~'],[.98,'i1']], [], {ghost:true, gdir:-1}),
+    S(1250, [[0,'i2'],[.1,'e2',{dx:-6}],[.26,'e3',{dx:-44}],[.48,'e4',{dx:-64,dy:-2}],[.7,'e1',{dx:-40}],[.86,'e6',{dx:-8}],[.98,'i1']], [], {ghost:true}),
+    S(1250, [[0,'i1'],[.1,'e6'],[.28,'e6',{dx:40,dy:-8}],[.5,'e5',{dx:64,dy:-4}],[.72,'e4~',{dx:36}],[.88,'e1~',{dx:6}],[.98,'i2']], [], {ghost:true, gdir:-1}),
   ],
   hurt:[
-    S(850, [[0,'a_i1'],[.1,'d_f1',{dx:-8,rot:-3}],[.34,'d_f1',{dx:3}],[.62,'d_f1'],[.92,'d_i1']], [], {tint:true}),
-    S(850, [[0,'d_i2'],[.1,'a_rd',{dx:-8,rot:-4}],[.34,'a_rd',{dx:3}],[.62,'a_cr'],[.92,'a_i1']], [], {tint:true}),
-    S(900, [[0,'a_i1'],[.12,'d_e1',{dx:-6,dy:2}],[.4,'d_e1',{dx:2}],[.66,'d_f1'],[.92,'d_i3']], [], {tint:true}),
-    S(850, [[0,'d_i3'],[.1,'a_lo',{dx:-8,rot:-3}],[.34,'a_lo',{dx:3}],[.62,'d_h1'],[.92,'d_i1']], [], {tint:true}),
-    S(850, [[0,'d_i1'],[.1,'d_h1',{dx:-8,rot:-4}],[.34,'d_h1',{dx:3}],[.62,'d_f3'],[.92,'a_i2']], [], {tint:true}),
+    S(850, [[0,'i1'],[.1,'u1',{dx:-8,rot:-2}],[.34,'u1',{dx:3}],[.62,'u2'],[.92,'i1']], [], {tint:true}),
+    S(850, [[0,'i2'],[.1,'u2',{dx:-8,rot:-3}],[.34,'u2',{dx:3}],[.62,'u1'],[.92,'i1']], [], {tint:true}),
+    S(900, [[0,'i1'],[.12,'u1',{dx:-6,dy:2}],[.4,'u2',{dx:2}],[.66,'u2'],[.92,'i3']], [], {tint:true}),
+    S(850, [[0,'i3'],[.1,'u2',{dx:-8,rot:-3}],[.34,'k1',{dx:3}],[.62,'u2'],[.92,'i1']], [], {tint:true}),
+    S(850, [[0,'i1'],[.1,'u1',{dx:-8,rot:-3}],[.34,'u1',{dx:3}],[.62,'e1'],[.92,'i2']], [], {tint:true}),
   ],
   victory:[
-    S(3000, [[0,'d_i1'],[.12,'d_a2'],[.28,'d_a1',{dy:-2}],[.5,'d_u1',{dy:-3}],[.8,'d_u1',{dy:-2}],[.96,'d_i2']], [[.3,'cheer'],[.52,'cheer:rise'],[.8,'cheer']]),
-    S(3200, [[0,'d_i2'],[.14,'d_m3'],[.38,'d_u1'],[.62,'d_u2'],[.82,'d_u2'],[.96,'d_i1']], [[.36,'cheer:rise'],[.6,'cheer'],[.82,'cheer:rise']]),
-    S(3000, [[0,'d_i3'],[.14,'d_h2',{dy:-3}],[.4,'d_h2',{dy:-5}],[.58,'d_u1'],[.84,'d_u2'],[.96,'d_i1']], [[.4,'cheer'],[.6,'cheer:rise'],[.84,'cheer']]),
-    S(3000, [[0,'a_i1'],[.14,'a_hh',{dy:-3}],[.4,'tB',{dy:-3}],[.62,'tC'],[.84,'tC'],[.96,'a_i2']], [[.4,'cheer'],[.6,'cheer:rise'],[.84,'cheer']]),
-    S(3200, [[0,'d_i1'],[.12,'d_m3'],[.3,'d_h2',{dy:-4}],[.5,'d_u1',{dy:-2}],[.7,'tA'],[.88,'d_u2'],[.96,'d_i2']], [[.32,'cheer'],[.52,'cheer:rise'],[.72,'cheer'],[.88,'cheer:rise']]),
+    S(3000, [[0,'i1'],[.12,'a1'],[.28,'v1',{dy:-2}],[.5,'v1',{dy:-3}],[.8,'v1',{dy:-2}],[.96,'i2']], [[.3,'cheer'],[.52,'cheer:rise'],[.8,'cheer']]),
+    S(3200, [[0,'i2'],[.14,'v2'],[.38,'v2'],[.62,'v1'],[.82,'v1'],[.96,'i1']], [[.36,'cheer:rise'],[.6,'cheer'],[.82,'cheer:rise']]),
+    S(3000, [[0,'i3'],[.14,'v3'],[.4,'v3'],[.58,'v2'],[.84,'v1'],[.96,'i1']], [[.4,'cheer'],[.6,'cheer:rise'],[.84,'cheer']]),
+    S(3000, [[0,'i1'],[.14,'v4'],[.4,'v2',{dy:-3}],[.62,'v1'],[.84,'v1'],[.96,'i2']], [[.4,'cheer'],[.6,'cheer:rise'],[.84,'cheer']]),
+    S(3200, [[0,'i1'],[.12,'v5'],[.3,'v3',{dy:-4}],[.5,'v2',{dy:-2}],[.7,'v1'],[.88,'v2'],[.96,'i2']], [[.32,'cheer'],[.52,'cheer:rise'],[.72,'cheer'],[.88,'cheer:rise']]),
   ],
-  ult:[     // provocação: martelo no alto + aura dourada e pedras voando
-    S(3800, [[0,'d_i1'],[.08,'d_a2'],[.2,'d_a1',{dy:-3}],[.34,'d_u1',{dy:-3}],[.56,'d_u2',{dy:-3}],[.82,'d_u1',{dy:-2}],[.95,'d_i2']], [[.12,'wind'],[.3,'taunt'],[.46,'taunt:2'],[.62,'taunt:3']]),
-    S(3800, [[0,'d_i2'],[.1,'d_p1'],[.22,'tA'],[.4,'tB'],[.62,'tC'],[.82,'tB'],[.95,'d_i1']], [[.12,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.64,'taunt:3']]),
-    S(3800, [[0,'d_i3'],[.1,'d_m3',{dx:-3}],[.24,'d_u1',{dy:-3}],[.42,'tA'],[.62,'d_u2',{dy:-2}],[.84,'tC'],[.95,'d_i1']], [[.12,'wind'],[.28,'taunt'],[.46,'taunt:2'],[.66,'taunt:3']]),
-    S(4000, [[0,'a_i2'],[.08,'a_cr'],[.2,'a_hh',{dy:-3}],[.34,'tA'],[.5,'tC',{dy:-4}],[.7,'tB',{dy:-3}],[.86,'tC'],[.95,'a_i1']], [[.12,'wind'],[.3,'taunt'],[.44,'taunt:4'],[.6,'taunt:2'],[.76,'taunt:3']]),
-    S(4000, [[0,'d_i1'],[.08,'d_h1'],[.2,'d_h2',{dy:-3}],[.34,'d_u1',{dy:-3}],[.5,'d_u2'],[.7,'d_u1',{dy:-2}],[.88,'tC'],[.95,'d_i2']], [[.12,'wind'],[.28,'taunt:2'],[.44,'taunt:4'],[.6,'taunt'],[.78,'taunt:3']]),
-    S(4200, [[0,'d_i2'],[.08,'d_a2'],[.18,'d_a1',{dy:-3}],[.3,'d_m3',{dx:-4,dy:-6}],[.44,'tA'],[.6,'d_u1',{dy:-3}],[.76,'tC',{dy:-4}],[.9,'d_u2'],[.95,'d_i1']], [[.12,'wind'],[.3,'taunt:4'],[.46,'taunt:2'],[.62,'taunt:4'],[.8,'taunt:3']]),
+  ult:[     // provocação: rugido, martelo apontado, pisão e escudo + aura dourada e pedras voando
+    S(3800, [[0,'i1'],[.08,'a1'],[.2,'v3',{dy:-3}],[.34,'v3',{dy:-3}],[.56,'v4',{dy:-3}],[.82,'v3',{dy:-2}],[.95,'i2']], [[.12,'wind'],[.3,'taunt'],[.46,'taunt:2'],[.62,'taunt:3']]),
+    S(3800, [[0,'i2'],[.1,'s2'],[.22,'v6'],[.4,'v3'],[.62,'v4'],[.82,'v5'],[.95,'i1']], [[.12,'wind'],[.26,'taunt'],[.44,'taunt:2'],[.64,'taunt:3']]),
+    S(3800, [[0,'i3'],[.1,'a2',{dx:-3}],[.24,'v1',{dy:-3}],[.42,'v3'],[.62,'v5',{dy:-2}],[.84,'v3'],[.95,'i1']], [[.12,'wind'],[.28,'taunt'],[.46,'taunt:2'],[.66,'taunt:3']]),
+    S(4000, [[0,'i1'],[.08,'h1'],[.2,'v6',{dy:-3}],[.34,'v6'],[.5,'v5',{dy:-4}],[.7,'v3',{dy:-3}],[.86,'v4'],[.95,'i2']], [[.12,'wind'],[.3,'taunt'],[.44,'taunt:4'],[.6,'taunt:2'],[.76,'taunt:3']]),
+    S(4000, [[0,'i2'],[.08,'h1'],[.2,'h2',{dy:-3}],[.34,'v1',{dy:-3}],[.5,'v5'],[.7,'v3',{dy:-2}],[.88,'v4'],[.95,'i1']], [[.12,'wind'],[.28,'taunt:2'],[.44,'taunt:4'],[.6,'taunt'],[.78,'taunt:3']]),
+    S(4200, [[0,'i1'],[.08,'s2'],[.18,'s3',{dy:-3}],[.3,'v6',{dx:-4,dy:-6}],[.44,'v3'],[.6,'v5',{dy:-3}],[.76,'v6',{dy:-4}],[.9,'v1'],[.95,'i1']], [[.12,'wind'],[.3,'taunt:4'],[.46,'taunt:2'],[.62,'taunt:4'],[.8,'taunt:3']]),
   ],
 };
 const IDLES = [   // ociosa: sorteada, com pausas longas entre uma e outra
-  S(4200, [[0,'a_i1'],[.2,'a_i2'],[.5,'a_i2'],[.8,'a_i1'],[.98,'a_i1']]),
-  S(3600, [[0,'a_i1'],[.25,'a_rd'],[.6,'a_rd'],[.85,'a_i1'],[.98,'a_i1']]),
-  S(3600, [[0,'a_i1'],[.25,'a_lo'],[.6,'a_cr'],[.85,'a_lo'],[.98,'a_i1']]),
-  S(3200, [[0,'a_i1'],[.3,'d_i2'],[.75,'d_i2'],[.98,'a_i1']]),
-  S(3000, [[0,'a_i1'],[.25,'a_i2'],[.75,'a_i2'],[.98,'a_i1']]),
+  S(4200, [[0,'i1'],[.2,'i2'],[.5,'i2'],[.8,'i1'],[.98,'i1']]),
+  S(3600, [[0,'i1'],[.25,'i3'],[.6,'i3'],[.85,'i1'],[.98,'i1']]),
+  S(3600, [[0,'i1'],[.25,'i4'],[.6,'i4'],[.85,'i1'],[.98,'i1']]),
+  S(3800, [[0,'i1'],[.25,'i5'],[.75,'i5'],[.98,'i1']]),
+  S(3400, [[0,'i1'],[.25,'i6'],[.75,'i6'],[.98,'i1']]),
+  S(4200, [[0,'i1'],[.2,'i3'],[.5,'i4'],[.8,'i6'],[.98,'i1']]),
 ];
-IDLES.push(S(4200, [[0,'d_i1'],[.2,'d_i2'],[.5,'d_i2'],[.8,'d_i1'],[.98,'d_i1']]), S(4200, [[0,'d_i1'],[.2,'d_i3'],[.55,'d_i3'],[.82,'d_i1'],[.98,'d_i1']]), S(3800, [[0,'d_i1'],[.2,'d_h1'],[.6,'d_h1'],[.84,'d_i1'],[.98,'d_i1']]));
 IDLES.forEach(a => { a.dur = Math.round(a.dur * 1.5); });
 const bags = new WeakMap();
 const variant = v => { if (!Array.isArray(v)) return v; if (window.__vi != null) return v[window.__vi % v.length]; let b = bags.get(v); if (!b || !b.l.length) { const l = v.map((_, i) => i); for (let i = l.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [l[i], l[j]] = [l[j], l[i]]; } if (b && l.length > 1 && l[0] === b.last) [l[0], l[l.length - 1]] = [l[l.length - 1], l[0]]; b = {l, last:b ? b.last : -1}; bags.set(v, b); } const i = b.l.shift(); b.last = i; return v[i]; };
-const DEATH = [[0,'v1'],[.3,'v2'],[.62,'v3'],[.88,'v4']];      // cai aos poucos: meio caído → um joelho → dois joelhos
-const REVIVE = [[0,'v4'],[.2,'v3'],[.5,'v2'],[.82,'v1']];     // levanta na ordem inversa
+const DEATH = [[0,'u2'],[.3,'k1'],[.55,'k2'],[.78,'fl'],[.92,'dn']];      // cambaleia → um joelho → dois joelhos → cai → deitado
+const REVIVE = [[0,'dn'],[.2,'fl'],[.42,'k2'],[.66,'k1'],[.84,'u2']];     // levanta na ordem inversa
 
 function glow(g, x, y, r, col, a){
   if (a <= 0.005 || r <= 1) return; const gr = g.createRadialGradient(x, y, 0, x, y, r);
@@ -122,7 +118,7 @@ function make(host){
   const cw = cv.width, ch = cv.height, OX = world.x - Px, OY = world.y - Py;
   let M = null; const img = {};
   const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
-  fetch('tank/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank/${n}.png`)); FXS.forEach(n => load('fx_' + n, `knight/fx_${n}.png`)); FXD.forEach(n => load('fx_' + n, `tank/fx_${n}.png`)); }).catch(() => {});
+  fetch('tank4/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `tank4/${n}.png`)); FXS.forEach(n => load('fx_' + n, `knight/fx_${n}.png`)); FXD.forEach(n => load('fx_' + n, `tank/fx_${n}.png`)); FXW.forEach(n => load('fx_' + n, `tank4/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let deadTarget = 0, deadT = 0, reviveT = 0, prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240, col = null;
@@ -141,6 +137,7 @@ function make(host){
     const fd = u => u < .1 ? u / .1 : u > .92 ? (1 - u) / .08 : 1;
     const col = blue ? BLUE : ground ? FIRE : GOLD;
     E('glow', d, u => { const p = path(u); return {x:p.x, y:p.y, r:(54 + 14 * Math.sin(u * 22)) * sz * (.6 + .5 * u), c:col, a:.8 * fd(u)}; }, {delay});
+    { const wv = (blue ? 'wb' : 'wg') + (1 + Math.floor(Math.random() * 3)); for (let g = 0; g < 2; g++) E('fx_' + wv, d, u => { const uu = Math.max(0, u - g * .05), p = path(uu), q = path(Math.min(1, uu + .04)); return {x:p.x, y:p.y, s:sz * (.42 + .38 * Math.sin(Math.min(1, uu * 1.3) * 1.57)) * (1 - g * .15), rot:Math.atan2(q.y - p.y, q.x - p.x), a:fd(u) * (.85 - g * .4)}; }, {delay}); }
     E('streak', d, u => { const p = path(u), q = path(Math.min(1, u + .04)); return {x:p.x, y:p.y, ang:Math.atan2(q.y - p.y, q.x - p.x), len:(drop ? 160 : 120) * sz, th:26 * sz, c:blue ? BLUE : FIRE, a:.8 * fd(u)}; }, {delay});
     for (let i = 1; i <= 9; i++) { const ut = i / 10, p = path(ut), rr = FXS[(i + (style ? 2 : 0)) % FXS.length], up = ground ? -40 : 0; E('glow', 480, v => ({x:p.x, y:p.y + 10 * v, r:46 * sz * (1 - v * .6), c:FIRE, a:.45 * (1 - v)}), {delay:delay + ut * d});
       E('fx_' + rr, 640, v => ({x:p.x + Math.sin(i * 3) * 24 * v, y:p.y + 10 + 60 * v * v - (26 + (ground ? 50 : 0)) * v, s:(.55 + (ground ? .15 : 0)) * (1 - v * .3), rot:v * 5 * (i % 2 ? 1 : -1), a:1 - seg(v, .55, 1)}), {delay:delay + ut * d * .9}); }
@@ -156,7 +153,7 @@ function make(host){
     const rocks = (n, spread, up, big) => { for (let i = 0; i < n; i++) { const an = -Math.PI / 2 + rnd(-1.25, 1.25), sp = rnd(.5, 1) * spread, rr = FXS[i % FXS.length], rot = rnd(-6, 6);
       E('fx_' + rr, 900, u => ({x:T.x + Math.cos(an) * sp * u, y:T.y + Math.sin(an) * sp * u + 260 * u * u - up * Math.sin(Math.PI * Math.min(1, u * 1.1)), s:big ? .9 : .65, rot:rot * u, a:1 - seg(u, .7, 1)}), {delay:i * 15}); } };
     const ring = (r, d, col, a, dl = 0) => E('ring', d, u => ({x:T.x, y:T.y + 50, r:lerp(r * .3, r, eo(u)), c:col, a:a * (1 - u)}), {delay:dl});
-    if (kind === 'small') { bl(120, GOLD, .9); bl(70, '255,255,255', .8, 0, 380); rocks(4, 90, 60); ring(90, 520, GOLD, .8); }
+    if (kind === 'small') { E('fx_tstar', 450, u => ({x:T.x, y:T.y, s:lerp(.25, .7, eo(u)), a:(1 - u) * .85})); bl(120, GOLD, .9); bl(70, '255,255,255', .8, 0, 380); rocks(4, 90, 60); ring(90, 520, GOLD, .8); }
     else if (kind === 'small2') { bl(130, FIRE, .9); bl(80, '255,255,255', .8, 0, 380); rocks(5, 110, 70); ring(110, 560, FIRE, .8); }
     else if (kind === 'small3') { bl(125, GOLD, .9); rocks(4, 100, 80); ring(100, 520, GOLD, .8); ring(60, 420, '255,255,255', .6, 80); }
     else if (kind === 'small4') { bl(125, FIRE, .9); bl(75, '255,255,255', .8, 0, 380); rocks(6, 120, 90); ring(95, 520, GOLD, .8); ring(130, 600, FIRE, .6, 100); }
@@ -174,15 +171,17 @@ function make(host){
       E('ring', 1100, u => ({x:f.x, y:f.y - 6, r:lerp(50, 150 + 40 * n, eo(u)), c:n === 2 ? FIRE : GOLD, a:.85 * (1 - u)}));
       E('glow', 1300, u => ({x:f.x, y:f.y - 130, r:lerp(70, 190 + 30 * n, eo(u)), c:GOLD, a:.55 * Math.sin(Math.PI * u)}), {back:true});
       if (n === 3) { E('glow', 900, u => ({x:f.x, y:f.y - 140, r:lerp(100, 320, eo(u)), c:'255,236,200', a:.7 * (1 - u)})); shakeT = clk(); } },
-    spike(){ E('glow', 700, u => ({...T, r:lerp(60, 200, eo(u)), c:BLUE, a:.8 * (1 - u)})); E('fx_bspike', 900, u => ({x:T.x, y:T.y - 20 - 40 * eo(u), s:lerp(.5, 1.4, eo(Math.min(1, u * 1.6))), a:u < .1 ? u / .1 : 1 - seg(u, .5, 1)}));
+    spike(){ E('glow', 700, u => ({...T, r:lerp(60, 200, eo(u)), c:BLUE, a:.8 * (1 - u)})); E('fx_tspk', 1000, u => ({x:T.x, y:T.y - 10 - 30 * eo(u), s:lerp(.45, 1.05, eo(Math.min(1, u * 1.6))), a:u < .1 ? u / .1 : 1 - seg(u, .55, 1)}), {add:false});
       E('fx_bring', 1000, u => ({x:T.x, y:T.y + 50, s:lerp(.5, 1.5, eo(u)), a:1 - seg(u, .4, 1)})); },
-    quake(){ E('fx_earth', 1000, u => ({x:T.x, y:T.y + 20 - 30 * eo(Math.min(1, u * 2)), s:lerp(.4, 1.5, eo(Math.min(1, u * 1.8))), a:u < .08 ? u / .08 : 1 - seg(u, .55, 1)})); E('glow', 600, u => ({...T, r:lerp(60, 170, eo(u)), c:FIRE, a:.6 * (1 - u)})); shakeT = clk(); },
-    burst(){ E('fx_rockburst', 1000, u => ({x:T.x, y:T.y + 10, s:lerp(.4, 1.6, eo(Math.min(1, u * 1.6))), a:u < .08 ? u / .08 : 1 - seg(u, .5, 1)})); E('glow', 700, u => ({...T, r:lerp(80, 240, eo(u)), c:GOLD, a:.8 * (1 - u)})); E('fx_bring', 1000, u => ({x:T.x, y:T.y + 50, s:lerp(.6, 1.8, eo(u)), a:.9 * (1 - u)})); shakeT = clk(); },
+    quake(){ E('fx_tcrk', 1100, u => ({x:T.x, y:T.y + 60, s:lerp(.5, 1.25, eo(Math.min(1, u * 1.8))), a:u < .08 ? u / .08 : 1 - seg(u, .55, 1)}), {add:false}); E('fx_tdust', 1000, u => ({x:T.x, y:T.y + 40 - 20 * eo(u), s:lerp(.5, 1.2, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .4, 1)) * .85}), {add:false, delay:80}); E('glow', 600, u => ({...T, r:lerp(60, 170, eo(u)), c:FIRE, a:.6 * (1 - u)})); shakeT = clk(); },
+    burst(){ E('fx_tbur', 1100, u => ({x:T.x, y:T.y + 10 - 20 * eo(u), s:lerp(.45, 1.15, eo(Math.min(1, u * 1.6))), a:u < .08 ? u / .08 : 1 - seg(u, .5, 1)}), {add:false}); E('fx_tdust', 1000, u => ({x:T.x, y:T.y + 50, s:lerp(.5, 1.3, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .4, 1)) * .8}), {add:false, delay:100}); E('fx_tstar', 600, u => ({x:T.x, y:T.y, s:lerp(.4, 1.3, eo(u)), a:(1 - u) * .9})); E('glow', 700, u => ({...T, r:lerp(80, 240, eo(u)), c:GOLD, a:.8 * (1 - u)})); E('fx_bring', 1000, u => ({x:T.x, y:T.y + 50, s:lerp(.6, 1.8, eo(u)), a:.9 * (1 - u)})); shakeT = clk(); },
     taunt4(){ const f = feet(); E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(50, 210, eo(u)), c:FIRE, a:.8 * (1 - u)}));
       for (let i = 0; i < 9; i++) { const ox = (i - 4) * 38 + rnd(-10, 10), rr = FXS[i % FXS.length], dl = i * 90; E('fx_' + rr, 900, u => ({x:f.x + ox, y:lerp(f.y - 330, f.y - 20, u * u), s:.6, rot:u * 4 * (i % 2 ? 1 : -1), a:u < .1 ? u / .1 : 1 - seg(u, .8, 1)}), {delay:dl}); E('glow', 360, u => ({x:f.x + ox, y:f.y - 14, r:lerp(20, 60, u), c:FIRE, a:.5 * (1 - u)}), {delay:dl + 760}); }
       shakeT = clk() + 700; },
     shield(k){ const f = feet(), cs = hex2rgb(col), p = /^p/.test(k || ''), cc = cs || (p ? '255,170,80' : '120,180,255');
-      E('glow', 1700, u => ({x:f.x, y:f.y - 125, r:p ? 190 : 160, c:cc, a:(p ? .5 : .4) * Math.sin(Math.PI * u)}), {back:true});
+      const SHM = {p1:'tsh1', p2:'tsh3', p3:'tsh5', p4:'tsh6', d1:'tsh2', d2:'tsh4', d3:'tsh1', d4:'tsh6'}, sn = SHM[k] || (p ? 'tsh1' : 'tsh2');
+      E('fx_' + sn, 1800, u => ({x:f.x, y:f.y - 150 + 6 * Math.sin(u * 14), s:lerp(.95, 1.25, eo(Math.min(1, u * 2.5))) * (1 + .03 * Math.sin(u * 20)), a:.5 * Math.min(1, Math.sin(Math.PI * u) * 2.4)}));
+      E('glow', 1700, u => ({x:f.x, y:f.y - 125, r:p ? 190 : 160, c:cc, a:(p ? .22 : .18) * Math.sin(Math.PI * u)}), {back:true});
       E('ring', 1500, u => ({x:f.x, y:f.y - 6, r:lerp(50, p ? 150 : 120, eo(u)), c:cc, a:.7 * Math.sin(Math.PI * u)}));
       if (k === 'p2' || k === 'p4' || k === 'd2' || k === 'd4') E('ring', 1500, u => ({x:f.x, y:f.y - 6 - 60 * u, r:lerp(40, 100, eo(u)), c:cc, a:.5 * Math.sin(Math.PI * u)}), {delay:260});
       for (let i = 0; i < (p ? 6 : 3); i++) { const an = i * 1.1; E('glow', 1000, u => ({x:f.x + Math.cos(an) * 70, y:f.y - 30 - 150 * u, r:16, c:cc, a:.7 * Math.sin(Math.PI * u)}), {delay:i * 170}); } },
@@ -196,9 +195,9 @@ function make(host){
     return {pose:A[1], dx:lerp(ta.dx || 0, tb.dx || 0, u), dy:lerp(ta.dy || 0, tb.dy || 0, u), rot:lerp(ta.rot || 0, tb.rot || 0, u), sc:1};
   }
   function drawPose(name, dx, dy, rot, alpha, tm, tint, sc = 1, br0 = 1){
-    const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return;
+    const fl = name.endsWith('~'); if (fl) name = name.slice(0, -1); const m = M.poses[name], im = img[name]; if (!m || !ready(name)) return;
     const br = Math.sin(tm / 1000 * 2.0) * br0, fx = Px + W / 2 + XOFF + dx, fy = Py + BASE + dy;
-    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale(SZ * (PM[name] || 1) * sc * (1 - .004 * br), SZ * (PM[name] || 1) * sc * (1 + .008 * br));
+    c.save(); c.globalAlpha = alpha; c.translate(fx, fy); c.rotate(rot * Math.PI / 180); c.scale((fl ? -1 : 1) * SZ * (PM[name] || 1) * sc * (1 - .004 * br), SZ * (PM[name] || 1) * sc * (1 + .008 * br));
     c.drawImage(im, -m.cx, -m.gy);
     if (tint) { c.globalCompositeOperation = 'source-atop'; c.fillStyle = `rgba(255,40,40,${tint})`; c.fillRect(-m.cx, -m.gy, m.w, m.h); }
     c.restore();
@@ -214,7 +213,7 @@ function make(host){
       const ev = a.ev || []; while (cur.fired < ev.length && pe >= ev[cur.fired][0]) runEv(ev[cur.fired++][1]);
       if (pe >= 1) { const d = cur; cur = null; d.done(); }
     } else if (reviveT) { const k = clamp((now - reviveT) / 1100); st = poseAt({steps:REVIVE, dur:1100}, k); if (k >= 1) reviveT = 0; }
-    else st = {pose:'a_i1', dx:0, dy:0, rot:0, sc:1};
+    else st = {pose:'i1', dx:0, dy:0, rot:0, sc:1};
     if (st.pose !== curPose) { prev = curPose ? {pose:curPose, dx:lastT.dx, dy:lastT.dy, rot:lastT.rot, sc:lastT.sc || 1} : null; curPose = st.pose; cur_t = now; fade = cur || deadTarget ? 110 : 240; }
     lastT = st;
     const f = clamp((now - cur_t) / fade);
