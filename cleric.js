@@ -129,7 +129,7 @@ function make(host){
   const orbPos = () => ({...orbW});
   const dir = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
-  let tgt = null; const tf = () => tgt ? {x:tgt.x, y:feet().y} : feet();   // alvo da Luz Sagrada
+  let tgt = null; const tf = () => tgt ? {x:tgt.x, y:(tgt.y != null ? tgt.y : feet().y)} : feet();   // alvo da Luz Sagrada
 
   function shot(name, size, style = '', ko = null){      // estilos: arco (padrão), flat (reto e rápido), zig (zigue-zague), twin (dois)
     if (style === 'twin' && ko == null) { shot(name, size * .85, '', -38); shot(name, size * .85, '', 38); return; }
@@ -240,7 +240,7 @@ function make(host){
     play(name, o = {}){
       if (deadTarget || reviveT) return Promise.resolve(false);
       if (name === 'right' || name === 'wrong') { if (cur && !cur.idle) return Promise.resolve(false); const ra = variant(ACT[name]); return ra ? run(ra) : Promise.resolve(false); }   // reação à resposta: não interrompe ação em curso
-      tgt = name === 'ult' && o.tx != null ? {x:o.tx} : null;
+      tgt = name === 'ult' && o.tx != null ? {x:o.tx, y:o.ty} : null;
       if (name === 'guard') return run(variant(/ffe08a/i.test(o.color || '') ? ACT.guard_h : ACT.guard_n));
       if (name === 'cast') name = 'holy';
       const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a, name === 'ult' ? {noGlow:true} : undefined); p.then(fireHit); return p;

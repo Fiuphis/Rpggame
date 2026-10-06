@@ -1047,8 +1047,9 @@ async function activateUlt(k, sh){
   }
   state.ultReady[k] = false;
   showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
-  const tx = cleTarget ? HERO_X[cleTarget] / 100 * 1024 : null;
-  const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:1098} : {}); A.sayRandom(k, 'ult', 1);
+  const ft = cleTarget && A.feet ? A.feet(cleTarget) : null;
+  const tx = cleTarget ? (ft ? ft.x : HERO_X[cleTarget] / 100 * 1024) : null;
+  const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:ft ? ft.y : 1098} : {}); A.sayRandom(k, 'ult', 1);
   if (k === 'mage') {   // cada dano entra junto do seu estouro do buraco negro (1,5x no 1º, 2,5x no 2º = 4x)
     const onHit = () => Promise.race([A.hit('mage'), sleep(6500)]);
     await onHit(); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true, true);
