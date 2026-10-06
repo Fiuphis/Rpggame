@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v276', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v277', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -269,16 +269,12 @@ addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
 })();
 
-// tela cheia: botão fixo na tela inicial + aviso uma única vez por aba (sessionStorage)
+// tela cheia: aviso ao entrar na tela inicial (o botão flutuante fica em fs.js, em todas as páginas)
 (() => {
-  const btn = document.getElementById('fs-btn'), ask = document.getElementById('fs-ask'); if (!btn || !window.FS) return;
-  const paint = () => { const on = FS.on(); btn.classList.toggle('on', on); btn.setAttribute('aria-label', on ? 'Sair da tela cheia' : 'Tela cheia'); };
-  if (!FS.ok()) { btn.style.display = 'none'; return; }
-  btn.onclick = () => { FS.toggle(); setTimeout(paint, 250); };
-  FS.onChange(paint); paint();
-  let asked = false; try { asked = sessionStorage.getItem('bd1_fs_ask') === '1'; } catch {}
-  if (!asked && !FS.on()) setTimeout(() => { if (FS.on()) return; ask.hidden = false; try { sessionStorage.setItem('bd1_fs_ask', '1'); } catch {} }, 1400);
-  document.getElementById('fs-yes').onclick = () => { ask.hidden = true; FS.enter().then(paint); };
+  const ask = document.getElementById('fs-ask'); if (!ask || !window.FS || !FS.ok()) return;
+  // aparece uma vez por visita à tela inicial; não aparece se a pessoa já escolheu tela cheia nesta sessão (ela continua até clicar em sair)
+  if (!FS.wanted() && !FS.on()) setTimeout(() => { if (!FS.wanted() && !FS.on()) ask.hidden = false; }, 1400);
+  document.getElementById('fs-yes').onclick = () => { ask.hidden = true; FS.enter(); };
   document.getElementById('fs-no').onclick = () => { ask.hidden = true; };
   ask.addEventListener('click', e => { if (e.target === ask) ask.hidden = true; });
 })();
