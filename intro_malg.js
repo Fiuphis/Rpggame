@@ -47,7 +47,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
     const imgs = await Promise.all([load(IMG.hand), load(IMG.face), load(IMG.far), load(IMG.stand)]);
     [iHand.src, iFace.src, iFar.src, iStand.src] = [IMG.hand, IMG.face, IMG.far, IMG.stand];
     const ctx = fx.getContext('2d'), dc = dk.getContext('2d');
-    let yes = 0, mine = false, skipped = false, revealed = false, done = false, t0 = performance.now(), lastNow = t0, W = 0, H = 0, sparks = [], evs = [], shake = {a:0, t:0, d:1}, flashA = 0, lit = TORCHES.map(() => -1), flames = [];
+    let yes = 0, mine = false, skipped = false, revealed = false, done = false, t0 = performance.now(), lastNow = t0, W = 0, H = 0, sparks = [], evs = [], shake = {a:0, t:0, d:1}, flashA = 0, lit = TORCHES.map(() => -1), tsim = [];
     const paintBtn = () => { cnt.textContent = `${yes}/${need}`; btn.classList.toggle('selected', mine); };
     btn.onclick = () => { if (done || revealed) return; mine = !mine; yes += mine ? 1 : -1; paintBtn(); if (yes >= need) skip(); };
     paintBtn();
@@ -124,6 +124,11 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       const sk = shake.a * Math.max(0, 1 - (performance.now() - shake.t) / shake.d); stage.style.transform = sk > .05 ? `translate(${(Math.random() - .5) * 2 * sk}px,${(Math.random() - .5) * 2 * sk}px)` : '';
       // ---- brasas em tela (mais densas conforme a cena esquenta) ----
       ctx.clearRect(0, 0, fx.width, fx.height);
+      // chamas pixel art nas tochas já acesas (pxfx.js): brilham por cima da escuridão do salão
+      if (window.PXFX && farOp > .01) { const r = far.getBoundingClientRect(), so = stage.getBoundingClientRect(), cell = Math.max(2, Math.round(r.width * .0036));
+        TORCHES.forEach((tc, i) => { if (lit[i] < 0) return; const sim = tsim[i] || (tsim[i] = PXFX.sim.make(9, 18, 'fire')), k = Math.min(1, (now - lit[i]) / 500);
+          PXFX.sim.step(sim, now, x => { const xn = (x / sim.cols - .5) * 2; return 35 * Math.max(0, 1 - Math.pow(Math.abs(xn), 1.5)) * k * (.75 + .25 * Math.random()); }, 0, 1);
+          ctx.save(); PXFX.sim.draw(ctx, sim, r.left - so.left + r.width * tc[0], r.top - so.top + r.height * (tc[1] + .018), cell, farOp); ctx.restore(); }); }
       const rate = t < T.faceIn[0] ? 9 : t < L1 ? 12 : t < T.zoom[0] ? 14 + 18 * seg(t, T.chain[0], T.chain[1]) : t < T.flash ? 50 : 70;
       if (Math.random() < rate * dt / 1000) ember(rnd(0, fx.width), fx.height * rnd(.72, 1), 1, 1);
       if (t > T.zoom[0] && t < L4 + 400 && Math.random() < (t < T.flash ? 70 : 110) * dt / 1000) ember(fx.width * rnd(.3, .7), fx.height * rnd(.55, .8), 1, 1.4, fx.width * .12);

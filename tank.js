@@ -171,11 +171,15 @@ function make(host){
     style = style || ''; if (style.includes('twin')) { const st = style.replace('twin', ''); swing(k, st, -1); d = swing(k, st, 1, 170); } else d = swing(k, style);
     setTimeout(() => { hit(kind); fireHit(); }, d / (window.__ts == null ? 1 : window.__ts));
   }
+  const GYB = () => { const f = window.Anim && Anim.feet && Anim.feet('boss'); return f ? f.y - 6 : T.y + 90; };   // chão do boss
   function hit(kind){
     const bl = (r, col, a, dl = 0, d = 650) => E('glow', d, u => ({...T, r:r * (.4 + eo(u) * .9), c:col, a:a * (1 - u) * (u < .08 ? u / .08 : 1)}), {delay:dl});
     const rocks = (n, spread, up, big) => { for (let i = 0; i < n; i++) { const an = -Math.PI / 2 + rnd(-1.25, 1.25), sp = rnd(.5, 1) * spread, rr = FXS[i % FXS.length], rot = rnd(-6, 6);
       E('fx_' + rr, 900, u => ({x:T.x + Math.cos(an) * sp * u, y:T.y + Math.sin(an) * sp * u + 260 * u * u - up * Math.sin(Math.PI * Math.min(1, u * 1.1)), s:big ? .9 : .65, rot:rot * u, a:1 - seg(u, .7, 1)}), {delay:i * 15}); } };
     const ring = (r, d, col, a, dl = 0) => E('ring', d, u => ({x:T.x, y:T.y + 50, r:lerp(r * .3, r, eo(u)), c:col, a:a * (1 - u)}), {delay:dl});
+    if (window.PXFX) { const fi = {small:0, small2:.55, small3:0, small4:.65, big2:0, big4:.85}[kind], f = fi == null ? 1 : fi, big = /big/.test(kind) || fi == null;   // fogo e terra em pixel art (pxfx.js)
+      if (f > 0) { PXFX.fire(T.x, GYB(), {w:130 + 190 * f, h:110 + 150 * f, dur:900 + 500 * f}); PXFX.sparks(T.x, GYB(), Math.round(6 + 14 * f), {spread:70}); }
+      PXFX.debris(T.x, GYB(), {s:big ? 1 : .55, n:big ? 12 : 6}); }
     if (kind === 'small') { E('fx_tstar', 450, u => ({x:T.x, y:T.y, s:lerp(.25, .7, eo(u)), a:(1 - u) * .85})); bl(120, GOLD, .9); bl(70, '255,255,255', .8, 0, 380); rocks(4, 90, 60); ring(90, 520, GOLD, .8); }
     else if (kind === 'small2') { bl(130, FIRE, .9); bl(80, '255,255,255', .8, 0, 380); rocks(5, 110, 70); ring(110, 560, FIRE, .8); }
     else if (kind === 'small3') { bl(125, GOLD, .9); rocks(4, 100, 80); ring(100, 520, GOLD, .8); ring(60, 420, '255,255,255', .6, 80); }

@@ -585,6 +585,7 @@ function renderHud(){
   renderChips();
   const b = state.buff, st = {mage: b.bh > 0 ? 'BURACO NEGRO x3' : '', guerreiro: b.bers > 0 ? `BERSERK ${b.bers}` : b.tired > 0 ? 'EXAUSTO' : '', tank: b.taunt > 0 ? `PROVOCAÇÃO ${b.taunt}` : '', cleriga: ''};
   HERO_ORDER.forEach(k => { const el = bars['st_' + k]; if (!el) return; el.textContent = st[k]; el.hidden = !st[k]; el.classList.toggle('bad', k === 'guerreiro' && b.tired > 0); });
+  if (window.PXFX) PXFX.burn('boss', state.burn > 0, {w:170, h:150, i:.75});   // fogo pixel art no boss enquanto queima
   A.setAura('boss', state.burn > 0 ? 'orange' : state.prepNext ? 'charge' : (state.rage >= RAGE_MAX || state.hardNext) ? 'rage' : null);
   const mk = bars.marks; if (mk && state.burn > 0) mk.innerHTML = `<img src="${pixIcon('fire')}" alt="Queimando" title="Queimando ${state.burn}">`; else if (mk) mk.innerHTML = state.marks.length ? state.marks.map(e => `<img src="${pixIcon({fire:'fire',water:'drop',air:'wind',earth:'rock'}[e])}" alt="${ELEMENTS[e].name}">`).join('') : '';
   bars.boss.style.width = Math.max(0, state.bossHp / BOSS_MAX_HP * 100) + '%';

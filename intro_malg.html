@@ -3,6 +3,7 @@
 <title>Abertura do Malgorath</title><link rel="stylesheet" href="style.css">
 <style>body{margin:0;background:#050204;color:#ffd9c9;font:14px OpenC,OpenD,monospace;display:flex;align-items:center;justify-content:center;height:100vh}button{font:inherit;color:#ffe9e2;background:#5a0f1c;border:1px solid #b08a3c;padding:12px 18px;cursor:pointer}</style></head>
 <body><button id="go" type="button">REPRODUZIR ABERTURA DO MALGORATH</button>
+<script src="pxfx.js"></script>
 <script src="intro_malg.js"></script>
 <script>
 const run = () => IntroMalg.play({voters:1, need:1, onReveal:() => {}}).then(() => { document.getElementById('go').hidden = false; });

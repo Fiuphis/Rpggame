@@ -41,6 +41,7 @@ function build(){
     if (w === 'cleriga' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
   if (window.Extras) Extras.init($('#game'), feetOf);
+  if (window.PXFX) PXFX.init($('#game'), feetOf);
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
     if (cfg && cfg.pad != null) WHO.forEach(w => { if (H[w].rig) return; H[w].cv.width = cellW(w); H[w].cv.height = cellH(w); });
@@ -125,8 +126,8 @@ function low(w, on){ const h = H[w]; if (!h || !h.rig || !h.rig.setLow) return; 
 function enterPrep(w){ const h = H[w]; if (h) { h.cv.style.opacity = 0; clearTimeout(h.enT); h.enT = setTimeout(() => { h.cv.style.opacity = ''; }, 6000); } }
 function enter(w, delay = 0){ const h = H[w]; if (!h || !h.cv.animate) { if (h) h.cv.style.opacity = ''; return; }
   setTimeout(() => { clearTimeout(h.enT); h.cv.style.opacity = ''; h.cv.animate([{transform:'translateY(46px)', opacity:0}, {transform:'translateY(0)', opacity:1}], {duration:650, easing:'cubic-bezier(.2,.8,.3,1)'}); if (window.Extras) Extras.fx(w, 'enter'); }, delay); }
-function reset(){ if (window.Extras) Extras.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
+function reset(){ if (window.Extras) Extras.clear(); if (window.PXFX) PXFX.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
-window.Anim = {META, play, react, low, enter, enterPrep, extra:(w, k, o) => window.Extras && Extras.fx(w, k, o), fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
+window.Anim = {feet:feetOf, META, play, react, low, enter, enterPrep, extra:(w, k, o) => window.Extras && Extras.fx(w, k, o), fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(build, 0)); else setTimeout(build, 0);
 })();

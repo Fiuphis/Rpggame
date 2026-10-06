@@ -85,9 +85,17 @@ function frame(){
 }
 function start(){ if (!running && cv) { running = true; requestAnimationFrame(frame); } }
 
+function px(f, w, kind, o){       // camada pixel art (pxfx.js) por cima dos brilhos: chama de cura/revive em autômato celular, estrelas em cruz, poeira
+  if (kind === 'revive') { PXFX.gold(f.x, f.y - 2, {w:110, h:300, dur:1700, col:true}); PXFX.crosses(f.x, f.y, 14, {pal:'gold', spread:50}); }
+  else if (kind === 'heal') { PXFX.heal(f.x, f.y - 2, {w:100, h:190, dur:1300, col:true}); PXFX.crosses(f.x, f.y, 10, {pal:'heal'}); }
+  else if (kind === 'right') PXFX.crosses(f.x, f.y - 230, 5, {pal:'gold', spread:46, span:360});
+  else if (kind === 'guard') PXFX.gold(f.x, f.y - 2, {w:120, h:120, dur:900, col:true, i:.7});
+  else if (kind === 'enter') PXFX.dust(f.x, f.y - 2, {w:200, h:90, dur:800, i:.6, glow:false});
+  else if (kind === 'combo') { PXFX.sparks(f.x, f.y - 80, 14, {pal:'gold', spread:60, hi:[24, 35]}); }
+}
 window.Extras = {
   init(el, feet){ if (cv) return; cv = document.createElement('canvas'); cv.className = 'fxl front'; cv.width = 1024; cv.height = 1536; el.append(cv); g = cv.getContext('2d'); feetOf = feet; },
-  fx(w, kind, o){ if (!cv || !FX[kind]) return; const f = feetOf(w); if (f) FX[kind](f, w, o || {}); },
+  fx(w, kind, o){ if (!cv || !FX[kind]) return; const f = feetOf(w); if (f) { FX[kind](f, w, o || {}); if (window.PXFX) px(f, w, kind, o || {}); } },
   low(w, on){ if (!cv) return; if (!!low[w] === !!on) return; low[w] = !!on; if (on) start(); },
   clear(){ list = []; Object.keys(low).forEach(k => low[k] = false); if (g) g.clearRect(0, 0, cv.width, cv.height); },
 };

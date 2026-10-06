@@ -19,7 +19,12 @@ const embers = [], motes = Array.from({ length: 26 }, () => ({ x: R(0, W), y: R(
 const shim = Array.from({ length: 70 }, () => { const cx = [5, 31, 61, 192, 224, 250][RI(0, 5)]; return { x: cx + RI(-2, 2), y: R(150, 250), ph: R(0, 6.28), sp: R(1.5, 4) }; });
 const clouds = Array.from({ length: 3 }, (_, i) => ({ x: R(80, 175), y: 8 + i * 11 + R(0, 4), w: R(26, 44), v: R(1.2, 2.6), a: R(.05, .1) }));
 
-function flame(t, tm) {
+function flame(t, tm) {      // chama pixel art (autômato celular do pxfx.js, 1 célula = 1 pixel da grade); sem pxfx cai na chama antiga
+  if (window.PXFX && PXFX.sim) { const s = t.s, cols = Math.max(5, Math.round(7 * s)), rows = Math.max(9, Math.round(14 * s)); if (!t.sim) { t.sim = PXFX.sim.make(cols, rows, 'fire'); t.cf = Array.from({length:cols}, () => Math.random()); }
+    const now = performance.now(), cf = t.cf, base = t.y + 3 * s;
+    PXFX.sim.step(t.sim, now, x => { if (x === 0) for (let i = 0; i < cols; i++) cf[i] = Math.max(0, Math.min(1, cf[i] + (Math.random() - .5) * .3)); const xn = (x / cols - .5) * 2;
+      return 35 * Math.max(0, 1 - Math.pow(Math.abs(xn), 1.5)) * Math.max(.1, lit) * (.7 + .3 * cf[x]) * (.9 + .1 * Math.sin(tm * 11 + t.ph)); }, 0, 1);
+    g.save(); g.globalCompositeOperation = 'source-over'; PXFX.sim.draw(g, t.sim, t.x, base, 1, .95); g.restore(); return; }
   const f = k => Math.sin(tm * k + t.ph), s = t.s, hh = (7 + 2 * f(11) + 1.5 * f(17.3) + 1.2 * f(5)) * s * Math.max(.12, lit), sway = (f(4.1) * 1.3 + f(9.7) * .6) * s, base = t.y + 3 * s;
   for (const [sc, col, a] of [[1, '#ff4a12', .5], [.72, '#ff9a2a', .6], [.42, '#ffe27a', .75]]) { const h = hh * sc, w = 3.3 * s * (.55 + .45 * sc);
     for (let y = 0; y <= h; y++) { const u = y / h, half = w * Math.pow(1 - u, .8), cx = t.x + sway * u * u; rect(cx - half, base - y, Math.max(1, Math.round(half * 2)), 1, col, a); } }
