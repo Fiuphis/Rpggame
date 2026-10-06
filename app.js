@@ -1456,7 +1456,7 @@ function beginBattle(delay){
   const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça
   const n = groupMembers();
   const IP = window.IntroMalg || Intro;   // abertura cinematográfica do Malgorath (v253); intro.js fica como reserva
-  IP.play({voters:n, need:majorityOf(n), bots:TEST_MODE, onReveal:() => { const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', window.IntroMalg ? 'fireIn' : 'tpBack'); }}).then(() => setTimeout(go, 500));
+  IP.play({voters:n, need:majorityOf(n), bots:TEST_MODE, onReveal:() => { if (window.Cine && window.IntroMalg) { window.__cinep = Cine.play(); return; } const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', 'tpBack'); }}).then(() => (window.__cinep || Promise.resolve()).then(() => setTimeout(go, 400)));
   if (window.IntroMalg && intro) intro.hidden = true;   // a nova cria a própria camada preta (já está no DOM)
 }
 function restartRun(){

@@ -42,6 +42,7 @@ const ACT = {
   tpOut:[S(1300, [[0,'B_1'],[.2,'B_8'],[.5,'B_8',{dy:-8,al:.6}],[.95,'B_8',{dy:-22,al:0}]], [[.18,'smoke']], {hold:'gone'})],
   tpIn:[S(2000, [[0,'B_8',{px:1,py:1,al:0,sc:.5}],[.16,'B_8',{px:1,py:1,al:.95,sc:.54}],[.34,'B_3',{px:1,py:1,al:1,sc:.58}],[.6,'B_3',{px:1,py:1,al:1,sc:.58}],[.8,'B_8',{px:1,py:1,al:.5,sc:.54}],[.95,'B_8',{px:1,py:1,al:0,sc:.5}]], [[.02,'smokeT'],[.36,'strikeT'],[.82,'smokeT']], {hold:'gone', front:true})],
   fireIn:[S(1900, [[0,'B_8',{dy:-190,al:0}],[.14,'B_8',{dy:-170,al:1}],[.4,'B_8',{dy:0}],[.46,'B_8',{dy:8}],[.62,'B_11',{dy:-4}],[.88,'B_1']], [[.02,'omen'],[.4,'slam'],[.52,'embers']])],   // entrada: despenca do alto e pousa com impacto
+  awaken:[S(1500, [[0,'B_1'],[.2,'B_8',{dy:-6}],[.45,'B_11',{dy:-6}],[.85,'B_11'],[1,'B_1']], [[.12,'omen'],[.4,'slam'],[.5,'embers']])],   // despertar da revelacao cinematografica (cine.js)
   tpBack:[S(1100, [[0,'B_8',{dy:-22,al:0}],[.5,'B_8',{dy:-6,al:1}],[.9,'B_1']], [[.04,'smoke']])],
 };
 const IDLES = [
