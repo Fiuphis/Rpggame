@@ -40,8 +40,9 @@ function build(){
     if (w === 'boss' && (window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig)) buildMage(H[w], m, P, window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
     if (w === 'cleriga' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
-  if (window.Extras) Extras.init($('#game'), feetOf);
-  if (window.PXFX) PXFX.init($('#game'), feetOf);
+  const bodyFeet = w => { const f = feetOf(w); return f ? {x:bodyX(w), y:f.y} : f; };   // efeitos sobre aliados (cura, proteção, pouca vida) centrados no corpo, não nos pés
+  if (window.Extras) Extras.init($('#game'), bodyFeet);
+  if (window.PXFX) PXFX.init($('#game'), bodyFeet);
   fetch('anim/manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
     if (cfg && cfg.pad != null) WHO.forEach(w => { if (H[w].rig) return; H[w].cv.width = cellW(w); H[w].cv.height = cellH(w); });
@@ -129,7 +130,7 @@ function enter(w, delay = 0){ const h = H[w]; if (!h || !h.cv.animate) { if (h) 
 function reset(){ if (window.Extras) Extras.clear(); if (window.PXFX) PXFX.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
 // centro do corpo do herói na pose atual (centro de massa horizontal dos pixels opacos do canvas, em coordenadas do mundo)
-const bodyCache = {};
+var bodyCache = {};
 function bodyX(w){
   const h = H[w], now = performance.now(), c = bodyCache[w];
   if (c && now - c.t < 90) return c.x;
