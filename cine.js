@@ -15,14 +15,14 @@ window.Cine = {
     return new Promise(res => {
       const g = $('#game'), bc = document.querySelector('canvas.hero.boss'); if (!g || !bc) return res();
       const el = build(), dark = $('.cn-dark', el), glow = $('.cn-glow', el), eyes = [...el.querySelectorAll('.cn-eye')], flash = $('.cn-flash', el), bars = [...el.querySelectorAll('.cn-bar')], ti = $('.cn-title', el), ac = $('.cn-ash', el), tb = ti.querySelector('b'), ts = ti.querySelector('span');
-      const ICE = !!(window.STAGE && STAGE.ice), NAME = ICE ? 'HRIMGAR' : 'MALGORATH', SUB = ICE ? 'O Rei Gelado' : 'Lorde das Trevas'; if (ICE) { el.classList.add('ice'); eyes[1].style.display = 'none'; }
+      const ICE = !!(window.STAGE && STAGE.ice), NAME = ICE ? 'HRIMGAR' : 'MALGORATH', SUB = ICE ? 'O Rei Gelado' : 'Lorde das Trevas'; if (ICE) el.classList.add('ice');
       eyes.forEach((e, i) => { e.style.left = EYES[i][0] * 100 + '%'; e.style.top = EYES[i][1] * 100 + '%'; });
       tb.innerHTML = NAME.split('').map((c, i) => `<u style="--i:${i}">${c}</u>`).join(''); ts.innerHTML = SUB.split('').map((ch, i) => `<u>${ch === ' ' ? '&nbsp;' : ch}</u>`).join('');
       bc.style.opacity = 1; bc.style.filter = 'brightness(0)';
       g.style.transformOrigin = '49% 12%';
       const A = window.Anim, FL = [1900, 2350, 2700], T0 = performance.now(), TOT = ICE ? 8900 : 8200, X = ICE ? 700 : 0; let awake = false, shook = false, lastScan = -1e9;
       // posicao real dos olhos: o rig do boss grava (em coordenadas do canvas) onde desenhou cada olho
-      const scan = () => { const E2 = window.__bossEyes; if (!E2 || E2.length < (ICE ? 1 : 2)) return; const r = bc.getBoundingClientRect(), gr = g.getBoundingClientRect(); E2.slice(0, ICE ? 1 : 2).forEach((c, i) => { eyes[i].style.left = ((r.left + c[0] / bc.width * r.width - gr.left) / gr.width * 100) + '%'; eyes[i].style.top = ((r.top + c[1] / bc.height * r.height - gr.top) / gr.height * 100) + '%'; }); };
+      const scan = () => { const E2 = window.__bossEyes; if (!E2 || E2.length < 2) return; const r = bc.getBoundingClientRect(), gr = g.getBoundingClientRect(); E2.slice(0, 2).forEach((c, i) => { eyes[i].style.left = ((r.left + c[0] / bc.width * r.width - gr.left) / gr.width * 100) + '%'; eyes[i].style.top = ((r.top + c[1] / bc.height * r.height - gr.top) / gr.height * 100) + '%'; }); };
       const sc = () => +(window.__ts || 1);
       // titulo pega fogo, vira cinza e o vento leva
       const ls = [...tb.querySelectorAll('u'), ...ts.querySelectorAll('u')], N1 = tb.querySelectorAll('u').length, parts = []; let lt = 0, sized = false;

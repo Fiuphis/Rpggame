@@ -224,7 +224,7 @@ function make(host){
     g.drawImage(im, -m.cx, -m.gy);
     if (GEMP[name] && m.gem && !(tint && tint > 0.2)) { let r = 0; try { r = window.BD_RAGE ? clamp(window.BD_RAGE()) : 0; } catch (e) {} const p = .78 + .22 * Math.sin(tm / 1000 * (3 + r * 6)), a = (.35 + .65 * r) * p, rad = 26 + 34 * r;
       const X = m.gem[0] - m.cx, Y = m.gem[1] - m.gy; g.globalCompositeOperation = 'lighter'; const gr = g.createRadialGradient(X, Y, 0, X, Y, rad); gr.addColorStop(0, `rgba(235,250,255,${.9 * a})`); gr.addColorStop(.35, `rgba(110,200,255,${.4 * a})`); gr.addColorStop(1, 'rgba(60,140,255,0)'); g.fillStyle = gr; g.fillRect(X - rad, Y - rad, rad * 2, rad * 2); g.globalCompositeOperation = 'source-over';
-      const M2 = g.getTransform(); window.__bossEyes = [[M2.a * X + M2.c * Y + M2.e, M2.b * X + M2.d * Y + M2.f]]; }
+      const M2 = g.getTransform(); window.__bossEyes = [-18, 18].map(dx => { const ex = X + dx, ey = Y + 88; return [M2.a * ex + M2.c * ey + M2.e, M2.b * ex + M2.d * ey + M2.f]; }); }   // olhos: abaixo da viseira do elmo, 88 px abaixo da joia e 18 px para cada lado
     if (tint) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(215,240,255,${tint})`; g.fillRect(-m.cx, -m.gy, m.w, m.h); }
     g.restore();
   }

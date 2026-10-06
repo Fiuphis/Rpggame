@@ -76,7 +76,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
     ev(T.open, () => { setShake(11, 900); const [x, y] = pt(face, EYEC); burst(x, y, 40, 560, 1500); flashA = 1; });
     ev(T.punch[1], () => setShake(3, 600));
     ev(T.pull[0] + 400, () => { burst(fx.width / 2, fx.height / 2, 24, 420, 1800); setShake(5, 700); });
-    ev(T.shatter, () => { setShake(14, 1100); const [x, y] = pt(far, [PIL.x, PIL.y]); burst(x, y, 90, 700, 1700); flashA = .9; });
+    ev(T.shatter, () => { setShake(14, 1100); const [ax, ay] = pt(far, [PIL.x0, PIL.y0]), [bx, by] = pt(far, [PIL.x1, PIL.y1]), pw = bx - ax; for (let i = 0; i < 80; i++) { const x = ax + Math.random() * pw, y = ay + Math.random() * (by - ay), dx = (x - (ax + bx) / 2) / pw; shards.push({x, y, vx:dx * pw * 2.2 + rnd(-.4, .4) * pw, vy:rnd(-.6, .3) * pw * 1.6, s:rnd(.05, .16) * pw, rot:rnd(0, 6.28), vr:rnd(-6, 6), born:performance.now(), life:rnd(900, 1900), z:Math.random()}); } flashA = .9; });   // estilhaços nascem dentro do pilar e ficam na escala dele
     let flashA = 0, whiteMax = 0;
 
     function frame(now){
@@ -121,7 +121,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       while (snow.length < 110 + blizz * 420) snow.push({x:-30, y:rnd(0, fx.height), z:Math.random(), ph:rnd(0, 6.28)});
       mist.forEach(m => { m.x += m.v * dt / 1000; if (m.x < -.3) m.x = 1.3; if (m.x > 1.3) m.x = -.3; const g = ctx.createRadialGradient(m.x * fx.width, m.y * fx.height, 0, m.x * fx.width, m.y * fx.height, m.r * fx.width); const a = m.a * (.6 + seg(t, T.farIn[0], T.farIn[1]) * .8 + blizz * 1.5); g.addColorStop(0, `rgba(190,225,255,${Math.min(.5, a)})`); g.addColorStop(1, 'rgba(190,225,255,0)'); ctx.fillStyle = g; ctx.fillRect(0, m.y * fx.height - m.r * fx.width, fx.width, m.r * fx.width * 2); });
       const pa = seg(t, T.cracks[0], T.shatter) * (1 - seg(t, T.shatter, T.shatter + 300)) * farOp;
-      if (pa > .01) { const [px, py] = pt(far, [PIL.x, PIL.y0]); const g = ctx.createLinearGradient(0, py, 0, py - fx.height * .6); g.addColorStop(0, 'rgba(190,235,255,0)'); g.addColorStop(.14, `rgba(190,235,255,${.35 * pa})`); g.addColorStop(1, 'rgba(190,235,255,0)'); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; const bw = 70 + 70 * pa; for (let k = 0; k < 8; k++) { const w = bw * (1 - k * .115); ctx.globalAlpha = .22; ctx.fillRect(px - w / 2, py - fx.height * .6, w, fx.height * .6); } ctx.restore(); }
+      if (pa > .01) { const [px, py] = pt(far, [PIL.x, PIL.y0]); const g = ctx.createLinearGradient(0, py, 0, py - fx.height * .6); g.addColorStop(0, 'rgba(190,235,255,0)'); g.addColorStop(.14, `rgba(190,235,255,${.35 * pa})`); g.addColorStop(1, 'rgba(190,235,255,0)'); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; const [bxa] = pt(far, [PIL.x0, 0]), [bxb] = pt(far, [PIL.x1, 0]), bw = (bxb - bxa) * (1 + .25 * pa); for (let k = 0; k < 8; k++) { const w = bw * (1 - k * .115); ctx.globalAlpha = .22; ctx.fillRect(px - w / 2, py - fx.height * .6, w, fx.height * .6); } ctx.restore(); }
       ctx.fillStyle = '#fff';
       snow = snow.filter(s => { const sp = .35 + s.z * .9; s.y += (28 + 60 * sp) * dt / 1000 * (1 + blizz * 3.5); s.x += (14 + 70 * sp * (.6 + gust * 3 + blizz * 7)) * dt / 1000 + Math.sin(t * .001 + s.ph) * .25; return s.y < fx.height + 10 && s.x < fx.width + 60; });
       snow.forEach(s => { const z = Math.round(1 + s.z * 2.4); ctx.globalAlpha = .35 + .6 * s.z; ctx.fillRect(Math.round(s.x), Math.round(s.y), z, z); }); ctx.globalAlpha = 1;
