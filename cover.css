@@ -42,7 +42,7 @@ button{outline:none;font:inherit;color:inherit}button:focus,button:focus-visible
 .dock::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 80% at 50% 14%,rgba(60,24,70,.22),transparent 70%)}
 .go .dock{transform:translateY(40%);opacity:0;pointer-events:none}
 .dock>*{z-index:1}
-.c-play,.c-how{appearance:none;-webkit-appearance:none;position:absolute;cursor:pointer;border:solid transparent;image-rendering:pixelated;display:flex;align-items:center;justify-content:center;gap:2cqw;font-family:var(--F);font-weight:700;text-align:center;padding:0}
+.c-play,.c-how,.c-auto{appearance:none;-webkit-appearance:none;position:absolute;cursor:pointer;border:solid transparent;image-rendering:pixelated;display:flex;align-items:center;justify-content:center;gap:2cqw;font-family:var(--F);font-weight:700;text-align:center;padding:0}
 .c-play{left:21.25%;width:57.5%;top:8.1%;height:25.4%;border-width:3.4cqw;border-image:url(ui_chip_blue.png) 6 fill/3.4cqw stretch;color:#ffe08a;font-size:8.4cqw;letter-spacing:.9cqw;text-shadow:0 .7cqw 0 #4a2204,.4cqw 0 0 #4a2204,-.4cqw 0 0 #4a2204,0 -.4cqw 0 #4a2204;animation:playP 2.2s ease-in-out infinite}
 .c-play span{transform:translateY(-.3cqw)}
 .c-play::before,.c-play::after{content:"";position:absolute;top:50%;width:3.2cqw;height:3.2cqw;background:#cfe6ff;box-shadow:0 0 2cqw #5aa0ff;transform:translateY(-50%) rotate(45deg);animation:gemP 2.2s ease-in-out infinite}
@@ -52,6 +52,10 @@ button{outline:none;font:inherit;color:inherit}button:focus,button:focus-visible
 .c-play:active,.c-how:active{transform:translateY(.5cqw) scale(.985)}
 .c-how{left:28%;width:44%;top:38.3%;height:14.7%;border-width:2.4cqw;border-image:url(ui_chip.png) 6 fill/2.4cqw stretch;white-space:nowrap;color:#f4e2b0;font-size:3.3cqw;letter-spacing:.3cqw;text-shadow:0 .4cqw 0 #1a0c06}
 .c-how:active{border-image-source:url(ui_chip_hi.png)}
+.c-auto{left:75.2%;width:21.6%;top:38.3%;height:14.7%;border-width:1.7cqw;border-image:url(ui_chip.png) 6 fill/1.7cqw stretch;white-space:nowrap;color:#c9b98a;font-size:1.75cqw;letter-spacing:.1cqw;text-shadow:0 .4cqw 0 #1a0c06}
+.c-auto.on{border-image-source:url(ui_chip_blue.png);color:#ffe08a}
+.c-auto:active{transform:translateY(.5cqw) scale(.985)}
+.c-auto span{transform:translateY(-.1cqw)}
 .c-how span{transform:translateY(-.1cqw)}
 .ic-book,.ic-gem{display:block;image-rendering:pixelated;background-size:100% 100%;background-repeat:no-repeat;flex:none}
 .ic-book{width:5.2cqw;height:3.9cqw}

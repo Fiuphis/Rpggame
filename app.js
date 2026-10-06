@@ -236,6 +236,8 @@ const GROUPS = {mage:'MAGA', guerreiro:'GUERREIRO', tank:'TANQUE', cleriga:'CLÉ
 const PARAMS = new URLSearchParams(location.search);
 // O grupo vem do lobby (página inicial). ?grupo=... só vale junto com ?teste=1.
 const TEST_MODE = LOBBY.testMode; // simula os outros 6 jogadores votando
+// Modo teste automatico (botao na tela inicial, chave bd1_auto): os outros herois acertam tudo, jogam perfeito e usam itens; as respostas certas aparecem marcadas.
+const AUTO = (() => { try { return localStorage.getItem('bd1_auto') === '1'; } catch { return false; } })();
 const GROUP_KEY = (TEST_MODE && GROUPS[PARAMS.get('grupo')]) ? PARAMS.get('grupo') : LOBBY.myGroup();
 if (!GROUP_KEY) { location.replace('index.html'); }
 const activeGroup = GROUP_KEY || 'mage';
@@ -774,6 +776,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         if (o.color) b.style.setProperty('--ec', o.color);
       } else {
         b.className = 'dq-answer'; b.style.cssText = pc(MENU_META.question.rows[i]);
+        if (o.hint) b.classList.add('hint');
         b.innerHTML = `<span class="label"><span></span></span><b class="cnt">0</b>`;
         b.querySelector('.label span').textContent = o.label + (o.note ? `  ${o.note}` : '');
       }
@@ -831,7 +834,7 @@ function pickQuestion(diff){
 function setTheme(n){ $('#game').classList.toggle('theme-ice', n === 'ice'); }
 window.setTheme = setTheme;
 if (TEST_MODE && PARAMS.get('theme')) setTheme(PARAMS.get('theme'));
-if (TEST_MODE) window.__bd = {state, setTheme};
+if (TEST_MODE || AUTO) window.__bd = {state, setTheme};
 window.BD_RAGE = () => Math.max(state.rage / RAGE_MAX, state.phase2 ? .7 : 0);   // fase 2: olhos do boss ficam sempre acesos
 const aliveHeroes = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 
@@ -1254,6 +1257,103 @@ async function iceBleedTick(){
   HERO_ORDER.forEach(k => { const b = I.bleed[k], h = state.heroes[k]; if (!b || h.hp <= 0) return; const d = ICE_BLEED * b.stacks; h.hp = Math.max(0, h.hp - d); floatText(HERO_X[k], 58, `-${d} SANGRAMENTO`, '#ff3040'); any = true; if (--b.turns <= 0) I.bleed[k] = null; });
   if (any) { flashHit(); renderHud(); await wait(900); }
 }
+// ===== Modo teste automatico: os heróis que o jogador não escolheu jogam perfeito =====
+// Acertam 100% das perguntas, escolhem a melhor habilidade para cada situação e usam itens de uma bolsa sem fim,
+// neles mesmos ou nos aliados (inclusive no herói do jogador), sempre pelas mesmas regras de itens do jogo.
+const AUTO_WANT_MP = {mage:30, guerreiro:15, tank:20, cleriga:20};   // mana mínima para a melhor habilidade de cada um
+const AUTO_SHORT = {hp_s:'POÇÃO HP', hp:'POÇÃO HP', hp_l:'POÇÃO HP', mana_s:'POÇÃO MANA', mana:'POÇÃO MANA', mana_l:'POÇÃO MANA', iron_shield:'ESCUDO', amulet:'AMULETO', helm:'ELMO', smokebomb:'FUMAÇA', elixir:'ELIXIR', herb:'ERVA', lens:'LENTE', tonic:'TÔNICO', powder:'PÓLVORA', blade:'LÂMINA', lightbomb:'BOMBA', hourglass:'AMPULHETA', phoenix:'FÊNIX', dice:'DADO', scroll:'PERGAMINHO'};
+const autoAlive = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
+const autoBot = k => k !== activeGroup && state.heroes[k].hp > 0;
+function autoBy(tgt){   // quem usa o item: o próprio herói (se for um dos simulados) ou um aliado simulado vivo
+  if (autoBot(tgt)) return tgt;
+  return ['cleriga', 'tank', 'guerreiro', 'mage'].find(h => h !== tgt && autoBot(h)) || null;
+}
+async function autoUse(type, tgt){
+  const it = ITEMS[type], h = state.heroes[tgt], by = autoBy(tgt); if (!it || !h || !by) return false;
+  if (tgt !== by && !giveable(type)) return false;
+  if (it.kind === 'fx') {
+    if (it.fx === 'phoenix') { if (h.hp > 0 || !aliveHeroes().length) return false; } else if (h.hp <= 0) return false;
+    if (it.fx === 'elixir' && h.hp >= HERO_MAX_HP && h.mp >= 100) return false;
+    if (it.fx === 'scroll' && state.ultReady[tgt]) return false;
+    FX[it.fx](state.ib[tgt], h, hasAff(type, tgt), tgt, it);
+  } else {
+    const max = it.kind === 'hp' ? HERO_MAX_HP : 100;
+    if ((it.kind === 'hp' && h.hp <= 0) || h[it.kind] >= max) return false;
+    h[it.kind] = Math.min(max, h[it.kind] + it.amount);
+  }
+  floatText(HERO_X[tgt], 44, AUTO_SHORT[type] || it.name.toUpperCase(), '#ffe08a');
+  A.extra(tgt, it.kind === 'hp' || it.fx === 'elixir' || it.fx === 'herb' || it.fx === 'phoenix' ? 'heal' : 'guard');
+  toast(`${GROUPS[by]} usou ${it.name}${by !== tgt ? ' em ' + GROUPS[tgt] : ''}.`);
+  renderHud(); await wait(520); return true;
+}
+// antes das ações: reviver, curar, mana, recarga e proteção
+async function autoSupport({tele, iceEv}){
+  if (state.over) return;
+  const I = state.ice; let n = 0;
+  const use = async (type, tgt) => { if (n >= 7) return false; const ok = await autoUse(type, tgt); if (ok) n++; return ok; };
+  for (const k of HERO_ORDER) if (state.heroes[k].hp <= 0 && autoAlive().length) await use('phoenix', k);
+  for (const k of autoAlive()) {
+    const h = state.heroes[k];
+    if (ST.ice && I.bleed[k] && !state.ib[k].herb) await use('herb', k);
+    for (let i = 0; i < 2 && h.hp < 60; i++) { const miss = HERO_MAX_HP - h.hp; if (!await use(miss >= 55 ? 'hp_l' : miss >= 28 ? 'hp' : 'hp_s', k)) break; }
+  }
+  for (const k of autoAlive()) {
+    if (!autoBot(k)) continue;
+    const h = state.heroes[k];
+    if (h.mp < AUTO_WANT_MP[k]) await use(h.mp <= 25 ? 'mana_l' : 'mana', k);
+  }
+  // proteção
+  for (const k of autoAlive()) {
+    const b = state.ib[k];
+    if (ST.ice) {
+      if (!b.helm) await use('helm', k);
+      if ((iceEv === 'tempest' || I.mark === k || (I.cold[k] || 0) >= 2) && !b.smoke) await use('smokebomb', k);
+      if (I.mark === k && !b.shield) await use('iron_shield', k);
+    } else {
+      if (!b.amulet && (k === activeGroup || state.heroes[k].hp < 80)) await use('amulet', k);
+      if (k === activeGroup && !b.shield) await use('iron_shield', k);
+      if (tele === k && !b.shield) await use('iron_shield', k);
+    }
+  }
+}
+// depois de escolhidas as ações: itens de dano para quem vai atacar
+async function autoOffense(actions){
+  if (state.over) return;
+  const late = state.round >= 12;   // batalha arrastada: a bolsa solta lâmina, dado e bomba
+  for (const k of HERO_ORDER) {
+    if (!autoBot(k)) continue;
+    const a = actions[k]; if (!a || a === 'ult' || !a.skill || a.skill.kind !== 'atk') continue;
+    const b = state.ib[k], list = [];
+    if (!b.tonic) list.push('tonic'); else list.push(state.round % 2 ? 'powder' : 'lens');
+    if (late) { if (b.blade < 30) list.unshift('blade'); if (!b.dice) list.push('dice'); list.push('lightbomb'); }
+    for (const t of list.slice(0, late ? 3 : 1)) await autoUse(t, k);
+  }
+}
+function autoWantUlt(k){
+  if (k !== 'cleriga') return true;
+  const I = state.ice;
+  return HERO_ORDER.some(h => state.heroes[h].hp <= 0 || state.heroes[h].hp <= 55 || (ST.ice && (I.frozen[h] > 0 || (I.bleed[h] && I.bleed[h].stacks >= 2))));
+}
+function autoPick(k, {iceEv}){
+  const av = SKILLS[k].filter(sk => !skillBlock(k, sk)), get = id => av.find(s => s.id === id);
+  const I = state.ice, hard = ST.ice && (I.step || I.counter);   // Passo Gélido / Contra-ataque: físico não compensa
+  const allies = HERO_ORDER.filter(h => h !== k && state.heroes[h].hp > 0);
+  const el = ST.weak.find(e => e !== 'holy') || 'fire';
+  let sk = null, element = null, target = null;
+  if (k === 'mage') { sk = get('elem_atk') || get('mana_atk'); if (sk && sk.elem) element = el; }
+  else if (k === 'guerreiro') {
+    const p = get('pass'), t = ['mage', 'tank', 'cleriga'].find(h => allies.includes(h));
+    if (hard && p && t) { sk = p; target = t; } else sk = get('heavy') || get('atk');
+  }
+  else if (k === 'tank') {
+    const g = get('guard');
+    if (hard && g && allies.length) { sk = g; target = (I.mark && allies.includes(I.mark) ? I.mark : allies.slice().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp)[0]); }
+    else sk = get('super') || get('atk');
+  }
+  else sk = (BOSS.weak.includes('holy') && get('holy_atk')) || get('atk');
+  return sk ? {skill:sk, element, target} : null;
+}
+
 async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   if (state.over) return;
   await QREADY;
@@ -1304,12 +1404,12 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   // ---- 1) pergunta: o grupo vota na alternativa (contagem visível só para o próprio grupo)
   const res = await runVote({
     attack: state.curAttack, text: q.text, seconds: QUESTION_SECONDS[q.difficulty],
-    options: q.answers.map(label => ({label})),
+    options: q.answers.map((label, i) => ({label, hint:AUTO && i === q.correct})),
     side: {reward:meta.reward, label:meta.label, rank:meta.rank, d:q.difficulty}
   });
   // grupos controlados por outros jogadores: simulados (sem backend não dá para ver o voto real deles)
   const correct = {};
-  HERO_ORDER.forEach(k => correct[k] = k === activeGroup ? res.idx === q.correct : Math.random() < 0.6);
+  HERO_ORDER.forEach(k => correct[k] = k === activeGroup ? res.idx === q.correct : (AUTO || Math.random() < 0.6));
   showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros'); await wait(1400); hideBanner();
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
@@ -1328,11 +1428,12 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
 
   // ---- 2) ações dos heróis
   const actions = {};
+  if (AUTO) await autoSupport({tele, iceEv});
   for (const k of HERO_ORDER) {
     if (state.heroes[k].hp <= 0) { actions[k] = null; continue; }
     if (ST.ice && state.ice.frozen[k] > 0) { actions[k] = null; if (k === activeGroup) toast('Seu herói está CONGELADO: não age nesta rodada, mas sua resposta conta.'); continue; }
     // ultimate do grupo ativo: só entra em ação quando o grupo escolhe o card ESPECIAL (ou toca no ícone) no menu; os outros grupos são simulados
-    if (k !== activeGroup && state.ultReady[k] && ultUsable(k) && Math.random() < 0.5) await activateUlt(k);
+    if (k !== activeGroup && state.ultReady[k] && ultUsable(k) && (AUTO ? autoWantUlt(k) : Math.random() < 0.5)) await activateUlt(k);
     const at = state.curAttack;
     if (k === activeGroup) {
       showRing(k); await wait(400);
@@ -1343,6 +1444,8 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
         break;
       }
       await closePanel(); hideRing();
+    } else if (AUTO) {
+      actions[k] = autoPick(k, {tele, iceEv});
     } else {
       const av = SKILLS[k].filter(sk => !skillBlock(k, sk));
       const sk = av.length ? av[Math.floor(Math.random() * av.length)] : null;   // sem mana e esquiva em recarga: não age (antes travava a partida)
@@ -1356,6 +1459,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
 
   closePanel(); hideRing();
   state.curActions = actions;
+  if (AUTO) await autoOffense(actions);
   // ---- 3) resolução, um herói por vez
   state.guardFor = (actions.tank && actions.tank !== 'ult' && actions.tank.skill.id === 'guard' && state.heroes.tank.hp > 0) ? actions.tank.target : null;
   const kindOf = k => { const a = actions[k]; return a && a !== 'ult' && a.skill ? a.skill : null; };

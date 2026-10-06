@@ -187,6 +187,9 @@
 .dq-answer:active:not(:disabled)::after{box-shadow:inset 0 0 0 .3cqw #ffc54e}
 .dq-answer.selected::after,.dq-answer.chosen::after{box-shadow:inset 0 0 0 .35cqw #ffc54e,0 0 1.4cqw rgba(255,197,78,.55);background:rgba(255,197,78,.12)}
 .dq-answer.correct::after{box-shadow:inset 0 0 0 .35cqw #4dff8a,0 0 1.4cqw rgba(77,255,138,.5);background:rgba(77,255,138,.15)}
+.dq-answer.hint:not(.wrong):not(.correct)::after{box-shadow:inset 0 0 0 .35cqw #4dff8a,0 0 1.6cqw rgba(77,255,138,.6);background:rgba(77,255,138,.14);animation:hintP 1.4s ease-in-out infinite}
+.dq-answer.hint .label{color:#b9ffd2}
+@keyframes hintP{50%{box-shadow:inset 0 0 0 .35cqw #b9ffd2,0 0 2.4cqw rgba(77,255,138,.85);background:rgba(77,255,138,.22)}}
 .dq-answer.wrong::after{box-shadow:inset 0 0 0 .35cqw #ff536b,0 0 1.4cqw rgba(255,83,107,.5);background:rgba(255,83,107,.16)}
 .dq-answer:disabled{cursor:default}
 

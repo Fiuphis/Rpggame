@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v261', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v262', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -102,6 +102,13 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
       await Promise.all(fs.map(f => fetch(f, {cache:'reload'}).catch(() => 0)));
       b.textContent = 'OK · ' + (m ? m[1].replace('bd1-rpg-', '') : ''); } catch (e) { b.textContent = 'ERRO · TENTE DE NOVO'; }
     setTimeout(() => location.replace(location.pathname + location.search), 500); }; }
+
+// ---------- modo teste (os outros heróis jogam perfeito) ----------
+{ const b = $('#auto'), KEY = 'bd1_auto';
+  const get = () => { try { return localStorage.getItem(KEY) === '1'; } catch { return false; } };
+  const paint = () => { const on = get(); b.firstElementChild.textContent = on ? 'TESTE LIGADO' : 'TESTE DESLIGADO'; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); };
+  b.onclick = () => { try { if (get()) localStorage.removeItem(KEY); else localStorage.setItem(KEY, '1'); } catch {} paint(); window.__autoMsg = get() ? 'Modo teste ligado: os outros heróis acertam tudo, usam itens e habilidades certos para vencer, e a resposta certa aparece em verde.' : 'Modo teste desligado: os outros heróis voltam a jogar como no jogo normal.'; flashMsg(window.__autoMsg); };
+  paint(); window.__autoPaint = paint; }
 
 // ---------- mensagens ----------
 const MSGS = [
@@ -116,7 +123,9 @@ const MSGS = [
 ];
 const msg = $('#msg'); let mi = 0;
 const showMsg = () => { msg.classList.remove('on'); setTimeout(() => { msg.textContent = MSGS[mi]; msg.classList.add('on'); mi = (mi + 1) % MSGS.length; }, 560); };
-showMsg(); setInterval(() => { if (!document.hidden && !cv.classList.contains('go')) showMsg(); }, 6200);
+let msgHold = 0;
+function flashMsg(t){ msgHold = Date.now() + 9000; msg.classList.remove('on'); setTimeout(() => { msg.textContent = t; msg.classList.add('on'); }, 300); }
+showMsg(); setInterval(() => { if (!document.hidden && !cv.classList.contains('go') && Date.now() > msgHold) showMsg(); }, 6200);
 
 // ---------- Como jogar ----------
 const GUARDS = [
