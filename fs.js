@@ -51,19 +51,18 @@ function floatBtn(){
   const place = () => { const w = size(), mx = Math.max(0, innerWidth - w), my = Math.max(0, innerHeight - w); b.style.left = Math.min(mx, Math.max(0, pos.x * mx)) + 'px'; b.style.top = Math.min(my, Math.max(0, pos.y * my)) + 'px'; };
   const save = () => { try { sessionStorage.setItem(PKEY, JSON.stringify(pos)); } catch {} };
   const paint = () => { b.classList.toggle('on', cur()); b.setAttribute('aria-label', cur() ? 'Sair da tela cheia' : 'Tela cheia'); };
-  let hotT = 0; const heat = ms => { b.classList.add('hot'); clearTimeout(hotT); hotT = setTimeout(() => b.classList.remove('hot'), typeof ms === 'number' ? ms : 2600); };   // aceso ao tocar/arrastar; ao abrir cada página fica aceso 10 s para a pessoa achar e depois esmaece devagar (nunca some)
-  let drag = null;
+  let drag = null, hotT = 0; const heat = ms => { b.classList.add('hot'); clearTimeout(hotT); if (!drag) hotT = setTimeout(() => b.classList.remove('hot'), typeof ms === 'number' ? ms : 2600); };   // aceso ao tocar/arrastar; ao abrir cada página fica aceso 10 s para a pessoa achar e depois esmaece devagar (nunca some)
   b.addEventListener('pointerdown', e => { e.stopPropagation(); const r = b.getBoundingClientRect(); drag = {id:e.pointerId, ox:e.clientX - r.left, oy:e.clientY - r.top, sx:e.clientX, sy:e.clientY, moved:false}; try { b.setPointerCapture(e.pointerId); } catch {} heat(); });
   b.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; e.stopPropagation(); if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 7) return; drag.moved = true; heat();
     const w = size(), mx = Math.max(1, innerWidth - w), my = Math.max(1, innerHeight - w), l = Math.min(mx, Math.max(0, e.clientX - drag.ox)), t = Math.min(my, Math.max(0, e.clientY - drag.oy)); pos = {x:l / mx, y:t / my}; place(); });
   const end = e => { if (!drag || e.pointerId !== drag.id) return; e.stopPropagation(); const moved = drag.moved; drag = null; try { b.releasePointerCapture(e.pointerId); } catch {} heat(); if (moved) save(); };
   b.addEventListener('pointerup', e => { const was = drag && !drag.moved; end(e); if (was) { cur() ? window.FS.exit() : window.FS.enter(); setTimeout(paint, 250); setTimeout(paint, 900); } });
-  b.addEventListener('pointercancel', e => { drag = null; });
+  b.addEventListener('pointercancel', e => { drag = null; heat(); });
   b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
   ['touchstart', 'touchend', 'mousedown', 'mouseup'].forEach(t => b.addEventListener(t, e => e.stopPropagation()));
   window.FS.onChange(() => { paint(); heat(); });
   addEventListener('resize', place); addEventListener('orientationchange', () => setTimeout(place, 200));
-  place(); paint(); heat(10000);
+  place(); paint(); if (/(^|\/)cover\.html$/.test(location.pathname)) heat(10000);   // aceso 10 s só ao entrar na tela inicial (junto do aviso); nas outras páginas só acende ao tocar, arrastar ou segurar
   // nunca sai da tela: se algo remover o botão (troca de conteúdo da página), ele volta
   new MutationObserver(() => { if (!document.body.contains(b)) document.body.appendChild(b); }).observe(document.body, {childList:true});
 }
