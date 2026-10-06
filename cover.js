@@ -26,7 +26,7 @@ mk('gw eclipse', pl(400, 405, 144, 116));
 const EYES = [
   {n:'dragao', pts:[[154,382],[182,386]], c:'rgba(255,215,90,1)', r:20},
   {n:'gelo',   pts:[[273,476],[290,474]], c:'rgba(150,225,255,1)', r:20},
-  {n:'dama',   pts:[[101,639],[123,637]], c:'rgba(170,255,225,1)', r:24},
+  {n:'dama',   pts:[[101,639],[123,637]], c:'rgba(170,255,225,1)', r:13},
   {n:'kraken', pts:[[730,421],[764,422]], c:'rgba(255,90,220,1)', r:24},
   {n:'lorde',  pts:[[494,581],[515,582]], c:'rgba(255,60,40,1)', r:22},
   {n:'golem',  pts:[[873,594]], c:'rgba(255,190,70,1)', r:42}
@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V = 'v258', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V = 'v259', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
