@@ -29,8 +29,8 @@ const PKEY = 'bd1_fs_pos';
 function floatBtn(){
   if (!window.FS.ok() || document.getElementById('fs-float')) return;
   const st = document.createElement('style');
-  st.textContent = `#fs-float{position:fixed;z-index:2147483000;left:0;top:0;width:clamp(38px,11vw,54px);height:clamp(38px,11vw,54px);padding:0;margin:0;border:solid transparent;border-width:7px;border-image:url(ui_chip.png) 6 fill/7px stretch;background:transparent;image-rendering:pixelated;touch-action:none;-webkit-tap-highlight-color:transparent;cursor:pointer;opacity:.32;transition:opacity .45s ease;user-select:none;-webkit-user-select:none;outline:none}
-#fs-float.hot{opacity:1;transition:opacity .12s ease}
+  st.textContent = `#fs-float{position:fixed;z-index:2147483000;left:0;top:0;width:clamp(38px,11vw,54px);height:clamp(38px,11vw,54px);padding:0;margin:0;border:solid transparent;border-width:7px;border-image:url(ui_chip.png) 6 fill/7px stretch;background:transparent;image-rendering:pixelated;touch-action:none;-webkit-tap-highlight-color:transparent;cursor:pointer;opacity:.55;transition:opacity 2.2s ease;user-select:none;-webkit-user-select:none;outline:none}
+#fs-float.hot{opacity:1;transition:opacity .15s ease}
 #fs-float.on{border-image-source:url(ui_chip_blue.png)}
 #fs-float i{position:absolute;inset:0;display:block;background:url(fs_icon.png) center/62% 62% no-repeat;image-rendering:pixelated;pointer-events:none}
 #fs-float.on i{background-image:url(fs_icon_in.png)}
@@ -44,7 +44,7 @@ function floatBtn(){
   const place = () => { const w = size(), mx = Math.max(0, innerWidth - w), my = Math.max(0, innerHeight - w); b.style.left = Math.min(mx, Math.max(0, pos.x * mx)) + 'px'; b.style.top = Math.min(my, Math.max(0, pos.y * my)) + 'px'; };
   const save = () => { try { sessionStorage.setItem(PKEY, JSON.stringify(pos)); } catch {} };
   const paint = () => { b.classList.toggle('on', cur()); b.setAttribute('aria-label', cur() ? 'Sair da tela cheia' : 'Tela cheia'); };
-  let hotT = 0; const heat = () => { b.classList.add('hot'); clearTimeout(hotT); hotT = setTimeout(() => b.classList.remove('hot'), 2600); };
+  let hotT = 0; const heat = ms => { b.classList.add('hot'); clearTimeout(hotT); hotT = setTimeout(() => b.classList.remove('hot'), typeof ms === 'number' ? ms : 2600); };   // aceso ao tocar/arrastar; ao abrir cada página fica aceso 10 s para a pessoa achar e depois esmaece devagar (nunca some)
   let drag = null;
   b.addEventListener('pointerdown', e => { e.stopPropagation(); const r = b.getBoundingClientRect(); drag = {id:e.pointerId, ox:e.clientX - r.left, oy:e.clientY - r.top, sx:e.clientX, sy:e.clientY, moved:false}; try { b.setPointerCapture(e.pointerId); } catch {} heat(); });
   b.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; e.stopPropagation(); if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) < 7) return; drag.moved = true; heat();
@@ -56,7 +56,7 @@ function floatBtn(){
   ['touchstart', 'touchend', 'mousedown', 'mouseup'].forEach(t => b.addEventListener(t, e => e.stopPropagation()));
   window.FS.onChange(() => { paint(); heat(); });
   addEventListener('resize', place); addEventListener('orientationchange', () => setTimeout(place, 200));
-  place(); paint();
+  place(); paint(); heat(10000);
   // nunca sai da tela: se algo remover o botão (troca de conteúdo da página), ele volta
   new MutationObserver(() => { if (!document.body.contains(b)) document.body.appendChild(b); }).observe(document.body, {childList:true});
 }
