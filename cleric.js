@@ -6,6 +6,7 @@
 'use strict';
 const POSES = ['i1','i2','i3','i4','i5','i6','i7','i8','a1','a2','a3','a4','a5','a6','a7','a8','h1','h2','h3','h4','h5','h6','h7','h8','s1','s2','s3','s4','s5','s6','s7','s8','e1','e2','e3','e4','e5','e6','e7','e8','e9','u1','u2','u3','u4','u5','u6','u7','u8','f1','f2','f3','f4','f5','f6','v1','v3'];
 const FXS = ['cr1','cr2','crk','crs','dsc','dust','fls','halo','hex','lan','lot','pil','pilw','rise','rip','rng3','rune','sb','shk','spi','spk','st4','xb','zig'];
+const FXMASS_T = {fx_st4:26.6};   // só nos efeitos sobre aliado: a estrela de 4 pontas tem as faixas horizontais puxadas para a direita
 const FXMASS = {fx_pilw:-30.6, fx_halo:-14.2, fx_sb:-14.5, fx_hex:-15.9};   // deslocamento do centro de massa visual em relação ao centro da imagem (px da imagem)
 const AL = {star1:'st4', star2:'st4', star3:'st4', ring1:'halo', ring2:'rip', ring3:'shk', pillar:'pil', pillar2:'pilw', lotus:'lot', burst:'pilw', aura:'hex', streak1:'lan', streak2:'cr2', streak3:'zig', sunstar:'sb', star4:'st4', cross1:'xb'};   // nomes antigos dos efeitos -> folhas novas
 const FLATFX = ['halo','rip','shk','rune'];     // ja sao elipses no chao: nao achatar de novo
@@ -127,11 +128,11 @@ function make(host){
   let low = 0, hist = [], reviveT = 0, dead = 0, deadTarget = 0, deadT = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 40}, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const tsc = () => { if (!tgt) return 1; const x = tgt.get ? tgt.get() : tgt.x; return clamp(Math.min(x, 1024 - x) / 200, .5, 1); };   // alvos junto à borda da tela: efeito menor, para caber inteiro e continuar centrado
-  const E = (name, d, f, o = {}) => fxl.push({sc:tsc(), name: name.replace(/^fx_(.*)$/, (_, k) => 'fx_' + (AL[k] || k)), d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
+  const E = (name, d, f, o = {}) => fxl.push({sc:tsc(), tg:!!tgt, name: name.replace(/^fx_(.*)$/, (_, k) => 'fx_' + (AL[k] || k)), d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const orbPos = () => ({...orbW});
   const dir = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
-  let tgt = null; const tf = () => tgt ? {x:(tgt.get ? tgt.get() : tgt.x), y:(tgt.y != null ? tgt.y : feet().y)} : feet();   // alvo da Luz Sagrada
+  let tgt = null; const tf = () => tgt ? {x:(tgt.get ? tgt.get() : tgt.x) + (tgt.bx || 0), y:(tgt.y != null ? tgt.y : feet().y) + (tgt.by || 0)} : feet();   // alvo da Luz Sagrada
 
   function shot(name, size, style = '', ko = null){      // estilos: arco (padrão), flat (reto e rápido), zig (zigue-zague), twin (dois)
     if (style === 'twin' && ko == null) { shot(name, size * .85, '', -38); shot(name, size * .85, '', 38); return; }
@@ -231,7 +232,7 @@ function make(host){
       if (!ready(e.name) || !s) return true;
       const fl = FLATFX.includes(e.name.slice(3)), k = fl ? .62 : 1, w = im.naturalWidth * k * (s.s || 1) * (s.sx || 1) * (e.sc || 1), h = im.naturalHeight * k * (s.s || 1) * (fl ? 1 : (s.sy || 1)) * (e.sc || 1);
       fc.save(); fc.globalAlpha = clamp(s.a == null ? 1 : s.a); fc.globalCompositeOperation = e.add ? 'lighter' : 'source-over'; fc.translate(s.x, s.y); if (s.rot) fc.rotate(s.rot);
-      FXSoft.draw(fc, im, -w / 2 - (FXMASS[e.name] || 0) * w / im.naturalWidth, s.anchorB ? -h : -h / 2, w, h, 1); fc.restore(); return true;
+      FXSoft.draw(fc, im, -w / 2 - (FXMASS[e.name] || (e.tg && FXMASS_T[e.name]) || 0) * w / im.naturalWidth, s.anchorB ? -h : -h / 2, w, h, 1); fc.restore(); return true;
     });
     if (flashT && now >= flashT) { const u = (now - flashT) / 420; if (u < 1) { fc.save(); fc.fillStyle = `rgba(255,236,170,${.45 * (1 - u)})`; fc.fillRect(0, 0, front.width, front.height); fc.restore(); } else flashT = 0; }
     if (shakeT && now >= shakeT) { const u = (now - shakeT) / 450, g = host.shakeEl; if (g) g.style.transform = u < 1 ? `translate(${Math.sin(u * 60) * 1 * (1 - u)}px,${Math.cos(u * 50) * .8 * (1 - u)}px)` : ''; if (u >= 1) shakeT = 0; }
@@ -242,7 +243,7 @@ function make(host){
     play(name, o = {}){
       if (deadTarget || reviveT) return Promise.resolve(false);
       if (name === 'right' || name === 'wrong') { if (cur && !cur.idle) return Promise.resolve(false); const ra = variant(ACT[name]); return ra ? run(ra) : Promise.resolve(false); }   // reação à resposta: não interrompe ação em curso
-      tgt = name === 'ult' && o.tx != null ? {x:o.tx, y:o.ty, get:o.tget || null} : null;
+      tgt = name === 'ult' && o.tx != null ? {x:o.tx, y:o.ty, get:o.tget || null, bx:o.bx || 0, by:o.by || 0} : null;
       if (name === 'guard') return run(variant(/ffe08a/i.test(o.color || '') ? ACT.guard_h : ACT.guard_n));
       if (name === 'cast') name = 'holy';
       const a = variant(ACT[name]); if (!a) return Promise.resolve(false); const p = run(a, name === 'ult' ? {noGlow:true} : undefined); p.then(fireHit); return p;

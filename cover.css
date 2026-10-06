@@ -8,7 +8,10 @@ img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 button{outline:none;font:inherit;color:inherit}button:focus,button:focus-visible{outline:none}
 .blurbg{position:fixed;inset:-6%;width:112%;height:112%;object-fit:cover;filter:blur(26px) brightness(.45) saturate(1.2);z-index:0}
 /* palco com a proporção exata da arte (941x1672); tudo dentro é posicionado em % da arte */
-#cv{--F:OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;position:absolute;z-index:1;left:50%;top:50%;transform:translate(-50%,-50%);width:min(100vw,calc(100dvh * 941 / 1672));aspect-ratio:941/1672;container-type:inline-size;overflow:hidden;background:#050308;font-family:var(--F)}
+#cv{position:absolute;z-index:1;left:50%;top:0;transform:translateX(-50%);height:100vh;height:100dvh;width:calc(100vh * 941 / 1672);width:calc(100dvh * 941 / 1672);container-type:inline-size;overflow:hidden;background:#050308}   /* palco da arte: sempre com a altura da tela; em telas mais altas que a arte as laterais são cortadas, em telas mais largas sobram faixas desfocadas */
+#scr{--F:OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;position:absolute;z-index:2;left:50%;top:0;transform:translateX(-50%);height:100vh;height:100dvh;width:min(100vw,calc(100vh * 941 / 1672));width:min(100vw,calc(100dvh * 941 / 1672));container-type:inline-size;font-family:var(--F);pointer-events:none}   /* interface: largura da tela (no máximo a largura da arte); os botões mantêm o tamanho projetado */
+#scr>*{pointer-events:auto}
+#scr>#ui{pointer-events:none}
 #world{position:absolute;inset:0;transform-origin:50% 56%;animation:breath 14s ease-in-out infinite alternate;will-change:transform}
 @keyframes breath{from{transform:scale(1)}to{transform:scale(1.022)}}
 #art{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
@@ -38,7 +41,7 @@ button{outline:none;font:inherit;color:inherit}button:focus,button:focus-visible
 
 /* ===== interface em pixel art ===== */
 #ui{position:absolute;inset:0;pointer-events:none}
-.dock{position:absolute;left:0;right:0;top:76.43%;bottom:0;pointer-events:auto;background:linear-gradient(to bottom,rgba(7,3,11,0) 0,rgba(7,3,11,.34) 16%,rgba(7,3,11,.46) 100%);transition:transform .55s cubic-bezier(.5,0,.8,.3),opacity .45s ease}
+.dock{position:absolute;left:0;right:0;top:auto;height:41.88cqw;bottom:0;pointer-events:auto;background:linear-gradient(to bottom,rgba(7,3,11,0) 0,rgba(7,3,11,.34) 16%,rgba(7,3,11,.46) 100%);transition:transform .55s cubic-bezier(.5,0,.8,.3),opacity .45s ease}
 .dock::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 80% at 50% 14%,rgba(60,24,70,.22),transparent 70%)}
 .go .dock{transform:translateY(40%);opacity:0;pointer-events:none}
 .dock>*{z-index:1}
@@ -162,3 +165,8 @@ textarea.sc-in{height:auto;padding:1cqw 1.4cqw;font-size:1.9cqw;text-transform:n
 .fs-ask .sv-io{flex-direction:column;align-items:stretch;margin-top:1cqw}
 .fs-ask .sv-io .chip{height:8cqw;font-size:2.3cqw}
 .fs-ask .chip.go{border-image-source:url(ui_chip_blue.png);color:#ffe08a}
+
+/* janelas (como jogar, saves, tela cheia) cobrem a tela inteira; o painel mantém a largura da interface */
+.how{position:fixed}
+.how .hw{width:90cqw;height:min(84%,150cqw)}
+.fs-ask .hw{height:auto;width:84cqw}

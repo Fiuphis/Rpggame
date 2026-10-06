@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v274', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v275', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -229,8 +229,8 @@ const BS = 14;   // tamanho do "pixel" da dissolução (px da tela)
 $('#play').onclick = async () => {
   if (busy) return; busy = true; try { sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
   const leave = () => { try { sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = 'index.html'; };
-  if (RM) { cv.classList.add('go'); setTimeout(leave, 300); return; }
-  how.hidden = true; cv.classList.add('go'); boost = 3.2;
+  if (RM) { cv.classList.add('go'), $('#scr').classList.add('go'); setTimeout(leave, 300); return; }
+  how.hidden = true; cv.classList.add('go'), $('#scr').classList.add('go'); boost = 3.2;
   const ox = .5, oy = .755, S = 3, ZMS = 1700, org = `${ox * 100}% ${oy * 100}%`;
   const vig = document.createElement('div'), fl = document.createElement('div');
   vig.style.cssText = 'position:absolute;inset:0;z-index:5;pointer-events:none;background:radial-gradient(ellipse 62% 58% at 50% 75.5%,transparent 25%,rgba(3,0,6,.92) 100%);opacity:0';

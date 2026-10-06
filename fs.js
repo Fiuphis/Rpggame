@@ -11,8 +11,9 @@ const standalone = () => { try { return matchMedia('(display-mode: fullscreen)')
 let leaving = false; addEventListener('pagehide', () => { leaving = true; }); addEventListener('beforeunload', () => { leaving = true; });
 const hooks = [], fire = () => hooks.forEach(f => { try { f(cur()); } catch {} });
 ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { if (!cur() && !leaving) set(false); fire(); }));
-const once = () => { if (get() && !cur()) req().catch(() => {}); };
-addEventListener('pointerdown', function h() { if (!get() || cur()) return; req().then(() => removeEventListener('pointerdown', h)).catch(() => {}); }, true);
+// o navegador só aceita tela cheia dentro de um gesto do usuário: no toque, isso vale a partir do fim do toque (pointerup/click)
+const regain = () => { if (!get() || cur()) return; req().then(() => { ['pointerup', 'click', 'touchend'].forEach(t => removeEventListener(t, regain, true)); }).catch(() => {}); };
+['pointerup', 'click', 'touchend'].forEach(t => addEventListener(t, regain, true));
 window.FS = {
   ok: () => !!(de.requestFullscreen || de.webkitRequestFullscreen) && !standalone(),
   on: cur, onChange: f => hooks.push(f),

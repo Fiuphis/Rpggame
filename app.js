@@ -1034,6 +1034,8 @@ const healTargets = () => HERO_ORDER.map(h => { const hp = state.heroes[h].hp;
        : hp < HERO_MAX_HP ? {hero:h, desc:`Vida ${hp}/${HERO_MAX_HP}`, chips:`<span class="tag attr">CURAR +${HEAL_AMOUNT}</span>`}
        : {hero:h, desc:'Vida cheia', block:'VIDA CHEIA'}; });
 function ultUsable(k){ return k !== 'cleriga' || healTargets().some(t => !t.block); }
+const ULT_BY = {mage:0, cleriga:0};   // ajuste fino vertical: o anel e a base do feixe ficavam à frente (abaixo) dos pés dos heróis pequenos
+const ULT_BX = {mage:-9, cleriga:0};   // ajuste fino (mundo, px) da Luz Sagrada: o cajado puxa o centro da Maga para a direita
 async function activateUlt(k, sh){
   const b = state.buff; let note = ULT_INFO[k], cleTarget = null;
   if (k === 'cleriga') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
@@ -1049,7 +1051,7 @@ async function activateUlt(k, sh){
   showBanner(`${GROUPS[k]}: ${ULT_NAME[k].toUpperCase()}!`, note);
   const ft = cleTarget && A.feet ? A.feet(cleTarget) : null;
   const tx = cleTarget ? (ft ? ft.x : HERO_X[cleTarget] / 100 * 1024) : null;
-  const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:ft ? ft.y : 1098, tget:A.body ? () => A.body(cleTarget) : null} : {}); A.sayRandom(k, 'ult', 1);
+  const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:ft ? ft.y : 1098, tget:A.body ? () => A.body(cleTarget) : null, bx:ULT_BX[cleTarget] || 0, by:ULT_BY[cleTarget] || 0} : {}); A.sayRandom(k, 'ult', 1);
   if (k === 'mage') {   // cada dano entra junto do seu estouro do buraco negro (1,5x no 1º, 2,5x no 2º = 4x)
     const onHit = () => Promise.race([A.hit('mage'), sleep(6500)]);
     await onHit(); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true, true);
