@@ -17,11 +17,17 @@ const ORDER = [0, 1, 2, 5, 4, 3], KEY = 'bd1_progress';
 const load = () => { try { const d = JSON.parse(localStorage.getItem(KEY)); if (d && Array.isArray(d.done)) return d.done; } catch {} return []; };
 if (P.get('resetmapa')) localStorage.removeItem(KEY);
 let done = load();
+const ROOM = (window.NET && !NET.MOCK && window.MATCH) ? NET.room() : null;   // sala online: so o criador escolhe o guardiao
+let isOwner = false;
 const stateOf = (done, id) => done.includes(id) ? 'done' : (ORDER.find(b => !done.includes(b)) === id ? 'next' : 'locked');
 let meta = null, selected = null, yes = 0, mine = false, bots = [];
 const pct = (v, t) => (v / t * 100) + '%';
 
-fetch('map/meta.json').then(r => r.json()).then(m => { meta = m; build(); });
+const boot = ROOM ? NET.ready().then(() => MATCH.state(ROOM.id)).then(s => {
+  isOwner = !!(s.room && s.room.owner); if (s.room && s.room.progress && Array.isArray(s.room.progress.done)) done = s.room.progress.done;
+  if (s.match && s.match.status === 'playing' && s.me) { location.replace('espera.html' + location.search); return new Promise(() => {}); }
+}).catch(() => {}) : Promise.resolve();
+boot.then(() => fetch('map/meta.json')).then(r => r.json()).then(m => { meta = m; build(); });
 function build(){
   const W = meta.w, H = meta.h, g = $('#grays'), n = $('#nodes');
   for (const id in meta.regions) { const [x0, y0, x1, y1] = meta.regions[id]; const im = new Image(); im.className = 'gray'; im.id = 'gray' + id; im.src = `map/gray${id}.webp`; im.alt = '';
@@ -69,7 +75,7 @@ $('#c-no').onclick = () => { $('#confirm').hidden = true; };
 $('#c-yes').onclick = () => { localStorage.removeItem(KEY); sessionStorage.removeItem('bd1_justwon'); done = []; $('#confirm').hidden = true; deselect(); paint(done, false); };
 // voltar = trocar de grupo (o progresso fica salvo no aparelho)
 let leaving = false;
-function leaveMap() { if (leaving) return; leaving = true; clearTimeout(enterT); bots.forEach(clearTimeout); $('#panel').hidden = true; selected = null; document.body.classList.add('mleaving'); window.HUD && HUD.hide(); LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); setTimeout(() => Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }), 420); }   // botões e painéis somem antes das nuvens fecharem
+function leaveMap() { if (leaving) return; leaving = true; clearTimeout(enterT); bots.forEach(clearTimeout); $('#panel').hidden = true; selected = null; document.body.classList.add('mleaving'); window.HUD && HUD.hide(); if (ROOM) { try { sessionStorage.setItem('bd1_gate', '1'); } catch {} setTimeout(() => Fog.close($('#map'), 1000).then(() => { location.href = 'espera.html' + location.search; }), 420); return; } LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); setTimeout(() => Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }), 420); }   // botões e painéis somem antes das nuvens fecharem
 $('#back').addEventListener('click', e => { e.preventDefault(); leaveMap(); });
 // v137: o "voltar" do celular/navegador faz o mesmo que TROCAR DE GRUPO (nuvens fecham e volta ao menu)
 history.pushState({ mapa: 1 }, '');
@@ -86,7 +92,12 @@ function select(id){
   if ((st === 'next' || st === 'done') && B.play) {
     const again = st === 'done'; $('#p-sub').textContent = (again ? 'Concluído · jogar de novo com outro grupo ou o mesmo' : B.sub) + ' · o grupo vota para entrar'; go.disabled = false; go.className = 'p-go'; go.innerHTML = `${again ? 'REJOGAR' : 'ENTRAR'} <b>0/${need}</b>`;
     go.onclick = () => { mine = !mine; yes += mine ? 1 : -1; upd(need); if (yes >= need) enter(); };
-    if (TEST) for (let i = 0; i < n - 1; i++) bots.push(setTimeout(() => { if (selected !== id) return; if (Math.random() < .6) { yes++; upd(need); if (yes >= need) enter(); } }, 1200 + i * 800));
+    if (TEST && !ROOM) for (let i = 0; i < n - 1; i++) bots.push(setTimeout(() => { if (selected !== id) return; if (Math.random() < .6) { yes++; upd(need); if (yes >= need) enter(); } }, 1200 + i * 800));
+    if (ROOM) {
+      $('#p-sub').textContent = (again ? 'Concluído · jogar de novo' : B.sub) + (isOwner ? ' · você inicia a partida' : ' · só o criador da sala escolhe');
+      go.innerHTML = isOwner ? 'INICIAR PARTIDA' : 'SÓ O CRIADOR ESCOLHE'; go.disabled = !isOwner; go.classList.remove('selected');
+      go.onclick = isOwner ? async () => { go.disabled = true; try { await MATCH.start(ROOM.id, id); enter(); } catch (e) { go.disabled = false; $('#p-sub').textContent = NET.msg(e); } } : null;
+    }
   } else { $('#p-sub').textContent = st === 'done' ? 'Concluído · este guardião já foi derrotado' : st === 'next' ? 'Em breve' : 'Bloqueado · derrote o guardião anterior'; go.disabled = true; go.innerHTML = 'INDISPONÍVEL'; go.onclick = null; }
 }
 function upd(need){ const go = $('#p-go'); go.innerHTML = `${stateOf(done, selected) === 'done' ? 'REJOGAR' : 'ENTRAR'} <b>${yes}/${need}</b>`; go.classList.toggle('selected', mine); }
