@@ -77,6 +77,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
     ev(T.zoom[0], () => setShake(3, 1700));
     ev(T.flash, () => { setShake(16, 1300); flashA = 1; const [x, y] = [fx.width / 2, fx.height * .72]; burst(x, y, 90, 780); });
     ev(T.white[0], () => setShake(5, 900));
+    ev(T.reveal, () => { setShake(9, 800); burst(fx.width / 2, fx.height * .62, 70, 700); });
 
     function frame(now){
       if (done) return; const t = now - t0, dt = Math.min(50, now - lastNow); lastNow = now;
@@ -110,7 +111,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       }
       // ---- 4. Malgorath de pé ----
       const stOp = eio(seg(t, T.stand[0], T.stand[1])) * (1 - seg(t, T.white[0] + 300, T.white[1] + 200));
-      stand.style.opacity = stOp; stand.style.transformOrigin = '50% 38%'; stand.style.transform = `scale(${t < T.flash ? 1.3 : lerp(1.2, 1.0, eo(seg(t, T.flash, L4)))})`;
+      stand.style.opacity = stOp; stand.style.transformOrigin = '50% 38%'; stand.style.transform = `scale(${t < T.flash ? 1.3 : lerp(1.2, 1.0, eo(seg(t, T.flash, L4))) * lerp(1, .86, ei(seg(t, T.white[0], T.white[1])))})`;
       iStand.style.filter = `brightness(${(.95 + .1 * Math.sin(t * .02) * Math.sin(t * .0073) + .35 * Math.max(0, 1 - seg(t, T.flash, T.flash + 500))).toFixed(3)})`;
       // ---- legenda ----
       const L = LINES.find(l => t >= l[0] && t < l[1]);

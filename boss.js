@@ -41,6 +41,7 @@ const ACT = {
   laugh:[S(2800, [[0,'B_1'],[.1,'B_11',{dy:-5}],[.2,'B_2'],[.3,'B_11',{dy:-5}],[.4,'B_2'],[.5,'B_11',{dy:-5}],[.6,'B_2'],[.92,'B_1']], [[.1,'charge']])],
   tpOut:[S(1300, [[0,'B_1'],[.2,'B_8'],[.5,'B_8',{dy:-8,al:.6}],[.95,'B_8',{dy:-22,al:0}]], [[.18,'smoke']], {hold:'gone'})],
   tpIn:[S(2000, [[0,'B_8',{px:1,py:1,al:0,sc:.5}],[.16,'B_8',{px:1,py:1,al:.95,sc:.54}],[.34,'B_3',{px:1,py:1,al:1,sc:.58}],[.6,'B_3',{px:1,py:1,al:1,sc:.58}],[.8,'B_8',{px:1,py:1,al:.5,sc:.54}],[.95,'B_8',{px:1,py:1,al:0,sc:.5}]], [[.02,'smokeT'],[.36,'strikeT'],[.82,'smokeT']], {hold:'gone', front:true})],
+  fireIn:[S(1900, [[0,'B_8',{dy:-24,al:0}],[.22,'B_8',{dy:-14,al:.55}],[.42,'B_8',{dy:-4,al:1}],[.85,'B_1']], [[.02,'fireIn'],[.4,'embers']])],   // entrada da abertura: sai do fogo (sem a fumaça roxa do teleporte)
   tpBack:[S(1100, [[0,'B_8',{dy:-22,al:0}],[.5,'B_8',{dy:-6,al:1}],[.9,'B_1']], [[.04,'smoke']])],
 };
 const IDLES = [
@@ -63,6 +64,25 @@ function streak(g, x, y, ang, len, th, col, a){
   if (a <= .005) return; g.save(); g.translate(x, y); g.rotate(ang); g.scale(len / th, 1);
   const gr = g.createRadialGradient(0, 0, 0, 0, 0, th); gr.addColorStop(0, `rgba(255,235,225,${clamp(a * .7)})`); gr.addColorStop(.3, `rgba(${col},${clamp(a)})`); gr.addColorStop(1, `rgba(${col},0)`);
   g.globalCompositeOperation = 'lighter'; g.fillStyle = gr; g.fillRect(-th, -th, th * 2, th * 2); g.restore();
+}
+// ---- fogo pixel art: automato celular (estilo "fogo do DOOM") com paleta de ~36 tons: transparente > vinho > vermelho > laranja > amarelo > branco ----
+const PF_KEYS = [[0, 0, 0, 0, 0], [1, 40, 4, 6, .35], [5, 96, 10, 10, .75], [9, 160, 18, 10, .95], [14, 214, 42, 10, 1], [19, 244, 88, 14, 1], [24, 255, 138, 24, 1], [28, 255, 186, 48, 1], [31, 255, 222, 100, 1], [34, 255, 244, 170, 1], [35, 255, 253, 232, 1]];
+const PF_PAL = (() => { const out = []; for (let i = 0; i < 36; i++) { let k = 0; while (k < PF_KEYS.length - 2 && PF_KEYS[k + 1][0] < i) k++; const a = PF_KEYS[k], c = PF_KEYS[k + 1], u = clamp((i - a[0]) / (c[0] - a[0] || 1)); out.push([0, 1, 2, 3].map(j => Math.round(lerp(a[j + 1], c[j + 1], u)))); } return out; })();
+function makeFire(cols, rows){ const cv = document.createElement('canvas'); cv.width = cols; cv.height = rows; return {cols, rows, buf:new Uint8Array(cols * rows), cv, cx:cv.getContext('2d'), img:null, acc:0, last:null}; }
+function sweepFire(s, src){      // um passo: define a fileira de baixo e propaga tudo uma linha para cima, com decaimento e vento aleatorios
+  const {cols, rows, buf} = s;
+  for (let x = 0; x < cols; x++) buf[(rows - 1) * cols + x] = Math.max(0, Math.min(35, Math.round(src(x) + (Math.random() - .5) * 5)));
+  for (let y = 0; y < rows - 1; y++) for (let x = 0; x < cols; x++) { const v = buf[(y + 1) * cols + x], r = (Math.random() * 3) | 0, nx = x - r + 1;
+    if (nx < 0 || nx >= cols) { buf[y * cols + x] = 0; continue; } const dec = Math.random() < .25 + (y < rows * .4 ? .22 * (1 - y / (rows * .4)) : 0) ? 1 : 0; buf[y * cols + nx] = v > dec ? v - dec : 0; }
+}
+function stepFire(s, now, src){
+  if (s.last == null) { s.last = now; for (let i = 0; i < 90; i++) sweepFire(s, x => src(x) * .85); }   // pré-aquece: a chama ja nasce com altura
+  s.acc += now - s.last; s.last = now; while (s.acc >= 40) { s.acc -= 40; sweepFire(s, src); sweepFire(s, src); sweepFire(s, src); }
+}
+function drawFire(g, s, x, y){        // desenha em pixels de 4 px (sem suavizacao), com pequeno ruido de tom para dar os pontos de subtom
+  const {cols, rows, buf, cx} = s; if (!s.img) s.img = cx.createImageData(cols, rows); const d = s.img.data;
+  for (let i = 0; i < cols * rows; i++) { let v = buf[i]; if (v > 2 && Math.random() < .12) v = clamp(v + (Math.random() < .5 ? -1 : 1), 0, 35); const c = PF_PAL[v]; d[i * 4] = c[0]; d[i * 4 + 1] = c[1]; d[i * 4 + 2] = c[2]; d[i * 4 + 3] = Math.round(c[3] * 255); }
+  cx.putImageData(s.img, 0, 0); g.save(); g.imageSmoothingEnabled = false; g.drawImage(s.cv, Math.round(x - cols * 2), Math.round(y - rows * 4), cols * 4, rows * 4); g.restore();
 }
 function smokeBlob(g, x, y, r, a, col){      // fumaça escura (source-over): violeta/vermelho escuro
   if (a <= .005 || r <= 1) return; const gr = g.createRadialGradient(x, y, 0, x, y, r);
@@ -133,6 +153,19 @@ function make(host){
       shakeT = clk(); if (n === 2) setTimeout(fireHit, 200 / tsc()); },
     sigil(){ const f = feet(); E('sigil', 2400, u => ({x:f.x, y:f.y - 6, r:lerp(120, 300, eo(Math.min(1, u * 2))), rot:u * 2, a:Math.sin(Math.PI * Math.min(1, u * 1.05)) * .85}), {back:true}); },
     ring(){ const h = hand(); E('ring', 900, u => ({x:h.x, y:h.y + 40, r:lerp(30, 150, eo(u)), c:VIO, a:.65 * (1 - u)})); },
+    fireIn(){ const f = feet();     // o Malgorath surge de uma parede de fogo detalhada
+      const env = (u, k = 1) => eo(seg(u, 0, .2 * k)) * (1 - Math.pow(seg(u, .46, 1), 1.15));
+      E('glow', 1700, u => ({x:f.x, y:f.y - 150, r:lerp(150, 560, eo(u)), c:ORG, a:.7 * Math.sin(Math.PI * Math.min(1, u * 1.05))}));
+      E('glow', 1100, u => ({x:f.x, y:f.y - 220, r:lerp(60, 280, eo(u)), c:'255,236,190', a:.75 * (1 - u)}));
+      for (let k = 0; k < 3; k++) E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(50, 430, eo(u)), c:k === 1 ? HOT : ORG, a:.8 * (1 - u)}), {delay:k * 120});
+      for (let i = 0; i < 6; i++) { const ox = (i - 2.5) * 90; E('glow', 1500, u => ({x:f.x + ox, y:f.y - 60, r:150, c:'255,150,40', a:.55 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 40}); }
+      const sim = makeFire(140, 112), peaks = [rnd(0, 6), rnd(0, 6)], cf = Array.from({length:48}, () => Math.random());   // cf: variação por coluna (línguas de ~3 células) que oscila no tempo      // mancha larga de fogo, com picos irregulares
+      E('pfire', 2300, u => { const e = (.75 + .25 * eo(seg(u, 0, .22))) * (1 - Math.pow(seg(u, .45, .85), 1.2));
+        return {sim, x:f.x, y:f.y - 6, src:x => { if (x === 0) for (let i = 0; i < cf.length; i++) cf[i] = clamp(cf[i] + (Math.random() - .5) * .22); const xn = (x / sim.cols - .5) * 2, prof = (1 - Math.pow(Math.abs(xn), 1.7)) * (.62 + .38 * Math.abs(Math.sin(xn * 7.5 + peaks[0])) * (.6 + .4 * Math.sin(xn * 3 + peaks[1]))); return 35 * clamp(prof * 1.15) * e * (.72 + .28 * Math.pow(cf[(x / 3) | 0], .7)); }}; });
+      for (let i = 0; i < 56; i++) { const ox = rnd(-250, 250), vy = rnd(180, 520), sx = rnd(-60, 60), z = Math.random() < .3 ? 8 : 4, c = Math.random() < .5 ? '255,214,110' : Math.random() < .5 ? '255,140,40' : '255,255,220', dl = rnd(0, 700);
+        E('spark', rnd(700, 1500), u => ({x:f.x + ox + sx * u + Math.sin(u * 8 + i) * 10, y:f.y - 40 - vy * eo(u), z, c, a:Math.sin(Math.PI * Math.pow(u, .6))}), {delay:dl}); }
+      for (let i = 0; i < 7; i++) { const ox = rnd(-200, 200), dl = 500 + i * 90; E('ash', 1300, u => ({x:f.x + ox + 30 * u, y:f.y - 360 - 200 * eo(u) + rnd(0, 0), r:lerp(50, 110, eo(u)), a:.32 * Math.sin(Math.PI * u)}), {delay:dl, back:false}); }
+      shakeT = clk(); },
     smoke(){ const f = feet(); for (let i = 0; i < 16; i++) { const ox = rnd(-190, 190), oy = rnd(-520, -40), sp = rnd(.6, 1.3); E('smoke', 1300, u => ({x:f.x + ox * (.4 + u * .8), y:f.y + oy - 70 * u * sp, r:lerp(70, 150, eo(u)) * sp, a:.85 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 35}); }
       E('glow', 900, u => ({x:f.x, y:f.y - 280, r:lerp(120, 300, eo(u)), c:VIO, a:.45 * Math.sin(Math.PI * u)})); },
     smokeT(){ const b = tgt; for (let i = 0; i < 12; i++) { const ox = rnd(-90, 90), oy = rnd(-300, 30), sp = rnd(.6, 1.2); E('smoke', 1000, u => ({x:b.x + ox, y:b.y + 90 + oy - 40 * u, r:lerp(40, 90, eo(u)) * sp, a:.8 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 28}); } },
@@ -208,6 +241,9 @@ const EYES = {B_1:[[351,107],[381,108]],B_2:[[322,106],[351,110]],B_3:[[263,102]
       else if (e.name === 'streak') streak(g, s.x, s.y, s.ang, s.len, s.th, s.c, s.a);
       else if (e.name === 'ring') { drawRing(s); }
       else if (e.name === 'smoke') smokeBlob(g, s.x, s.y, s.r, s.a, '38,6,52');
+      else if (e.name === 'pfire') { stepFire(s.sim, now, s.src); drawFire(g, s.sim, s.x, s.y); }
+      else if (e.name === 'ash') smokeBlob(g, s.x, s.y, s.r, s.a, '34,10,8');
+      else if (e.name === 'spark') { g.save(); g.globalCompositeOperation = 'lighter'; g.fillStyle = `rgba(${s.c},${clamp(s.a)})`; g.fillRect(Math.round(s.x / 4) * 4, Math.round(s.y / 4) * 4, s.z, s.z); g.restore(); }
       else if (e.name === 'orb') { glow(g, s.x, s.y, s.r * 2.1, RED, .35 * s.a); smokeBlob(g, s.x, s.y, s.r * 1.15, clamp(s.a), '10,0,14'); smokeBlob(g, s.x, s.y, s.r * .8, clamp(s.a), '0,0,0'); glow(g, s.x, s.y, s.r * 1.5, VIO, .18 * s.a); }
       else if (e.name === 'sigil') { g.save(); g.translate(s.x, s.y); g.scale(1, .28); g.globalCompositeOperation = 'lighter'; g.strokeStyle = `rgba(${RED},${s.a})`; g.shadowColor = `rgba(${RED},1)`; g.shadowBlur = 24; g.lineWidth = 8;
         g.beginPath(); g.arc(0, 0, s.r, 0, 6.2832); g.stroke(); g.lineWidth = 5; g.beginPath(); g.arc(0, 0, s.r * .72, 0, 6.2832); g.stroke();
