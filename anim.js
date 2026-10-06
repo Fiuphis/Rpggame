@@ -50,7 +50,7 @@ function build(){
 }
 function buildMage(h, m, P, Rig, cfg){
   const {PX, PXR, PT, PB} = cfg, cw = m.w + PX + PXR, ch = m.h + PT + PB;
-  h.cv.width = cw; h.cv.height = ch;
+  h.cv.width = cw; h.cv.height = ch; h.px = PX; h.py = PT;
   h.cv.style.cssText = `left:${(m.x - PX) / 1024 * 100}%;top:${(m.y - PT) / 1536 * 100}%;width:${cw / 1024 * 100}%;height:${ch / 1536 * 100}%`;
   const mk = (cls) => { const k = document.createElement('canvas'); k.className = 'fxl ' + cls; k.width = 1024; k.height = 1536; return k; };
   const back = mk('back'), front = mk('front'); $('#game').append(back, front);
@@ -128,6 +128,21 @@ function enter(w, delay = 0){ const h = H[w]; if (!h || !h.cv.animate) { if (h) 
   setTimeout(() => { clearTimeout(h.enT); h.cv.style.opacity = ''; h.cv.animate([{transform:'translateY(46px)', opacity:0}, {transform:'translateY(0)', opacity:1}], {duration:650, easing:'cubic-bezier(.2,.8,.3,1)'}); if (window.Extras) Extras.fx(w, 'enter'); }, delay); }
 function reset(){ if (window.Extras) Extras.clear(); if (window.PXFX) PXFX.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
-window.Anim = {feet:feetOf, META, play, react, low, enter, enterPrep, extra:(w, k, o) => window.Extras && Extras.fx(w, k, o), fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
+// centro do corpo do herói na pose atual (centro de massa horizontal dos pixels opacos do canvas, em coordenadas do mundo)
+const bodyCache = {};
+function bodyX(w){
+  const h = H[w], now = performance.now(), c = bodyCache[w];
+  if (c && now - c.t < 90) return c.x;
+  let x = feetOf(w).x;
+  try {
+    if (h && h.rig && h.px != null) {
+      const cv = h.cv, st = 4, d = h.c.getImageData(0, 0, cv.width, cv.height).data; let sx = 0, n = 0;
+      for (let yy = 0; yy < cv.height; yy += st) for (let xx = 0; xx < cv.width; xx += st) if (d[(yy * cv.width + xx) * 4 + 3] > 200) { sx += xx; n++; }
+      if (n > 40) x = META[w].x - h.px + sx / n;
+    }
+  } catch (e) {}
+  bodyCache[w] = {t:now, x}; return x;
+}
+window.Anim = {body:bodyX, feet:feetOf, META, play, react, low, enter, enterPrep, extra:(w, k, o) => window.Extras && Extras.fx(w, k, o), fx:(w, n, o) => H[w] && H[w].rig && H[w].rig.fx && H[w].rig.fx(n, o), hit:w => H[w] && H[w].rig && H[w].rig.nextHit ? H[w].rig.nextHit() : Promise.resolve(), idleNow:w => H[w] && H[w].rig && H[w].rig.idle(), setDead, setAura, reset, build, say:none, sayRandom:none, sfx:none, useSheet:() => {}, has:(w, n) => !!(H[w] && ((H[w].rig && H[w].rig.has(n)) || resolve(w, n)))};
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => setTimeout(build, 0)); else setTimeout(build, 0);
 })();
