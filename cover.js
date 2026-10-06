@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v262', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v263', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -102,6 +102,47 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
       await Promise.all(fs.map(f => fetch(f, {cache:'reload'}).catch(() => 0)));
       b.textContent = 'OK · ' + (m ? m[1].replace('bd1-rpg-', '') : ''); } catch (e) { b.textContent = 'ERRO · TENTE DE NOVO'; }
     setTimeout(() => location.replace(location.pathname + location.search), 500); }; }
+
+// ---------- saves ----------
+{ const sv = $('#sv'), body = $('#sv-body'), note = $('#sv-msg'), act = $('#sv-act'); let mode = {}, nt = 0;
+  const say = t => { note.textContent = t; clearTimeout(nt); nt = setTimeout(() => { note.textContent = ''; }, 3600); };
+  const two = n => String(n).padStart(2, '0');
+  const when = ts => { const d = new Date(ts); return two(d.getDate()) + '/' + two(d.getMonth() + 1) + ' ' + two(d.getHours()) + ':' + two(d.getMinutes()); };
+  const GUARD = Saves.ORDER;
+  const pips = done => { const nx = GUARD.find(b => !done.includes(b)); return GUARD.map(b => `<i class="pip ${done.includes(b) ? 'd' : b === nx ? 'n' : ''}"></i>`).join(''); };
+  const btn = (n, a, t, c = '') => `<button type="button" class="chip ${c}" data-n="${n}" data-a="${a}">${t}</button>`;
+  function card(n, s, active){
+    const m = mode[n], on = n === active;
+    if (!s) return `<div class="sc empty" data-n="${n}"><div class="sc-top"><b class="sc-name">SAVE ${n}</b></div><div class="sc-empty">COMPARTIMENTO VAZIO</div><div class="sc-btns">${btn(n, 'new', 'NOVO JOGO', 'go')}${btn(n, 'save', 'SALVAR AQUI')}</div></div>`;
+    const top = m === 'ren' ? `<input class="sc-in" maxlength="12" value="${s.name}" aria-label="Nome do save">` : `<div class="sc-top"><b class="sc-name">${s.name}</b>${on ? '<em class="sc-tag">EM USO</em>' : ''}</div>`;
+    let btns;
+    if (m === 'ren') btns = btn(n, 'ok-ren', 'SALVAR NOME', 'go') + btn(n, 'no', 'CANCELAR');
+    else if (m) { const q = {del:on ? 'REINICIAR ESTE SAVE? O PROGRESSO SERÁ PERDIDO' : 'APAGAR ESTE SAVE?', save:'SUBSTITUIR ESTE SAVE PELO JOGO EM USO?', new:'COMEÇAR DO ZERO NESTE SAVE?', load:''}[m]; btns = `<div class="sc-ask">${q}</div>` + btn(n, 'ok-' + m, 'SIM', 'bad') + btn(n, 'no', 'NÃO'); }
+    else btns = (on ? '' : btn(n, 'load', 'CARREGAR', 'go') + btn(n, 'save', 'SALVAR AQUI')) + btn(n, 'ren', 'RENOMEAR') + btn(n, 'del', on ? 'REINICIAR' : 'APAGAR', 'bad');
+    return `<div class="sc${on ? ' on' : ''}" data-n="${n}">${top}<div class="sc-pips">${pips(s.done)}</div><div class="sc-info"><span><b>${Math.min(s.done.length, 6)}/6</b> GUARDIÕES</span><span><b>${s.gold}</b> MOEDAS</span><span><b>${s.items}</b> ITENS</span></div><div class="sc-date">SALVO EM ${when(s.ts)}</div><div class="sc-btns">${btns}</div></div>`;
+  }
+  function render(){ const st = Saves.state(); body.innerHTML = st.slots.map((s, i) => card(i + 1, s, st.active)).join(''); act.textContent = Saves.activeName(); }
+  body.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return; const n = +b.dataset.n, a = b.dataset.a;
+    if (a === 'load') { Saves.load(n); mode = {}; say(Saves.activeName() + ' carregado.'); }
+    else if (a === 'new' || a === 'save' || a === 'del' || a === 'ren') {
+      const st = Saves.state(), s = st.slots[n - 1];
+      if (a === 'new' && !s) { Saves.newGame(n); Saves.load(n); say('Novo jogo iniciado em ' + Saves.activeName() + '.'); }
+      else if (a === 'save' && !s) { Saves.saveTo(n); say('Jogo salvo em SAVE ' + n + '.'); }
+      else mode[n] = a;
+    }
+    else if (a === 'no') delete mode[n];
+    else if (a === 'ok-del') { Saves.remove(n); delete mode[n]; say('Save apagado.'); }
+    else if (a === 'ok-save') { Saves.saveTo(n); delete mode[n]; say('Jogo salvo em ' + Saves.state().slots[n - 1].name + '.'); }
+    else if (a === 'ok-new') { Saves.newGame(n); delete mode[n]; say('Save reiniciado.'); }
+    else if (a === 'ok-ren') { const v = body.querySelector(`.sc[data-n="${n}"] .sc-in`); if (v && Saves.rename(n, v.value)) say('Nome alterado.'); else say('Digite um nome.'); delete mode[n]; }
+    render();
+  });
+  $('#sv-btn').onclick = () => { mode = {}; note.textContent = ''; render(); sv.hidden = false; };
+  $('#sv-close').onclick = () => { sv.hidden = true; };
+  sv.addEventListener('click', e => { if (e.target === sv) sv.hidden = true; });
+  addEventListener('keydown', e => { if (e.key === 'Escape') sv.hidden = true; });
+  act.textContent = (Saves.state(), Saves.activeName()); }
 
 // ---------- modo teste (os outros heróis jogam perfeito) ----------
 { const b = $('#auto'), KEY = 'bd1_auto';

@@ -20,6 +20,7 @@ if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.ad
   <img class="bg" src="select_plate.webp" alt="Selecione sua classe" draggable="false">
 </main>
 <div class="above" id="above"><div class="ab-title"></div>
+  <button id="home" class="home" type="button">&#9666; INÍCIO</button>
   <div id="msg" class="msg" role="status" aria-live="polite"></div>
   <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
 </div>
@@ -87,6 +88,12 @@ confirmBtn.onclick=()=>{
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search})},520);   /* os botões somem antes das nuvens fecharem */
+};
+document.getElementById('home').onclick=()=>{
+  if(window.__leaving)return;window.__leaving=true;
+  try{sessionStorage.setItem('bd1_cover_back','1');sessionStorage.removeItem('bd1_rebuild')}catch(e){}
+  const go=()=>location.href='cover.html';
+  if(window.PxT&&!matchMedia('(prefers-reduced-motion: reduce)').matches)PxT.conceal(.5,.2).then(go);else go();
 };
 render();
 const _st=document.getElementById('stage');

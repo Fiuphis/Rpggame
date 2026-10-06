@@ -26,8 +26,18 @@
     <div class="dock" id="dock">
       <button id="play" class="c-play" type="button"><span>JOGAR</span></button>
       <button id="how-btn" class="c-how" type="button"><i class="ic-book"></i><span>COMO JOGAR</span></button>
+      <button id="sv-btn" class="c-sv" type="button"><span>SAVES<small id="sv-act">SAVE 1</small></span></button>
       <button id="auto" class="c-auto" type="button" aria-pressed="false"><span>TESTE DESLIGADO</span></button>
       <div class="c-msg" aria-live="polite"><i class="ic-gem"></i><p id="msg"></p></div>
+    </div>
+  </div>
+  <div id="sv" class="how sv" hidden role="dialog" aria-modal="true" aria-label="Saves">
+    <div class="hw">
+      <div class="hw-head"><svg class="ic-save" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#ffd978" d="M0 1h1V0h9v1h1v1h1v9h-1v1H1v-1H0z"/><path fill="#6a4a10" d="M2 1h7v4H2z"/><path fill="#ffe9a8" d="M7 1h1v3H7z"/><path fill="#1a1530" d="M2 7h8v4H2z"/><path fill="#8a6a1a" d="M3 8h6v1H3z"/></svg><b>SAVES</b></div>
+      <p class="sv-note">O jogo usa o save em uso. Progresso, moedas e itens ficam guardados nele.</p>
+      <div class="hw-body" id="sv-body"></div>
+      <p id="sv-msg" class="sv-msg" aria-live="polite"></p>
+      <button id="sv-close" class="chip close" type="button">FECHAR</button>
     </div>
   </div>
   <div id="how" class="how" hidden role="dialog" aria-modal="true" aria-label="Como jogar">
@@ -42,6 +52,7 @@
 </main>
 <canvas id="px"></canvas>
 <script src="rebuild.js"></script>
+<script src="saves.js"></script>
 <script src="cover.js"></script>
 </body>
 </html>
