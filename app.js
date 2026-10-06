@@ -735,9 +735,9 @@ function flashHit(){
 
 // Votação genérica dentro do grupo: mostra contagem ao vivo (o grupo vê entre si), decide por maioria.
 // Empate entre as mais votadas = sorteio; ninguém votou = null. O painel continua aberto ao terminar.
-function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd, note}){
+function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd, note, net}){
   return new Promise(resolve => {
-    let endsAt = fixedEnd || Date.now() + seconds * 1000; seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
+    let endsAt = net ? net.endsAt() : (fixedEnd || Date.now() + seconds * 1000); seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
     const voters = groupMembers(), need = majorityOf(voters);
     const sv = options.map(() => 0); let my = null, locked = false, timer = null, bots = [];
     let list, M = null, P = null;
@@ -793,7 +793,15 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     const total = () => sv.reduce((a, c) => a + c, 0);
     const paint = (final) => btns.forEach((b, i) => { if (options[i].disabled) return; b.querySelector('.cnt').textContent = sv[i]; b.classList.toggle('selected', my === i && !final); });
     const top = () => { const m = Math.max(...sv); return {m, c: sv.map((v, i) => v === m ? i : -1).filter(i => i >= 0)}; };
-    function pick(i){ if (locked || my === i) return; if (my !== null) sv[my]--; sv[i]++; my = i; paint(); check(); }
+    let cf = false;   // online: voto da pergunta ja confirmado (segundo toque na mesma alternativa)
+    function pick(i){
+      if (net) {   // 1o toque = escolhe (azul); 2o toque na mesma = confirma
+        if (locked || cf) return;
+        if (my === i) { if (net.vote) { cf = true; net.vote(i); btns[i].classList.add('chosen'); btns.forEach((b, j) => { if (j !== i) b.disabled = true; }); paint(); } else finish(i, false); return; }
+        my = i; if (net.vote) net.vote(i); paint(); return;
+      }
+      if (locked || my === i) return; if (my !== null) sv[my]--; sv[i]++; my = i; paint(); check();
+    }
     function check(){
       if (locked) return;
       const idx = sv.findIndex(v => v >= need); if (idx >= 0) return finish(idx, false);
@@ -809,12 +817,20 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     fitText();
     const timerEl = () => P ? $('#pp-timer') : $(panel ? '#skm-layer' : menu ? '#am-timer' : '#dq-layer').querySelector('#vote-timer');   // cada painel tem o seu (o id repetido pegava o da pergunta, escondido)
     const tick = () => {
+      if (net) {   // online: prazo, contagem e fim vem do servidor
+        endsAt = net.endsAt();
+        if (net.done()) return finish(net.result(), false);
+        if (net.counts) { options.forEach((o, i) => { if (!o.disabled) sv[i] = net.counts(i); }); paint(); }
+        const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000)), el = timerEl(); if (el) { el.textContent = left + 's'; el.classList.toggle('urgent', left <= 3); }
+        return;
+      }
       const left = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));
       const el = timerEl(); if (el) { el.textContent = left + 's'; el.classList.toggle('urgent', left <= 3); }
       if (left <= 0 && !locked) { clearInterval(timer); const {m, c} = top(); if (m === 0) finish(null, false); else finish(c[Math.floor(Math.random() * c.length)], c.length > 1); }
     };
+    if (net && net.my) { const mv = net.my(); if (mv && Number.isInteger(mv.option)) { my = mv.option; cf = !!mv.confirmed; if (cf) { btns[my].classList.add('chosen'); btns.forEach((b, j) => { if (j !== my) b.disabled = true; }); } } }
     tick(); timer = setInterval(tick, 250);
-    if (!menu && !panel) qExtend = secs => {   // item de tempo: so a pergunta; secs=0 so testa se ainda da
+    if (!net && !menu && !panel) qExtend = secs => {   // item de tempo: so a pergunta; secs=0 so testa se ainda da
       if (locked) return false; if (!secs) return true;
       endsAt += secs * 1000; tick();
       const L = $('#dq-layer'), tb = MENU_META.question.tbox, t = L && L.querySelector('.sk-timer');
@@ -823,7 +839,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       return true;
     };
     // modo teste: os outros membros do grupo votam sozinhos
-    if (TEST_MODE) for (let i = 0; i < voters - 1; i++) bots.push(setTimeout(() => {
+    if (TEST_MODE && !net) for (let i = 0; i < voters - 1; i++) bots.push(setTimeout(() => {
       if (locked) return; sv[enabled[Math.floor(Math.random() * enabled.length)]]++; paint(); check();
     }, 900 + i * 800 + Math.random() * 400));
   });
@@ -966,21 +982,44 @@ function flyItemToBag(type, fromEl){
     setTimeout(finish, 4000);   // trava de seguranca
   });
 }
-async function runChestRound(){
+async function runChestRound(SR){
   state.chestAt = state.round;
   const g = $('#game'), img = document.createElement('img');
   img.className = 'chest'; img.src = CHEST_FRAMES[0]; img.alt = ''; g.appendChild(img);
   timeStop(img);
   showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Abrir ou ignorar? (sem pergunta nesta rodada)');
+  let open, mine, opens = null, rolls = null;
+  if (ONL.on) {   // cada grupo decide pelo seu voto; o sorteio (item ou armadilha) e o mesmo em todos os aparelhos
+    const res = await runVote({text:'Abrir a arca do tesouro?', seconds:25, options:[{label:'ABRIR A ARCA'}, {label:'IGNORAR'}], net:onlNet(SR)});
+    const s2 = await ONL.wait(s => s.round && s.round.id === SR.id && s.round.status !== 'open', {cancel:() => state.over});
+    await closePanel();
+    if (!s2) { hideBanner(); img.remove(); return; }
+    const rc = s2.round; opens = {}; rolls = {};
+    HERO_ORDER.forEach(k => { opens[k] = !!(rc.groups[k] && rc.groups[k].chosen === 0); });
+    HERO_ORDER.forEach(k => { rolls[k] = R() < CHEST_ITEM_P; });
+    open = opens[activeGroup]; mine = !!(rc.my_vote && rc.my_vote.option === 0);
+    hideBanner();
+  } else {
   while (state.pendingAction || state.voteLocked) await wait(300);
   state.chestVote = null;
-  const open = await new Promise(res => { state.chestDone = res; openMerchantVote('Abrir a arca?', {type:'chest'}); });
-  const mine = state.chestVote === 'yes';
-  hideBanner();
-  if (!open) { showBanner('ARCA IGNORADA', 'ela se desfaz em poeira'); await chestVanish(img); hideBanner(); return; }
+  open = await new Promise(res => { state.chestDone = res; openMerchantVote('Abrir a arca?', {type:'chest'}); });
+  mine = state.chestVote === 'yes';
+  hideBanner(); }
+  const otherTraps = async () => {   // armadilhas dos outros grupos (valem para todos os aparelhos)
+    if (!ONL.on) return;
+    for (const k of HERO_ORDER) {
+      if (k === activeGroup || !opens[k] || rolls[k]) continue;
+      const h = state.heroes[k]; if (h.hp <= 0) continue;
+      const m = itemMit(k, CHEST_TRAP, false); h.hp = Math.max(0, h.hp - m.d); A.play(k, 'hurt', {light:true}); floatText(HERO_X[k], 56, `-${m.d}${m.note}`, '#ff6b81');
+    }
+    renderHud(); await wait(900);
+  };
+  if (!open) { showBanner('ARCA IGNORADA', 'ela se desfaz em poeira'); await chestVanish(img); hideBanner(); await otherTraps(); return; }
   await chestPlay(img, [1, 2, 3]); chestDust(img, 10); await wait(250);
-  if (!mine) { showBanner('A ARCA ABRIU', 'você votou em ignorar: nada para você'); await wait(1900); hideBanner(); }
-  else if (Math.random() < CHEST_ITEM_P) {   // item aleatório da loja (raro com pouca chance)
+  const itemRoll = ONL.on ? rolls[activeGroup] : Math.random() < CHEST_ITEM_P;
+  const trapNow = ONL.on ? !itemRoll : (mine && !itemRoll);   // online: a armadilha vale para o heroi do grupo que abriu, mesmo para quem votou em ignorar
+  if (!mine && !trapNow) { showBanner('A ARCA ABRIU', 'você votou em ignorar: nada para você'); await wait(1900); hideBanner(); }
+  else if (!trapNow) {   // item aleatório da loja (raro com pouca chance)
     const t = Math.random() < CHEST_LEGEND_P ? LEGEND_POOL[Math.floor(Math.random() * LEGEND_POOL.length)] : Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
     if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); await flyItemToBag(t, img); }   // sem aviso no papiro: o item voa para a mochila (segure o item para ler os detalhes)
     else { const n = ITEMS[t].price; state.gold += n; state.stats.gained += n; persist(); goldGain(n); showBanner('MOCHILA CHEIA', `${ITEMS[t].name} virou ${n} moedas`); await wait(2300); hideBanner(); }
@@ -991,6 +1030,7 @@ async function runChestRound(){
     renderHud(); await wait(2100); hideBanner();
   }
   await chestPlay(img, [2, 1, 0], 130); await wait(250); await chestVanish(img);   // fecha e some
+  await otherTraps();
 }
 async function bossIntro(ev = {}){
   const game = $('#game');
@@ -1023,10 +1063,11 @@ async function pickAlly(k, sk, sh){
   if (t === 'BACK') return 'BACK';
   return list.find(x => x.hero === t && !x.block) ? t : first;
 }
-async function chooseTarget(title, text, list, fallback, note, endsAt){
+async function chooseTarget(title, text, list, fallback, note, endsAt, field){
   if (note && note.text) showBanner(title, note.text);   // avisos ficam no papiro
   const r = await runVote({
     menu:true, panel:'target', title, text, seconds:ACTION_SECONDS, endsAt,
+    net: ONL.on ? onlActNet(ONL.round(), i => i < HERO_ORDER.length ? onlCountBy(a => a[field || 'target'] === HERO_ORDER[i]) : 0) : null,
     options: HERO_ORDER.map((h, n) => { const it = list.find(x => x.hero === h), ok = it && !it.block;
       return {label:GROUPS[h], desc:it ? it.desc : '', kind:'util hero-' + h, face:h, slot:[n >> 1, n & 1],
         chips: ok ? (it.chips || '') : it && it.block ? `<span class="tag block">${it.block}</span>` : !it && h === activeGroup ? '<span class="tag">VOCÊ</span>' : '', disabled:!ok}; })
@@ -1042,11 +1083,12 @@ const healTargets = () => HERO_ORDER.map(h => { const hp = state.heroes[h].hp;
 function ultUsable(k){ return k !== 'cleriga' || healTargets().some(t => !t.block); }
 const ULT_BY = {mage:0, cleriga:0};   // ajuste fino vertical: o anel e a base do feixe ficavam à frente (abaixo) dos pés dos heróis pequenos
 const ULT_BX = {mage:-9, cleriga:0};   // ajuste fino (mundo, px) da Luz Sagrada: o cajado puxa o centro da Maga para a direita
-async function activateUlt(k, sh){
+async function activateUlt(k, sh, forced){
   const b = state.buff; let note = ULT_INFO[k], cleTarget = null;
   if (k === 'cleriga') {   // Luz Sagrada: primeiro escolhe quem recebe; sem escolha no tempo = não usa (continua disponível)
     const list = healTargets(), valid = list.filter(t => !t.block);
-    if (k === activeGroup && state.heroes[k].hp > 0) {
+    if (forced !== undefined) cleTarget = (forced && valid.some(v => v.hero === forced)) ? forced : valid.slice().sort((x, y) => state.heroes[x.hero].hp - state.heroes[y.hero].hp)[0].hero;
+    else if (k === activeGroup && state.heroes[k].hp > 0) {
       let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}, sh && sh.endsAt); await closePanel();
       if (r === 'BACK') return 'BACK';
       if (!r || !valid.some(v => v.hero === r)) { toast('Tempo esgotado: a Luz Sagrada não foi usada e continua disponível.'); return false; }
@@ -1126,10 +1168,21 @@ async function chooseSkill(k, sh = {}){
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta rank S/SS
-    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:'<span class="tag">SÓ RANK S/SS</span>', disabled:!ult, block:ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 S/SS' : 'ACERTE RANK S/SS')});
+    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:'<span class="tag">SÓ RANK S/SS</span>', disabled:!ult || (ONL.on && !!sh.ult), block:ONL.on && sh.ult ? 'ATIVADO' : ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 S/SS' : 'ACERTE RANK S/SS')});
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
-    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts});
+    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts,
+      net: ONL.on ? onlActNet(ONL.round(), i => onlCountBy(a => i === 0 ? a.ult : a.skill === (list[i - 1] || {}).id)) : null});
     if (r.idx === null) return null;
+    if (r.idx === 0 && ONL.on) {   // online: o especial entra na proposta do grupo e e ativado na resolucao
+      let t = null;
+      if (k === 'cleriga') {
+        const rr = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', healTargets(), null, {text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '.'}, sh.endsAt, 'ult_target'); await closePanel();
+        if (rr === 'BACK') continue;
+        if (!rr) { toast('Sem alvo escolhido: a Luz Sagrada não foi armada.'); continue; }
+        t = rr;
+      }
+      sh.ult = true; sh.ultTarget = t; toast(`Especial armado: ${ULT_NAME[k]}. Escolha também a ação.`); continue;
+    }
     if (r.idx === 0) { await closePanel(); if (await activateUlt(k, sh) === 'BACK') continue; endsAt = null; continue; }   // ultimate ativado: o efeito começa a contar agora
     const sk = list[r.idx - 1]; let element = null;
     if (sk.elem) {
@@ -1137,13 +1190,14 @@ async function chooseSkill(k, sh = {}){
       window.__elemDef = sk.kind === 'def';   // o seletor de elementos tem uma arte para ataque e outra para escudo
       const r2 = await runVote({
         menu:true, panel:'elem', title:'', text:'', seconds:ACTION_SECONDS, endsAt, attack:at,
+        net: ONL.on ? onlActNet(ONL.round(), i => i < 4 ? onlCountBy(a => a.element === els[i]) : 0) : null,
         options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', slot:[2, 0]}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
       if (r2.idx === null) return null;              // tempo acabou sem decisão no menu de elementos = como não escolher nada
       element = els[r2.idx];
     }
-    return {skill:sk, element};
+    return {skill:sk, element, ult:!!sh.ult, ultTarget:sh.ultTarget || null};
   }
 }
 
@@ -1406,15 +1460,213 @@ function autoPick(k, {iceEv}){
   return sk ? {skill:sk, element, target} : null;
 }
 
+// ===== Modo online (partida compartilhada): o servidor decide as entradas; todos rodam o mesmo combate =====
+const onlRd = id => { const r = ONL.round(); return r && r.id === id ? r : null; };
+function onlQuestion(rd){ const q = rd.question; return {difficulty:q.rank, text:q.text, answers:q.options, correct:-1}; }
+// rede da votacao da pergunta/arca: contagem do proprio grupo, prazo e fim vem do servidor
+function onlNet(SR){
+  const me = () => ONL.me, grp = r => r && r.groups && r.groups[me()];
+  return {
+    kind:'q',
+    endsAt: () => { const r = onlRd(SR.id); return r ? ONL.local(r.ends_at) + ((grp(r) || {}).extra || 0) * 1000 : Date.now() + 1000; },
+    counts: i => { const r = onlRd(SR.id); return r && r.tally ? (r.tally[String(i)] || 0) : 0; },
+    my: () => { const r = onlRd(SR.id); return r && r.my_vote; },
+    vote: i => { MATCH.vote(SR.id, i).catch(e => { toast(NET.msg(e)); }).then(() => ONL.refresh()); },
+    done: () => { const r = onlRd(SR.id), g = grp(r); return !r ? true : (r.status !== 'open' || !!(g && g.locked)); },
+    result: () => { const g = grp(onlRd(SR.id)); return g && g.chosen != null ? g.chosen : null; }
+  };
+}
+// rede dos menus de acao: prazo da fase de acoes; contagem das propostas dos colegas; termina quando o grupo trava ou a fase acaba
+function onlActNet(SR, cnt){
+  return {
+    kind:'act',
+    endsAt: () => { const r = onlRd(SR.id); return r && r.act_ends_at ? ONL.local(r.act_ends_at) : Date.now() + 1000; },
+    counts: cnt || null,
+    done: () => { const r = onlRd(SR.id), g = r && r.groups && r.groups[ONL.me]; return !r || r.status !== 'acting' || !!(g && g.act_locked); },
+    result: () => null
+  };
+}
+const onlCountBy = pred => { const r = ONL.round(); return r ? (r.acts || []).filter(pred).reduce((t, a) => t + a.n, 0) : 0; };
+const onlActCnt = (field, vals) => i => { const r = ONL.round(), v = vals(i); if (!r || v == null) return 0; return (r.acts || []).filter(a => a[field] === v).reduce((t, a) => t + a.n, 0); };
+function onlStatusBanner(t, sub){ showBanner(t, sub); }
+// espera a rodada seguinte; se ficou muito para tras (sinal perdido), reaplica o ultimo snapshot do grupo
+async function onlBegin(){
+  if (!ONL.started) { ONL.started = true; }
+  let s = await ONL.waitNext(() => state.over);
+  if (!s) return null;
+  if (s.match && s.match.status !== 'playing') { onlMatchOver(s); return null; }
+  if (s.round.n > ONL.cur + 1) {   // perdeu rodadas: volta para o ponto do grupo
+    const s2 = await MATCH.state(ONL.room, true).catch(() => null);
+    const sn = s2 && s2.snapshot && s2.snapshot.state;
+    if (sn && s2.match.snapshot_round) { ONL.unpack(state, sn); ONL.cur = s2.match.snapshot_round; ONL.planned = true; renderHud(); onlRefreshHeroes(); }
+    else ONL.cur = s.round.n - 1;
+    s = ONL.s; if (!s || !s.round || s.round.n !== ONL.cur + 1) { s = await ONL.waitNext(() => state.over); if (!s) return null; }
+  }
+  const rd = s.round; ONL.cur = rd.n - 1;
+  return rd;
+}
+// sorteia o tipo/rank da proxima rodada (mesma conta em todos os aparelhos: a semente da rodada atual continua)
+function onlPlan(){
+  const nr = state.round + 1;
+  if (!state.over && nr >= CHEST_FROM && nr - state.chestAt >= CHEST_GAP && R() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest')) return {kind:'chest', rank:null};
+  state.sinceHard = (state.sinceHard || 0) + 1;
+  if (state.sinceHard >= HARD_EVERY) state.forceHard = true;
+  const rank = state.forceHard ? (R() < .7 ? 4 : 5) : rollDiff();
+  if (rank >= HARD_MIN) state.sinceHard = 0;
+  state.forceHard = false;
+  return {kind:'q', rank};
+}
+async function onlEndRound(SR){
+  if (state.over) return;
+  const pl = onlPlan(); ONL.planned = true;
+  await ONL.putSnapshot(state, SR.n);
+  try { await MATCH.ack(SR.id); } catch (e) {}
+  showBanner('SINCRONIZANDO', 'aguardando os outros jogadores');
+  for (let tries = 0; !state.over; tries++) {
+    let r = null;
+    try { r = await MATCH.advance(ONL.room, pl.rank, pl.kind); } catch (e) { if (/sem_partida/.test(String(e && e.message))) break; }
+    await ONL.refresh();
+    const s = ONL.s;
+    if (s && s.round && s.round.n > SR.n) break;
+    if (s && s.match && s.match.status !== 'playing') break;
+    await sleep(1200);
+  }
+  hideBanner(); ONL.cur = SR.n;
+  turnTimer = setTimeout(playRound, 300);
+}
+// efeito de um item (igual em todos os aparelhos; so valida o que e deterministico)
+function onlEffect(type, tgt){
+  const item = ITEMS[type], hero = state.heroes[tgt]; if (!item || !hero) return null;
+  if (item.kind === 'fx') {
+    if (item.fx === 'clock') return null;
+    if (item.fx === 'phoenix') { if (hero.hp > 0 || aliveHeroes().length === 0) return null; }
+    else if (hero.hp <= 0) return null;
+    const f = hasAff(type, tgt);
+    return FX[item.fx](state.ib[tgt], hero, f, tgt, item) + (f ? ' (AFINIDADE)' : '');
+  }
+  if (item.kind === 'hp' && hero.hp <= 0) return null;
+  const max = item.kind === 'hp' ? HERO_MAX_HP : 100; hero[item.kind] = Math.min(max, hero[item.kind] + item.amount);
+  return `${item.name} usado.`;
+}
+// aplica, nos pontos de sincronia (ph = fase em que foram usados), os itens registrados no servidor
+async function onlItems(ph, rd){
+  ONL.applied = ONL.applied || new Set();
+  const list = (rd.items || []).filter(i => i.ph === ph && !ONL.applied.has(i.id)).sort((a, b) => a.id - b.id);
+  for (const it of list) {
+    ONL.applied.add(it.id);
+    const tgt = it.target || it.grp, msg = onlEffect(it.item, tgt);
+    if (msg && ITEMS[it.item]) { toast(it.grp === activeGroup ? msg : `${GROUPS[it.grp]}: ${ITEMS[it.item].name}`); await wait(450); }
+  }
+  renderHud();
+}
+async function onlUseItem(type, tgt){
+  const r = ONL.round(); if (!r || state.over || state.itemBusy) return;
+  const it = ITEMS[type], extra = it.fx === 'clock' ? it.secs : 0; state.itemBusy = true;
+  try {
+    const res = await MATCH.item(r.id, type, tgt, extra);
+    const i = state.inventory.indexOf(type); if (i >= 0) state.inventory.splice(i, 1);
+    state.stats.used++; persist(); renderInventoryHits(); renderHud();
+    toast(extra ? `Relógio: +${res.extra}s para a pergunta!` : `${it.name} pronto: faz efeito no fim desta fase.`);
+    ONL.refresh();
+  } catch (e) { toast(/fase_encerrada/.test(String(e && e.message)) ? 'Agora não dá para usar itens.' : NET.msg(e)); }
+  finally { state.itemBusy = false; }
+}
+// fase de acoes: menu do proprio grupo (se vivo e nao congelado), espera todos os grupos, aplica itens e monta as acoes de cada heroi
+async function onlActions(SR){
+  const actions = {};
+  const s1 = await ONL.wait(s => s.round && s.round.id === SR.id && (s.round.status === 'acting' || s.round.status === 'played'), {cancel:() => state.over});
+  if (!s1) return null;
+  await onlItems('revealed', s1.round);
+  const me = ONL.me, frozen = ST.ice && state.ice.frozen[me] > 0;
+  if (s1.round.status === 'acting') {
+    const rg = s1.round.groups[me], my = state.heroes[me];
+    if (rg && !rg.act_locked) {
+      if (my.hp <= 0 || frozen) { if (frozen) toast('Seu herói está CONGELADO: não age nesta rodada, mas sua resposta conta.'); MATCH.act(SR.id, {skill:'none'}).catch(() => {}); }
+      else {
+        showRing(me); await wait(400);
+        const sh = {}; let act = null;
+        for (;;) {
+          const a = await chooseSkill(me, sh); if (!a) break;
+          if (a.skill.target) { a.target = await pickAlly(me, a.skill, sh); if (a.target === 'BACK') continue; if (a.target == null) break; }
+          act = a; break;
+        }
+        await closePanel(); hideRing();
+        if (act) {
+          const body = {skill:act.skill.id, element:act.element || null, target:act.target || null, ult:!!act.ult, ultTarget:act.ultTarget || null};
+          try { await MATCH.act(SR.id, body); await MATCH.act(SR.id, body); } catch (e) { toast(NET.msg(e)); }
+        }
+      }
+    }
+    showBanner('AGUARDANDO OS OUTROS GRUPOS', 'as ações são reveladas juntas');
+    ONL.refresh();
+    const s3 = await ONL.wait(s => s.round && s.round.id === SR.id && s.round.status === 'played', {cancel:() => state.over});
+    hideBanner(); if (!s3) return null;
+  }
+  const rd = ONL.round();
+  await onlItems('acting', rd);
+  const GA = rd.groups, ultFor = {};
+  for (const k of HERO_ORDER) {
+    const h = state.heroes[k], g = GA[k] || {};
+    if (h.hp <= 0) { actions[k] = null; continue; }
+    if (ST.ice && state.ice.frozen[k] > 0) { actions[k] = null; continue; }
+    const act = g.act, simG = g.act_sim || (g.sim && !act);
+    if (simG) {   // grupo vazio ou ausente: age sozinho, decidido com o sorteio compartilhado
+      if (state.ultReady[k] && ultUsable(k) && R() < 0.5) ultFor[k] = null;
+      const av = SKILLS[k].filter(sk => !skillBlock(k, sk));
+      const sk = av.length ? av[Math.floor(R() * av.length)] : null;
+      if (!sk) actions[k] = null;
+      else {
+        actions[k] = {skill:sk, element:sk.elem ? ['fire','water','air','earth'][Math.floor(R() * 4)] : null};
+        if (sk.target) { const al = aliveHeroes().filter(x => x !== k); actions[k].target = al[Math.floor(R() * al.length)]; }
+      }
+      continue;
+    }
+    let a = null;
+    if (act && act.skill && act.skill !== 'none') {
+      const sk = SKILLS[k].find(x => x.id === act.skill);
+      if (sk && !skillBlock(k, sk)) {
+        a = {skill:sk, element:sk.elem ? (['fire','water','air','earth'].includes(act.element) ? act.element : 'fire') : null};
+        if (sk.target) { const al = aliveHeroes().filter(x => x !== k); a.target = al.includes(act.target) ? act.target : al[0]; if (!a.target) a = null; }
+      }
+    }
+    actions[k] = a;
+    if (act && act.ult) ultFor[k] = act.ult_target || null;
+  }
+  for (const k of HERO_ORDER) {   // especiais ativados, em ordem fixa, antes das acoes
+    if (!(k in ultFor)) continue;
+    if (state.heroes[k].hp <= 0 || (ST.ice && state.ice.frozen[k] > 0) || !state.ultReady[k] || !ultUsable(k)) continue;
+    await activateUlt(k, null, ultFor[k]);
+    if (state.over) return null;
+  }
+  return actions;
+}
+function onlFinish(win){
+  if (!ONL.on || ONL.fin) return; ONL.fin = true;
+  const st = state.stats;
+  MATCH.stats(ONL.matchId, {hero:activeGroup, rounds:state.round, rank:st.rank, gained:st.gained, spent:st.spent, used:st.used, boss_pct:Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100)), win:!!win}).catch(() => {});
+  MATCH.end(ONL.matchId, win ? 'won' : 'lost').catch(() => {});
+  setTimeout(() => ONL.stop(), 4000);
+}
+function onlLeave(page){ try { sessionStorage.setItem('bd1_gate', '1'); if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); location.href = page + location.search; }
+function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
+function onlMatchOver(s){ if (state.over) return; const m = s && s.match; endGame(!!(m && m.status === 'won')); }
+
 async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   if (state.over) return;
   await QREADY;
-  state.round++;
-  if (chestEligible()) {   // rodada de baú: sem pergunta; a próxima rodada volta ao normal
-    state.round--; state.chestAt = state.round;
-    await runChestRound();
+  let SR = null, chestNow;
+  if (ONL.on) {   // online: a rodada (e se e arca) vem do servidor; o sorteio do combate usa a semente da partida + rodada
+    SR = await onlBegin(); if (!SR || state.over) return;
+    chestNow = SR.kind === 'chest'; if (!chestNow) state.round++;
+    seedRound(ONL.seed, SR.n);
+  } else { state.round++; chestNow = chestEligible(); }
+  if (chestNow) {   // rodada de baú: sem pergunta; a próxima rodada volta ao normal
+    if (!ONL.on) state.round--;
+    state.chestAt = state.round;
+    await runChestRound(SR);
     if (state.over) return;
     if (aliveHeroes().length === 0) return endGame(false);
+    if (ONL.on) return onlEndRound(SR);
     turnTimer = setTimeout(playRound, 900); return;
   }
   const enragedNow = state.hardNext, empowered = state.prepNext && !enragedNow;
@@ -1445,11 +1697,18 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   } else {
   await bossIntro({prep:prepWarn, tele, empowered, dazed});
   if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) await maybeGag('start'); }
+  let q;
+  if (ONL.on) {   // pergunta e rank vem do servidor; o sorteio do rank da proxima rodada foi feito no fim da anterior (onlPlan)
+    q = onlQuestion(SR);
+    if (!ONL.planned) { state.sinceHard = (state.sinceHard || 0) + 1; if (isHardQ(q)) state.sinceHard = 0; state.forceHard = false; }
+    ONL.planned = false;
+  } else {
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta S/SS garantida: mantém os ultimates aparecendo
-  const q = pickQuestion(state.forceHard ? (R() < .7 ? 4 : 5) : rollDiff());
+  q = pickQuestion(state.forceHard ? (R() < .7 ? 4 : 5) : rollDiff());
   if (isHardQ(q)) state.sinceHard = 0;
-  state.forceHard = false; state.curQ = q;
+  state.forceHard = false; }
+  state.curQ = q;
   const meta = DIFFICULTY[q.difficulty];
   state.curAttack = rollAttack(q, enragedNow);   // fúria cheia: ataque sempre elemental
 
@@ -1457,12 +1716,21 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   const res = await runVote({
     attack: state.curAttack, text: q.text, seconds: QUESTION_SECONDS[q.difficulty],
     options: q.answers.map((label, i) => ({label, hint:AUTO && i === q.correct})),
-    side: {reward:meta.reward, label:meta.label, rank:meta.rank, d:q.difficulty}
+    side: {reward:meta.reward, label:meta.label, rank:meta.rank, d:q.difficulty},
+    net: ONL.on ? onlNet(SR) : null
   });
   // grupos controlados por outros jogadores: simulados (sem backend não dá para ver o voto real deles)
   const correct = {};
-  HERO_ORDER.forEach(k => correct[k] = k === activeGroup ? res.idx === q.correct : (AUTO || R() < 0.6));
-  showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros'); await wait(1400); hideBanner();
+  let SRs = null;
+  if (ONL.on) {   // acertos de todos os grupos vem do servidor (grupos vazios sao sorteados la)
+    showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros');
+    const s2 = await ONL.wait(s => s.round && s.round.id === SR.id && s.round.status !== 'open', {cancel:() => state.over}); hideBanner();
+    if (!s2) return; SRs = s2.round; q.correct = SRs.correct;
+    HERO_ORDER.forEach(k => correct[k] = !!(SRs.groups[k] && SRs.groups[k].correct));
+    if (res.idx === null && SRs.groups[activeGroup] && SRs.groups[activeGroup].chosen != null) res.idx = SRs.groups[activeGroup].chosen;
+    await onlItems('open', SRs);
+  } else HERO_ORDER.forEach(k => correct[k] = k === activeGroup ? res.idx === q.correct : (AUTO || R() < 0.6));
+  if (!ONL.on) { showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros'); await wait(1400); hideBanner(); }
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
@@ -1481,8 +1749,9 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
 
   // ---- 2) ações dos heróis
   const actions = {};
-  if (AUTO) await autoSupport({tele, iceEv});
-  for (const k of HERO_ORDER) {
+  if (ONL.on) { const a = await onlActions(SR); if (!a) return; Object.assign(actions, a); }
+  if (AUTO && !ONL.on) await autoSupport({tele, iceEv});
+  for (const k of (ONL.on ? [] : HERO_ORDER)) {
     if (state.heroes[k].hp <= 0) { actions[k] = null; continue; }
     if (ST.ice && state.ice.frozen[k] > 0) { actions[k] = null; if (k === activeGroup) toast('Seu herói está CONGELADO: não age nesta rodada, mas sua resposta conta.'); continue; }
     // ultimate do grupo ativo: só entra em ação quando o grupo escolhe o card ESPECIAL (ou toca no ícone) no menu; os outros grupos são simulados
@@ -1674,6 +1943,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   });
   renderHud();
   if (state.rage >= RAGE_MAX) { state.hardNext = true; state.forceHard = true; }
+  if (ONL.on) return onlEndRound(SR);
   turnTimer = setTimeout(playRound, 900);
 }
 let turnTimer = null;
@@ -1731,7 +2001,8 @@ async function bossCounter(hero, dmg, defended){
 
 const pickAlive = () => { const l = HERO_ORDER.filter(k => state.heroes[k].hp > 0); return l[Math.floor(Math.random() * l.length)] || 'guerreiro'; };
 function endGame(win){
-  state.over = true; if (state.tsOv) timeResume(); clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
+  if (state.over) return;
+  state.over = true; onlFinish(win); if (state.tsOv) timeResume(); clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
   if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }
   else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
   const o = $('#end-screen'); o.querySelector('h2').textContent = win ? 'VITÓRIA!' : 'DERROTA';
@@ -1752,7 +2023,7 @@ function endGame(win){
   o.hidden = false;
 }
 // Abertura da batalha (intro.js). Em ?teste=1 fica desligada, a menos que ?intro=1; ?intro=0 sempre desliga.
-const INTRO_ON = (new URLSearchParams(location.search).get('intro') || (TEST_MODE ? '0' : '1')) === '1';
+const INTRO_ON = (new URLSearchParams(location.search).get('intro') || (TEST_MODE || ONL.on ? '0' : '1')) === '1';   // online: sem abertura (o relogio da rodada 1 ja corre no servidor)
 const bossCanvas = () => document.querySelector('canvas.hero.boss');
 function beginBattle(delay){
   clearTimeout(turnTimer); HERO_ORDER.forEach(k => A.enterPrep(k));   // heróis entram em cena quando a batalha começa
@@ -1830,14 +2101,16 @@ function applyItem(index, tgt){
   if(item.kind==='fx'){
     if(item.fx==='phoenix'){ if(hero.hp>0){toast(tgt===activeGroup?'A Pena de Fênix só serve para herói caído.':`${GROUPS[tgt]} não está caído.`);return} if(aliveHeroes().length===0){toast('Sem aliados de pé, a Fênix não responde.');return} }
     else if(hero.hp<=0){toast(tgt===activeGroup?'O herói caiu e não pode usar itens.':`${GROUPS[tgt]} caiu e não pode receber itens.`);return}
-    if(item.fx==='clock'&&(tgt!==activeGroup||!qExtend||!qExtend(0))){toast('O relógio só vale durante a pergunta, no seu próprio grupo.');return}
+    if(item.fx==='clock'&&(tgt!==activeGroup||(ONL.on?!(ONL.round()&&ONL.round().status==='open'):(!qExtend||!qExtend(0))))){toast('O relógio só vale durante a pergunta, no seu próprio grupo.');return}
     if(item.fx==='elixir'&&hero.hp>=HERO_MAX_HP&&hero.mp>=100){toast('HP e mana já estão cheios.');return}
     if(item.fx==='scroll'&&state.ultReady[tgt]){toast('O Ultimate já está carregado.');return}
+    if(ONL.on){onlUseItem(type,tgt);return}
     const f=hasAff(type,tgt), msg=FX[item.fx](state.ib[tgt],hero,f,tgt,item)+(f?' (AFINIDADE)':'');state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();if(item.fx!=='clock')toast(tgt===activeGroup?msg:`${GROUPS[tgt]} recebeu: ${msg}`);return;
   }
   const max = item.kind==='hp' ? HERO_MAX_HP : 100;
   if(hero.hp<=0 && item.kind==='hp'){toast(tgt===activeGroup?'O herói caiu e não pode ser curado.':`${GROUPS[tgt]} caiu e não pode ser curado.`);return}
   if(hero[item.kind]>=max){toast(item.kind==='hp'?'HP já está cheio.':'Mana já está cheia.');return}
+  if(ONL.on){onlUseItem(type,tgt);return}
   hero[item.kind]=Math.min(max,hero[item.kind]+item.amount);state.stats.used++;state.inventory.splice(index,1);persist();renderInventoryHits();renderHud();toast(`${item.name} usada${who}.`);
 }
 function giveable(type){ const it = ITEMS[type]; return it.kind === 'hp' || it.kind === 'mp' || GIVE.has(it.fx); }
@@ -1934,9 +2207,14 @@ $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote
 
 state.shop = newShop(); renderShop();
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
-$('#restart').addEventListener('click',restartRun);
-$('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;location.href='map.html'+location.search});
-beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
+$('#restart').addEventListener('click',() => { if (ONL.on) { onlLeave('espera.html'); return; } restartRun(); });
+$('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;if(ONL.on){onlLeave('map.html');return}location.href='map.html'+location.search});
+if (ONL.on) {   // online: entra na partida do servidor (ou volta ao ponto do grupo se caiu)
+  ONL.init().then(() => {
+    if (ONL.snap) { ONL.unpack(state, ONL.snap.state); ONL.planned = true; renderHud(); }
+    beginBattle(800);
+  }).catch(() => { location.replace('espera.html' + location.search); });
+} else beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
 // v132: o aviso de nova versão saiu do jogo; a atualização manual fica no menu de seleção de grupo (botão ↻ ATUALIZAR)
 if('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
 
