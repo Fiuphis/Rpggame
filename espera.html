@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{if(sessionStorage.getItem('bd1_gate'))document.documentElement.classList.add('gt')}catch(e){}</script>
+<style>html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="salas.css">
+<link rel="stylesheet" href="espera.css">
+<title>Sala de espera</title>
+</head>
+<body data-pxt>
+<div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
+<main class="pg" id="pg">
+  <header class="top">
+    <button id="back" class="chip" type="button">&#9666; SAIR</button>
+    <span id="net" class="chip net" data-s="con"><i class="dot"></i><b>CONECTANDO</b></span>
+  </header>
+  <section class="plaque"><h1 id="rn">SALA</h1><p id="rc">Aguardando os jogadores</p></section>
+  <section class="wl" id="wl" aria-live="polite"></section>
+  <section class="bossbox" id="bb" hidden>
+    <div class="lh"><b>GUARDIÃO</b></div>
+    <div class="seg" id="bs"></div>
+  </section>
+  <div class="startrow">
+    <button id="go" class="chip blue" type="button" disabled>INICIAR PARTIDA</button>
+    <p id="msg" class="hint"></p>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</main>
+<script src="lib/supabase.js"></script>
+<script src="net.js"></script>
+<script src="match.js"></script>
+<script src="gate.js"></script>
+<script src="espera.js"></script>
+<script src="fs.js"></script>
+</body>
+</html>

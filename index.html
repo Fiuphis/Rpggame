@@ -99,7 +99,7 @@ confirmBtn.onclick=async()=>{
   if(R){confirmBtn.dataset.b='1';try{await NET.pickGroup(R.id,selected)}catch(e){delete confirmBtn.dataset.b;say(NET.msg(e));selected=null;render();return}delete confirmBtn.dataset.b}
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
-  document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search})},520);   /* os botões somem antes das nuvens fecharem */
+  const online=R&&!NET.MOCK;document.body.classList.add('leaving');if(!online)sessionStorage.setItem('bd1_fog','1');else sessionStorage.setItem('bd1_gate','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href=(online?'espera.html':'map.html')+location.search})},520);   /* os botões somem antes das nuvens fecharem */
 };
 const goHome=()=>{
   if(window.__leaving)return;window.__leaving=true;
