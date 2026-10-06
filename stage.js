@@ -9,8 +9,8 @@ const MALG = {id:0, ice:false, name:'Malgorath, Lorde das Trevas', mapName:'CAST
   p2Title:'FASE 2', p2Txt:n => `Malgorath, Lorde das Trevas, despertou: Onda Sombria +${n} até o fim`, p2Wait:3000, gag:true,
   win:'Malgorath, Lorde das Trevas, foi derrotado.', scene:'game_nohud.png', clean:'game_clean.png'};
 const HRIM = {id:1, ice:true, name:'Hrimgar, o Rei Gelado', mapName:'TÚMULO DO REI GELADO', aoe:'Onda Glacial', thrust:'Estocada Glacial', tele:'Passo Gélido', famName:'GÉLIDO', famAdj:'gélido', famLeech:true,
-  weak:['fire','earth'], immune:['water','air'], burnEl:'fire',
-  elemTxt:'fogo e terra causam 1,5x (o fogo ainda derrete: queima por 2 perguntas); água e ar não causam dano (só efeito)', elemDef:'fogo ou terra', holyAtk:'não é: contra ele o sagrado é só normal', holyDef:'não é: contra ele a defesa sagrada é só normal',
+  weak:['fire'], immune:['water'], burnEl:'fire',
+  elemTxt:'fogo causa 1,5x, queima por 2 perguntas e ignora a Armadura de Gelo (e descongela os aliados); água não causa dano (só efeito); ar e terra causam dano normal', elemDef:'fogo', holyAtk:'não é fraco: dano normal', holyDef:'não é fraco: corta 50% e limpa o sangramento de quem usa',
   p2Title:'FASE 2', p2Txt:n => `A armadura de Hrimgar se despedaçou: Onda Glacial +${n} até o fim`, p2Wait:5400, gag:false,
   win:'Hrimgar, o Rei Gelado, foi derrotado.', scene:'game_nohud_ice.png', clean:'game_clean_ice.png'};
 const S = window.STAGE = id === 1 ? HRIM : MALG;

@@ -849,3 +849,6 @@ body,button,input{font-family:OpenC,OpenD,monospace}
 .cine.ice .cn-flash{background:radial-gradient(ellipse at 49% 25%,#fff 0,#d6efff 40%,#3a7cff 100%)}
 .cine.ice .cn-title b{color:#eaf6ff;text-shadow:0 0 14px rgba(90,180,255,.8),0 3px 0 #04101e}
 .cine.ice .cn-title span{color:#a8d8ff;text-shadow:0 0 8px rgba(90,170,255,.7)}
+
+/* Hrimgar: heroi congelado */
+canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop-shadow(0 0 .8cqw #9fe8ff) !important}
