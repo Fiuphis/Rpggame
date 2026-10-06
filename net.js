@@ -133,7 +133,7 @@ window.NET = {
   ready: () => MOCK ? Promise.resolve(true) : real(),
   async listRooms() { return MOCK ? M.list() : rpc('list_public_rooms'); },
   async createRoom(pub, name) { const r = MOCK ? await M.create(pub, name) : await rpc('create_room', { p_public: !!pub, p_name: name || null }); setRoom(r); return r; },
-  async joinRoom(id, code) { const r = MOCK ? await M.join(id, code) : await rpc('join_room', { p_room: id || null, p_code: code ? norm(code) : null }); setRoom(r); return r; },
+  async joinRoom(id, code) { const r = MOCK ? await M.join(id, code) : await rpc('join_room', { p_room: id || null, p_code: code ? norm(code) : null }); if (!r || !r.id) throw new Error('sala_nao_encontrada'); setRoom(r); return r; },
   async counts(id) { return cnt(MOCK ? await M.counts(id) : await rpc('room_counts', { p_room: id })); },
   async pickGroup(id, g) { return MOCK ? M.pick(id, g) : rpc('pick_group', { p_room: id, p_grp: g || null }); },
   async heartbeat(id) { if (MOCK) return; try { await rpc('heartbeat', { p_room: id }); } catch {} },

@@ -1,97 +1,59 @@
-/* Tela de saves: abas por herói (MAGO, GUERREIRO, TANQUE, CLÉRIGA), até 4 saves por herói, guardados na conta. */
+/* Saves do jogo (Crônicas do Saber).
+   O jogo continua lendo e gravando as chaves de sempre (progresso e moedas/itens por grupo): elas são o "save ativo".
+   Aqui ficam N compartimentos (slots) com cópias dessas chaves. Trocar de save = guardar o ativo, carregar o escolhido.
+   Estrutura em localStorage 'bd1_slots': {v:1, active:1, list:{1:{name, ts, data:{prog, saves:{mage,...}}}, 2:null, 3:null}} */
 (() => {
 'use strict';
-const $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const G = [['mage', 'MAGO', '#4da3ff'], ['guerreiro', 'GUERREIRO', '#ff5a4d'], ['tank', 'TANQUE', '#cfd8ff'], ['cleriga', 'CLÉRIGA', '#ffd24d']], MAXS = 4, DEF = 2;
-const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-const SS = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} } };
-let cls = SS.get('bd1_saves_tab') || 'mage', saves = [], busy = false, leaving = false, toastT = 0, editing = null, loaded = false;
-if (!G.some(g => g[0] === cls)) cls = 'mage';
-
-function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), 2600); }
-function go(url, flag) {
-  if (leaving) return; leaving = true; if (flag) SS.set(flag, '1');
-  const nav = () => { location.href = url; };
-  if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(nav); else nav();
+const KEY = 'bd1_slots', COUNT = 3, GROUPS = ['mage', 'guerreiro', 'tank', 'cleriga'], ORDER = [0, 1, 2, 5, 4, 3];
+const get = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const set = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch {} };
+const empty = () => ({prog:null, saves:{}});
+const snapshot = () => { const d = empty(); d.prog = get('bd1_progress'); GROUPS.forEach(g => { const v = get('bd1_save_' + g); if (v != null) d.saves[g] = v; }); return d; };
+const apply = d => { set('bd1_progress', d.prog || null); GROUPS.forEach(g => set('bd1_save_' + g, (d.saves && d.saves[g]) || null)); };
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const clean = n => String(n || '').replace(/[^A-Za-z0-9À-ÿ \-]/g, '').trim().slice(0, 12).toUpperCase();
+function read(){
+  try { const d = JSON.parse(get(KEY)); if (d && d.v === 1 && d.list) return d; } catch {}
+  // primeira vez: o progresso que já existe no aparelho vira o SAVE 1
+  const d = {v:1, active:1, list:{}}; for (let i = 1; i <= COUNT; i++) d.list[i] = null;
+  d.list[1] = {name:'SAVE 1', ts:Date.now(), data:snapshot()}; write(d); return d;
 }
-function ago(iso) {
-  const s = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 90) return 'agora há pouco'; const m = s / 60; if (m < 60) return 'há ' + Math.round(m) + ' min';
-  const h = m / 60; if (h < 24) return 'há ' + Math.round(h) + ' h'; const d = h / 24; if (d < 30) return 'há ' + Math.round(d) + (Math.round(d) === 1 ? ' dia' : ' dias');
-  return 'há mais de um mês';
+function write(d){ const j = JSON.stringify(d); set(KEY, j); idbPut(j); }
+// cópia de segurança em IndexedDB: se o localStorage for apagado (limpeza do navegador), os saves voltam daqui
+function idb(){ return new Promise((ok, no) => { try { const r = indexedDB.open('bd1_saves', 1); r.onupgradeneeded = () => r.result.createObjectStore('k'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } }); }
+function idbPut(j){ idb().then(db => { db.transaction('k', 'readwrite').objectStore('k').put(j, 'slots'); }).catch(() => {}); }
+function idbGet(){ return idb().then(db => new Promise(ok => { const q = db.transaction('k').objectStore('k').get('slots'); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); })).catch(() => null); }
+function sync(){   // o que está no jogo agora pertence ao save ativo
+  const d = read(), s = d.list[d.active], now = snapshot();
+  if (!s) d.list[d.active] = {name:'SAVE ' + d.active, ts:Date.now(), data:now};
+  else if (!same(s.data, now)) { s.data = now; s.ts = Date.now(); }
+  write(d); return d;
 }
-const col = k => (G.find(g => g[0] === k) || G[0])[2], nme = k => (G.find(g => g[0] === k) || G[0])[1];
-
-function tabs() {
-  $('#tabs').innerHTML = G.map(([k, n, c]) => `<button class="tab${k === cls ? ' on' : ''}" type="button" role="tab" aria-selected="${k === cls}" data-k="${k}" style="--c:${c}"><img src="salas/ic_${k}.png" alt="">${n}</button>`).join('');
-  $('#tabs').querySelectorAll('.tab').forEach(b => b.onclick = () => { if (cls === b.dataset.k) return; cls = b.dataset.k; SS.set('bd1_saves_tab', cls); tabs(); list(); });
+function summary(s){
+  if (!s) return null;
+  let done = [], gold = 0, items = 0;
+  try { const p = JSON.parse(s.data.prog); if (p && Array.isArray(p.done)) done = p.done; } catch {}
+  GROUPS.forEach(g => { try { const x = JSON.parse(s.data.saves[g]); if (x) { gold += x.gold || 0; items += (x.inventory || []).length; } } catch {} });
+  return {name:s.name, ts:s.ts, done, gold, items};
 }
-function meta(s) {
-  const r = s.resumo || {}; const parts = [];
-  if (s.rev === 0) parts.push('<b>NOVO</b> · ainda não jogado'); else { if (r.fase != null) parts.push('<b>FASE ' + esc(r.fase) + '</b>'); if (r.moedas != null) parts.push(esc(r.moedas) + ' moedas'); if (!parts.length) parts.push('<b>EM ANDAMENTO</b>'); parts.push('salvo ' + ago(s.updated_at)); }
-  return parts.join(' · ');
-}
-function list() {
-  const mine = saves.filter(s => s.class === cls).sort((a, b) => a.slot - b.slot), c = col(cls);
-  $('#th').textContent = nme(cls); $('#th').style.color = c; $('#tc').textContent = mine.length + '/' + MAXS;
-  let h = mine.map(s => `<div class="sv" style="--c:${c}" data-id="${esc(s.id)}"><div class="tx"><span class="nm">${esc(s.name)}</span><span class="mt">${meta(s)}</span></div><div class="bt"><button class="chip blue play" type="button">JOGAR</button><button class="chip ed" type="button">EDITAR</button></div></div>`).join('');
-  const orb = (t, sub) => `<button class="sv new" type="button" style="--c:${c}"><span class="orbw"><i></i><i></i><i></i><img src="salas/orb.png" alt=""></span><span class="lb"><b>${t}</b><i>${sub}</i></span></button>`;
-  for (let i = mine.length; i < DEF; i++) h += orb('NOVO SAVE', 'Toque para criar');
-  if (mine.length >= DEF && mine.length < MAXS) h += orb('CRIAR OUTRO SAVE', 'Até ' + MAXS + ' por herói');
-  $('#sl').innerHTML = h;
-  $('#sl').querySelectorAll('.sv[data-id]').forEach(el => {
-    const s = mine.find(x => x.id === el.dataset.id);
-    el.querySelector('.play').onclick = () => play(s);
-    el.querySelector('.ed').onclick = () => openEdit(s);
-  });
-  $('#sl').querySelectorAll('.sv.new').forEach(el => el.onclick = () => { el.classList.add('pop'); setTimeout(() => openNew(), reduce() ? 0 : 180); });
-}
-function play(s) {
-  SS.set('bd1_save', JSON.stringify({ id: s.id, class: s.class, name: s.name, rev: s.rev })); SS.set('bd1_pref_class', s.class);
-  go('salas.html', 'bd1_rebuild');
-}
-
-// ---------- novo save ----------
-function openNew() { $('#nw-h').textContent = 'NOVO SAVE: ' + nme(cls); $('#nw-n').value = ''; $('#nw-e').textContent = ''; $('#ov-new').hidden = false; }
-$('#nw-no').onclick = () => { $('#ov-new').hidden = true; list(); };
-$('#nw-ok').onclick = async () => {
-  if (busy) return; busy = true; $('#nw-ok').disabled = true; $('#nw-e').textContent = '';
-  try { const r = await NET.createSave(cls, $('#nw-n').value.trim()); saves.push({ id: r.id, class: r.class || cls, slot: r.slot, name: r.name, rev: r.rev || 0, updated_at: r.updated_at || new Date().toISOString(), resumo: null }); $('#ov-new').hidden = true; list(); }
-  catch (e) { $('#nw-e').textContent = NET.msg(e); }
-  busy = false; $('#nw-ok').disabled = false;
-};
-
-// ---------- editar ----------
-function openEdit(s) { editing = s; $('#ed-n').value = s.name; $('#ed-e').textContent = ''; $('#ed-main').hidden = false; $('#ed-conf').hidden = true; $('#ov-ed').hidden = false; }
-$('#ed-no').onclick = () => { $('#ov-ed').hidden = true; };
-$('#ed-ok').onclick = async () => {
-  if (busy || !editing) return; const n = $('#ed-n').value.trim(); if (!n) { $('#ed-e').textContent = 'Dê um nome de 1 a 20 letras.'; return; }
-  busy = true; try { await NET.renameSave(editing.id, n); editing.name = n; $('#ov-ed').hidden = true; list(); toast('Nome atualizado.'); } catch (e) { $('#ed-e').textContent = NET.msg(e); } busy = false;
-};
-$('#ed-del').onclick = () => { $('#ed-ct').textContent = '"' + editing.name + '" e todo o progresso dele serão apagados. Esta ação não pode ser desfeita.'; $('#ed-main').hidden = true; $('#ed-conf').hidden = false; };
-$('#ed-back').onclick = () => { $('#ed-conf').hidden = true; $('#ed-main').hidden = false; };
-$('#ed-yes').onclick = async () => {
-  if (busy || !editing) return; busy = true;
-  try { await NET.deleteSave(editing.id); saves = saves.filter(x => x.id !== editing.id); const cur = (() => { try { return JSON.parse(SS.get('bd1_save')); } catch (e) { return null; } })(); if (cur && cur.id === editing.id) SS.set('bd1_save', null); $('#ov-ed').hidden = true; list(); toast('Save apagado.'); }
-  catch (e) { $('#ed-ct').textContent = NET.msg(e); } busy = false;
-};
-
-// ---------- saídas ----------
-$('#home').onclick = () => { if (leaving) return; SS.set('bd1_cover_back', '1'); SS.set('bd1_rebuild', null); go('cover.html'); };
-$('#out').onclick = async () => { if (leaving || busy) return; busy = true; try { await NET.signOut(); } catch (e) {} busy = false; go('conta.html', 'bd1_rebuild'); };
-try { history.pushState({ sv: 1 }, ''); } catch (e) {}
-addEventListener('popstate', () => { if (leaving) { try { history.pushState({ sv: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
-addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
-
-(async () => {
-  tabs(); $('#sl').innerHTML = '<div class="empty">CARREGANDO...</div>';
-  try {
-    const a = await NET.account(); if (!a) { location.replace('conta.html'); return; }
-    SS.set('bd1_acc', a.username); $('#who').textContent = 'Conta: ' + a.username.toUpperCase();
-    saves = await NET.listSaves(); loaded = true;
-    if (!SS.get('bd1_saves_tab') && saves.length) cls = saves.slice().sort((x, y) => new Date(y.updated_at) - new Date(x.updated_at))[0].class;
-    tabs(); list();
-  } catch (e) { $('#sl').innerHTML = `<div class="empty">NÃO FOI POSSÍVEL CARREGAR OS SAVES<br>${esc(NET.msg(e))}<br><br><button id="rt" class="chip blue" type="button" style="margin:0 auto;min-width:40cqw;height:11cqw">TENTAR DE NOVO</button></div>`; $('#rt').onclick = () => location.reload(); }
+function restore(j){ try { const d = JSON.parse(j); if (!d || d.v !== 1 || !d.list) return false; set(KEY, j); const s = d.list[d.active]; if (s) apply(s.data); idbPut(j); return true; } catch { return false; } }
+const ready = (async () => {
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch {}
+  if (!get(KEY)) { const j = await idbGet(); if (j) restore(j); }
+  else idbPut(get(KEY));
 })();
-if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));
+window.Saves = {
+  ready,
+  exportCode(){ sync(); return 'BD1:' + btoa(unescape(encodeURIComponent(get(KEY)))); },
+  importCode(c){ try { c = String(c || '').trim(); if (!c.startsWith('BD1:')) return false; return restore(decodeURIComponent(escape(atob(c.slice(4))))); } catch { return false; } },
+  COUNT, ORDER,
+  state(){ const d = sync(); return {active:d.active, slots:Array.from({length:COUNT}, (_, i) => summary(d.list[i + 1]))}; },
+  active(){ const d = read(); return d.active; },
+  activeName(){ const d = read(), s = d.list[d.active]; return s ? s.name : 'SAVE ' + d.active; },
+  load(n){ const d = sync(); const s = d.list[n]; if (!s) return false; apply(s.data); d.active = n; write(d); return true; },
+  newGame(n){ const d = sync(); if (d.active === n) { apply(empty()); } d.list[n] = {name:(d.list[n] && d.list[n].name) || 'SAVE ' + n, ts:Date.now(), data:empty()}; write(d); return true; },   // novo jogo vazio (sem carregar, a menos que seja o ativo)
+  saveTo(n){ const d = sync(); if (d.active === n) return false; const old = d.list[n]; d.list[n] = {name:old ? old.name : 'SAVE ' + n, ts:Date.now(), data:JSON.parse(JSON.stringify(d.list[d.active].data))}; write(d); return true; },   // copia o jogo atual para o compartimento n
+  rename(n, name){ const d = read(), s = d.list[n]; const c = clean(name); if (!s || !c) return false; s.name = c; write(d); return true; },
+  remove(n){ const d = sync(); if (d.active === n) { apply(empty()); d.list[n] = {name:'SAVE ' + n, ts:Date.now(), data:empty()}; } else d.list[n] = null; write(d); return true; }   // apagar o ativo reinicia o jogo dele
+};
 })();
