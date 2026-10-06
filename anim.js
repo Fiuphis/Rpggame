@@ -136,9 +136,9 @@ function bodyX(w){
   let x = feetOf(w).x;
   try {
     if (h && h.rig && h.px != null) {
-      const cv = h.cv, st = 4, d = h.c.getImageData(0, 0, cv.width, cv.height).data; let sx = 0, n = 0;
-      for (let yy = 0; yy < cv.height; yy += st) for (let xx = 0; xx < cv.width; xx += st) if (d[(yy * cv.width + xx) * 4 + 3] > 200) { sx += xx; n++; }
-      if (n > 40) x = META[w].x - h.px + sx / n;
+      const cv = h.cv, st = 4, d = h.c.getImageData(0, 0, cv.width, cv.height).data, col = new Uint32Array(Math.ceil(cv.width / st)); let n = 0;
+      for (let yy = 0; yy < cv.height; yy += st) for (let xx = 0; xx < cv.width; xx += st) if (d[(yy * cv.width + xx) * 4 + 3] > 200) { col[xx / st | 0]++; n++; }
+      if (n > 40) { let acc = 0, i = 0; while (i < col.length && acc + col[i] < n / 2) acc += col[i++]; x = META[w].x - h.px + (i + .5) * st; }   // mediana horizontal: armas e capas não puxam o centro
     }
   } catch (e) {}
   bodyCache[w] = {t:now, x}; return x;

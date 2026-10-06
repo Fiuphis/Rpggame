@@ -15,7 +15,7 @@ window.Cine = {
     return new Promise(res => {
       const g = $('#game'), bc = document.querySelector('canvas.hero.boss'); if (!g || !bc) return res();
       const el = build(), dark = $('.cn-dark', el), glow = $('.cn-glow', el), eyes = [...el.querySelectorAll('.cn-eye')], flash = $('.cn-flash', el), bars = [...el.querySelectorAll('.cn-bar')], ti = $('.cn-title', el), ac = $('.cn-ash', el), tb = ti.querySelector('b'), ts = ti.querySelector('span');
-      const ICE = !!(window.STAGE && STAGE.ice), NAME = ICE ? 'HRIMGAR' : 'MALGORATH', SUB = ICE ? 'O Rei Gelado' : 'Lorde das Trevas'; if (ICE) el.classList.add('ice');
+      const ICE = !!(window.STAGE && STAGE.ice), NAME = ICE ? 'HRIMGAR' : 'MALGORATH', SUB = ICE ? 'O Rei Gelado' : 'Lorde das Trevas'; if (ICE) { el.classList.add('ice'); eyes.forEach(e => { e.style.display = 'none'; }); }   // Hrimgar: sem luz nos olhos durante a transição
       eyes.forEach((e, i) => { e.style.left = EYES[i][0] * 100 + '%'; e.style.top = EYES[i][1] * 100 + '%'; });
       tb.innerHTML = NAME.split('').map((c, i) => `<u style="--i:${i}">${c}</u>`).join(''); ts.innerHTML = SUB.split('').map((ch, i) => `<u>${ch === ' ' ? '&nbsp;' : ch}</u>`).join('');
       bc.style.opacity = 1; bc.style.filter = 'brightness(0)';

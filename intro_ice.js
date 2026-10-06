@@ -10,6 +10,8 @@ const eio = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2, eo = t =>
 const lerp = (a, b, t) => a + (b - a) * t, rnd = (a, b) => a + Math.random() * (b - a);
 const IMG = {close:'intro/ice_close.webp', crack:'intro/ice_crack.webp', far:'intro/ice_far.webp'};
 const EYES = [[.471, .294], [.523, .293]], EYEC = [.497, .293];                   // olhos do Hrimgar na imagem do close (fração da imagem)
+const ICEPOLY = [[0.4433, 0.6427], [0.4617, 0.4563], [0.4667, 0.3883], [0.474, 0.3505], [0.4817, 0.3782], [0.5, 0.3279], [0.5183, 0.3782], [0.5267, 0.3505], [0.5367, 0.3883], [0.54, 0.4563], [0.5467, 0.5394], [0.5583, 0.6427]];   // silhueta do pilar de gelo na imagem da nave: corpo largo e três pontas afiadas no topo
+const inPoly = (x, y) => { let c = false; for (let i = 0, j = ICEPOLY.length - 1; i < ICEPOLY.length; j = i++) { const [xi, yi] = ICEPOLY[i], [xj, yj] = ICEPOLY[j]; if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c; } return c; };
 const PIL = {x:.5, y:.52, x0:.455, x1:.545, y0:.335, y1:.645};                     // pilar na imagem da nave
 // falas: tempo de cada uma = digitação (30 ms/letra) + pausa de leitura (1,2 s + 45 ms/letra)
 const TXT = ['Quem rompeu o meu sono?', 'Séculos de gelo... e vocês ainda respiram.', 'Muito bem.', 'Vou congelar a resposta na garganta de vocês.'];
@@ -21,7 +23,7 @@ const T = {fadeIn:[800, 2200], crack:L1 - 1000, open:L1, punch:[L1 + 200, L1 + 1
 function mulberry(a){ return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function genCracks(){ const r = mulberry(11), out = [];
   for (let i = 0; i < 13; i++) { let x = PIL.x + (r() - .5) * .03, y = PIL.y - .05 + (r() - .3) * .1, a = i / 13 * 6.283 + r() * .6; const pts = [[x, y]], n = 10 + (r() * 9 | 0);
-    for (let k = 0; k < n; k++) { a += (r() - .5) * 1.1; const l = .007 + r() * .012; x = clamp(x + Math.cos(a) * l * .8, PIL.x0, PIL.x1); y = clamp(y + Math.sin(a) * l * 1.25, PIL.y0, PIL.y1); pts.push([x, y]); }
+    for (let k = 0; k < n; k++) { a += (r() - .5) * 1.1; const l = .007 + r() * .012; { const nx = clamp(x + Math.cos(a) * l * .8, PIL.x0, PIL.x1), ny = clamp(y + Math.sin(a) * l * 1.25, PIL.y0 + .06, PIL.y1); if (inPoly(nx, ny)) { x = nx; y = ny; } else a += 3.14; } pts.push([x, y]); }
     out.push({pts, delay:r() * .4}); }
   return out; }
 
@@ -76,7 +78,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
     ev(T.open, () => { setShake(11, 900); const [x, y] = pt(face, EYEC); burst(x, y, 40, 560, 1500); flashA = 1; });
     ev(T.punch[1], () => setShake(3, 600));
     ev(T.pull[0] + 400, () => { burst(fx.width / 2, fx.height / 2, 24, 420, 1800); setShake(5, 700); });
-    ev(T.shatter, () => { setShake(14, 1100); const [ax, ay] = pt(far, [PIL.x0, PIL.y0]), [bx, by] = pt(far, [PIL.x1, PIL.y1]), pw = bx - ax; for (let i = 0; i < 80; i++) { const x = ax + Math.random() * pw, y = ay + Math.random() * (by - ay), dx = (x - (ax + bx) / 2) / pw; shards.push({x, y, vx:dx * pw * 2.2 + rnd(-.4, .4) * pw, vy:rnd(-.6, .3) * pw * 1.6, s:rnd(.05, .16) * pw, rot:rnd(0, 6.28), vr:rnd(-6, 6), born:performance.now(), life:rnd(900, 1900), z:Math.random()}); } flashA = .9; });   // estilhaços nascem dentro do pilar e ficam na escala dele
+    ev(T.shatter, () => { setShake(14, 1100); const [ax] = pt(far, [PIL.x0, 0]), [bx] = pt(far, [PIL.x1, 0]), pw = bx - ax, cx = (ax + bx) / 2; let n = 0; while (n < 80) { const fx2 = rnd(PIL.x0, PIL.x1), fy2 = rnd(.34, PIL.y1); if (!inPoly(fx2, fy2)) continue; n++; const [x, y] = pt(far, [fx2, fy2]), dx = (x - cx) / pw; shards.push({x, y, vx:dx * pw * 1.8 + rnd(-.3, .3) * pw, vy:rnd(-.5, .25) * pw * 1.4, s:rnd(.04, .13) * pw, rot:rnd(0, 6.28), vr:rnd(-6, 6), born:performance.now(), life:rnd(900, 1900), z:Math.random()}); } flashA = .9; });   // estilhaços nascem dentro da silhueta do gelo e ficam na escala dele
     let flashA = 0, whiteMax = 0;
 
     function frame(now){
@@ -121,7 +123,12 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       while (snow.length < 110 + blizz * 420) snow.push({x:-30, y:rnd(0, fx.height), z:Math.random(), ph:rnd(0, 6.28)});
       mist.forEach(m => { m.x += m.v * dt / 1000; if (m.x < -.3) m.x = 1.3; if (m.x > 1.3) m.x = -.3; const g = ctx.createRadialGradient(m.x * fx.width, m.y * fx.height, 0, m.x * fx.width, m.y * fx.height, m.r * fx.width); const a = m.a * (.6 + seg(t, T.farIn[0], T.farIn[1]) * .8 + blizz * 1.5); g.addColorStop(0, `rgba(190,225,255,${Math.min(.5, a)})`); g.addColorStop(1, 'rgba(190,225,255,0)'); ctx.fillStyle = g; ctx.fillRect(0, m.y * fx.height - m.r * fx.width, fx.width, m.r * fx.width * 2); });
       const pa = seg(t, T.cracks[0], T.shatter) * (1 - seg(t, T.shatter, T.shatter + 300)) * farOp;
-      if (pa > .01) { const [px, py] = pt(far, [PIL.x, PIL.y0]); const g = ctx.createLinearGradient(0, py, 0, py - fx.height * .6); g.addColorStop(0, 'rgba(190,235,255,0)'); g.addColorStop(.14, `rgba(190,235,255,${.35 * pa})`); g.addColorStop(1, 'rgba(190,235,255,0)'); ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = g; const [bxa] = pt(far, [PIL.x0, 0]), [bxb] = pt(far, [PIL.x1, 0]), bw = (bxb - bxa) * (1 + .25 * pa); for (let k = 0; k < 8; k++) { const w = bw * (1 - k * .115); ctx.globalAlpha = .22; ctx.fillRect(px - w / 2, py - fx.height * .6, w, fx.height * .6); } ctx.restore(); }
+      if (pa > .01) { ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        const path = grow => { ctx.beginPath(); ICEPOLY.forEach(([fx2, fy2], i) => { const [x, y] = pt(far, [fx2, fy2]), [cx2, cy2] = pt(far, [PIL.x, .5]); const px = cx2 + (x - cx2) * (1 + grow), py = y; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }); ctx.closePath(); };
+        const [tx, ty] = pt(far, [PIL.x, ICEPOLY[5][1]]), [, by2] = pt(far, [PIL.x, PIL.y1]), g = ctx.createLinearGradient(0, ty, 0, by2); g.addColorStop(0, `rgba(210,242,255,${.4 * pa})`); g.addColorStop(1, `rgba(150,215,255,${.15 * pa})`);
+        ctx.fillStyle = g; path(0); ctx.fill(); ctx.globalAlpha = .5; path(.04 * pa); ctx.fill(); ctx.globalAlpha = 1;
+        const [la] = pt(far, [ICEPOLY[4][0], 0]), [lb] = pt(far, [ICEPOLY[6][0], 0]), bw = (lb - la) * .6, g2 = ctx.createLinearGradient(0, ty, 0, ty - fx.height * .5); g2.addColorStop(0, `rgba(190,235,255,${.45 * pa})`); g2.addColorStop(1, 'rgba(190,235,255,0)'); ctx.fillStyle = g2; ctx.fillRect(tx - bw / 2, ty - fx.height * .5, bw, fx.height * .5);
+        ctx.restore(); }
       ctx.fillStyle = '#fff';
       snow = snow.filter(s => { const sp = .35 + s.z * .9; s.y += (28 + 60 * sp) * dt / 1000 * (1 + blizz * 3.5); s.x += (14 + 70 * sp * (.6 + gust * 3 + blizz * 7)) * dt / 1000 + Math.sin(t * .001 + s.ph) * .25; return s.y < fx.height + 10 && s.x < fx.width + 60; });
       snow.forEach(s => { const z = Math.round(1 + s.z * 2.4); ctx.globalAlpha = .35 + .6 * s.z; ctx.fillRect(Math.round(s.x), Math.round(s.y), z, z); }); ctx.globalAlpha = 1;
