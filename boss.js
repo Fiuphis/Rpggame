@@ -166,7 +166,7 @@ const EYES = {B_1:[[351,107],[381,108]],B_2:[[322,106],[351,110]],B_3:[[263,102]
     const br = Math.sin(tm / 1000 * 1.8) * (o.breathe == null ? 1 : o.breathe), sc = SZ * (o.sc || 1);
     g.save(); g.globalAlpha = clamp(o.al == null ? 1 : o.al); g.translate(ox + (o.dx || 0), oy + (o.dy || 0)); g.rotate((o.rot || 0) * Math.PI / 180); g.scale(sc * (1 - .004 * br), sc * (1 + .008 * br));
     g.drawImage(im, -m.cx, -m.gy);
-    const ey = EYES[name]; if (ey && !(tint && tint > 0.2)) { let r = 0; try { r = window.BD_RAGE ? clamp(window.BD_RAGE()) : 0; } catch (e) {} const p = .78 + .22 * Math.sin(tm / 1000 * (4 + r * 8)), a = (.14 + .86 * r) * p, rad = 6 + 14 * r;
+    const ey = EYES[name]; if (ey && !(tint && tint > 0.2)) { const M2 = g.getTransform(); window.__bossEyes = ey.map(([x, y]) => { const X = x - m.cx, Y = y - m.gy; return [M2.a * X + M2.c * Y + M2.e, M2.b * X + M2.d * Y + M2.f]; }); let r = 0; try { r = window.BD_RAGE ? clamp(window.BD_RAGE()) : 0; } catch (e) {} const p = .78 + .22 * Math.sin(tm / 1000 * (4 + r * 8)), a = (.14 + .86 * r) * p, rad = 6 + 14 * r;
       g.globalCompositeOperation = 'lighter'; for (const [x, y] of ey) { const X = x - m.cx, Y = y - m.gy, gr = g.createRadialGradient(X, Y, 0, X, Y, rad); gr.addColorStop(0, `rgba(255,70,50,${.85 * a})`); gr.addColorStop(.35, `rgba(255,40,30,${.35 * a})`); gr.addColorStop(1, 'rgba(255,30,20,0)'); g.fillStyle = gr; g.fillRect(X - rad, Y - rad, rad * 2, rad * 2); g.fillStyle = `rgba(255,170,140,${Math.min(1, .25 + a)})`; g.fillRect(X - 2, Y - 1.5, 4, 3); }
       g.globalCompositeOperation = 'source-over'; }
     if (tint) { g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(255,40,40,${tint})`; g.fillRect(-m.cx, -m.gy, m.w, m.h); }
