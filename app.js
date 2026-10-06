@@ -810,7 +810,11 @@ function pickQuestion(diff){
   let c; do { c = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && c.i === state.lastQ[diff]);
   state.lastQ[diff] = c.i; return c.q;
 }
-if (TEST_MODE) window.__bd = {state};
+// Tema visual da fase: 'ice' (botao e interface de gelo, so no boss Hrimgar); o boss 1 usa o padrao.
+function setTheme(n){ $('#game').classList.toggle('theme-ice', n === 'ice'); }
+window.setTheme = setTheme;
+if (TEST_MODE && PARAMS.get('theme')) setTheme(PARAMS.get('theme'));
+if (TEST_MODE) window.__bd = {state, setTheme};
 window.BD_RAGE = () => Math.max(state.rage / RAGE_MAX, state.phase2 ? .7 : 0);   // fase 2: olhos do boss ficam sempre acesos
 const aliveHeroes = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 

@@ -790,3 +790,28 @@ body,button,input{font-family:OpenC,OpenD,monospace}
 .intro.ice .in-skip{z-index:3;color:#e8f7ff;background:#071a30;border-color:#3e7fb3}
 .intro.ice .in-skip b{color:#9fd6ff}
 .intro.ice .in-skip.selected{border-color:#9fd6ff;background:#0f3a63}
+
+/* caixa de fala do Hrimgar (arte propria) */
+.intro.ice .in-cap{width:min(96vw,560px);aspect-ratio:1904/601;padding:0;border:0;background:url(ice_cap.png) center/100% 100% no-repeat;box-shadow:none;bottom:15%}
+.intro.ice .in-cap i{display:none}
+.intro.ice .in-cap span{position:absolute;left:26%;right:8%;top:30%;bottom:30%;min-height:0;display:flex;align-items:center;font:bold clamp(12px,3.6vw,17px)/1.3 Georgia,'Times New Roman',serif;color:#e6f6ff;text-shadow:0 0 6px rgba(90,190,255,.6),0 2px 0 #021020}
+.intro.ice .in-cap::after{right:9%;bottom:24%}
+
+/* tema de gelo: botao + inventario/mercador, so na fase do Hrimgar (.game.theme-ice) */
+.theme-ice .bag-toggle img{content:url(ice_button.png);width:30cqw}
+.theme-ice .bag-panel{aspect-ratio:1943/740}
+.theme-ice .bag-panel>img{content:url(ice_panel.png)}
+.theme-ice .inventory-hit:nth-child(1){left:9.62%;top:26.1%;width:12.0%;height:26.9%}
+.theme-ice .inventory-hit:nth-child(2){left:23.26%;top:26.1%;width:12.04%;height:26.9%}
+.theme-ice .inventory-hit:nth-child(3){left:36.85%;top:26.1%;width:11.84%;height:26.9%}
+.theme-ice .inventory-hit:nth-child(4){left:9.62%;top:55.8%;width:12.0%;height:26.9%}
+.theme-ice .inventory-hit:nth-child(5){left:23.26%;top:55.8%;width:12.04%;height:26.9%}
+.theme-ice .inventory-hit:nth-child(6){left:36.85%;top:55.8%;width:11.84%;height:26.9%}
+.theme-ice .bag-panel .shop.s0{left:52.2%;top:51.1%;width:9.5%;height:34.3%}
+.theme-ice .bag-panel .shop.s1{left:63.2%;top:51.1%;width:9.4%;height:34.3%}
+.theme-ice .bag-panel .shop.s2{left:74.1%;top:51.1%;width:9.0%;height:34.3%}
+.theme-ice .bag-panel .shop.s3{left:84.4%;top:51.1%;width:8.5%;height:34.3%}
+.theme-ice .m-stage{left:52.2%;top:20.5%;width:21.9%;height:26.1%}
+.theme-ice .m-port{background:url(ice_panel.png) 66.9% 27.8% / 457% 383% no-repeat}
+.theme-ice .bag-panel .merchant-vote{left:75.9%;top:32.6%;width:16.2%;height:13.2%}
+.theme-ice .m-say{left:75.9%;top:32.8%;width:16.2%;height:13%}

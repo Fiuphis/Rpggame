@@ -492,6 +492,7 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v245: cúpula do Guerreiro centrada no centro do corpo (mediana do sprite), não nos pés
 - v246: escudo do Guerreiro vira esfera centrada no corpo (peito), não meia-esfera no chão
 - v251: abertura cinematográfica do Hrimgar (intro_ice.js, pré-visualização em intro_ice.html): close selado, gelo rachando e olhos abrindo, recuo até a nave, rachaduras no pilar, estilhaços e nevasca; ainda não ligada ao jogo (falta o chefe 2)
+- v252: arte de gelo do Hrimgar: caixa de fala (ice_cap.png) na abertura; botão e inventário/Mercador de gelo (ice_button.png, ice_panel.png) via classe .theme-ice, só na fase do Hrimgar (boss 1 mantém o padrão); ?teste=1&theme=ice para testar
 - v250: primeiro chefe renomeado para Malgorath, Lorde das Trevas (textos, HUD e imagem de fundo); removidas as pastas antigas clr/ e guerreiro/
 - v249: animações extras dos heróis: reação a acerto/erro, combo de acertos (3+ e 5+), pose de pouca vida (vida abaixo de 30%) com pulso vermelho, entrada em cena, revive com coluna de luz (Clériga e Maga ganham levantar), cobertura do Tanque, luz de cura, rastro de movimento nos golpes, mais ociosas e golpes extras, poeira e rachadura nos golpes da Clériga (extras.js)
 - v248: Clériga refeita com 57 poses novas (costas, 2 px) e 24 efeitos dourados novos; estrela do cajado como origem dos disparos
