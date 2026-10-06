@@ -9,10 +9,13 @@ if (window === window.top && !/[?&]noshell/.test(location.search)) {
 }
 // Toque longo / botão direito: nenhum menu do navegador (abrir/baixar imagem, copiar, compartilhar). Só as funções do próprio jogo.
 { const ok = t => t && t.closest && t.closest('input,textarea,[contenteditable="true"]');
-  addEventListener('contextmenu', e => { if (!ok(e.target)) e.preventDefault(); }, true);
+  addEventListener('contextmenu', e => e.preventDefault(), true);
+  // campos de texto: digitar e mover o cursor continuam, mas segurar o dedo não seleciona (nem mostra alças/menu)
+  addEventListener('select', e => { const t = e.target; try { if (t && t.setSelectionRange && t.selectionStart !== t.selectionEnd) t.setSelectionRange(t.selectionEnd, t.selectionEnd); } catch (_) {} }, true);
+  addEventListener('selectionchange', () => { const a = document.activeElement; try { if (a && a.setSelectionRange && a.selectionStart !== a.selectionEnd) a.setSelectionRange(a.selectionEnd, a.selectionEnd); } catch (_) {} });
   addEventListener('dragstart', e => { if (!ok(e.target)) e.preventDefault(); }, true);
   const st = document.createElement('style');
-  st.textContent = 'html,body,body *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text}img,svg,canvas,video{-webkit-user-drag:none;-webkit-touch-callout:none}';
+  st.textContent = 'html,body,body *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text}input::selection,textarea::selection{background:transparent;color:inherit}img,svg,canvas,video{-webkit-user-drag:none;-webkit-touch-callout:none}';
   (document.head || document.documentElement).appendChild(st); }
 const T = (() => { try { return window.top.document ? window.top : window; } catch { return window; } })(), TD = T.document;
 const KEY = 'bd1_fs', de = TD.documentElement;
