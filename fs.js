@@ -12,7 +12,7 @@ if (window === window.top && !/[?&]noshell/.test(location.search)) {
   addEventListener('contextmenu', e => { if (!ok(e.target)) e.preventDefault(); }, true);
   addEventListener('dragstart', e => { if (!ok(e.target)) e.preventDefault(); }, true);
   const st = document.createElement('style');
-  st.textContent = 'html,body,body *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text}img,svg,canvas,video{-webkit-user-drag:none;-webkit-touch-callout:none}';
+  st.textContent = '*{-webkit-tap-highlight-color:rgba(0,0,0,0)!important}:where(button){background-color:transparent}button,a,[role=button]{outline:none!important}html,body,body *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text}img,svg,canvas,video{-webkit-user-drag:none;-webkit-touch-callout:none}';
   (document.head || document.documentElement).appendChild(st); }
 const T = (() => { try { return window.top.document ? window.top : window; } catch { return window; } })(), TD = T.document;
 const KEY = 'bd1_fs', de = TD.documentElement;

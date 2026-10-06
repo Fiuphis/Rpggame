@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb')}catch(e){}</script>
+<style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="salas.css">
+<link rel="stylesheet" href="conta.css">
+<title>Conta</title>
+</head>
+<body data-pxt>
+<div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
+<main class="pg" id="pg">
+  <header class="top">
+    <button id="home" class="chip" type="button">&#9666; INÍCIO</button>
+    <span id="net" class="chip net" data-s="con"><i class="dot"></i><b>CONECTANDO</b></span>
+  </header>
+  <section class="plaque"><h1>CONTA</h1><p>Entre para guardar seus saves</p></section>
+  <section class="panel">
+    <div class="seg" id="mode">
+      <button type="button" class="chip on" data-m="in">ENTRAR</button>
+      <button type="button" class="chip" data-m="up">CRIAR CONTA</button>
+    </div>
+    <form id="fm" autocomplete="on" novalidate>
+      <label for="us">USUÁRIO</label>
+      <div class="fld"><input id="us" name="username" maxlength="16" placeholder="SEU NOME" autocomplete="username" autocapitalize="none" spellcheck="false"></div>
+      <label for="pw">SENHA</label>
+      <div class="fld"><input id="pw" name="password" type="password" maxlength="72" placeholder="------" autocomplete="current-password"></div>
+      <div id="rp-w" hidden>
+        <label for="pw2">REPETIR SENHA</label>
+        <div class="fld"><input id="pw2" type="password" maxlength="72" placeholder="------" autocomplete="new-password"></div>
+      </div>
+      <p class="hint" id="hn">Use o mesmo nome e senha em qualquer aparelho.</p>
+      <p class="err" id="er"></p>
+      <button id="go" class="chip blue big" type="submit">ENTRAR</button>
+    </form>
+    <button id="fg" class="lnk" type="button">ESQUECI A SENHA</button>
+  </section>
+  <footer class="bot"><button id="solo" class="chip dim" type="button">CONTINUAR SEM CONTA</button></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</main>
+
+<div class="ov" id="ov-code" hidden>
+  <div class="dlg" role="dialog" aria-modal="true">
+    <h2 id="cd-h">CÓDIGO DE RECUPERAÇÃO</h2>
+    <p class="hint">Anote este código em um lugar seguro. Ele é a única forma de recuperar sua senha e não será mostrado de novo.</p>
+    <div class="bigcode sm" id="cd-v">----</div>
+    <div class="row"><button id="cd-cp" class="chip gold" type="button">COPIAR</button><button id="cd-ok" class="chip blue" type="button">ANOTEI</button></div>
+  </div>
+</div>
+
+<div class="ov" id="ov-rec" hidden>
+  <div class="dlg" role="dialog" aria-modal="true">
+    <h2>NOVA SENHA</h2>
+    <label for="ru">USUÁRIO</label>
+    <div class="fld"><input id="ru" maxlength="16" placeholder="SEU NOME" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+    <label for="rc">CÓDIGO DE RECUPERAÇÃO</label>
+    <div class="fld"><input id="rc" maxlength="14" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+    <label for="rp">NOVA SENHA</label>
+    <div class="fld"><input id="rp" type="password" maxlength="72" placeholder="------" autocomplete="new-password"></div>
+    <p class="err" id="re"></p>
+    <div class="row"><button id="rec-ok" class="chip blue" type="button">TROCAR</button><button id="rec-no" class="chip" type="button">CANCELAR</button></div>
+  </div>
+</div>
+
+<script src="lib/supabase.js"></script>
+<script src="net.js"></script>
+<script src="gate.js"></script>
+<script src="conta.js"></script>
+<script src="rebuild.js"></script>
+<script src="fs.js"></script>
+</body>
+</html>
