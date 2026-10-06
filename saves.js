@@ -18,7 +18,11 @@ function read(){
   const d = {v:1, active:1, list:{}}; for (let i = 1; i <= COUNT; i++) d.list[i] = null;
   d.list[1] = {name:'SAVE 1', ts:Date.now(), data:snapshot()}; write(d); return d;
 }
-function write(d){ set(KEY, JSON.stringify(d)); }
+function write(d){ const j = JSON.stringify(d); set(KEY, j); idbPut(j); }
+// cópia de segurança em IndexedDB: se o localStorage for apagado (limpeza do navegador), os saves voltam daqui
+function idb(){ return new Promise((ok, no) => { try { const r = indexedDB.open('bd1_saves', 1); r.onupgradeneeded = () => r.result.createObjectStore('k'); r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error); } catch (e) { no(e); } }); }
+function idbPut(j){ idb().then(db => { db.transaction('k', 'readwrite').objectStore('k').put(j, 'slots'); }).catch(() => {}); }
+function idbGet(){ return idb().then(db => new Promise(ok => { const q = db.transaction('k').objectStore('k').get('slots'); q.onsuccess = () => ok(q.result || null); q.onerror = () => ok(null); })).catch(() => null); }
 function sync(){   // o que está no jogo agora pertence ao save ativo
   const d = read(), s = d.list[d.active], now = snapshot();
   if (!s) d.list[d.active] = {name:'SAVE ' + d.active, ts:Date.now(), data:now};
@@ -32,7 +36,16 @@ function summary(s){
   GROUPS.forEach(g => { try { const x = JSON.parse(s.data.saves[g]); if (x) { gold += x.gold || 0; items += (x.inventory || []).length; } } catch {} });
   return {name:s.name, ts:s.ts, done, gold, items};
 }
+function restore(j){ try { const d = JSON.parse(j); if (!d || d.v !== 1 || !d.list) return false; set(KEY, j); const s = d.list[d.active]; if (s) apply(s.data); idbPut(j); return true; } catch { return false; } }
+const ready = (async () => {
+  try { if (navigator.storage && navigator.storage.persist) await navigator.storage.persist(); } catch {}
+  if (!get(KEY)) { const j = await idbGet(); if (j) restore(j); }
+  else idbPut(get(KEY));
+})();
 window.Saves = {
+  ready,
+  exportCode(){ sync(); return 'BD1:' + btoa(unescape(encodeURIComponent(get(KEY)))); },
+  importCode(c){ try { c = String(c || '').trim(); if (!c.startsWith('BD1:')) return false; return restore(decodeURIComponent(escape(atob(c.slice(4))))); } catch { return false; } },
   COUNT, ORDER,
   state(){ const d = sync(); return {active:d.active, slots:Array.from({length:COUNT}, (_, i) => summary(d.list[i + 1]))}; },
   active(){ const d = read(); return d.active; },

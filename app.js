@@ -1264,13 +1264,54 @@ const AUTO_WANT_MP = {mage:30, guerreiro:15, tank:20, cleriga:20};   // mana mí
 const AUTO_SHORT = {hp_s:'POÇÃO HP', hp:'POÇÃO HP', hp_l:'POÇÃO HP', mana_s:'POÇÃO MANA', mana:'POÇÃO MANA', mana_l:'POÇÃO MANA', iron_shield:'ESCUDO', amulet:'AMULETO', helm:'ELMO', smokebomb:'FUMAÇA', elixir:'ELIXIR', herb:'ERVA', lens:'LENTE', tonic:'TÔNICO', powder:'PÓLVORA', blade:'LÂMINA', lightbomb:'BOMBA', hourglass:'AMPULHETA', phoenix:'FÊNIX', dice:'DADO', scroll:'PERGAMINHO'};
 const autoAlive = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 const autoBot = k => k !== activeGroup && state.heroes[k].hp > 0;
-function autoBy(tgt){   // quem usa o item: o próprio herói (se for um dos simulados) ou um aliado simulado vivo
-  if (autoBot(tgt)) return tgt;
-  return ['cleriga', 'tank', 'guerreiro', 'mage'].find(h => h !== tgt && autoBot(h)) || null;
+// Economia realista dos heróis simulados: cada um começa com 0 moedas, ganha ao acertar, tem a própria prateleira
+// de mercador (itens sorteados) e só usa o que comprou.
+function autoEco(){
+  if (!state.eco) { state.eco = {}; HERO_ORDER.forEach(k => { if (k !== activeGroup) state.eco[k] = {gold:0, inv:[], slots:newShop().slots}; }); }
+  return state.eco;
+}
+const botStacks = inv => { const c = {}; inv.forEach(t => { c[t] = (c[t] || 0) + 1; }); return Object.values(c).reduce((a, n) => a + Math.ceil(n / STACK_MAX), 0); };
+const botCanAdd = (inv, t) => botStacks(inv.concat(t)) <= BAG_SLOTS;
+function autoEarn(meta){   // quem acertou ganha as moedas do rank (e a Moeda da Sorte, se tiver)
+  const E = autoEco();
+  HERO_ORDER.forEach(k => { if (k === activeGroup) return; let g = meta.reward; const lb = state.ib[k]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } E[k].gold += g; });
+}
+function autoShelfPick(slots, sold){
+  const on = slots.filter(Boolean);
+  if (Math.random() < LEGEND_CHANCE) { const r = LEGEND_POOL.filter(t => !on.includes(t)); if (r.length) return r[Math.floor(Math.random() * r.length)]; }
+  if (Math.random() < RARE_CHANCE) { const r = RARE_POOL.filter(t => !on.includes(t)); if (r.length) return r[Math.floor(Math.random() * r.length)]; }
+  let c = SHOP_POOL.filter(t => t !== sold && !on.includes(t)); if (!c.length) c = SHOP_POOL.filter(t => t !== sold);
+  return c[Math.floor(Math.random() * c.length)];
+}
+const AUTO_NOBUY = new Set(['clock', 'lucky']);   // relógios e moeda da sorte: sem utilidade para a lógica deles
+function autoShop(){   // nem toda rodada eles passam no mercador; compram o que precisam e podem pagar
+  const E = autoEco();
+  HERO_ORDER.forEach(k => {
+    if (k === activeGroup || state.heroes[k].hp <= 0) return;
+    const e = E[k]; if (Math.random() < .4) return;
+    e.slots = e.slots.map(t => t || autoShelfPick(e.slots));
+    for (let n = 0; n < 2; n++) {
+      const h = state.heroes[k], cand = e.slots.map((t, i) => ({t, i})).filter(o => !AUTO_NOBUY.has(ITEMS[o.t].fx) && ITEMS[o.t].price <= e.gold && botCanAdd(e.inv, o.t));
+      if (!cand.length) break;
+      const w = o => { const it = ITEMS[o.t]; let x = 2;
+        if (it.kind === 'hp') x = h.hp < 70 ? 5 : 1; else if (it.kind === 'mp') x = h.mp < AUTO_WANT_MP[k] + 25 ? 5 : 1;
+        else if (['tonic', 'powder', 'lens', 'blade', 'dice', 'lightbomb'].includes(it.fx)) x = 3; else if (it.fx === 'phoenix' || it.fx === 'scroll') x = 3; else if (it.fx === 'hourglass') x = k === 'mage' ? 2 : 0.5;
+        return x; };
+      const tot = cand.reduce((a, o) => a + w(o), 0); let r = Math.random() * tot, pick = cand[0];
+      for (const o of cand) { r -= w(o); if (r <= 0) { pick = o; break; } }
+      e.gold -= ITEMS[pick.t].price; e.inv.push(pick.t); e.slots[pick.i] = autoShelfPick(e.slots, pick.t);
+      if (Math.random() < .5) break;
+    }
+  });
+}
+function autoOwner(type, tgt){   // quem tem o item e pode usá-lo em tgt (ele mesmo, ou um aliado se o item puder ser dado)
+  const E = autoEco();
+  if (autoBot(tgt) && E[tgt].inv.includes(type)) return tgt;
+  if (giveable(type)) return ['cleriga', 'tank', 'guerreiro', 'mage'].find(h => h !== tgt && autoBot(h) && E[h].inv.includes(type)) || null;
+  return null;
 }
 async function autoUse(type, tgt){
-  const it = ITEMS[type], h = state.heroes[tgt], by = autoBy(tgt); if (!it || !h || !by) return false;
-  if (tgt !== by && !giveable(type)) return false;
+  const it = ITEMS[type], h = state.heroes[tgt], by = it && h ? autoOwner(type, tgt) : null; if (!by) return false;
   if (it.kind === 'fx') {
     if (it.fx === 'phoenix') { if (h.hp > 0 || !aliveHeroes().length) return false; } else if (h.hp <= 0) return false;
     if (it.fx === 'elixir' && h.hp >= HERO_MAX_HP && h.mp >= 100) return false;
@@ -1281,29 +1322,32 @@ async function autoUse(type, tgt){
     if ((it.kind === 'hp' && h.hp <= 0) || h[it.kind] >= max) return false;
     h[it.kind] = Math.min(max, h[it.kind] + it.amount);
   }
+  const inv = autoEco()[by].inv; inv.splice(inv.indexOf(type), 1);
   floatText(HERO_X[tgt], 44, AUTO_SHORT[type] || it.name.toUpperCase(), '#ffe08a');
   A.extra(tgt, it.kind === 'hp' || it.fx === 'elixir' || it.fx === 'herb' || it.fx === 'phoenix' ? 'heal' : 'guard');
   toast(`${GROUPS[by]} usou ${it.name}${by !== tgt ? ' em ' + GROUPS[tgt] : ''}.`);
   renderHud(); await wait(520); return true;
 }
-// antes das ações: reviver, curar, mana, recarga e proteção
+// antes das ações: reviver, curar, mana e proteção (só com o que eles compraram)
 async function autoSupport({tele, iceEv}){
   if (state.over) return;
   const I = state.ice; let n = 0;
   const use = async (type, tgt) => { if (n >= 7) return false; const ok = await autoUse(type, tgt); if (ok) n++; return ok; };
+  const any = async (types, tgt) => { for (const t of types) if (await use(t, tgt)) return true; return false; };
   for (const k of HERO_ORDER) if (state.heroes[k].hp <= 0 && autoAlive().length) await use('phoenix', k);
   for (const k of autoAlive()) {
     const h = state.heroes[k];
     if (ST.ice && I.bleed[k] && !state.ib[k].herb) await use('herb', k);
-    for (let i = 0; i < 2 && h.hp < 60; i++) { const miss = HERO_MAX_HP - h.hp; if (!await use(miss >= 55 ? 'hp_l' : miss >= 28 ? 'hp' : 'hp_s', k)) break; }
+    for (let i = 0; i < 2 && h.hp < 60; i++) { const miss = HERO_MAX_HP - h.hp; if (!await any(miss >= 55 ? ['hp_l', 'hp', 'hp_s', 'elixir'] : miss >= 28 ? ['hp', 'hp_s', 'hp_l', 'elixir'] : ['hp_s', 'hp', 'hp_l'], k)) break; }
   }
   for (const k of autoAlive()) {
     if (!autoBot(k)) continue;
     const h = state.heroes[k];
-    if (h.mp < AUTO_WANT_MP[k]) await use(h.mp <= 25 ? 'mana_l' : 'mana', k);
+    if (h.mp < AUTO_WANT_MP[k]) await any(h.mp <= 25 ? ['mana_l', 'mana', 'mana_s', 'elixir'] : ['mana', 'mana_s', 'mana_l', 'elixir'], k);
+    if ((k === 'mage' && (state.cd.mage.elem_atk || 0) > 0) || (k === 'guerreiro' && (state.cd.guerreiro.heavy || 0) > 0)) await use('hourglass', k);
+    if (!state.ultReady[k]) await use('scroll', k);
   }
-  // proteção
-  for (const k of autoAlive()) {
+  for (const k of autoAlive()) {   // proteção
     const b = state.ib[k];
     if (ST.ice) {
       if (!b.helm) await use('helm', k);
@@ -1316,17 +1360,16 @@ async function autoSupport({tele, iceEv}){
     }
   }
 }
-// depois de escolhidas as ações: itens de dano para quem vai atacar
+// depois de escolhidas as ações: itens de dano que o herói tem na mochila
 async function autoOffense(actions){
   if (state.over) return;
-  const late = state.round >= 12;   // batalha arrastada: a bolsa solta lâmina, dado e bomba
   for (const k of HERO_ORDER) {
     if (!autoBot(k)) continue;
     const a = actions[k]; if (!a || a === 'ult' || !a.skill || a.skill.kind !== 'atk') continue;
     const b = state.ib[k], list = [];
-    if (!b.tonic) list.push('tonic'); else list.push(state.round % 2 ? 'powder' : 'lens');
-    if (late) { if (b.blade < 30) list.unshift('blade'); if (!b.dice) list.push('dice'); list.push('lightbomb'); }
-    for (const t of list.slice(0, late ? 3 : 1)) await autoUse(t, k);
+    if (b.blade < 30) list.push('blade'); if (!b.tonic) list.push('tonic'); if (!b.dice) list.push('dice');
+    if (!b.powder) list.push('powder'); if (!b.lens) list.push('lens'); list.push('lightbomb');
+    let n = 0; for (const t of list) { if (n >= 2) break; if (await autoUse(t, k)) n++; }
   }
 }
 function autoWantUlt(k){
@@ -1418,6 +1461,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   state.stats.rank[q.difficulty][correct[activeGroup] ? 0 : 1]++;
   if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; state.stats.gained += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
+  if (AUTO) { autoEarn(meta); autoShop(); }
   state.missN = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length;   // quem errou alimenta o vampirismo
   if (state.curAttack.leech && state.missN > 0) toast(`Ataque ${state.curAttack.tipo.toLowerCase()} ${ST.famAdj}: o boss suga ${Math.round(leechRate() * 100)}% da vida que tirar.`);
   if (isHardQ(q)) { const miss = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length; if (miss) { state.rage = Math.min(RAGE_MAX, state.rage + miss); toast(ST.ice ? `Erro no rank ${meta.rank}: Ímpeto +${miss}.` : `Erro no rank ${meta.rank}: fúria +${miss} e ${ST.aoe} mais forte.`); } }
@@ -1716,7 +1760,7 @@ function restartRun(){
   A.reset(); closeTargetPick(); paperUIClose();
   Object.values(state.heroes).forEach(h => { h.hp = HERO_MAX_HP; h.mp = 100; });
   state.stats = newStats(); Object.assign(state, {phase2:false, chestAt:-9, sinceHard:0, bossHp:BOSS_MAX_HP, rage:0, hardNext:false, forceHard:false, over:false, round:0, dazedNext:false, thrustCd:0, teleCd:0, prepNext:false, stun:false, enraged:false, ice:newIce(), curActions:null, lastEl:null});
-  HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; });
+  HERO_ORDER.forEach(k => { state.cd[k] = {}; state.ultReady[k] = false; state.ultCd[k] = 0; }); state.eco = null;
   state.shop = newShop(); { const st = $('#m-stage'); if (st) { st.classList.remove('shut','mad'); } } renderShop(); state.marks = []; state.burn = 0; state.buff = {bh:0, bers:0, tired:0, taunt:0}; state.guardFor = null; state.ib = allBuffs();
   $('#end-screen').hidden = true; renderHud(); beginBattle(800);
 }

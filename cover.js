@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v263', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v264', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -142,7 +142,11 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   $('#sv-close').onclick = () => { sv.hidden = true; };
   sv.addEventListener('click', e => { if (e.target === sv) sv.hidden = true; });
   addEventListener('keydown', e => { if (e.key === 'Escape') sv.hidden = true; });
-  act.textContent = (Saves.state(), Saves.activeName()); }
+  const ta = $('#sv-ta'), box = $('#sv-code'), ap = $('#sv-apply');
+  $('#sv-exp').onclick = async () => { ta.value = Saves.exportCode(); box.hidden = false; ap.hidden = true; ta.select(); let ok = false; try { await navigator.clipboard.writeText(ta.value); ok = true; } catch {} say(ok ? 'Código copiado. Guarde em lugar seguro.' : 'Copie o código abaixo e guarde.'); };
+  $('#sv-imp').onclick = () => { ta.value = ''; box.hidden = false; ap.hidden = false; ta.focus(); say('Cole o código. Isso substitui todos os saves.'); };
+  ap.onclick = () => { if (Saves.importCode(ta.value)) { box.hidden = true; mode = {}; render(); say('Saves importados.'); } else say('Código inválido.'); };
+  Saves.ready.then(() => { act.textContent = (Saves.state(), Saves.activeName()); }); }
 
 // ---------- modo teste (os outros heróis jogam perfeito) ----------
 { const b = $('#auto'), KEY = 'bd1_auto';
