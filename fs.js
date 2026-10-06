@@ -2,16 +2,23 @@
    O navegador sai da tela cheia ao trocar de página (cover.html <-> game.html): se o jogador escolheu tela cheia, ela é pedida de novo no primeiro toque da página seguinte. */
 (() => {
 'use strict';
-const KEY = 'bd1_fs', de = document.documentElement;
+// O navegador sai da tela cheia quando a página navega. Por isso o jogo roda dentro de shell.html, que nunca navega: as telas (cover, index, map, game) trocam dentro do quadro e a tela cheia é do shell.
+if (window === window.top && !/[?&]noshell/.test(location.search)) {
+  const f = location.pathname.split('/').pop() || 'index.html';
+  if (/^[\w-]+\.html$/.test(f) && f !== 'shell.html') { location.replace('shell.html#' + f + location.search); return; }
+}
+const T = (() => { try { return window.top.document ? window.top : window; } catch { return window; } })(), TD = T.document;
+const KEY = 'bd1_fs', de = TD.documentElement;
+const AC = new AbortController(); addEventListener('pagehide', () => AC.abort());
 const get = () => { try { return sessionStorage.getItem(KEY) === '1'; } catch { return false; } };
 const set = v => { try { sessionStorage.setItem(KEY, v ? '1' : '0'); } catch {} };
 const req = () => { const f = de.requestFullscreen || de.webkitRequestFullscreen; if (!f) return Promise.reject(); try { const r = f.call(de, {navigationUI:'hide'}); return r && r.then ? r : Promise.resolve(); } catch (e) { return Promise.reject(e); } };
-const cur = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
-const standalone = () => { try { return matchMedia('(display-mode: fullscreen)').matches || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch { return false; } };
+const cur = () => !!(TD.fullscreenElement || TD.webkitFullscreenElement);
+const standalone = () => { try { return (!cur() && matchMedia('(display-mode: fullscreen)').matches) || matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch { return false; } };
 let leaving = false; addEventListener('pagehide', () => { leaving = true; }); addEventListener('beforeunload', () => { leaving = true; });
-const lockPortrait = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => {}); } catch (e) {} };
+const lockPortrait = () => { try { const o = T.screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => {}); } catch (e) {} };
 const hooks = [], fire = () => hooks.forEach(f => { try { f(cur()); } catch {} });
-['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => { if (!cur() && !leaving) set(false); fire(); }));
+['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => TD.addEventListener(ev, () => { if (!cur() && !leaving) set(false); fire(); }, {signal: AC.signal}));
 // o navegador só aceita tela cheia dentro de um gesto do usuário: no toque, isso vale a partir do fim do toque (pointerup/click)
 const regain = () => { if (!get() || cur()) return; req().then(() => { ['pointerup', 'click', 'touchend'].forEach(t => removeEventListener(t, regain, true)); }).catch(() => {}); };
 ['pointerup', 'click', 'touchend'].forEach(t => addEventListener(t, regain, true));
@@ -20,7 +27,7 @@ window.FS = {
   ok: () => !!(de.requestFullscreen || de.webkitRequestFullscreen) && !standalone(),
   on: cur, onChange: f => hooks.push(f),
   enter: () => { set(true); return req().then(() => lockPortrait()).catch(() => { set(false); }); },
-  exit: () => { set(false); const x = document.exitFullscreen || document.webkitExitFullscreen; if (x && cur()) try { x.call(document); } catch {} },
+  exit: () => { set(false); const x = TD.exitFullscreen || TD.webkitExitFullscreen; if (x && cur()) try { x.call(TD); } catch {} },
   toggle: () => cur() ? window.FS.exit() : window.FS.enter()
 };
 
@@ -67,9 +74,9 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 // um aviso em pixel art cobre a tela enquanto o aparelho estiver deitado.
 (function orient(){
   const touch = (() => { try { return matchMedia('(pointer:coarse)').matches; } catch { return false; } })();
-  const tryLock = () => { try { const o = screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => {}); } catch (e) {} };
+  const tryLock = () => { try { const o = T.screen.orientation; if (o && o.lock) o.lock('portrait').catch(() => {}); } catch (e) {} };
   tryLock(); document.addEventListener('visibilitychange', tryLock); addEventListener('pageshow', tryLock);
-  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => document.addEventListener(ev, () => setTimeout(tryLock, 50)));
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev => TD.addEventListener(ev, () => setTimeout(tryLock, 50)));
   if (!touch) return;
   let ov = null;
   const build = () => {

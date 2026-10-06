@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Banco de Dados I — RPG</title>
+<style>html,body{margin:0;height:100%;background:#050711;overflow:hidden}iframe{position:fixed;inset:0;width:100%;height:100%;border:0;display:block;background:#050711}</style>
+</head>
+<body>
+<iframe id="g" allow="fullscreen" title="Jogo"></iframe>
+<script>
+/* Página-mãe fixa: nunca navega, para que a tela cheia não seja encerrada na troca de telas. O jogo roda no quadro. */
+(function(){
+  var f = document.getElementById('g'), h = location.hash.slice(1);
+  if (!/^[\w-]+\.html(\?[^#]*)?$/.test(h)) h = 'cover.html';
+  f.src = h;
+  f.addEventListener('load', function(){
+    try { var l = f.contentWindow.location, p = l.pathname.split('/').pop() + l.search; if (/^[\w-]+\.html/.test(p)) history.replaceState(null, '', '#' + p); } catch (e) {}
+  });
+})();
+</script>
+</body>
+</html>
