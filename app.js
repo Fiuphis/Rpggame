@@ -12,10 +12,16 @@ const DIFFICULTY = {   // ranks: 1=C (mais fácil) … 5=SS (mais difícil)
   4:{label:'RANK S',  rank:'S',  type:'ATAQUE MÍSTICO', damage:50, reward:5, aoe:8},
   5:{label:'RANK SS', rank:'SS', type:'ATAQUE MÍSTICO', damage:64, reward:8, aoe:11}
 };
+// Sorteio do combate: offline = Math.random; online = gerador com semente (partida + rodada), igual em todos os aparelhos.
+let RNG = null;
+function R(){ return RNG ? RNG() : Math.random(); }
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function seedRound(matchSeed, n){ let h = 2166136261 ^ (matchSeed | 0); h = Math.imul(h ^ (n | 0), 16777619); h = Math.imul(h ^ h >>> 13, 0x5bd1e995); RNG = mulberry32(h >>> 0); }
+function shuffleR(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const HARD_MIN = 4;   // rank S e SS contam como "difíceis" (carregam o especial, fúria etc.)
 const isHardQ = q => q && q.difficulty >= HARD_MIN;
 const RANK_W = [0, .30, .30, .25, .10, .05];   // sorteio normal por rank (índice = dificuldade)
-function rollDiff(){ let r = Math.random(), d = 1; for (; d < 5; d++) { r -= RANK_W[d]; if (r < 0) break; } return d; }
+function rollDiff(){ let r = R(), d = 1; for (; d < 5; d++) { r -= RANK_W[d]; if (r < 0) break; } return d; }
 const QUESTIONS = [
   {difficulty:1, text:'Qual das alternativas abaixo representa uma chave primária em um banco de dados?', answers:['Uma tabela de relacionamento','Um campo que identifica unicamente um registro','Um índice não clusterizado','Um comando de seleção'], correct:1},
   {difficulty:1, text:'Qual comando SQL é utilizado para consultar dados de uma tabela?', answers:['INSERT','UPDATE','SELECT','DROP'], correct:2},
@@ -169,11 +175,11 @@ const ICE_CRIT = [.12, .20], FRENZY_CRIT = .15, CRIT_MULT = 1.5;   // chance de 
 const ICE_BLEED = 5, ICE_BLEED_MAX = 3, ICE_BLEED_TURNS = 3;       // sangramento: 5 por acúmulo por rodada, ignora defesa
 const ICE_FREEZE_AT = 4, FROZEN_MULT = 1.25, ICE_ARMOR = .15;      // 4 de Frio congelam; congelado leva +25%; Armadura de Gelo (fase 1): -15%
 const STEP_MISS = [.6, .7], STEP_CHANCE = [.2, .28];                // Passo Gélido: chance de errar do físico / de ser avisado, por fase
-const iceRoll = r => { const o = ICE_ODDS[r] || ICE_ODDS[1], x = Math.random(); return x < o[0] ? 'cut' : x < o[0] + o[1] ? 'ice' : 'blood'; };
+const iceRoll = r => { const o = ICE_ODDS[r] || ICE_ODDS[1], x = R(); return x < o[0] ? 'cut' : x < o[0] + o[1] ? 'ice' : 'blood'; };
 function rollAttack(q, forceElem){
   if (ST.ice) return ICE_ATK[iceRoll(q.difficulty)];
   if (forceElem) return ATTACKS.elem;
-  const o = ATTACK_ODDS[q.difficulty] || ATTACK_ODDS[1]; let r = Math.random();
+  const o = ATTACK_ODDS[q.difficulty] || ATTACK_ODDS[1]; let r = R();
   return r < o[0] ? ATTACKS.phys : r < o[0] + o[1] ? ATTACKS.demon : ATTACKS.elem;
 }
 function leechRate(){
@@ -910,7 +916,7 @@ async function chestVanish(img){   // some: treme, pisca, vira poeira
 // Rodada de baú: ocupa a rodada inteira (sem pergunta). O grupo vota abrir ou ignorar; quem votou em abrir leva um item da loja ou uma armadilha.
 const CHEST_ITEM_P = .7, CHEST_RARE_P = .1, CHEST_LEGEND_P = .02;
 function chestEligible(){
-  return !state.over && state.round >= CHEST_FROM && state.round - state.chestAt >= CHEST_GAP && Math.random() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest');
+  return !state.over && state.round >= CHEST_FROM && state.round - state.chestAt >= CHEST_GAP && R() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest');
 }
 // item da arca voando para a mochila: surge da arca num clarao, flutua brilhando, faz um arco ate o botao da mochila e estoura em faiscas
 function flyItemToBag(type, fromEl){
@@ -1226,9 +1232,9 @@ async function iceVolley(n, {tempest = false} = {}){
   const I = state.ice, rank = state.curQ ? state.curQ.difficulty : 1, cc = ICE_CRIT[state.phase2 ? 1 : 0] + (I.frenzy ? FRENZY_CRIT : 0);
   for (let i = 0; i < n; i++) for (const k of HERO_ORDER) {
     if (state.over) return; if (state.heroes[k].hp <= 0) continue;
-    let to = k; if (I.mark && state.heroes[I.mark].hp > 0 && Math.random() < .8) to = I.mark;
+    let to = k; if (I.mark && state.heroes[I.mark].hp > 0 && R() < .8) to = I.mark;
     const type = i === 0 && state.curAttack && ICE_ATK[state.curAttack.id] ? state.curAttack.id : iceRoll(rank);
-    await iceStrike(to, {type, crit:Math.random() < cc, rank, quick:n >= 4, anim:n >= 4 ? 'jabq' : (Math.random() < .5 ? 'jab' : 'jabV'), tempest});
+    await iceStrike(to, {type, crit:R() < cc, rank, quick:n >= 4, anim:n >= 4 ? 'jabq' : (Math.random() < .5 ? 'jab' : 'jabV'), tempest});
     if (aliveHeroes().length === 0) return;
   }
 }
@@ -1414,8 +1420,8 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   const enragedNow = state.hardNext, empowered = state.prepNext && !enragedNow;
   const dazed = state.dazedNext; state.dazedNext = false; if (dazed) state.stun = true;
   let prepWarn = false, tele = null;
-  if (!dazed && !empowered && !enragedNow && state.round >= 2 && Math.random() < PREP_CHANCE) prepWarn = true;
-  if (!dazed && !empowered && !prepWarn && !enragedNow && state.round > TELE_FROM && state.teleCd <= 0 && Math.random() < TELE_CHANCE) { const al = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp); tele = al[0] || null; if (tele) state.teleCd = TELE_CD; }
+  if (!dazed && !empowered && !enragedNow && state.round >= 2 && R() < PREP_CHANCE) prepWarn = true;
+  if (!dazed && !empowered && !prepWarn && !enragedNow && state.round > TELE_FROM && state.teleCd <= 0 && R() < TELE_CHANCE) { const al = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp); tele = al[0] || null; if (tele) state.teleCd = TELE_CD; }
   const FORCE = TEST_MODE ? window.__force : null;   // só em ?teste=1: força um evento do boss (verificação)
   if (FORCE === 'prep' && !empowered && !enragedNow) { prepWarn = true; tele = null; }
   if (FORCE === 'tele' && !empowered && !enragedNow) { prepWarn = false; tele = aliveHeroes().sort((a, b) => state.heroes[a].hp - state.heroes[b].hp)[0] || null; }
@@ -1424,8 +1430,8 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
     prepWarn = false; tele = null; const I = state.ice; state.curActions = null;
     if (I.tempestWarn) { iceEv = 'tempest'; I.tempestWarn = false; I.tempestCd = 4; }
     else if (!dazed && !enragedNow && state.round >= 2) {
-      const ph = state.phase2 ? 1 : 0, y = Math.random(); I.tempestCd = Math.max(0, I.tempestCd - 1);
-      if (state.phase2 && I.tempestCd <= 0 && Math.random() < .3) { iceEv = 'tempestWarn'; I.tempestWarn = true; }
+      const ph = state.phase2 ? 1 : 0, y = R(); I.tempestCd = Math.max(0, I.tempestCd - 1);
+      if (state.phase2 && I.tempestCd <= 0 && R() < .3) { iceEv = 'tempestWarn'; I.tempestWarn = true; }
       else if (y < STEP_CHANCE[ph]) iceEv = 'step';
       else if (y < STEP_CHANCE[ph] + .12 && !I.markNext) iceEv = 'mark';
       else if (y < STEP_CHANCE[ph] + .22) iceEv = 'counter';
@@ -1435,13 +1441,13 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
     if (iceEv === 'step') I.step = true; if (iceEv === 'counter') I.counter = true;
     if (TEST_MODE) (window.__evlog = window.__evlog || []).push(String(iceEv));
     await iceIntro(iceEv);
-    if (iceEv === 'mark') { const al = aliveHeroes(); I.markNext = al[Math.floor(Math.random() * al.length)] || null; if (I.markNext) { showRing(I.markNext); floatText(HERO_X[I.markNext], 52, 'MARCADO', '#ffd34d'); await wait(900); hideRing(); } }
+    if (iceEv === 'mark') { const al = aliveHeroes(); I.markNext = al[Math.floor(R() * al.length)] || null; if (I.markNext) { showRing(I.markNext); floatText(HERO_X[I.markNext], 52, 'MARCADO', '#ffd34d'); await wait(900); hideRing(); } }
   } else {
   await bossIntro({prep:prepWarn, tele, empowered, dazed});
   if (!prepWarn && !tele && !dazed && !empowered && !enragedNow) await maybeGag('start'); }
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;   // pergunta S/SS garantida: mantém os ultimates aparecendo
-  const q = pickQuestion(state.forceHard ? (Math.random() < .7 ? 4 : 5) : rollDiff());
+  const q = pickQuestion(state.forceHard ? (R() < .7 ? 4 : 5) : rollDiff());
   if (isHardQ(q)) state.sinceHard = 0;
   state.forceHard = false; state.curQ = q;
   const meta = DIFFICULTY[q.difficulty];
@@ -1455,7 +1461,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   });
   // grupos controlados por outros jogadores: simulados (sem backend não dá para ver o voto real deles)
   const correct = {};
-  HERO_ORDER.forEach(k => correct[k] = k === activeGroup ? res.idx === q.correct : (AUTO || Math.random() < 0.6));
+  HERO_ORDER.forEach(k => correct[k] = k === activeGroup ? res.idx === q.correct : (AUTO || R() < 0.6));
   showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros'); await wait(1400); hideBanner();
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
@@ -1480,7 +1486,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
     if (state.heroes[k].hp <= 0) { actions[k] = null; continue; }
     if (ST.ice && state.ice.frozen[k] > 0) { actions[k] = null; if (k === activeGroup) toast('Seu herói está CONGELADO: não age nesta rodada, mas sua resposta conta.'); continue; }
     // ultimate do grupo ativo: só entra em ação quando o grupo escolhe o card ESPECIAL (ou toca no ícone) no menu; os outros grupos são simulados
-    if (k !== activeGroup && state.ultReady[k] && ultUsable(k) && (AUTO ? autoWantUlt(k) : Math.random() < 0.5)) await activateUlt(k);
+    if (k !== activeGroup && state.ultReady[k] && ultUsable(k) && (AUTO ? autoWantUlt(k) : R() < 0.5)) await activateUlt(k);
     const at = state.curAttack;
     if (k === activeGroup) {
       showRing(k); await wait(400);
@@ -1495,11 +1501,11 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
       actions[k] = autoPick(k, {tele, iceEv});
     } else {
       const av = SKILLS[k].filter(sk => !skillBlock(k, sk));
-      const sk = av.length ? av[Math.floor(Math.random() * av.length)] : null;   // sem mana e esquiva em recarga: não age (antes travava a partida)
+      const sk = av.length ? av[Math.floor(R() * av.length)] : null;   // sem mana e esquiva em recarga: não age (antes travava a partida)
       if (!sk) actions[k] = null;
       else {
-        actions[k] = {skill: sk, element: sk.elem ? ['fire','water','air','earth'][Math.floor(Math.random() * 4)] : null};
-        if (sk.target) { const al = aliveHeroes().filter(h => h !== k); actions[k].target = al[Math.floor(Math.random() * al.length)]; }
+        actions[k] = {skill: sk, element: sk.elem ? ['fire','water','air','earth'][Math.floor(R() * 4)] : null};
+        if (sk.target) { const al = aliveHeroes().filter(h => h !== k); actions[k].target = al[Math.floor(R() * al.length)]; }
       }
     }
   }
@@ -1566,7 +1572,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
           else if (sk.elem && el && !ST.ice) { const r = applyMark(el); if (r) { dmg += r.dmg; sub += ` ${r.name}! +${r.dmg}`; if (r.rage) state.rage = Math.max(0, state.rage + r.rage); } else sub += ` Marca de ${ELEMENTS[el].name.toLowerCase()}.`; }
           if (sk.holy && BOSS.weak.includes('holy')) { dmg = Math.round(dmg * BOSS_WEAK_HOLY); sub += ` SAGRADO: o boss é FRACO! ${BOSS_WEAK_HOLY}x.`; }
           if (ST.ice && sk.elem && el && !BOSS.immune.includes(el) && !BOSS.weak.includes(el)) sub += ` ${ELEMENTS[el].name}: dano normal.`;
-          if (ST.ice && state.ice.step && (k === 'guerreiro' || k === 'tank') && dmg > 0 && Math.random() < STEP_MISS[state.phase2 ? 1 : 0]) { dmg = -1; sub = 'PASSO GÉLIDO: o boss esquivou do golpe físico!'; }
+          if (ST.ice && state.ice.step && (k === 'guerreiro' || k === 'tank') && dmg > 0 && R() < STEP_MISS[state.phase2 ? 1 : 0]) { dmg = -1; sub = 'PASSO GÉLIDO: o boss esquivou do golpe físico!'; }
           if (bers && dmg > 0) { dmg = Math.round(dmg * 1.5); sub += ' Berserk 1,5x!'; }
           if (dmg > 0 && k === 'tank' && sk.id === 'super') state.dazedNext = true;
           if (dmg > 0 && k === 'mage' && state.buff.bh > 0) { dmg *= 3; sub += ' Buraco Negro x3!'; }
@@ -1615,7 +1621,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
       await iceVolley(n); if (aliveHeroes().length === 0) return endGame(false);
     }
     if (iceEv === 'cut') {
-      const al = aliveHeroes().sort(() => Math.random() - .5).slice(0, 2); showBanner('CORTE CONGELANTE', 'a onda de gelo acerta ' + al.map(h => GROUPS[h]).join(' e ')); flashHit(); await wait(900); hideBanner();
+      const al = shuffleR(aliveHeroes()).slice(0, 2); showBanner('CORTE CONGELANTE', 'a onda de gelo acerta ' + al.map(h => GROUPS[h]).join(' e ')); flashHit(); await wait(900); hideBanner();
       for (const h of al) { await iceStrike(h, {type:'ice', cold:2, rank:q.difficulty, anim:'slashH', fireNegates:true}); if (state.over) break; }
       if (aliveHeroes().length === 0) return endGame(false);
     }
@@ -1623,7 +1629,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   // ---- 3b) estocada: só quando o Tanque está com Provocação/Proteção; atravessa a guarda e fere um aliado
   { const tankUp = state.heroes.tank.hp > 0; let tt = null, why = '';
     if (ST.ice || state.thrustCd > 0 || dazed) { /* Hrimgar não usa estocada; em recarga ou desnorteado */ }
-    else if (!state.over && tankUp && state.buff.taunt > 0) { const al = aliveHeroes().filter(h => h !== 'tank'); tt = al[Math.floor(Math.random() * al.length)] || null; why = 'ignora a Provocação'; }
+    else if (!state.over && tankUp && state.buff.taunt > 0) { const al = aliveHeroes().filter(h => h !== 'tank'); tt = al[Math.floor(R() * al.length)] || null; why = 'ignora a Provocação'; }
     else if (!state.over && tankUp && state.guardFor && state.heroes[state.guardFor].hp > 0) { tt = state.guardFor; why = 'ignora a Proteção'; }
     if (tt) {
       state.thrustCd = THRUST_CD;
@@ -1785,7 +1791,7 @@ function itemOff(hero, d){               // dano causado: lâmina, pólvora, tô
   if (b.powder > 0) { const p = b.powder === 2 ? 22 : 15; b.powder = 0; d += p; n.push('POLVORA +' + p); }
   if (b.tonic > 0) { d = Math.round(d * 1.25); n.push('FURIA +25%'); }
   if (b.lens > 0) { const c = b.lens === 2 ? 2.2 : 1.8; b.lens = 0; d = Math.round(d * c); n.push('CRITICO ' + String(c).replace('.', ',') + 'x!'); }
-  if (b.dice > 0) { b.dice--; const L = b.diceAff ? [1.5, 2, 3, 4] : [1, 1.5, 2, 3], m = L[Math.floor(Math.random() * L.length)]; d = Math.round(d * m); n.push('DADO ' + String(m).replace('.', ',') + 'x'); }
+  if (b.dice > 0) { b.dice--; const L = b.diceAff ? [1.5, 2, 3, 4] : [1, 1.5, 2, 3], m = L[Math.floor(R() * L.length)]; d = Math.round(d * m); n.push('DADO ' + String(m).replace('.', ',') + 'x'); }
   return {d, note:n.join(' ')};
 }
 async function itemRoundEnd(){          // fim da rodada: bomba de luz, erva, duração dos efeitos

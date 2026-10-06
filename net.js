@@ -3,11 +3,12 @@
    Sem servidor (ou com ?mock=1) a camada simulada devolve salas de mentira, para testar a tela. */
 (() => {
 'use strict';
-const URL_ = 'https://cdwagfofjjhnykbzixut.supabase.co', KEY = 'sb_publishable_ywPS1-BCFSX90jMkktI1sg_sJZn0woN';
+let URL_ = 'https://cdwagfofjjhnykbzixut.supabase.co'; const KEY = 'sb_publishable_ywPS1-BCFSX90jMkktI1sg_sJZn0woN';
 const GROUPS = ['mage', 'guerreiro', 'tank', 'cleriga'], RK = 'bd1_room';
 const ss = { get: k => { try { return sessionStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch {} } };
 if (/[?&]mock(=1)?(&|$)/.test(location.search)) ss.set('bd1_mock', '1'); if (/[?&]mock=0/.test(location.search)) ss.set('bd1_mock', null);
 const MOCK = ss.get('bd1_mock') === '1';
+{ const m = location.search.match(/[?&]sb=([^&]+)/); if (m && /^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(decodeURIComponent(m[1]))) ss.set('bd1_sb', decodeURIComponent(m[1])); const o = ss.get('bd1_sb'); if (o) URL_ = o; }   // so para testes locais (servidor de teste)
 
 const MSG = {
   nao_autenticado: 'Entre novamente no jogo.', sala_nao_encontrada: 'Sala não encontrada. Confira o código.', muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos.',
@@ -166,7 +167,7 @@ const SV = {
 
 window.NET = {
   ...ACC, SV,
-  GROUPS, MOCK, msg, norm, room, setRoom,
+  GROUPS, MOCK, msg, norm, room, setRoom, rpc,
   ready: () => MOCK ? Promise.resolve(true) : real(),
   async listRooms() { return MOCK ? M.list() : rpc('list_public_rooms'); },
   async createRoom(pub, name) { const r = MOCK ? await M.create(pub, name) : await rpc('create_room', { p_public: !!pub, p_name: name || null }); setRoom(r); return r; },
