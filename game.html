@@ -100,7 +100,7 @@
 <script>/* v207: a abertura cobre a tela desde o primeiro quadro (antes ela comecava escondida e o jogo/botoes da mochila apareciam por um instante) */
 (()=>{const q=new URLSearchParams(location.search),t=q.get('teste')==='1'||(q.get('teste')!=='0'&&localStorage.getItem('bd1_test')==='1'),on=(q.get('intro')||(t?'0':'1'))==='1',el=document.getElementById('intro');
 if(!on)el.hidden=true;else setTimeout(()=>{if(!window.Intro)el.hidden=true},6000)})();</script>
-<script src="lobby.js"></script>
+<script src="fs.js"></script><script src="lobby.js"></script>
 <script src="menu_meta.js"></script>
 <script src="mage.js"></script>
 <script src="fxsoft.js"></script><script src="guerreiro.js"></script><script src="tank.js"></script><script src="cleric.js"></script><script src="boss.js"></script><script src="hrimgar.js"></script>

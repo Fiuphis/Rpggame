@@ -26,9 +26,17 @@
     <div class="dock" id="dock">
       <button id="play" class="c-play" type="button"><span>JOGAR</span></button>
       <button id="how-btn" class="c-how" type="button"><i class="ic-book"></i><span>COMO JOGAR</span></button>
+      <button id="fs-btn" class="c-fs" type="button" aria-label="Tela cheia"><svg class="ic-fs" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path class="fs-out" fill="#ffd978" d="M0 0h4v1H1v3H0zM8 0h4v4h-1V1H8zM0 8h1v3h3v1H0zM11 8h1v4H8v-1h3z"/><path class="fs-in" fill="#ffd978" d="M3 3h1v1h1v1H3zM8 3h1v2H7V4h1zM3 7h2v1H4v1H3zM7 7h2v1H8v1H7V8z" style="display:none"/></svg><span id="fs-lb">TELA CHEIA</span></button>
       <button id="sv-btn" class="c-sv" type="button"><span>SAVES<small id="sv-act">SAVE 1</small></span></button>
       <button id="auto" class="c-auto" type="button" aria-pressed="false"><span>TESTE DESLIGADO</span></button>
       <div class="c-msg" aria-live="polite"><i class="ic-gem"></i><p id="msg"></p></div>
+    </div>
+  </div>
+  <div id="fs-ask" class="how fs-ask" hidden role="dialog" aria-modal="true" aria-label="Tela cheia">
+    <div class="hw">
+      <div class="hw-head"><svg class="ic-fs big" viewBox="0 0 12 12" shape-rendering="crispEdges" aria-hidden="true"><path fill="#ffd978" d="M0 0h4v1H1v3H0zM8 0h4v4h-1V1H8zM0 8h1v3h3v1H0zM11 8h1v4H8v-1h3z"/></svg>TELA CHEIA</div>
+      <p class="sv-note">Esconde a barra do navegador e deixa mais espaço para a batalha. Você pode sair quando quiser pelo botão da tela inicial.</p>
+      <div class="sv-io"><button id="fs-yes" class="chip go" type="button">ENTRAR EM TELA CHEIA</button><button id="fs-no" class="chip" type="button">AGORA NÃO</button></div>
     </div>
   </div>
   <div id="sv" class="how sv" hidden role="dialog" aria-modal="true" aria-label="Saves">
@@ -55,6 +63,7 @@
 <canvas id="px"></canvas>
 <script src="rebuild.js"></script>
 <script src="saves.js"></script>
+<script src="fs.js"></script>
 <script src="cover.js"></script>
 </body>
 </html>

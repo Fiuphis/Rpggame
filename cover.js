@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v271', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v272', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -267,4 +267,19 @@ $('#play').onclick = async () => {
 
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
+})();
+
+// tela cheia: botão fixo na tela inicial + aviso uma única vez por aba (sessionStorage)
+(() => {
+  const btn = document.getElementById('fs-btn'), ask = document.getElementById('fs-ask'); if (!btn || !window.FS) return;
+  const lb = document.getElementById('fs-lb'), out = btn.querySelector('.fs-out'), inn = btn.querySelector('.fs-in');
+  const paint = () => { const on = FS.on(); btn.classList.toggle('on', on); lb.textContent = on ? 'SAIR' : 'TELA CHEIA'; out.style.display = on ? 'none' : ''; inn.style.display = on ? '' : 'none'; };
+  if (!FS.ok()) { btn.style.display = 'none'; return; }
+  btn.onclick = () => { FS.toggle(); setTimeout(paint, 250); };
+  FS.onChange(paint); paint();
+  let asked = false; try { asked = sessionStorage.getItem('bd1_fs_ask') === '1'; } catch {}
+  if (!asked && !FS.on()) setTimeout(() => { if (FS.on()) return; ask.hidden = false; try { sessionStorage.setItem('bd1_fs_ask', '1'); } catch {} }, 1400);
+  document.getElementById('fs-yes').onclick = () => { ask.hidden = true; FS.enter().then(paint); };
+  document.getElementById('fs-no').onclick = () => { ask.hidden = true; };
+  ask.addEventListener('click', e => { if (e.target === ask) ask.hidden = true; });
 })();

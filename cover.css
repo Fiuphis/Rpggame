@@ -145,3 +145,20 @@ a.chip{display:inline-flex;align-items:center;text-decoration:none}
 .sv-code{display:flex;flex-direction:column;gap:1.2cqw;align-items:stretch}
 .sv-code[hidden]{display:none}
 textarea.sc-in{height:auto;padding:1cqw 1.4cqw;font-size:1.9cqw;text-transform:none;letter-spacing:0;resize:none;word-break:break-all}
+
+/* tela cheia: botão na linha de baixo e aviso único */
+.c-fs{appearance:none;-webkit-appearance:none;position:absolute;cursor:pointer;left:57.2%;width:16.6%;top:38.3%;height:14.7%;border:solid transparent;border-width:1.7cqw;border-image:url(ui_chip.png) 6 fill/1.7cqw stretch;image-rendering:pixelated;display:flex;align-items:center;justify-content:center;gap:1.2cqw;padding:0;font-family:var(--F);font-weight:700;color:#f4e2b0;font-size:1.4cqw;letter-spacing:.1cqw;line-height:1;text-shadow:0 .4cqw 0 #1a0c06;white-space:nowrap}
+.c-fs:active{transform:translateY(.5cqw) scale(.985)}
+.c-fs.on{border-image-source:url(ui_chip_blue.png);color:#ffe08a}
+.ic-fs{width:3.6cqw;height:3.6cqw;flex:none;filter:drop-shadow(0 .3cqw 0 #3a1a06)}
+.ic-fs.big{width:6cqw;height:6cqw}
+.fs-ask .hw{height:auto;width:84%;padding-bottom:4cqw}
+.fs-ask .hw-head{padding-right:0}
+.fs-ask .sv-io{flex-direction:column;align-items:stretch;margin-top:1cqw}
+.fs-ask .sv-io .chip{height:8cqw;font-size:2.3cqw}
+.c-how{left:26%;width:29.8%;font-size:2.5cqw;letter-spacing:.15cqw;gap:1.2cqw;border-width:2cqw;border-image-width:2cqw}
+.c-how .ic-book{width:4.4cqw;height:3.4cqw}
+.fs-ask .chip.go{border-image-source:url(ui_chip_blue.png);color:#ffe08a}
+.c-fs{flex-direction:column;gap:.9cqw}
+.ic-fs{width:5.2cqw;height:5.2cqw}
+.ic-fs.big{width:6.4cqw;height:6.4cqw}
