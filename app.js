@@ -629,9 +629,9 @@ function buildQuestionPanel(text, at, seconds, side){
     add('', 'qchip tp', Q.ctipo, `<img src="icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at.tipo}</b></div>`);
     const ak = attrKind(at), ad = add('', 'qchip ' + ak, Q.cattr, `<img src="${ATTR_ICON[ak]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); ad.style.setProperty('--ec', e.color);
   }
-  add('dq-text', '', side ? [Q.title[0], Q.title[1], Q.title[2] - 4.2, Q.title[3]] : Q.title, `<span></span>`).firstChild.textContent = text;
+  add('dq-text', '', side ? [Q.title[0], Q.title[1], Q.title[2] - 7.8, Q.title[3]] : Q.title, `<span></span>`).firstChild.textContent = text;
   add('', 'dq-coin', Q.coin, side ? side.reward : '0');
-  if (side) add('', 'dq-diff d' + side.d, [77.2, Q.title[1] + 2.2, 7.0, 7], `<small>RANK</small><b>${side.rank}</b>`);
+  if (side) add('', 'dq-diff d' + side.d, [74.4, Q.title[1] + 2.2, 5.6, 7], `<small>RANK</small><b>${side.rank}</b>`);
   add('', 'sk-timer', Q.tbox, timerHtml(seconds, 'dq-side-timer'));
   return L;
 }
@@ -695,7 +695,7 @@ function showRing(hero){
   $('#game').appendChild(m);
 }
 function hideRing(){ const m = $('#turn-marker'); if (m) m.remove(); }
-function bannerKind(t){t=String(t).toUpperCase();if(/ULTIMATE/.test(t))return 'ult';if(/LUZ SAGRADA|ESQUIVOU|DESNORTEADO/.test(t))return 'good';if(/BOSS|ONDA|ESTOCADA|TELEPORTE|GOLPE|PREPARANDO/.test(t))return 'bad';return ''}
+function bannerKind(t){t=String(t).toUpperCase();if(/ULTIMATE/.test(t))return 'ult';if(/LUZ SAGRADA|ESQUIVOU|DESNORTEADO/.test(t))return 'good';if(/BOSS|ONDA|ESTOCADA|TELEPORTE|PASSO G|GOLPE|PREPARANDO/.test(t))return 'bad';return ''}
 function showBanner(t, sub){ const b=$('#turn-banner'); const key=t+'|'+(sub||''); if(b.dataset.k===key)return; b.dataset.k=key; __readUntil=Date.now()+readMs((t+' '+(sub||'')).replace(/<[^>]*>/g,''));
   if (paperOn()) { const k = bannerKind(t); $('.sc-in').classList.remove('fade'); scWrite($('#sc-t'), String(t).replace(/<[^>]*>/g, ''), k); scWrite($('#sc-s'), sub || ''); b.classList.remove('show'); return; }
   b.className='turn-banner show '+bannerKind(t); b.innerHTML=`${t}${sub?`<small>${sub}</small>`:''}`; }
@@ -981,7 +981,7 @@ async function bossIntro(ev = {}){
     flashHit(); A.play('boss', 'prep'); A.sayRandom('boss', 'enrage', .6); await wait(2400); hideBanner(); return;
   }
   if (ev.tele) {
-    const t = ev.tele; showBanner('TELEPORTE!', `o boss sumiu… vai surgir atrás de ${GROUPS[t]}! Use ESQUIVA!`);
+    const t = ev.tele; showBanner(ST.tele.toUpperCase() + '!', `o boss sumiu… vai surgir atrás de ${GROUPS[t]}! Use ESQUIVA!`);
     A.play('boss', 'tpOut'); A.fx('boss', 'mark', {x:HERO_WX(t), y:1085}); A.sayRandom('boss', 'laugh', .5); await wait(1900); hideBanner(); return;
   }
   if (ev.dazed) { showBanner('BOSS DESNORTEADO!', 'o Super Pesado do Tanque o atordoou: +25% de dano nele e sem habilidades especiais'); A.play('boss', 'hurt'); floatText(50, 17, 'DESNORTEADO!', '#ffd34d'); await wait(1600); hideBanner(); return; }
@@ -1254,7 +1254,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
       A.fx('boss', 'unmark');
       if (dodged) {
         A.play(t, 'dodge'); A.sayRandom(t, 'dodge', .6); floatText(HERO_X[t], 56, 'ESQUIVOU!', '#9fe3a8');
-        state.stun = true; floatText(50, 17, 'ATORDOADO! +25% de dano', '#ffd34d'); showBanner('ESQUIVOU DO TELEPORTE!', 'o boss ficou atordoado: +25% de dano nele nesta rodada');
+        state.stun = true; floatText(50, 17, 'ATORDOADO! +25% de dano', '#ffd34d'); showBanner('ESQUIVOU DO ' + ST.tele.toUpperCase() + '!', 'o boss ficou atordoado: +25% de dano nele nesta rodada');
       } else {
         const red = sk && sk.kind === 'def' ? sk.reduce : 0; let d = Math.round(TELE_DMG * (1 - red));
         const m = itemMit(t, d, true); d = m.d;
@@ -1338,7 +1338,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
     if (tt) {
       state.thrustCd = THRUST_CD;
       const sk = kindOf(tt), dodged = !!sk && sk.kind === 'dodge', red = sk && sk.kind === 'def' ? sk.reduce : 0; let d = Math.round(THRUST_DMG * (1 - red));
-      showBanner('ESTOCADA!', `${why}: vai em ${GROUPS[tt]} (ESQUIVA anula, defesa reduz)`); showRing(tt); await wait(700);
+      showBanner(ST.thrust.toUpperCase() + '!', `${why}: vai em ${GROUPS[tt]} (ESQUIVA anula, defesa reduz)`); showRing(tt); await wait(700);
       A.play('boss', 'thrust', {tx:HERO_WX(tt), ty:1010}); await Promise.race([A.hit('boss'), wait(3000)]);
       if (dodged) { A.play(tt, 'dodge'); floatText(HERO_X[tt], 56, 'ESQUIVOU!', '#9fe3a8'); }
       else { const m = itemMit(tt, d, true); d = m.d; flashHit(); A.play(tt, 'hurt'); A.sayRandom(tt, 'hurt', .4); state.heroes[tt].hp = Math.max(0, state.heroes[tt].hp - d); floatText(HERO_X[tt], 56, `-${d}${red ? ' (defesa)' : ''}${m.note}`, '#ff6b81'); }
