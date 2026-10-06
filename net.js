@@ -12,7 +12,7 @@ const MOCK = ss.get('bd1_mock') === '1';
 const MSG = {
   nao_autenticado: 'Entre novamente no jogo.', sala_nao_encontrada: 'Sala não encontrada. Confira o código.', muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos.',
   limite_de_salas: 'Você já tem 3 salas abertas.', grupo_cheio: 'Essa classe está cheia.', fora_da_sala: 'Você não está nessa sala.', grupo_invalido: 'Classe inválida.',
-  offline: 'Sem conexão com o servidor.', auth: 'Não foi possível entrar no servidor. Tente de novo.'
+  offline: 'Sem conexão com o servidor.', usuario_existe: 'Esse nome de usuário já existe.', email_exists: 'Esse nome de usuário já existe.', user_already_exists: 'Esse nome de usuário já existe.', usuario_invalido: 'Use de 3 a 16 letras minúsculas, números ou _.', 'Invalid login credentials': 'Usuário ou senha incorretos.', credenciais: 'Usuário ou senha incorretos.', codigo_invalido: 'Código de recuperação incorreto.', senha_curta: 'A senha precisa de pelo menos 6 caracteres.', weak_password: 'Senha fraca. Use pelo menos 6 caracteres.', limite_de_saves: 'Limite de 4 saves nesta classe.', precisa_de_conta: 'Entre na sua conta para usar saves.', save_desatualizado: 'Este save foi alterado em outro aparelho.', save_nao_encontrado: 'Save não encontrado.', nome_invalido: 'Dê um nome de 1 a 20 letras.', over_request_rate_limit: 'Muitas tentativas. Aguarde um pouco.', auth: 'Não foi possível entrar no servidor. Tente de novo.'
 };
 const msg = e => { const m = String((e && (e.message || e.code)) || e || ''); const k = Object.keys(MSG).find(x => m.includes(x)); return k ? MSG[k] : 'Algo deu errado. Tente de novo.'; };
 const norm = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -60,7 +60,75 @@ const room = () => { try { return JSON.parse(ss.get(RK)); } catch { return null;
 const setRoom = r => ss.set(RK, r ? JSON.stringify({ id: r.id, code: r.code, name: r.name || null, pub: r.is_public !== false }) : null);
 const cnt = rows => { const o = { mage: 0, guerreiro: 0, tank: 0, cleriga: 0 }; (rows || []).forEach(r => { o[r.grp] = Number(r.n) || 0; }); return o; };
 
+
+// ---------- conta (nome + senha) e saves ----------
+const DOM = '@cronicas-do-saber.app', mail = u => String(u).toLowerCase() + DOM, userOk = u => /^[a-z0-9_]{3,16}$/.test(u);
+const fail = c => { throw new Error(c); };
+const LS = { get: k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const gen = n => Array.from({ length: n }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random() * 32 | 0]).join('');
+const code12 = () => { const c = gen(12); return c.slice(0, 4) + '-' + c.slice(4, 8) + '-' + c.slice(8); };
+const AM = {   // simulado
+  accs: () => LS.get('bd1_mock_acc') || {}, saves: () => LS.get('bd1_mock_saves') || [],
+  cur: () => ss.get('bd1_mock_user'),
+  wait: ms => new Promise(r => setTimeout(r, ms))
+};
+const ACC = {
+  async account() {
+    if (MOCK) { const u = AM.cur(); return u ? { username: u } : null; }
+    await real(); const { data } = await sb.auth.getSession(); const us = data.session && data.session.user;
+    if (!us || us.is_anonymous || !us.email) return null;
+    return { username: us.email.split('@')[0] };
+  },
+  async signUp(user, pass) {
+    user = String(user || '').toLowerCase(); if (!userOk(user)) fail('usuario_invalido'); if (String(pass || '').length < 6) fail('senha_curta');
+    if (MOCK) { await AM.wait(300); const a = AM.accs(); if (a[user]) fail('usuario_existe'); const c = code12(); a[user] = { p: pass, c }; LS.set('bd1_mock_acc', a); ss.set('bd1_mock_user', user); return c; }
+    await real(); const { data } = await sb.auth.getSession(); const cur = data.session && data.session.user;
+    if (cur && cur.is_anonymous) {            // o jogador anônimo vira conta (mesmo usuário, mesmas salas)
+      const r = await sb.auth.updateUser({ email: mail(user), password: pass }); if (r.error) throw r.error;
+      const rf = await sb.auth.refreshSession(); if (rf.error) throw rf.error;
+    } else { const r = await sb.auth.signUp({ email: mail(user), password: pass }); if (r.error) throw r.error; if (!r.data.session) fail('auth'); }
+    try { return await rpc('register_profile', { p_username: user }); }
+    catch (e) { try { await sb.auth.signOut(); } catch {} throw e; }
+  },
+  async signIn(user, pass) {
+    user = String(user || '').toLowerCase(); if (!userOk(user) || !pass) fail('credenciais');
+    if (MOCK) { await AM.wait(300); const a = AM.accs()[user]; if (!a || a.p !== pass) fail('credenciais'); ss.set('bd1_mock_user', user); return { username: user }; }
+    await real(); const r = await sb.auth.signInWithPassword({ email: mail(user), password: pass }); if (r.error) throw r.error; return { username: user };
+  },
+  async signOut() {
+    ss.set(RK, null); ss.set('bd1_save', null); ss.set('bd1_acc', null);
+    if (MOCK) { ss.set('bd1_mock_user', null); return; }
+    try { await real(); await sb.auth.signOut(); } catch {}
+  },
+  async recover(user, code, pass) {
+    user = String(user || '').toLowerCase(); if (!userOk(user)) fail('usuario_invalido'); if (String(pass || '').length < 6) fail('senha_curta');
+    if (MOCK) { await AM.wait(300); const a = AM.accs(), x = a[user]; if (!x || x.c.replace(/-/g, '') !== String(code).toUpperCase().replace(/[^A-Z0-9]/g, '')) fail('codigo_invalido'); x.p = pass; x.c = code12(); LS.set('bd1_mock_acc', a); return x.c; }
+    let res; try { res = await fetch(URL_ + '/functions/v1/recover', { method: 'POST', headers: { 'Content-Type': 'application/json', apikey: KEY }, body: JSON.stringify({ username: user, code, password: pass }) }); } catch { fail('offline'); }
+    const j = await res.json().catch(() => ({})); if (!res.ok || !j.ok) fail(j.error || 'auth'); return j.code;
+  },
+  async listSaves() {
+    if (MOCK) { await AM.wait(200); const u = AM.cur(); return AM.saves().filter(x => x.owner === u).map(({ data, owner, ...r }) => ({ ...r, resumo: data && data.resumo || null })); }
+    await real(); const r = await sb.from('saves').select('id,class,slot,name,rev,updated_at,resumo:data->resumo').order('slot'); if (r.error) throw r.error; return r.data || [];
+  },
+  async createSave(cls, name) {
+    if (MOCK) { await AM.wait(250); const u = AM.cur(), all = AM.saves(), mine = all.filter(x => x.owner === u && x.class === cls); let s = 1; while (mine.some(x => x.slot === s) && s <= 4) s++; if (s > 4) fail('limite_de_saves');
+      const row = { id: 'sv' + gen(8), owner: u, class: cls, slot: s, name: (String(name || '').trim() || 'SAVE ' + s).slice(0, 20), rev: 0, updated_at: new Date().toISOString(), data: {} }; all.push(row); LS.set('bd1_mock_saves', all); const { data, owner, ...o } = row; return o; }
+    return rpc('create_save', { p_class: cls, p_name: name || '' });
+  },
+  async renameSave(id, name) { if (MOCK) { await AM.wait(150); const all = AM.saves(), x = all.find(v => v.id === id); if (!x) fail('save_nao_encontrado'); x.name = String(name).slice(0, 20); LS.set('bd1_mock_saves', all); return; } return rpc('rename_save', { p_id: id, p_name: name }); },
+  async deleteSave(id) { if (MOCK) { await AM.wait(150); LS.set('bd1_mock_saves', AM.saves().filter(v => v.id !== id)); return; } return rpc('delete_save', { p_id: id }); },
+  async readSave(id) {
+    if (MOCK) { const x = AM.saves().find(v => v.id === id); if (!x) fail('save_nao_encontrado'); return { id, data: x.data, rev: x.rev }; }
+    await real(); const r = await sb.from('saves').select('id,data,rev').eq('id', id).single(); if (r.error) throw r.error; return r.data;
+  },
+  async writeSave(id, data, rev) {
+    if (MOCK) { const all = AM.saves(), x = all.find(v => v.id === id); if (!x || x.rev !== rev) fail('save_desatualizado'); x.data = data; x.rev++; x.updated_at = new Date().toISOString(); LS.set('bd1_mock_saves', all); return x.rev; }
+    return rpc('write_save', { p_id: id, p_data: data, p_rev: rev });
+  }
+};
+
 window.NET = {
+  ...ACC,
   GROUPS, MOCK, msg, norm, room, setRoom,
   ready: () => MOCK ? Promise.resolve(true) : real(),
   async listRooms() { return MOCK ? M.list() : rpc('list_public_rooms'); },
