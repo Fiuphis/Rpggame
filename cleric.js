@@ -126,7 +126,8 @@ function make(host){
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let low = 0, hist = [], reviveT = 0, dead = 0, deadTarget = 0, deadT = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 40}, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
-  const E = (name, d, f, o = {}) => fxl.push({name: name.replace(/^fx_(.*)$/, (_, k) => 'fx_' + (AL[k] || k)), d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
+  const tsc = () => { if (!tgt) return 1; const x = tgt.get ? tgt.get() : tgt.x; return clamp(Math.min(x, 1024 - x) / 200, .5, 1); };   // alvos junto à borda da tela: efeito menor, para caber inteiro e continuar centrado
+  const E = (name, d, f, o = {}) => fxl.push({sc:tsc(), name: name.replace(/^fx_(.*)$/, (_, k) => 'fx_' + (AL[k] || k)), d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const orbPos = () => ({...orbW});
   const dir = (a, b) => Math.atan2(b.y - a.y, b.x - a.x);
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
@@ -226,9 +227,9 @@ function make(host){
     fxl = fxl.filter(e => {
       const u = (now - e.t0) / e.d; if (u < 0) return true; if (u >= 1) return false;
       const s = e.f(u), im = img[e.name], fc = e.bk ? bc : front.getContext('2d'); if (e.bk) backUsed = true;
-      if (e.name === 'glow') { if (!s) return true; glow(fc, s.x, s.y, s.r, s.c, s.a); return true; }
+      if (e.name === 'glow') { if (!s) return true; glow(fc, s.x, s.y, s.r * (e.sc || 1), s.c, s.a); return true; }
       if (!ready(e.name) || !s) return true;
-      const fl = FLATFX.includes(e.name.slice(3)), k = fl ? .62 : 1, w = im.naturalWidth * k * (s.s || 1) * (s.sx || 1), h = im.naturalHeight * k * (s.s || 1) * (fl ? 1 : (s.sy || 1));
+      const fl = FLATFX.includes(e.name.slice(3)), k = fl ? .62 : 1, w = im.naturalWidth * k * (s.s || 1) * (s.sx || 1) * (e.sc || 1), h = im.naturalHeight * k * (s.s || 1) * (fl ? 1 : (s.sy || 1)) * (e.sc || 1);
       fc.save(); fc.globalAlpha = clamp(s.a == null ? 1 : s.a); fc.globalCompositeOperation = e.add ? 'lighter' : 'source-over'; fc.translate(s.x, s.y); if (s.rot) fc.rotate(s.rot);
       FXSoft.draw(fc, im, -w / 2 - (FXMASS[e.name] || 0) * w / im.naturalWidth, s.anchorB ? -h : -h / 2, w, h, 1); fc.restore(); return true;
     });
