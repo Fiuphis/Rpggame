@@ -109,7 +109,7 @@ const GIVE = new Set(['shield','amulet','helm','smoke','herb','elixir','phoenix'
 const HERO_ORDER = ['mage','guerreiro','tank','cleriga'];
 const HERO_COLOR = {mage:'#4d8dff', guerreiro:'#d9e6ff', tank:'#ff9d3d', cleriga:'#ff3d5c'};
 const HERO_X = {mage:10.3, guerreiro:33.2, tank:63.5, cleriga:89.7};   // centro do herói (% da largura)
-const BOSS_MAX_HP = ST.ice ? 750 : 650, HERO_MAX_HP = 100;
+const BOSS_MAX_HP = ST.ice ? 600 : 650, HERO_MAX_HP = 100;
 // Dano base por herói: Clériga baixo, Maga/Tanque médio, Guerreiro alto. Fraqueza certa (fogo da Maga) = alto; Buraco Negro = extremamente alto.
 const HERO_BASE = {mage:14, guerreiro:21, tank:14, cleriga:10};
 const ATTACK_DAMAGE = 14;          // dano do ataque básico (quando acertou a pergunta)
@@ -163,7 +163,7 @@ const LEECH_MISS = .02, LEECH_RAGE = .01, LEECH_P2 = .02, RAGE_DMG = .01;   // v
 const BOSS_ATTACK = ATTACKS.phys;
 // ---- Hrimgar (ST.ice): muitos golpes pequenos por herói; o Frio congela, o sangue sangra ----
 const ICE_ATK = {cut:{id:'cut', tipo:'FÍSICO', attr:'none', mult:1, leech:0}, ice:{id:'ice', tipo:'FÍSICO', attr:'ice', mult:1, leech:0}, blood:{id:'blood', tipo:'FÍSICO', attr:'blood', mult:1, leech:0}};
-const ICE_DMG = [0, 6, 10, 13, 18, 22];                         // dano por golpe (35% do dano do rank)
+const ICE_DMG = [0, 3, 6, 7, 10, 12];                         // dano por golpe (calibrado por simulação em v265: vários golpes por herói somam muito)
 const ICE_ODDS = {1:[1,0,0], 2:[.65,.25,.1], 3:[.4,.3,.3], 4:[.2,.4,.4], 5:[.1,.45,.45]};   // [corte, gélido, sangrento] por rank
 const ICE_CRIT = [.12, .20], FRENZY_CRIT = .15, CRIT_MULT = 1.5;   // chance de crítico: fase 1 / fase 2 (+15% no Frenesi)
 const ICE_BLEED = 5, ICE_BLEED_MAX = 3, ICE_BLEED_TURNS = 3;       // sangramento: 5 por acúmulo por rodada, ignora defesa
