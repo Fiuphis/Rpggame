@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v291', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v292', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -138,6 +138,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
     else if (a === 'ok-ren') { const v = body.querySelector(`.sc[data-n="${n}"] .sc-in`); if (v && Saves.rename(n, v.value)) say('Nome alterado.'); else say('Digite um nome.'); delete mode[n]; }
     render();
   });
+  try { if (localStorage.getItem('bd1_acc_applied')) $('#sv-btn').style.display = 'none'; } catch (e) {}   // com conta, os saves são os da conta
   $('#sv-btn').onclick = () => { mode = {}; note.textContent = ''; render(); sv.hidden = false; };
   $('#sv-close').onclick = () => { sv.hidden = true; };
   sv.addEventListener('click', e => { if (e.target === sv) sv.hidden = true; });

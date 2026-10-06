@@ -2,7 +2,7 @@
 (() => {
 'use strict';
 const $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const G = [['mage', 'MAGO', '#4da3ff'], ['guerreiro', 'GUERREIRO', '#ff5a4d'], ['tank', 'TANQUE', '#cfd8ff'], ['cleriga', 'CLÉRIGA', '#ffd24d']], MAXS = 4, DEF = 2;
+const G = [['mage', 'MAGA', '#4da3ff'], ['guerreiro', 'GUERREIRO', '#ff5a4d'], ['tank', 'TANQUE', '#cfd8ff'], ['cleriga', 'CLÉRIGA', '#ffd24d']], MAXS = 4, DEF = 2;
 const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SS = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} } };
 let cls = SS.get('bd1_saves_tab') || 'mage', saves = [], busy = false, leaving = false, toastT = 0, editing = null, loaded = false;
@@ -46,9 +46,16 @@ function list() {
   });
   $('#sl').querySelectorAll('.sv.new').forEach(el => el.onclick = () => { el.classList.add('pop'); setTimeout(() => openNew(), reduce() ? 0 : 180); });
 }
-function play(s) {
-  SS.set('bd1_save', JSON.stringify({ id: s.id, class: s.class, name: s.name, rev: s.rev })); SS.set('bd1_pref_class', s.class);
-  go('salas.html', 'bd1_rebuild');
+async function play(s) {
+  if (busy || leaving) return; busy = true;
+  try {
+    const full = await NET.readSave(s.id);   // dados e revisão mais recentes
+    // primeira vez com conta: o progresso que já estava neste aparelho fica guardado nos saves locais (botão SAVES da capa)
+    if (!localStorage.getItem('bd1_acc_applied')) { try { window.Saves && Saves.state(); } catch (e) {} localStorage.setItem('bd1_acc_applied', '1'); }
+    NET.SV.apply(s.class, full.data);
+    SS.set('bd1_save', JSON.stringify({ id: s.id, class: s.class, name: s.name, rev: full.rev })); SS.set('bd1_pref_class', s.class);
+    busy = false; go('salas.html', 'bd1_rebuild');
+  } catch (e) { busy = false; toast(NET.msg(e)); }
 }
 
 // ---------- novo save ----------
@@ -78,7 +85,20 @@ $('#ed-yes').onclick = async () => {
 
 // ---------- saídas ----------
 $('#home').onclick = () => { if (leaving) return; SS.set('bd1_cover_back', '1'); SS.set('bd1_rebuild', null); go('cover.html'); };
-$('#out').onclick = async () => { if (leaving || busy) return; busy = true; try { await NET.signOut(); } catch (e) {} busy = false; go('conta.html', 'bd1_rebuild'); };
+$('#out').onclick = async () => {
+  if (leaving || busy) return; busy = true;
+  try { await NET.SV.sync(true); } catch (e) {}                               // guarda o que estava em jogo
+  try { await NET.signOut(); } catch (e) {}
+  try {
+    if (localStorage.getItem('bd1_acc_applied')) {   // lê o save local direto (sem sincronizar, para não misturar com os dados da conta)
+      const d = JSON.parse(localStorage.getItem('bd1_slots')), sl = d && d.list && d.list[d.active], dt = sl && sl.data;
+      if (dt) { ['mage', 'guerreiro', 'tank', 'cleriga'].forEach(g => { const v = dt.saves && dt.saves[g]; v != null ? localStorage.setItem('bd1_save_' + g, v) : localStorage.removeItem('bd1_save_' + g); }); dt.prog != null ? localStorage.setItem('bd1_progress', dt.prog) : localStorage.removeItem('bd1_progress'); }
+    }
+    localStorage.removeItem('bd1_acc_applied');
+  } catch (e) {}   // devolve ao aparelho o progresso de antes da conta
+  SS.set('bd1_save', null); SS.set('bd1_pref_class', null);
+  busy = false; go('conta.html', 'bd1_rebuild');
+};
 try { history.pushState({ sv: 1 }, ''); } catch (e) {}
 addEventListener('popstate', () => { if (leaving) { try { history.pushState({ sv: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });

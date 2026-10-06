@@ -48,6 +48,13 @@ const M = (() => {
     async counts(id) { const r = rooms.find(x => x.id === id); return GROUPS.map(g => ({ grp: g, n: r ? r.counts[g] : 0 })); },
     async pick(id, g) { const r = rooms.find(x => x.id === id); if (g && r && r.counts[g] >= 7) throw new Error('grupo_cheio'); }
   };
+// Cópia automática do progresso para o save da conta (a cada 20 s se mudou, ao esconder a aba e ao sair).
+if (!/(salas|conta|saves)\.html$/.test(location.pathname)) {
+  const push = f => { if (ss.get('bd1_save')) window.NET.SV.sync(f); };
+  setInterval(() => push(false), 20000);
+  addEventListener('visibilitychange', () => { if (document.hidden) push(false); });
+  addEventListener('pagehide', () => push(false));
+}
 // Presença: enquanto o jogador estiver numa sala, avisa o servidor a cada 15 s em qualquer tela (seleção, mapa, batalha), para a contagem não "cair".
 if (!/salas\.html$/.test(location.pathname)) {
   const beat = () => { const r = room(); if (r && !document.hidden && !MOCK) window.NET.heartbeat(r.id); };
@@ -127,8 +134,38 @@ const ACC = {
   }
 };
 
+
+// ---------- progresso do jogo <-> save da conta ----------
+// O jogo grava o progresso no aparelho (bd1_progress e bd1_save_<classe>). Com um save de conta ativo (bd1_save), uma cópia vai para o servidor.
+const GK = ['mage', 'guerreiro', 'tank', 'cleriga'];
+const lsg = k => { try { return localStorage.getItem(k); } catch { return null; } }, lss = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch {} };
+const jp = s => { try { return JSON.parse(s); } catch { return null; } };
+const SV = {
+  active() { return jp(ss.get('bd1_save')); },
+  snapshot(cls) {
+    const prog = lsg('bd1_progress'), save = lsg('bd1_save_' + cls), p = jp(prog) || {}, s = jp(save) || {};
+    return { v: 1, class: cls, prog, save, resumo: { fase: Array.isArray(p.done) ? p.done.length : 0, moedas: Number(s.gold) || 0 } };
+  },
+  apply(cls, data) {   // coloca o save da conta no jogo (vazio = jogo novo)
+    GK.forEach(g => lss('bd1_save_' + g, null)); lss('bd1_progress', null);
+    if (data && data.v === 1) { if (data.prog != null) lss('bd1_progress', data.prog); if (data.save != null) lss('bd1_save_' + cls, data.save); }
+    try { ss.set('bd1_save_hash', null); } catch {}
+  },
+  async sync(force) {
+    const a = SV.active(); if (!a || !a.id) return false;
+    const data = SV.snapshot(a.class), h = JSON.stringify(data);
+    if (!force && ss.get('bd1_save_hash') === h) return false;
+    const act = async () => { const rev = await ACC.writeSave(a.id, data, a.rev); a.rev = rev; ss.set('bd1_save', JSON.stringify(a)); ss.set('bd1_save_hash', h); return true; };
+    try { return await act(); }
+    catch (e) {
+      if (!String((e && e.message) || e).includes('save_desatualizado')) return false;
+      try { const cur = await ACC.readSave(a.id); a.rev = cur.rev; return await act(); } catch { return false; }   // outro aparelho gravou: vale o que está aqui
+    }
+  }
+};
+
 window.NET = {
-  ...ACC,
+  ...ACC, SV,
   GROUPS, MOCK, msg, norm, room, setRoom,
   ready: () => MOCK ? Promise.resolve(true) : real(),
   async listRooms() { return MOCK ? M.list() : rpc('list_public_rooms'); },
