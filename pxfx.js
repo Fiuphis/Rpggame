@@ -130,16 +130,12 @@ function crosses(x, y, n, o = {}){   // estrelas de cura em formato de cruz de 4
       g2.fillRect(px, py, 4, 4); if (u > .1 && u < .85) { g2.fillRect(px - 4, py, 4, 4); g2.fillRect(px + 4, py, 4, 4); g2.fillRect(px, py - 4, 4, 4); g2.fillRect(px, py + 4, 4, 4); } g2.restore(); }, dl); }
 }
 
+const NOOP = () => {};
 window.PXFX = {
   init(el, feet){ if (cv) return; cv = document.createElement('canvas'); cv.className = 'fxl front px'; cv.width = 1024; cv.height = 1536; el.append(cv); g = cv.getContext('2d'); g.imageSmoothingEnabled = false; if (feet) feetOf = feet; },
-  fire:(x, y, o) => flames('fire', x, y, o), gold:(x, y, o) => flames('gold', x, y, o), heal:(x, y, o) => flames('heal', x, y, o), frost:(x, y, o) => flames('frost', x, y, o), dark:(x, y, o) => flames('dark', x, y, o), dust:(x, y, o) => flames('dust', x, y, o), water:(x, y, o) => flames('water', x, y, o),
-  burn(key, on, o = {}){      // fogo contínuo no corpo/pés de um personagem (liga/desliga)
-    if (!cv) return; const cur = burns[key]; if (!!cur === !!on) return;
-    if (!on) { cur.dead = true; cur.glowE && (cur.glowE.dead = true); delete burns[key]; return; }
-    const before = list.length; const e = flames(o.pal || 'fire', () => { const f = feetOf(key); return f ? {x:f.x + (o.dx || 0), y:f.y + (o.dy || -4)} : null; }, {w:o.w || 150, h:o.h || 130, dur:Infinity, col:true, i:o.i || .8, glowA:.2});
-    burns[key] = e; for (let i = before; i < list.length; i++) if (list[i] !== e) e.glowE = list[i];
-  },
-  later, splash, ripple, wind, debris, bolt, sparks, crosses, ring:ringPx, add, PAL, solid, sim:{make:makeSim, step:stepSim, draw:drawSim},
+  // Efeitos desativados no jogo (so as tochas usam o modulo, via PXFX.sim). Mantidos no codigo para uso futuro: troque NOOP por as funcoes.
+  fire:NOOP, gold:NOOP, heal:NOOP, frost:NOOP, dark:NOOP, dust:NOOP, water:NOOP, burn:NOOP,
+  later:NOOP, splash:NOOP, ripple:NOOP, wind:NOOP, debris:NOOP, bolt:NOOP, sparks:NOOP, crosses:NOOP, ring:NOOP, add:NOOP, PAL, solid, sim:{make:makeSim, step:stepSim, draw:drawSim},
   clear(){ list = []; burns = {}; if (g) g.clearRect(0, 0, cv.width, cv.height); },
 };
 })();

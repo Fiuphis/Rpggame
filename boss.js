@@ -41,7 +41,7 @@ const ACT = {
   laugh:[S(2800, [[0,'B_1'],[.1,'B_11',{dy:-5}],[.2,'B_2'],[.3,'B_11',{dy:-5}],[.4,'B_2'],[.5,'B_11',{dy:-5}],[.6,'B_2'],[.92,'B_1']], [[.1,'charge']])],
   tpOut:[S(1300, [[0,'B_1'],[.2,'B_8'],[.5,'B_8',{dy:-8,al:.6}],[.95,'B_8',{dy:-22,al:0}]], [[.18,'smoke']], {hold:'gone'})],
   tpIn:[S(2000, [[0,'B_8',{px:1,py:1,al:0,sc:.5}],[.16,'B_8',{px:1,py:1,al:.95,sc:.54}],[.34,'B_3',{px:1,py:1,al:1,sc:.58}],[.6,'B_3',{px:1,py:1,al:1,sc:.58}],[.8,'B_8',{px:1,py:1,al:.5,sc:.54}],[.95,'B_8',{px:1,py:1,al:0,sc:.5}]], [[.02,'smokeT'],[.36,'strikeT'],[.82,'smokeT']], {hold:'gone', front:true})],
-  fireIn:[S(1900, [[0,'B_8',{dy:-24,al:0}],[.22,'B_8',{dy:-14,al:.55}],[.42,'B_8',{dy:-4,al:1}],[.85,'B_1']], [[.02,'fireIn'],[.4,'embers']])],   // entrada da abertura: sai do fogo (sem a fumaça roxa do teleporte)
+  fireIn:[S(1900, [[0,'B_8',{dy:-190,al:0}],[.14,'B_8',{dy:-170,al:1}],[.4,'B_8',{dy:0}],[.46,'B_8',{dy:8}],[.62,'B_11',{dy:-4}],[.88,'B_1']], [[.02,'omen'],[.4,'slam'],[.52,'embers']])],   // entrada: despenca do alto e pousa com impacto
   tpBack:[S(1100, [[0,'B_8',{dy:-22,al:0}],[.5,'B_8',{dy:-6,al:1}],[.9,'B_1']], [[.04,'smoke']])],
 };
 const IDLES = [
@@ -120,28 +120,27 @@ function make(host){
       E('glow', d, u => ({x:lerp(h.x, b.x, eo(u) * .5 + u * .5), y:lerp(h.y, b.y, u * u * .4 + u * .6), r:130, c:RED, a:.5}));
       setTimeout(() => { hitFx(b.x, b.y, true); E('ring', 900, u => ({x:b.x, y:b.y + 90, r:lerp(60, 220, eo(u)), c:VIO, a:.7 * (1 - u)})); fireHit(); }, d / tsc()); },
     lance(){ const o = swordT(), b = tgt; fly(o, b, 380, {len:420, th:18, r:44, sc:'255,210,190'}); },
-    nova(){ const f = feet(), y0 = 1075, d = 520; if (window.PXFX) { PXFX.fire(f.x, y0 + 4, {w:760, h:200, dur:1000, grow:.15, hold:.4}); PXFX.sparks(f.x, y0, 24, {spread:340}); }
+    nova(){ const f = feet(), y0 = 1075, d = 520;
       E('glow', 900, u => ({x:f.x, y:f.y - 250, r:lerp(120, 420, eo(u)), c:RED, a:.8 * (1 - u)}));
       for (let k = 0; k < 3; k++) E('ring', 1100, u => ({x:f.x, y:y0, r:lerp(60, 640, eo(u)), c:k === 1 ? HOT : RED, a:.8 * (1 - u)}), {delay:k * 150});
       for (let i = 0; i < 17; i++) { const x = 40 + i * 60, dl = Math.abs(x - f.x) / 640 * 330;
         E('streak', 700, u => ({x, y:y0 - 120 * Math.sin(Math.PI * Math.min(1, u * 1.15)) - 20, ang:-Math.PI / 2, len:260 * Math.sin(Math.PI * Math.min(1, u * 1.1)) + 30, th:20, c:RED, a:.85 * (1 - seg(u, .6, 1))}), {delay:dl});
         E('glow', 700, u => ({x, y:y0 - 30, r:44 * (1 - u * .5), c:HOT, a:.6 * (1 - u)}), {delay:dl}); }
       shakeT = clk(); setTimeout(fireHit, d / tsc()); },
-    roar(k){ const f = feet(), n = k === '2' ? 2 : 1; if (window.PXFX) { PXFX.fire(f.x, f.y - 6, {w:300 + 80 * n, h:200 + 50 * n, dur:1300, i:.9}); PXFX.sparks(f.x, f.y - 30, 14, {spread:120}); }
+    roar(k){ const f = feet(), n = k === '2' ? 2 : 1;
       E('ring', 1100, u => ({x:f.x, y:f.y - 6, r:lerp(60, 200 + 90 * n, eo(u)), c:RED, a:.85 * (1 - u)}));
       E('glow', 1300, u => ({x:f.x, y:f.y - 280, r:lerp(120, 360 + 60 * n, eo(u)), c:RED, a:.6 * Math.sin(Math.PI * u)}));
       for (let i = 0; i < 10; i++) { const ox = rnd(-240, 240); E('glow', 1000, u => ({x:f.x + ox, y:f.y - 30 - 400 * eo(u), r:18, c:'255,90,60', a:.8 * Math.sin(Math.PI * u)}), {delay:i * 60}); }
       shakeT = clk(); if (n === 2) setTimeout(fireHit, 200 / tsc()); },
     sigil(){ const f = feet(); E('sigil', 2400, u => ({x:f.x, y:f.y - 6, r:lerp(120, 300, eo(Math.min(1, u * 2))), rot:u * 2, a:Math.sin(Math.PI * Math.min(1, u * 1.05)) * .85}), {back:true}); },
     ring(){ const h = hand(); E('ring', 900, u => ({x:h.x, y:h.y + 40, r:lerp(30, 150, eo(u)), c:VIO, a:.65 * (1 - u)})); },
-    fireIn(){ const f = feet();     // o Malgorath surge de uma parede de fogo detalhada
-      const env = (u, k = 1) => eo(seg(u, 0, .2 * k)) * (1 - Math.pow(seg(u, .46, 1), 1.15));
-      E('glow', 1700, u => ({x:f.x, y:f.y - 150, r:lerp(150, 560, eo(u)), c:ORG, a:.7 * Math.sin(Math.PI * Math.min(1, u * 1.05))}));
-      E('glow', 1100, u => ({x:f.x, y:f.y - 220, r:lerp(60, 280, eo(u)), c:'255,236,190', a:.75 * (1 - u)}));
-      for (let k = 0; k < 3; k++) E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(50, 430, eo(u)), c:k === 1 ? HOT : ORG, a:.8 * (1 - u)}), {delay:k * 120});
-      for (let i = 0; i < 6; i++) { const ox = (i - 2.5) * 90; E('glow', 1500, u => ({x:f.x + ox, y:f.y - 60, r:150, c:'255,150,40', a:.55 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 40}); }
-      if (window.PXFX) { PXFX.fire(f.x, f.y - 6, {w:560, h:448, dur:2300, hold:.45}); PXFX.sparks(f.x, f.y - 40, 56, {spread:250, vy0:180, vy1:520}); }   // fogo pixel art (pxfx.js)
-      for (let i = 0; i < 7; i++) { const ox = rnd(-200, 200), dl = 500 + i * 90; E('ash', 1300, u => ({x:f.x + ox + 30 * u, y:f.y - 360 - 200 * eo(u) + rnd(0, 0), r:lerp(50, 110, eo(u)), a:.32 * Math.sin(Math.PI * u)}), {delay:dl, back:false}); }
+    omen(){ const f = feet();     // antes do pouso: o salao escurece e um brilho rubro cresce
+      E('glow', 760, u => ({x:f.x, y:f.y - 300, r:lerp(80, 360, eo(u)), c:RED, a:.55 * u}));
+      E('streak', 600, u => ({x:f.x, y:f.y - 700 + 600 * (u*u), ang:Math.PI / 2, len:420, th:18, c:HOT, a:.7 * Math.sin(Math.PI * u)}), {delay:120}); },
+    slam(){ const f = feet();     // pouso: onda de choque no chao, poeira, flash e tremor
+      E('glow', 700, u => ({x:f.x, y:f.y - 40, r:lerp(100, 520, eo(u)), c:'255,236,200', a:.8 * (1 - u)}));
+      for (let k = 0; k < 3; k++) E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(40, 460, eo(u)), c:k === 1 ? HOT : RED, a:.85 * (1 - u)}), {delay:k * 110});
+      for (let i = 0; i < 12; i++) { const ox = (i < 6 ? -1 : 1) * (60 + (i % 6) * 55), dl = (i % 6) * 25; E('ash', 1100, u => ({x:f.x + ox * (.5 + u), y:f.y - 20 - 50 * eo(u), r:lerp(30, 85, eo(u)), a:.5 * Math.sin(Math.PI * u)}), {delay:dl, back:false}); }
       shakeT = clk(); },
     smoke(){ const f = feet(); for (let i = 0; i < 16; i++) { const ox = rnd(-190, 190), oy = rnd(-520, -40), sp = rnd(.6, 1.3); E('smoke', 1300, u => ({x:f.x + ox * (.4 + u * .8), y:f.y + oy - 70 * u * sp, r:lerp(70, 150, eo(u)) * sp, a:.85 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 35}); }
       E('glow', 900, u => ({x:f.x, y:f.y - 280, r:lerp(120, 300, eo(u)), c:VIO, a:.45 * Math.sin(Math.PI * u)})); },
