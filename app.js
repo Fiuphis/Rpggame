@@ -1237,7 +1237,7 @@ function maybeGag(where){
   if (!ST.gag || state.gag || state.over || state.bossHp <= 0 || aliveHeroes().length === 0) return Promise.resolve();
   const force = TEST_MODE && window.__force === 'gag';
   const p = where === 'start' ? .16 : .1;
-  if (!force && !(state.round >= 2 && (Math.random() < p || state.round >= 6))) return Promise.resolve();
+  if (!force && !(state.round >= 2 && (R() < p || state.round >= 6))) return Promise.resolve();
   return gagDragon();
 }
 
@@ -1519,6 +1519,7 @@ function onlPlan(){
 async function onlEndRound(SR){
   if (state.over) return;
   const pl = onlPlan(); ONL.planned = true;
+  (window.__hist = window.__hist || []).push({n:SR.n, round:state.round, s:JSON.stringify(ONL.pack(state))});   // conferencia de dessincronia (testes)
   await ONL.putSnapshot(state, SR.n);
   try { await MATCH.ack(SR.id); } catch (e) {}
   showBanner('SINCRONIZANDO', 'aguardando os outros jogadores');
@@ -1877,7 +1878,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
     hideBanner(); hideRing();
     if (state.bossHp <= 0) return endGame(true);
     if (aliveHeroes().length === 0) return endGame(false);
-    if (k !== HERO_ORDER[HERO_ORDER.length - 1] || Math.random() < .5) await maybeGag('hit');
+    if (k !== HERO_ORDER[HERO_ORDER.length - 1] || R() < .5) await maybeGag('hit');
   }
 
   await maybePhase2();
