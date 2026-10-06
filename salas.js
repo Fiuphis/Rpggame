@@ -81,13 +81,16 @@ $('#solo').onclick = () => { NET.setRoom(null); enter({}); };
 $('#home').onclick = () => {
   if (leaving) return; leaving = true;
   try { sessionStorage.setItem('bd1_cover_back', '1'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
-  const go = () => { location.href = 'cover.html'; };
+  let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); } catch (e) {}
+  if (acc) { try { sessionStorage.setItem('bd1_rebuild', '1'); sessionStorage.removeItem('bd1_cover_back'); } catch (e) {} }
+  const go = () => { location.href = acc ? 'saves.html' : 'cover.html'; };
   if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(go); else go();
 };
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 try { const lr = sessionStorage.getItem('bd1_leave_room'); sessionStorage.removeItem('bd1_leave_room'); const cur = NET.room();
   if (lr || cur) { const id = lr || cur.id; NET.leave(id); } } catch (e) {}
-// botão voltar do aparelho = INÍCIO (capa)
+try { if (sessionStorage.getItem('bd1_acc')) $('#home').innerHTML = '&#9666; SAVES'; } catch (e) {}
+// botão voltar do aparelho = botão do canto (SAVES ou INÍCIO)
 try { history.pushState({ sl: 1 }, ''); } catch (e) {}
 addEventListener('popstate', () => { if (leaving) { try { history.pushState({ sl: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
 if (window.Gate) Gate.arrive();

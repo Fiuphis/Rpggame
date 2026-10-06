@@ -13,5 +13,5 @@
 .bot{flex:none;display:flex;justify-content:center;margin-top:auto}
 .bot .chip{height:11cqw;min-width:50cqw;padding:0 4cqw}
 .bigcode.sm{font-size:max(22px,6.4cqw);letter-spacing:.8cqw;text-indent:.8cqw;padding:3cqw 0}
-.ov .bigcode.sm{font-size:26px;letter-spacing:4px;text-indent:4px;padding:14px 0 12px}
+.ov .bigcode.sm{font-size:21px;letter-spacing:2px;text-indent:2px;padding:14px 0 12px;white-space:nowrap}
 .ov .dlg .hint{margin-bottom:10px}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb')}catch(e){}</script>
+<style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="salas.css">
+<link rel="stylesheet" href="conta.css">
+<link rel="stylesheet" href="saves.css">
+<title>Saves</title>
+</head>
+<body data-pxt>
+<div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
+<main class="pg" id="pg">
+  <header class="top">
+    <button id="home" class="chip" type="button">&#9666; INÍCIO</button>
+    <button id="out" class="chip" type="button">SAIR DA CONTA</button>
+  </header>
+  <section class="plaque"><h1>SAVES</h1><p id="who">Escolha seu herói e o save</p></section>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <section class="list">
+    <div class="lh"><b id="th">MAGO</b><span class="cnt" id="tc">0/4</span></div>
+    <div class="ls" id="sl"></div>
+  </section>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</main>
+
+<div class="ov" id="ov-new" hidden>
+  <div class="dlg" role="dialog" aria-modal="true">
+    <h2 id="nw-h">NOVO SAVE</h2>
+    <label for="nw-n">NOME DO SAVE (OPCIONAL)</label>
+    <div class="fld"><input id="nw-n" maxlength="20" placeholder="EX: MINHA JORNADA" autocomplete="off" spellcheck="false"></div>
+    <p class="err" id="nw-e"></p>
+    <div class="row"><button id="nw-ok" class="chip blue" type="button">CRIAR</button><button id="nw-no" class="chip" type="button">CANCELAR</button></div>
+  </div>
+</div>
+
+<div class="ov" id="ov-ed" hidden>
+  <div class="dlg" role="dialog" aria-modal="true">
+    <div id="ed-main">
+      <h2>EDITAR SAVE</h2>
+      <label for="ed-n">NOME DO SAVE</label>
+      <div class="fld"><input id="ed-n" maxlength="20" autocomplete="off" spellcheck="false"></div>
+      <p class="err" id="ed-e"></p>
+      <div class="row"><button id="ed-ok" class="chip blue" type="button">SALVAR NOME</button><button id="ed-no" class="chip" type="button">FECHAR</button></div>
+      <button id="ed-del" class="chip red wide" type="button">APAGAR SAVE</button>
+    </div>
+    <div id="ed-conf" hidden>
+      <h2>APAGAR SAVE?</h2>
+      <p class="hint" id="ed-ct">Esta ação não pode ser desfeita.</p>
+      <div class="row"><button id="ed-yes" class="chip red" type="button">APAGAR</button><button id="ed-back" class="chip" type="button">VOLTAR</button></div>
+    </div>
+  </div>
+</div>
+
+<script src="lib/supabase.js"></script>
+<script src="net.js"></script>
+<script src="gate.js"></script>
+<script src="saves.js"></script>
+<script src="rebuild.js"></script>
+<script src="fs.js"></script>
+</body>
+</html>
