@@ -8,7 +8,7 @@ const grp = (TEST && GROUPS[P.get('grupo')]) ? P.get('grupo') : LOBBY.myGroup();
 if (!grp) { location.replace('index.html'); return; }
 const BOSSES = {   // ordem da jornada: 0 → 1 → 2 → 5 → 4 → 3 (ids = regiões na arte)
   0:{name:'CASTELO DE MALGORATH', play:true,  sub:'Malgorath, Lorde das Trevas · o primeiro guardião'},
-  1:{name:'TÚMULO DO REI GELADO',        play:false, sub:'Em breve'},
+  1:{name:'TÚMULO DO REI GELADO',        play:true,  sub:'Hrimgar, o Rei Gelado · o segundo guardião'},
   2:{name:'COVIL DO DRAGÃO VERMELHO',    play:false, sub:'Em breve'},
   5:{name:'ABISMO CELESTIAL',            play:false, sub:'Em breve'},
   4:{name:'TEMPLO DOS ANTIGOS',          play:false, sub:'Em breve'},
@@ -94,6 +94,7 @@ let enterT = 0;
 function placePanel(){ const p = $('#panel'); if (p.hidden) return; const r = $('#map').getBoundingClientRect(), h = p.offsetHeight; p.style.bottom = 'auto'; p.style.top = Math.max(8, Math.min(r.bottom + 8, innerHeight - h - 8)) + 'px'; }
 addEventListener('resize', placePanel);
 function enter(){
+  try { sessionStorage.setItem('bd1_boss', String(selected)); } catch {}
   bots.forEach(clearTimeout); const v = $('#veil'); v.classList.remove('out'); $('#map').style.transition = 'transform 1.2s ease-in'; $('#map').style.transform = 'scale(1.5)';
   enterT = setTimeout(() => { location.href = 'game.html' + location.search; }, 1300);
 }

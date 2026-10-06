@@ -1,6 +1,7 @@
 /* Cenário vivo da sala do boss: chamas, luz/sombra, brasas, reflexos, nuvens no céu, poeira e morcegos em perspectiva. */
 (() => {
 const game = document.getElementById('game'); if (!game) return;
+if (window.STAGE && window.STAGE.ice) return;   // Hrimgar: o cenario vivo e o ambient_ice.js
 const W = 256, H = 384, K = 4;                       // grade 256x384 = arte 1024x1536 / 4
 const R = (a, b) => a + Math.random() * (b - a), RI = (a, b) => Math.floor(R(a, b + 1));
 const mk = cls => { const c = document.createElement('canvas'); c.width = W; c.height = H; c.className = 'amb ' + cls; return c; };

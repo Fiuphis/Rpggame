@@ -440,6 +440,7 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v195: volta ao modo da v193 (titulo + botao acima das nuvens) e inclui as bandeiras laterais.
 - v196-198: painel e botao ENTRAR em pixel art (enter_*.png); botao ESCOLHA UMA CLASSE em pixel art (pick_btn_*.png); removidos os botoes A/B desenhados na arte da selecao; painel do boss fica sob as nuvens e some ao sair do mapa (e cancela a entrada pendente).
 - v199: painel de entrada no boss menor (72vw, max 336px) e de novo acima das nuvens.
+- v260: segundo guardião, Hrimgar o Rei Gelado (Túmulo do Rei Gelado): rig próprio (armadura de fase 1, dois sabres de gelo na fase 2, estilhaçar da armadura), cenário de gelo com tochas azuis, neve e névoa, abertura IntroIce + revelação com título que congela e vira flocos, textos/fraquezas por boss (stage.js: fogo e terra fraco, água e ar imune), mapa libera o boss 2
 - v200: painel de entrada no boss subiu ~66px.
 - v202: painel do boss ancorado ao fim do mapa (nao depende da altura da tela/barra do navegador).
 - v201 (inclui o cartao de descricao do item, antes v190): loja: tocar no icone do item abre um cartao de descricao em pixel art (nome, categoria, efeito, afinidade, preco); tocar nas moedas tenta comprar.

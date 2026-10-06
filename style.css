@@ -842,3 +842,10 @@ body,button,input{font-family:OpenC,OpenD,monospace}
 .cn-title u{text-decoration:none;display:inline-block;will-change:transform,opacity}
 .cn-ash{position:absolute;inset:0;width:100%;height:100%}
 .cn-title span{display:block;margin-top:.7em;font:italic clamp(13px,4vw,19px)/1 Georgia,serif;color:#ffb8a6;letter-spacing:.35em;text-transform:uppercase;text-shadow:0 0 8px rgba(255,60,40,.6)}
+
+/* cine do Hrimgar: tudo em tons de gelo */
+.cine.ice .cn-glow{background:radial-gradient(ellipse 30% 14% at 49% 9%,rgba(90,190,255,.5),transparent 70%)}
+.cine.ice .cn-eye{width:3.4%;height:.95%;margin:-.47% 0 0 -1.7%;background:radial-gradient(ellipse,#fff 0,#bfe8ff 25%,#3aa6ff 55%,transparent 75%);filter:blur(1px) drop-shadow(0 0 10px #4cf)}
+.cine.ice .cn-flash{background:radial-gradient(ellipse at 49% 25%,#fff 0,#d6efff 40%,#3a7cff 100%)}
+.cine.ice .cn-title b{color:#eaf6ff;text-shadow:0 0 14px rgba(90,180,255,.8),0 3px 0 #04101e}
+.cine.ice .cn-title span{color:#a8d8ff;text-shadow:0 0 8px rgba(90,170,255,.7)}

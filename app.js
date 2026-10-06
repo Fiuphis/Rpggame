@@ -2,6 +2,7 @@
    Front-end mobile build. The supplied PNG remains the visual base.
    Moedas/itens salvos por grupo em localStorage. Votação multiplayer real entre celulares precisa de backend (próxima etapa).
 */
+const ST = window.STAGE || {name:'Malgorath, Lorde das Trevas', aoe:'Onda Sombria', weak:['holy','fire'], immune:['water','air','earth'], burnEl:'fire', ice:false, gag:true, famName:'DEMONÍACO', famAdj:'demoníaco', elemTxt:'fogo causa 1,5x e queima por 2 perguntas; água, ar e terra não causam dano (só efeito)', elemDef:'fogo', holyAtk:'é', holyDef:'é', p2Title:'FASE 2', p2Txt:n => `Malgorath, Lorde das Trevas, despertou: Onda Sombria +${n} até o fim`, p2Wait:3000, win:'Malgorath, Lorde das Trevas, foi derrotado.', id:0};
 
 // difficulty = rank: 1 C, 2 B, 3 A, 4 S, 5 SS. Dano do contra-ataque e tipo do ataque vêm de DIFFICULTY.
 const DIFFICULTY = {   // ranks: 1=C (mais fácil) … 5=SS (mais difícil)
@@ -66,7 +67,7 @@ const ITEMS = {
   iron_shield:{name:'Escudo de Ferro', ask:'Comprar Escudo de Ferro?', price:12, kind:'fx', fx:'shield', icon:'item_iron_shield.png', info:'Bloqueia por completo o próximo golpe que você receber.'},
   amulet:{name:'Amuleto Protetor', ask:'Comprar Amuleto Protetor?', price:14, kind:'fx', fx:'amulet', icon:'item_amulet.png', info:'Reduz em 30% o dano que você recebe por 3 rodadas.'},
   helm:{name:'Elmo Reforçado', ask:'Comprar Elmo Reforçado?', price:10, kind:'fx', fx:'helm', icon:'item_helm.png', info:'Corta 8 de dano de cada golpe que você recebe por 3 rodadas.'},
-  smokebomb:{name:'Bomba de Fumaça', ask:'Comprar Bomba de Fumaça?', price:11, kind:'fx', fx:'smoke', icon:'item_smokebomb.png', info:'Você escapa dos golpes diretos do boss por 2 rodadas (a Onda Sombria ainda acerta).'},
+  smokebomb:{name:'Bomba de Fumaça', ask:'Comprar Bomba de Fumaça?', price:11, kind:'fx', fx:'smoke', icon:'item_smokebomb.png', info:`Você escapa dos golpes diretos do boss por 2 rodadas (a ${ST.aoe} ainda acerta).`},
   // cura
   elixir:{name:'Elixir Completo', ask:'Comprar Elixir Completo?', price:16, kind:'fx', fx:'elixir', icon:'item_elixir.png', info:'Restaura 30 de HP e 30 de mana.'},
   herb:{name:'Erva Curativa', ask:'Comprar Erva Curativa?', price:9, kind:'fx', fx:'herb', icon:'item_herb.png', info:'Cura 8 de HP no fim de cada rodada, por 4 rodadas.'},
@@ -117,7 +118,7 @@ const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após
 const QUESTION_SECONDS = {1:25, 2:30, 3:35, 4:40, 5:45}, ACTION_SECONDS = 25;   // tempo para responder: C 25s, B 30s, A 35s, S 40s, SS 45s
 const ULT_NAME = {mage:'Buraco Negro', guerreiro:'Berserk', tank:'Provocação', cleriga:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', guerreiro:'sword2', tank:'hammer2', cleriga:'cross'};
-const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta rank S/SS, só na seguinte (se acertarem)', guerreiro:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da Onda Sombria dos aliados), com defesa dobrada, por 2 perguntas', cleriga:'revive ou cura um herói'};
+const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta rank S/SS, só na seguinte (se acertarem)', guerreiro:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da '+ST.aoe+' dos aliados), com defesa dobrada, por 2 perguntas', cleriga:'revive ou cura um herói'};
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
@@ -141,14 +142,14 @@ const ELEMENTS = {
   none:{name:'NORMAL', color:'#9a95b8'},
   fire:{name:'FOGO', color:'#ff7a2e'}, water:{name:'ÁGUA', color:'#3db4ff'},
   air:{name:'AR', color:'#9fe8d0'}, earth:{name:'TERRA', color:'#c19a52'},
-  demon:{name:'DEMONÍACO', color:'#b36bff'}, holy:{name:'SAGRADO', color:'#ffe08a'}
+  demon:{name:ST.famName, color:ST.ice ? '#7fd0ff' : '#b36bff'}, holy:{name:'SAGRADO', color:'#ffe08a'}
 };
 // Boss: fraco a FOGO e a SAGRADO (1,5x). Água, ar e terra: imune (a Maga faz o ataque só pelo efeito, dano 0). Sem marcas/reações; escudos só ganham bônus contra o que o fere.
-const BOSS = {weak:['holy','fire'], immune:['water','air','earth']};
+const BOSS = {weak:ST.weak, immune:ST.immune};
 const BURN_TURNS = 2, BURN_MULT = .25;   // fogo marca o boss: dano contínuo de 0,25x do dano normal por 2 perguntas
 const BOSS_WEAK_HOLY = 2, BOSS_WEAK_HOLY_DEF = .8;   // fraqueza a SAGRADO: o Ataque Sagrado causa 2x e a Defesa Sagrada corta 80%. Só vale se o boss for fraco a sagrado (BOSS.weak); contra quem não é, as habilidades sagradas são só normais
 const BOSS_WEAK_MULT = 1.5;   // fogo e sagrado ferem o boss em dobro-ish (1,5x); água, ar e terra: só o efeito visual, dano 0
-const BOSS_FAMILY = 'DEMONÍACO';   // o boss é demônio/vampiro: todo dano dele é demoníaco
+const BOSS_FAMILY = ST.famName;   // o boss é demônio/vampiro: todo dano dele é demoníaco
 // Ataques do boss (sorteados a cada pergunta; o tipo e o atributo aparecem no cartão da pergunta).
 //  FÍSICO normal: sem atributo. FÍSICO demoníaco: um pouco mais forte, com vampirismo. ELEMENTAL: sempre demoníaco, o mais forte e o que mais suga vida.
 const ATTACKS = {
@@ -183,9 +184,9 @@ function bossLeech(lost){
 const SKILLS = {
   mage:[
     {id:'mana_atk', kind:'atk', name:'Ataque de Mana', desc:'Raio de mana. Dano normal.', mana:10, cd:0, mult:1},
-    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. Cada inimigo tem fraquezas próprias. Contra Malgorath, Lorde das Trevas: fogo causa 1,5x e queima por 2 perguntas; água, ar e terra não causam dano (só efeito).', mana:20, cd:1, mult:1.3, elem:true},
+    {id:'elem_atk', kind:'atk', name:'Ataque Elemental', desc:'Fogo, água, ar ou terra. Cada inimigo tem fraquezas próprias. Contra ' + ST.name + ': ' + ST.elemTxt + '.', mana:20, cd:1, mult:1.3, elem:true},
     {id:'mana_def', kind:'def', name:'Escudo de Mana', desc:'Barreira de mana. Corta 35% do dano.', mana:10, cd:0, reduce:.35},
-    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; corta 55% se for o elemento fraco do inimigo (contra Malgorath, Lorde das Trevas, fogo).', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
+    {id:'elem_def', kind:'def', name:'Escudo Elemental', desc:'Escudo de um elemento: corta 35%; corta 55% se for o elemento fraco do inimigo (contra ' + ST.name + ': ' + ST.elemDef + ').', mana:20, cd:1, reduce:.35, bonus:.55, elem:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ],
   guerreiro:[
@@ -204,9 +205,9 @@ const SKILLS = {
   ],
   cleriga:[
     {id:'atk', kind:'atk', name:'Ataque Normal', desc:'Golpe de cajado. Dano normal.', mana:0, cd:0, mult:1},
-    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele (Malgorath, Lorde das Trevas, é).', mana:20, cd:1, mult:1, holy:true},
+    {id:'holy_atk', kind:'atk', name:'Ataque Sagrado', desc:'Sagrado: 2x de dano em quem é fraco a ele (' + ST.name + ' ' + ST.holyAtk + ').', mana:20, cd:1, mult:1, holy:true},
     {id:'def', kind:'def', name:'Defesa Normal', desc:'Ergue as mãos. Corta 50% do dano.', mana:0, cd:0, reduce:.5},
-    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'Sagrado: corta 80% do dano se o inimigo for fraco a ele (Malgorath, Lorde das Trevas, é).', mana:20, cd:1, reduce:.5, bonus:BOSS_WEAK_HOLY_DEF, holy:true},
+    {id:'holy_def', kind:'def', name:'Defesa Sagrada', desc:'Sagrado: corta 80% do dano se o inimigo for fraco a ele (' + ST.name + ' ' + ST.holyDef + ').', mana:20, cd:1, reduce:.5, bonus:BOSS_WEAK_HOLY_DEF, holy:true},
     {id:'dodge', kind:'dodge', name:'Esquiva', desc:'Foge do ataque.', mana:0, cd:1}
   ]
 };
@@ -823,9 +824,15 @@ const aliveHeroes = () => HERO_ORDER.filter(k => state.heroes[k].hp > 0);
 async function maybePhase2(){
   if (state.phase2 || state.over || state.bossHp <= 0 || state.bossHp > BOSS_MAX_HP * PHASE2_AT) return;
   state.phase2 = true;
-  showBanner('FASE 2', `Malgorath, Lorde das Trevas, despertou: Onda Sombria +${PHASE2_AOE} até o fim`);
-  A.play('boss', 'enrage');
-  const g = $('#game'), fl = document.createElement('div');
+  showBanner(ST.p2Title, ST.p2Txt(PHASE2_AOE));
+  A.play('boss', ST.ice ? 'phase2' : 'enrage');
+  const g = $('#game');
+  if (ST.ice) {   // fase 2 do Hrimgar: a armadura racha e explode (a animacao 'phase2' do rig faz o resto); so um clarao gelado no estilhaço
+    const fl = document.createElement('div'); fl.style.cssText = 'position:absolute;inset:0;z-index:39;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 40%,#ffffff,#bfe4ff 45%,#3f7cff 100%);mix-blend-mode:screen'; g.appendChild(fl);
+    setTimeout(() => fl.animate([{opacity:0},{opacity:.9,offset:.1},{opacity:.2,offset:.4},{opacity:0}], {duration:900, easing:'ease-out'}).finished.then(() => fl.remove()), 1150 / (window.__ts || 1));
+    flashHit(); await wait(ST.p2Wait); hideBanner(); renderHud(); return;
+  }
+  const fl = document.createElement('div');
   fl.style.cssText = 'position:absolute;inset:0;z-index:39;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 18%,#ffffff,#b9ccff 45%,#5a3cff 100%);mix-blend-mode:screen';
   g.appendChild(fl);
   fl.animate([{opacity:0},{opacity:.85,offset:.06},{opacity:0,offset:.14},{opacity:.55,offset:.22},{opacity:0,offset:.3},{opacity:.95,offset:.42},{opacity:0,offset:.5},{opacity:.4,offset:.6},{opacity:0,offset:.68},{opacity:1,offset:.8},{opacity:0}], {duration:2600, easing:'linear'}).finished.then(() => fl.remove());
@@ -964,13 +971,13 @@ async function runChestRound(){
 async function bossIntro(ev = {}){
   const game = $('#game');
   if (state.hardNext) {
-    showBanner('O BOSS ENFURECEU!', `pergunta rank S/SS a caminho · Onda Sombria +${ENRAGE_AOE}`);
+    showBanner('O BOSS ENFURECEU!', `pergunta rank S/SS a caminho · ${ST.aoe} +${ENRAGE_AOE}`);
     flashHit(); A.play('boss', 'enrage'); A.sayRandom('boss', 'enrage', 1); state.enraged = true; await wait(2300); hideBanner();
     state.rage = 0; state.hardNext = false; renderHud(); return;
   }
   if (ev.prep) {
     state.prepNext = true; renderHud();
-    showBanner('PREPARANDO HABILIDADE', 'só a Onda Sombria agora… o PRÓXIMO golpe será 50% mais forte: DEFENDAM!');
+    showBanner('PREPARANDO HABILIDADE', `só a ${ST.aoe} agora… o PRÓXIMO golpe será 50% mais forte: DEFENDAM!`);
     flashHit(); A.play('boss', 'prep'); A.sayRandom('boss', 'enrage', .6); await wait(2400); hideBanner(); return;
   }
   if (ev.tele) {
@@ -1145,14 +1152,14 @@ async function gagDragon(){
   await wait(1900); hideBanner();
 }
 function maybeGag(where){
-  if (state.gag || state.over || state.bossHp <= 0 || aliveHeroes().length === 0) return Promise.resolve();
+  if (!ST.gag || state.gag || state.over || state.bossHp <= 0 || aliveHeroes().length === 0) return Promise.resolve();
   const force = TEST_MODE && window.__force === 'gag';
   const p = where === 'start' ? .16 : .1;
   if (!force && !(state.round >= 2 && (Math.random() < p || state.round >= 6))) return Promise.resolve();
   return gagDragon();
 }
 
-async function playRound(){
+async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   if (state.over) return;
   await QREADY;
   state.round++;
@@ -1199,8 +1206,8 @@ async function playRound(){
   if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; state.stats.gained += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
   state.missN = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length;   // quem errou alimenta o vampirismo
-  if (state.curAttack.leech && state.missN > 0) toast(`Ataque ${state.curAttack.tipo.toLowerCase()} demoníaco: o boss suga ${Math.round(leechRate() * 100)}% da vida que tirar.`);
-  if (isHardQ(q)) { const miss = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length; if (miss) { state.rage = Math.min(RAGE_MAX, state.rage + miss); toast(`Erro no rank ${meta.rank}: fúria +${miss} e Onda Sombria mais forte.`); } }
+  if (state.curAttack.leech && state.missN > 0) toast(`Ataque ${state.curAttack.tipo.toLowerCase()} ${ST.famAdj}: o boss suga ${Math.round(leechRate() * 100)}% da vida que tirar.`);
+  if (isHardQ(q)) { const miss = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length; if (miss) { state.rage = Math.min(RAGE_MAX, state.rage + miss); toast(`Erro no rank ${meta.rank}: fúria +${miss} e ${ST.aoe} mais forte.`); } }
   if (isHardQ(q)) HERO_ORDER.forEach(k => { if ((state.ultCd[k] || 0) > 0) { state.ultCd[k]--; return; } if (correct[k]) state.ultReady[k] = true; });   // recarga do Buraco Negro: pula uma pergunta S/SS inteira
   await wait(1500);
   renderHud();
@@ -1287,7 +1294,7 @@ async function playRound(){
         if (ok || bers) {
           dmg = Math.round(HERO_BASE[k] * sk.mult); sub = ok ? 'acertou e atacou!' : 'errou, mas o Berserk atacou!';
           if (sk.elem && el && BOSS.immune.includes(el)) { dmg = 0; sub = `${ELEMENTS[el].name}: o boss é IMUNE!`; }
-          else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); state.burn = BURN_TURNS; sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x e fica QUEIMANDO por ${BURN_TURNS} perguntas.`; }
+          else if (sk.elem && el && BOSS.weak.includes(el)) { dmg = Math.round(dmg * BOSS_WEAK_MULT); const bn = el === ST.burnEl; if (bn) state.burn = BURN_TURNS; sub += ` ${ELEMENTS[el].name}: o boss é FRACO! ${String(BOSS_WEAK_MULT).replace('.', ',')}x${bn ? ' e fica QUEIMANDO por ' + BURN_TURNS + ' perguntas' : ''}.`; }
           else if (sk.elem && el) { const r = applyMark(el); if (r) { dmg += r.dmg; sub += ` ${r.name}! +${r.dmg}`; if (r.rage) state.rage = Math.max(0, state.rage + r.rage); } else sub += ` Marca de ${ELEMENTS[el].name.toLowerCase()}.`; }
           if (sk.holy && BOSS.weak.includes('holy')) { dmg = Math.round(dmg * BOSS_WEAK_HOLY); sub += ` SAGRADO: o boss é FRACO! ${BOSS_WEAK_HOLY}x.`; }
           if (bers) { dmg = Math.round(dmg * 1.5); sub += ' Berserk 1,5x!'; }
@@ -1342,7 +1349,7 @@ async function playRound(){
   { const hardMiss = isHardQ(q) ? HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length : 0;   // erro em rank S/SS: Onda Sombria +50%
     const aoe = Math.round((meta.aoe + (state.enraged ? ENRAGE_AOE : 0) + (state.phase2 ? PHASE2_AOE : 0)) * (hardMiss ? HARD_MISS_AOE : 1));
     if (aoe && !state.over) {
-      showBanner('ONDA SOMBRIA', `Malgorath, Lorde das Trevas, fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}${state.phase2 ? ' (fase 2 +' + PHASE2_AOE + ')' : ''}${hardMiss ? ' (erro no rank ' + meta.rank + ': +50%)' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
+      showBanner(ST.aoe.toUpperCase(), `${ST.name}, fere todos: -${aoe}${state.enraged ? ' (enfurecido +' + ENRAGE_AOE + ')' : ''}${state.phase2 ? ' (fase 2 +' + PHASE2_AOE + ')' : ''}${hardMiss ? ' (erro no rank ' + meta.rank + ': +50%)' : ''}`); flashHit(); A.play('boss', 'aoe'); A.sayRandom('boss', 'aoe', .7);
       await Promise.race([A.hit('boss'), wait(2500)]);
       let lostAoe = 0;
       HERO_ORDER.forEach(k => { const h = state.heroes[k]; if (h.hp > 0) { A.play(k, 'hurt', {light:true}); let a = (state.buff.taunt > 0 && k !== 'tank' && state.heroes.tank.hp > 0) ? Math.round(aoe / 2) : aoe; const m = itemMit(k, a, false); a = m.d; lostAoe += Math.min(a, h.hp); h.hp = Math.max(0, h.hp - a); floatText(HERO_X[k], 56, `-${a}${m.note}`, '#b36bff'); } });
@@ -1429,8 +1436,8 @@ function endGame(win){
   if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }
   else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
   const o = $('#end-screen'); o.querySelector('h2').textContent = win ? 'VITÓRIA!' : 'DERROTA';
-  o.querySelector('p').textContent = win ? 'Malgorath, Lorde das Trevas, foi derrotado.' : 'Todos os heróis caíram.';
-  if (win) { try { const d = JSON.parse(localStorage.getItem('bd1_progress')) || {done:[]}; if (!d.done.includes(0)) d.done.push(0); localStorage.setItem('bd1_progress', JSON.stringify(d)); sessionStorage.setItem('bd1_justwon', '0'); } catch {} }
+  o.querySelector('p').textContent = win ? ST.win : 'Todos os heróis caíram.';
+  if (win) { try { const d = JSON.parse(localStorage.getItem('bd1_progress')) || {done:[]}; if (!d.done.includes(ST.id)) d.done.push(ST.id); localStorage.setItem('bd1_progress', JSON.stringify(d)); sessionStorage.setItem('bd1_justwon', String(ST.id)); } catch {} }
   $('#to-map').textContent = win ? 'VOLTAR AO MAPA' : 'MAPA';
   { const st = state.stats, R = ['C','B','A','S','SS'], tot = Object.values(st.rank).reduce((a, [r, w]) => [a[0] + r, a[1] + w], [0, 0]), n = tot[0] + tot[1], pct = n ? Math.round(tot[0] / n * 100) : 0, bossPct = Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100));
     $('#end-stats').innerHTML = `<div class="es-row"><span>Rodadas</span><b>${state.round}</b></div><div class="es-row"><span>Seu acerto</span><b>${tot[0]}/${n} (${pct}%)</b></div>` +
@@ -1438,7 +1445,7 @@ function endGame(win){
       `<div class="es-cap">certas / erradas por rank</div><div class="es-row"><span>Moedas ganhas / gastas</span><b>${st.gained} / ${st.spent}</b></div><div class="es-row"><span>Itens usados</span><b>${st.used}</b></div>` + (win ? '' : `<div class="es-row"><span>Vida restante do boss</span><b>${bossPct}%</b></div>`); }
   o.classList.toggle('win', win);
   const st2 = state.stats, RK = ['C','B','A','S','SS'], t2 = Object.values(st2.rank).reduce((a, [r, w]) => [a[0] + r, a[1] + w], [0, 0]), n2 = t2[0] + t2[1], pc = n2 ? Math.round(t2[0] / n2 * 100) : 0, bp = Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100));
-  const pu = paperUI(`<div class="ui-t ${win ? 'win' : 'lose'}">${win ? 'VITÓRIA!' : 'DERROTA'}</div><div class="ui-s">${win ? 'Malgorath, Lorde das Trevas, foi derrotado.' : 'Todos caíram. Boss com ' + bp + '% de vida.'}</div>` +
+  const pu = paperUI(`<div class="ui-t ${win ? 'win' : 'lose'}">${win ? 'VITÓRIA!' : 'DERROTA'}</div><div class="ui-s">${win ? ST.win : 'Todos caíram. Boss com ' + bp + '% de vida.'}</div>` +
     `<div class="ui-stats"><span>Rodadas <b>${state.round}</b></span><span>Acerto <b>${t2[0]}/${n2} (${pc}%)</b></span><span>Moedas <b>+${st2.gained} / -${st2.spent}</b></span><span>Itens usados <b>${st2.used}</b></span></div>` +
     `<div class="ui-ranks">${RK.map((r, i) => `<div class="r d${i + 1}"><em>${r}</em><span>${st2.rank[i + 1][0]}/${st2.rank[i + 1][1]}</span></div>`).join('')}</div><div class="ui-cap">certas / erradas por rank</div>` +
     `<div class="ui-btns"><button type="button" class="sc-btn" data-act="restart">JOGAR DE NOVO</button><button type="button" class="sc-btn alt" data-act="map">${win ? 'VOLTAR AO MAPA' : 'MAPA'}</button></div>`);
@@ -1455,9 +1462,9 @@ function beginBattle(delay){
   if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; return go(); }
   const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça
   const n = groupMembers();
-  const IP = window.IntroMalg || Intro;   // abertura cinematográfica do Malgorath (v253); intro.js fica como reserva
-  IP.play({voters:n, need:majorityOf(n), bots:TEST_MODE, onReveal:() => { if (window.Cine && window.IntroMalg) { window.__cinep = Cine.play(); return; } const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', 'tpBack'); }}).then(() => (window.__cinep || Promise.resolve()).then(() => setTimeout(go, 400)));
-  if (window.IntroMalg && intro) intro.hidden = true;   // a nova cria a própria camada preta (já está no DOM)
+  const IP = ST.ice && window.IntroIce ? window.IntroIce : (window.IntroMalg || Intro), NEW = IP !== Intro;   // abertura cinematográfica do Malgorath (v253); intro.js fica como reserva
+  IP.play({voters:n, need:majorityOf(n), bots:TEST_MODE, onReveal:() => { if (window.Cine && NEW) { window.__cinep = Cine.play(); return; } const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', 'tpBack'); }}).then(() => (window.__cinep || Promise.resolve()).then(() => setTimeout(go, 400)));
+  if (NEW && intro) intro.hidden = true;   // a nova cria a própria camada preta (já está no DOM)
 }
 function restartRun(){
   A.reset(); closeTargetPick(); paperUIClose();

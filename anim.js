@@ -37,7 +37,7 @@ function build(){
     if (w === 'mage' && window.MageRig) buildMage(H[w], m, P, window.MageRig, {PX:130, PXR:340, PT:170, PB:40, orb:{x:m.x + 190, y:m.y + 45}});
     if (w === 'tank' && window.TankRig) buildMage(H[w], m, P, window.TankRig, {PX:200, PXR:200, PT:280, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'guerreiro' && window.GuerreiroRig) buildMage(H[w], m, P, window.GuerreiroRig, {PX:230, PXR:250, PT:230, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
-    if (w === 'boss' && window.BossRig) buildMage(H[w], m, P, window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
+    if (w === 'boss' && (window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig)) buildMage(H[w], m, P, window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
     if (w === 'cleriga' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
   if (window.Extras) Extras.init($('#game'), feetOf);
