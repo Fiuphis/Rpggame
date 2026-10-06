@@ -147,7 +147,6 @@ function make(host){
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), add: o.add !== false, bk: !!o.back});
   const feet = () => ({x:world.x + W / 2 + XOFF, y:world.y + BASE});
-  const cfeet = () => ({x:feet().x - 10, y:feet().y});   // efeitos do Tanque centrados no corpo (o martelo puxava o centro para a direita)
   const hand = () => { const f = feet(); return {x:f.x + 60 * SZ, y:f.y - 170 * SZ}; };
 
   function swing(k, style, side = 0, delay = 0){      // onda de impacto: sai do martelo e voa até o boss (devolve a duração do voo)
@@ -191,11 +190,11 @@ function make(host){
     else { bl(270, FIRE, 1, 0, 1000); bl(170, '255,255,255', .9, 0, 520); rocks(11, 200, 120, true); ring(200, 800, FIRE, .9); ring(120, 600, GOLD, .8, 90); ring(70, 440, '255,255,255', .7, 160); shakeT = clk(); }
   }
   const EV = {
-    wind(){ const f = cfeet(); for (let i = 0; i < 6; i++) { const an = rnd(0, 6.28); E('glow', 700, u => ({x:f.x + Math.cos(an) * 60 * eo(u), y:f.y - 10 + Math.sin(an) * 10, r:34 * (1 - u * .4), c:'255,230,190', a:.28 * Math.sin(Math.PI * u)}), {delay:i * 60}); }
+    wind(){ const f = feet(); for (let i = 0; i < 6; i++) { const an = rnd(0, 6.28); E('glow', 700, u => ({x:f.x + Math.cos(an) * 60 * eo(u), y:f.y - 10 + Math.sin(an) * 10, r:34 * (1 - u * .4), c:'255,230,190', a:.28 * Math.sin(Math.PI * u)}), {delay:i * 60}); }
       E('ring', 800, u => ({x:f.x, y:f.y - 4, r:lerp(40, 110, eo(u)), c:GOLD, a:.5 * Math.sin(Math.PI * u)})); },
-    cheer(k){ const f = cfeet(); if (k === 'rise') { E('glow', 1200, u => ({x:f.x, y:f.y - 130, r:lerp(60, 170, eo(u)), c:GOLD, a:.5 * Math.sin(Math.PI * u)}), {back:true}); return; }
+    cheer(k){ const f = feet(); if (k === 'rise') { E('glow', 1200, u => ({x:f.x, y:f.y - 130, r:lerp(60, 170, eo(u)), c:GOLD, a:.5 * Math.sin(Math.PI * u)}), {back:true}); return; }
       E('fx_tspark', 800, u => ({x:f.x, y:f.y - 150, s:lerp(.3, .9, eo(u)), a:(1 - u) * .85})); E('glow', 700, u => ({x:f.x, y:f.y - 140, r:lerp(40, 150, eo(u)), c:GOLD, a:.4 * (1 - u)})); E('ring', 800, u => ({x:f.x, y:f.y - 4, r:lerp(40, 120, eo(u)), c:GOLD, a:.6 * (1 - u)})); },
-    taunt(k){ const f = cfeet(), n = +k || 1;
+    taunt(k){ const f = feet(), n = +k || 1;
       E('fx_tcirc', 1500, u => ({x:f.x, y:f.y - 6, s:lerp(.7, 1.05, eo(u)), a:.55 * Math.sin(Math.PI * u)}));
       E('fx_tring', 1100, u => ({x:f.x, y:f.y - 130, s:lerp(.3, 1.2 + .25 * n, eo(u)), a:.85 * (1 - u)}));
       if (n >= 2) E('fx_tring', 1000, u => ({x:f.x, y:f.y - 130, s:lerp(.2, 1.0 + .2 * n, eo(u)), a:.6 * (1 - u)}), {delay:160});
@@ -207,10 +206,10 @@ function make(host){
       E('fx_bring', 1000, u => ({x:T.x, y:T.y + 50, s:lerp(.5, 1.5, eo(u)), a:1 - seg(u, .4, 1)})); },
     quake(){ E('fx_tcrk', 1100, u => ({x:T.x, y:T.y + 60, s:lerp(.5, 1.25, eo(Math.min(1, u * 1.8))), a:u < .08 ? u / .08 : 1 - seg(u, .55, 1)}), {add:false}); E('fx_tdust', 1000, u => ({x:T.x, y:T.y + 40 - 20 * eo(u), s:lerp(.5, 1.2, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .4, 1)) * .85}), {add:false, delay:80}); E('glow', 600, u => ({...T, r:lerp(60, 170, eo(u)), c:FIRE, a:.6 * (1 - u)})); shakeT = clk(); },
     burst(){ E('fx_tbur', 1100, u => ({x:T.x, y:T.y + 10 - 20 * eo(u), s:lerp(.45, 1.15, eo(Math.min(1, u * 1.6))), a:u < .08 ? u / .08 : 1 - seg(u, .5, 1)}), {add:false}); E('fx_tdust', 1000, u => ({x:T.x, y:T.y + 50, s:lerp(.5, 1.3, eo(u)), a:(u < .1 ? u / .1 : 1 - seg(u, .4, 1)) * .8}), {add:false, delay:100}); E('fx_tstar', 600, u => ({x:T.x, y:T.y, s:lerp(.4, 1.3, eo(u)), a:(1 - u) * .9})); E('glow', 700, u => ({...T, r:lerp(80, 240, eo(u)), c:GOLD, a:.8 * (1 - u)})); E('fx_bring', 1000, u => ({x:T.x, y:T.y + 50, s:lerp(.6, 1.8, eo(u)), a:.9 * (1 - u)})); shakeT = clk(); },
-    taunt4(){ const f = cfeet(); E('fx_tcr2', 1100, u => ({x:f.x, y:f.y - 4, s:lerp(.5, 1.25, eo(u)), a:(1 - seg(u, .3, 1)) * .85})); E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(50, 210, eo(u)), c:FIRE, a:.8 * (1 - u)}));
+    taunt4(){ const f = feet(); E('fx_tcr2', 1100, u => ({x:f.x, y:f.y - 4, s:lerp(.5, 1.25, eo(u)), a:(1 - seg(u, .3, 1)) * .85})); E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(50, 210, eo(u)), c:FIRE, a:.8 * (1 - u)}));
       for (let i = 0; i < 9; i++) { const ox = (i - 4) * 38 + rnd(-10, 10), rr = FXS[i % FXS.length], dl = i * 90; E('fx_' + rr, 900, u => ({x:f.x + ox, y:lerp(f.y - 330, f.y - 20, u * u), s:.6, rot:u * 4 * (i % 2 ? 1 : -1), a:u < .1 ? u / .1 : 1 - seg(u, .8, 1)}), {delay:dl}); E('glow', 360, u => ({x:f.x + ox, y:f.y - 14, r:lerp(20, 60, u), c:FIRE, a:.5 * (1 - u)}), {delay:dl + 760}); }
       shakeT = clk() + 700; },
-    shield(k){ const f = cfeet(), cs = hex2rgb(col), p = /^p/.test(k || ''), cc = cs || (p ? '255,170,80' : '120,180,255');
+    shield(k){ const f = feet(), cs = hex2rgb(col), p = /^p/.test(k || ''), cc = cs || (p ? '255,170,80' : '120,180,255');
       const SHM = {p1:'tsh1', p2:'tsh3', p3:'tsh5', p4:'tsh6', d1:'tsh2', d2:'tsh4', d3:'tsh1', d4:'tsh6'}, sn = SHM[k] || (p ? 'tsh1' : 'tsh2');
       E('fx_' + sn, 1800, u => ({x:f.x, y:f.y - 150 + 6 * Math.sin(u * 14), s:lerp(.95, 1.25, eo(Math.min(1, u * 2.5))) * (1 + .03 * Math.sin(u * 20)), a:.5 * Math.min(1, Math.sin(Math.PI * u) * 2.4)}));
       E('glow', 1700, u => ({x:f.x, y:f.y - 125, r:p ? 190 : 160, c:cc, a:(p ? .22 : .18) * Math.sin(Math.PI * u)}), {back:true});
