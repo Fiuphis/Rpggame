@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb');if(sessionStorage.getItem('bd1_gate'))document.documentElement.classList.add('gt')}catch(e){}</script>
+<style>html.rb::after,html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="salas.css">
+<title>Salas</title>
+</head>
+<body data-pxt>
+<div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
+<main class="pg" id="pg">
+  <header class="top">
+    <button id="home" class="chip" type="button">&#9666; INÍCIO</button>
+    <span id="net" class="chip net" data-s="con"><i class="dot"></i><b>CONECTANDO</b></span>
+  </header>
+  <section class="plaque"><h1>SALAS</h1><p>Escolha uma sala ou crie a sua</p></section>
+  <div class="acts">
+    <button id="mk" class="chip blue" type="button"><img src="salas/ic_plus.png" alt="">CRIAR SALA</button>
+    <button id="cd" class="chip gold" type="button"><img src="salas/ic_key.png" alt="">TENHO UM CÓDIGO</button>
+  </div>
+  <section class="list">
+    <div class="lh"><b>SALAS PÚBLICAS</b><button id="rf" class="chip sm" type="button">ATUALIZAR</button></div>
+    <div class="ls" id="ls" role="list"></div>
+  </section>
+  <footer class="bot"><button id="solo" class="chip dim" type="button">JOGAR SEM SALA</button></footer>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</main>
+
+<div class="ov" id="ov-mk" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="mk-t">
+    <div id="mk-form">
+      <h2 id="mk-t">CRIAR SALA</h2>
+      <label for="nm">NOME DA SALA (OPCIONAL)</label>
+      <div class="fld"><input id="nm" maxlength="24" placeholder="EX: TURMA A" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
+      <div class="seg" id="seg">
+        <button type="button" class="chip on" data-pub="1"><img src="salas/ic_unlock.png" alt="">PÚBLICA</button>
+        <button type="button" class="chip" data-pub="0"><img src="salas/ic_lock.png" alt="">PRIVADA</button>
+      </div>
+      <p class="hint" id="mk-h">Aparece na lista para qualquer jogador entrar.</p>
+      <p class="err" id="mk-e"></p>
+      <div class="row"><button id="mk-ok" class="chip blue" type="button">CRIAR</button><button id="mk-no" class="chip" type="button">CANCELAR</button></div>
+    </div>
+    <div id="mk-done" hidden>
+      <h2>SALA CRIADA</h2>
+      <p class="hint" id="dn-t">Passe este código para os colegas entrarem.</p>
+      <div class="bigcode" id="dn-c">------</div>
+      <div class="row"><button id="dn-cp" class="chip gold" type="button">COPIAR CÓDIGO</button><button id="dn-go" class="chip blue" type="button">ENTRAR NA SALA</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov-cd" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="cd-t">
+    <h2 id="cd-t"><img src="salas/ic_lock.png" alt="">CÓDIGO DA SALA</h2>
+    <div class="fld code"><input id="cdv" maxlength="6" placeholder="------" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div>
+    <p class="hint">São 6 letras e números, como AB12CD.</p>
+    <p class="err" id="cd-e"></p>
+    <div class="row"><button id="cd-ok" class="chip blue" type="button">ENTRAR</button><button id="cd-no" class="chip" type="button">CANCELAR</button></div>
+  </div>
+</div>
+
+<script src="lib/supabase.js"></script>
+<script src="net.js"></script>
+<script src="gate.js"></script>
+<script src="salas.js"></script>
+<script src="rebuild.js"></script>
+<script src="fs.js"></script>
+</body>
+</html>

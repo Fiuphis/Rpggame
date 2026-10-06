@@ -38,7 +38,7 @@ window.PxT = {
   }
 };
 // ----- seleção de classe -----
-if (!document.getElementById('stage')) return;
+if (!document.getElementById('stage') && !document.body.hasAttribute('data-pxt')) return;
 let on = false; try { on = !!sessionStorage.getItem('bd1_rebuild'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
 if (on) { try { history.pushState({sel:1}, ''); } catch (e) {}
   if (reduce()) de.classList.remove('rb');

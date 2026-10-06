@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script>try{if(!sessionStorage.getItem('bd1_cover')&&!sessionStorage.getItem('bd1_fog_lobby')&&!/[?&]nocover/.test(location.search)){location.replace('cover.html'+location.search)}
-if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.add('fogin');if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb')}catch(e){}</script>
+if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.add('fogin');if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb');if(sessionStorage.getItem('bd1_gate'))document.documentElement.classList.add('gt')}catch(e){}</script>
 <style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="lobby.css">
@@ -24,6 +24,10 @@ if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.ad
   <div id="msg" class="msg" role="status" aria-live="polite"></div>
   <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
 </div>
+<style>html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}.rmchip{position:absolute;right:3cqw;top:2.2cqw;font:700 2.6cqw var(--F,monospace);color:#e8dcb0;letter-spacing:.1em;padding:1.4cqw 2.4cqw;background:rgba(10,6,16,.7);border:2px solid #6e5a2c;pointer-events:none}</style>
+<script src="lib/supabase.js"></script>
+<script src="net.js"></script>
+<script src="gate.js"></script>
 <script src="fog.js"></script>
 <script src="lobby.js"></script>
 <script>
@@ -36,6 +40,11 @@ const CARDS=[
   {key:'tank',    cnt:[405,1136,47,28], bg:'#010610', fg:'#f3f5f8'},
   {key:'cleriga',cnt:[840,1136,47,28], bg:'#060609', fg:'#faf9f7'}
 ];
+const R=window.NET&&NET.room();let RC=null;
+const _lc=LOBBY.counts.bind(LOBBY);LOBBY.counts=()=>RC?{...RC}:_lc();
+if(R){const pull=async()=>{try{const a=await NET.counts(R.id),o={mage:0,guerreiro:0,tank:0,cleriga:0};for(const k in a)o[k]=a[k];RC=o;render()}catch(e){}};
+ pull();setInterval(pull,3000);setInterval(()=>NET.heartbeat(R.id),15000);NET.heartbeat(R.id);
+ const ab0=document.getElementById('above'),ch=document.createElement('div');ch.className='rmchip';ch.textContent=(R.pub?'SALA ':'SALA PRIVADA ')+R.code;ab0.appendChild(ch)}
 const stage=document.getElementById('stage'), msg=document.getElementById('msg'), confirmBtn=document.getElementById('confirm');
 const pc=(v,t)=>(v/t*100)+'%';
 let selected=LOBBY.myGroup();
@@ -83,19 +92,22 @@ function render(){
   confirmBtn.style.setProperty('--c',selected?LOBBY_GROUPS[selected].color:'#6e6580');
   confirmBtn.textContent=selected?`CONFIRMAR: ${LOBBY_GROUPS[selected].name}`:'ESCOLHA UMA CLASSE';
 }
-confirmBtn.onclick=()=>{
-  if(!selected)return;
+confirmBtn.onclick=async()=>{
+  if(!selected||confirmBtn.dataset.b)return;
+  if(R){confirmBtn.dataset.b='1';try{await NET.pickGroup(R.id,selected)}catch(e){delete confirmBtn.dataset.b;say(NET.msg(e));selected=null;render();return}delete confirmBtn.dataset.b}
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search})},520);   /* os botões somem antes das nuvens fecharem */
 };
 document.getElementById('home').onclick=()=>{
   if(window.__leaving)return;window.__leaving=true;
-  try{sessionStorage.setItem('bd1_cover_back','1');sessionStorage.removeItem('bd1_rebuild')}catch(e){}
-  const go=()=>location.href='cover.html';
-  if(window.PxT&&!matchMedia('(prefers-reduced-motion: reduce)').matches)PxT.conceal(.5,.2).then(go);else go();
+  try{sessionStorage.removeItem('bd1_rebuild');sessionStorage.setItem('bd1_gate','1')}catch(e){}
+  if(R)NET.leave(R.id);LOBBY.leave();
+  const go=()=>location.href='salas.html';
+  if(window.Gate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)Gate.close().then(go);else go();
 };
 render();
+if(window.Gate)Gate.arrive();
 const _st=document.getElementById('stage');
 if(sessionStorage.getItem('bd1_fog_lobby')){sessionStorage.removeItem('bd1_fog_lobby');setTimeout(()=>Fog.open(_st,2600),700)}else Fog.rest(_st);
 addEventListener('resize',()=>{if(!document.documentElement.classList.contains('fogin'))Fog.rest(_st)});
