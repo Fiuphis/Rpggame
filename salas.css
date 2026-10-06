@@ -5,7 +5,7 @@
 @font-face{font-family:'Pixelify Sans';font-weight:700;font-display:swap;src:url(fonts/pixelify-sans-latin-700-normal.woff2) format('woff2')}
 :root{--F:OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;--gold:#ffe08a;--ink:#f4e2b0;--dim:#9c8fb4}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#050308;overflow:hidden;overscroll-behavior:none;color:var(--ink);font-family:var(--F);font-weight:700}
+html,body{margin:0;height:100%;background:#050308;overflow-x:hidden;overflow-y:auto;overscroll-behavior:none;color:var(--ink);font-family:var(--F);font-weight:700}
 img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;image-rendering:pixelated}
 button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-visible{outline:none}
 .bgblur{position:fixed;inset:-40px;z-index:0;background:#050711 url(select_plate.webp) center/cover no-repeat;filter:blur(20px) brightness(.5) saturate(1.1)}
@@ -13,7 +13,7 @@ button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-v
 .torch.l{left:-24vmin}.torch.r{right:-24vmin;animation-delay:-1.1s}
 @keyframes tf{from{opacity:.55;transform:scale(.92)}to{opacity:1;transform:scale(1.08)}}
 
-.pg{position:relative;z-index:1;margin:0 auto;height:100vh;height:100dvh;width:min(100vw,560px);container-type:inline-size;display:flex;flex-direction:column;gap:3cqw;padding:max(3cqw,env(safe-area-inset-top)) 4.4cqw max(3.4cqw,env(safe-area-inset-bottom))}
+.pg{position:relative;z-index:1;margin:0 auto;min-height:100vh;min-height:100dvh;width:min(100vw,560px,max(400px,62vh));width:min(100vw,560px,max(400px,62dvh));container-type:inline-size;display:flex;flex-direction:column;gap:3cqw;padding:max(3cqw,env(safe-area-inset-top)) 4.4cqw max(3.4cqw,env(safe-area-inset-bottom))}
 
 /* botões (mesma moldura da capa) */
 .chip{appearance:none;-webkit-appearance:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:1.6cqw;margin:0;min-width:0;border:solid transparent;border-width:2.2cqw;border-image:url(ui_chip.png) 6 fill/2.2cqw stretch;background:none;color:var(--ink);font-family:var(--F);font-weight:700;font-size:3.1cqw;letter-spacing:.3cqw;padding:0 1.4cqw;line-height:1;white-space:nowrap;text-shadow:0 .3cqw 0 #1a0c06;image-rendering:pixelated;transition:filter .15s}
@@ -46,7 +46,7 @@ button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-v
 .acts .chip{height:100%;font-size:3cqw}
 
 /* lista */
-.list{flex:1;min-height:0;display:flex;flex-direction:column;gap:2cqw;padding:2.8cqw 2.4cqw 2.4cqw;border:solid transparent;border-width:2.6cqw;border-image:url(tip_frame.png) 8 fill/2.6cqw stretch;image-rendering:pixelated;background:#0b0716}
+.list{flex:1;min-height:78cqw;display:flex;flex-direction:column;gap:2cqw;padding:2.8cqw 2.4cqw 2.4cqw;border:solid transparent;border-width:2.6cqw;border-image:url(tip_frame.png) 8 fill/2.6cqw stretch;image-rendering:pixelated;background:#0b0716}
 .lh{display:flex;align-items:center;justify-content:space-between;gap:2cqw;flex:none;height:9cqw;padding:0 .4cqw}
 .lh b{font-size:3.1cqw;letter-spacing:.4cqw;color:var(--gold);text-shadow:0 .3cqw 0 #1a0c06}
 .lh .chip{height:100%;min-width:26cqw}

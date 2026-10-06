@@ -8,7 +8,7 @@ img{-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
 button{outline:none}button:focus,button:focus-visible{outline:none}
 body{display:flex;flex-direction:column;align-items:center;min-height:100vh;padding-bottom:max(14px,env(safe-area-inset-bottom))}
 /* Palco com a proporção exata do design (1024x1536); tudo é posicionado em % */
-.stage{position:relative;width:100%;max-width:560px;aspect-ratio:1024/1536;container-type:inline-size;overflow:hidden;flex:none}
+.stage{position:relative;width:min(100%,560px,calc((100vh - 14px)*1024/1536));width:min(100%,560px,calc((100dvh - 14px)*1024/1536));aspect-ratio:1024/1536;container-type:inline-size;overflow:hidden;flex:none}
 .bg{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
 .card{appearance:none;-webkit-appearance:none;position:absolute;padding:0;margin:0;border:0;background:none;cursor:pointer;overflow:visible;color:inherit;--u:calc(100cqw/1024)}
 .card.selected{z-index:3}
