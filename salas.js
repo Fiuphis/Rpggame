@@ -71,8 +71,26 @@ $('#cd-ok').onclick = byCode; $('#cdv').addEventListener('keydown', e => { if (e
 document.querySelectorAll('.ov').forEach(o => o.addEventListener('pointerdown', e => { if (e.target === o && o.id !== 'ov-mk') o.hidden = true; }));
 
 // ---------- saídas ----------
-function enter(r) {
-  if (leaving || !r) return; leaving = true; clearInterval(timer);
+// voltar para uma partida em andamento (sinal perdido, aba fechada): o grupo continua sem a pessoa e ela volta ao mesmo ponto
+async function resume(r) {
+  try {
+    if (NET.MOCK || !r || !r.id || !window.MATCH) return false;
+    const s = await MATCH.state(r.id);
+    if (!(s.match && s.match.status === 'playing' && s.me)) return false;
+    const key = 'bd1_player_id'; let id = localStorage.getItem(key); if (!id) { id = 'p' + Math.random().toString(36).slice(2, 10); localStorage.setItem(key, id); }
+    const d = { mage: [], guerreiro: [], tank: [], cleriga: [] }; d[s.me] = [id];
+    localStorage.setItem('bd1_lobby', JSON.stringify(d)); localStorage.setItem('bd1_lobby_seeded', '1');
+    sessionStorage.setItem('bd1_boss', String(s.match.boss || 0)); sessionStorage.setItem('bd1_gate', '1');
+    leaving = true; clearInterval(timer); document.querySelectorAll('.ov').forEach(o => o.hidden = true);
+    const go = () => { location.href = 'game.html' + location.search.replace(/^\?$/, ''); };
+    if (window.Gate && !reduce()) Gate.close().then(go); else go();
+    return true;
+  } catch (e) { return false; }
+}
+async function enter(r) {
+  if (leaving || !r) return;
+  if (r.id && await resume(r)) return;
+  if (leaving) return; leaving = true; clearInterval(timer);
   document.querySelectorAll('.ov').forEach(o => o.hidden = true);
   try { sessionStorage.setItem('bd1_gate', '1'); sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
   if (window.Gate && !reduce()) Gate.close().then(() => { location.href = 'index.html'; }); else location.href = 'index.html';

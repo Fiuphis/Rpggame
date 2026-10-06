@@ -991,9 +991,9 @@ async function runChestRound(SR){
   let open, mine, opens = null, rolls = null;
   if (ONL.on) {   // cada grupo decide pelo seu voto; o sorteio (item ou armadilha) e o mesmo em todos os aparelhos
     const res = await runVote({text:'Abrir a arca do tesouro?', seconds:25, options:[{label:'ABRIR A ARCA'}, {label:'IGNORAR'}], net:onlNet(SR)});
-    const s2 = await ONL.wait(s => s.round && s.round.id === SR.id && s.round.status !== 'open', {cancel:() => state.over});
+    const s2 = await onlWaitIn(SR, r => r.status !== 'open');
     await closePanel();
-    if (!s2) { hideBanner(); img.remove(); return; }
+    if (!s2 || s2.behind) { hideBanner(); img.remove(); if (s2) onlSkip(s2); return 'skip'; }
     const rc = s2.round; opens = {}; rolls = {};
     HERO_ORDER.forEach(k => { opens[k] = !!(rc.groups[k] && rc.groups[k].chosen === 0); });
     HERO_ORDER.forEach(k => { rolls[k] = R() < CHEST_ITEM_P; });
@@ -1488,7 +1488,15 @@ function onlActNet(SR, cnt){
 }
 const onlCountBy = pred => { const r = ONL.round(); return r ? (r.acts || []).filter(pred).reduce((t, a) => t + a.n, 0) : 0; };
 const onlActCnt = (field, vals) => i => { const r = ONL.round(), v = vals(i); if (!r || v == null) return 0; return (r.acts || []).filter(a => a[field] === v).reduce((t, a) => t + a.n, 0); };
-function onlStatusBanner(t, sub){ showBanner(t, sub); }
+// espera uma fase da rodada SR; se o servidor ja passou para outra rodada (sinal perdido / aba parada) devolve {behind:true}
+async function onlWaitIn(SR, pred){
+  const s = await ONL.wait(s => !!(s.round && (s.round.n > SR.n || (s.round.id === SR.id && pred(s.round)))) || (s.match && s.match.status !== 'playing'), {cancel:() => state.over});
+  if (!s) return null;
+  if (s.match && s.match.status !== 'playing') return {behind:true, over:s};
+  return s.round.id === SR.id ? s : {behind:true};
+}
+// ficou para tras: abandona esta rodada e recomeca do ultimo snapshot do grupo
+function onlSkip(r){ hideBanner(); closePanel(); hideRing(); if (r && r.over) onlMatchOver(r.over); else { state.curActions = null; turnTimer = setTimeout(playRound, 200); } }
 // espera a rodada seguinte; se ficou muito para tras (sinal perdido), reaplica o ultimo snapshot do grupo
 async function onlBegin(){
   if (!ONL.started) { ONL.started = true; }
@@ -1575,8 +1583,8 @@ async function onlUseItem(type, tgt){
 // fase de acoes: menu do proprio grupo (se vivo e nao congelado), espera todos os grupos, aplica itens e monta as acoes de cada heroi
 async function onlActions(SR){
   const actions = {};
-  const s1 = await ONL.wait(s => s.round && s.round.id === SR.id && (s.round.status === 'acting' || s.round.status === 'played'), {cancel:() => state.over});
-  if (!s1) return null;
+  const s1 = await onlWaitIn(SR, r => r.status === 'acting' || r.status === 'played');
+  if (!s1) return null; if (s1.behind) return onlSkip(s1);
   await onlItems('revealed', s1.round);
   const me = ONL.me, frozen = ST.ice && state.ice.frozen[me] > 0;
   if (s1.round.status === 'acting') {
@@ -1600,8 +1608,8 @@ async function onlActions(SR){
     }
     showBanner('AGUARDANDO OS OUTROS GRUPOS', 'as ações são reveladas juntas');
     ONL.refresh();
-    const s3 = await ONL.wait(s => s.round && s.round.id === SR.id && s.round.status === 'played', {cancel:() => state.over});
-    hideBanner(); if (!s3) return null;
+    const s3 = await onlWaitIn(SR, r => r.status === 'played');
+    hideBanner(); if (!s3) return null; if (s3.behind) return onlSkip(s3);
   }
   const rd = ONL.round();
   await onlItems('acting', rd);
@@ -1664,7 +1672,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   if (chestNow) {   // rodada de baú: sem pergunta; a próxima rodada volta ao normal
     if (!ONL.on) state.round--;
     state.chestAt = state.round;
-    await runChestRound(SR);
+    if (await runChestRound(SR) === 'skip') return;
     if (state.over) return;
     if (aliveHeroes().length === 0) return endGame(false);
     if (ONL.on) return onlEndRound(SR);
@@ -1725,8 +1733,8 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   let SRs = null;
   if (ONL.on) {   // acertos de todos os grupos vem do servidor (grupos vazios sao sorteados la)
     showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros');
-    const s2 = await ONL.wait(s => s.round && s.round.id === SR.id && s.round.status !== 'open', {cancel:() => state.over}); hideBanner();
-    if (!s2) return; SRs = s2.round; q.correct = SRs.correct;
+    const s2 = await onlWaitIn(SR, r => r.status !== 'open'); hideBanner();
+    if (!s2) return; if (s2.behind) return onlSkip(s2); SRs = s2.round; q.correct = SRs.correct;
     HERO_ORDER.forEach(k => correct[k] = !!(SRs.groups[k] && SRs.groups[k].correct));
     if (res.idx === null && SRs.groups[activeGroup] && SRs.groups[activeGroup].chosen != null) res.idx = SRs.groups[activeGroup].chosen;
     await onlItems('open', SRs);
@@ -2168,7 +2176,7 @@ window.BancoDadosGame={
   addInventoryItem:k=>{if(canAdd(k)){state.inventory.push(k);persist();renderInventoryHits()}}
 };
 
-$('#back-lobby').addEventListener('click',()=>{LOBBY.leave();location.href='index.html'});
+$('#back-lobby').addEventListener('click',()=>{if(ONL.on){onlLeave('salas.html');return}LOBBY.leave();location.href='index.html'});
 $('#hitmap').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   const action=b.dataset.action;
@@ -2210,6 +2218,7 @@ state.shop = newShop(); renderShop();
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
 $('#restart').addEventListener('click',() => { if (ONL.on) { onlLeave('espera.html'); return; } restartRun(); });
 $('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;if(ONL.on){onlLeave('map.html');return}location.href='map.html'+location.search});
+if (ONL.on) setInterval(() => { if (!state.over && ONL.matchId && Date.now() - ONL.lastOk > 8000) toast('Sem conexão com a sala. Tentando reconectar...'); }, 4000);
 if (ONL.on) {   // online: entra na partida do servidor (ou volta ao ponto do grupo se caiu)
   ONL.init().then(() => {
     if (ONL.snap) { ONL.unpack(state, ONL.snap.state); ONL.planned = true; renderHud(); }
