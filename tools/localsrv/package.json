@@ -1,0 +1,1 @@
+{ "name": "localsrv", "private": true, "version": "1.0.0", "description": "Servidor local de teste (PGlite + as mesmas funcoes SQL do Supabase)", "dependencies": { "@electric-sql/pglite": "^0.3.0" } }
