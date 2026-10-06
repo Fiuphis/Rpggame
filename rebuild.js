@@ -40,12 +40,12 @@ window.PxT = {
 // ----- seleção de classe -----
 if (!document.getElementById('stage') && !document.body.hasAttribute('data-pxt')) return;
 let on = false; try { on = !!sessionStorage.getItem('bd1_rebuild'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
-if (on) { try { history.pushState({sel:1}, ''); } catch (e) {}
+if (on) { if (!document.body.hasAttribute('data-pxt')) try { history.pushState({sel:1}, ''); } catch (e) {}
   if (reduce()) de.classList.remove('rb');
   else { const go = () => setTimeout(() => PxT.reveal(.5, .78), 120); if (document.readyState === 'complete') go(); else addEventListener('load', go); } }
 else de.classList.remove('rb');
 // botão voltar do celular: os blocos de brasa cobrem a seleção e a capa se reconstrói (sem zoom)
-if (history.state && history.state.sel) { let leaving = false;
+if (history.state && history.state.sel && !document.body.hasAttribute('data-pxt')) { let leaving = false;
   addEventListener('popstate', () => { if (leaving) return; leaving = true;
     try { sessionStorage.setItem('bd1_cover_back', '1'); } catch (e) {}
     const back = () => { if (history.length > 1) history.go(-1); else location.replace('cover.html'); };

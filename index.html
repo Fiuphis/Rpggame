@@ -20,7 +20,7 @@ if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.ad
   <img class="bg" src="select_plate.webp" alt="Selecione sua classe" draggable="false">
 </main>
 <div class="above" id="above"><div class="ab-title"></div>
-  <button id="home" class="home" type="button">&#9666; INÍCIO</button>
+  <button id="home" class="home" type="button">&#9666; SALAS</button>
   <div id="msg" class="msg" role="status" aria-live="polite"></div>
   <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
 </div>
@@ -43,7 +43,7 @@ const CARDS=[
 const R=window.NET&&NET.room();let RC=null;
 const _lc=LOBBY.counts.bind(LOBBY);LOBBY.counts=()=>RC?{...RC}:_lc();
 if(R){const pull=async()=>{try{const a=await NET.counts(R.id),o={mage:0,guerreiro:0,tank:0,cleriga:0};for(const k in a)o[k]=a[k];RC=o;render()}catch(e){}};
- pull();setInterval(pull,3000);setInterval(()=>NET.heartbeat(R.id),15000);NET.heartbeat(R.id);
+ pull();setInterval(pull,3000);
  const ab0=document.getElementById('above'),ch=document.createElement('div');ch.className='rmchip';ch.textContent=(R.pub?'SALA ':'SALA PRIVADA ')+R.code;ab0.appendChild(ch)}
 const stage=document.getElementById('stage'), msg=document.getElementById('msg'), confirmBtn=document.getElementById('confirm');
 const pc=(v,t)=>(v/t*100)+'%';
@@ -99,13 +99,19 @@ confirmBtn.onclick=async()=>{
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
   document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search})},520);   /* os botões somem antes das nuvens fecharem */
 };
-document.getElementById('home').onclick=()=>{
+const goHome=()=>{
   if(window.__leaving)return;window.__leaving=true;
   try{sessionStorage.removeItem('bd1_rebuild');sessionStorage.setItem('bd1_gate','1')}catch(e){}
-  if(R)NET.leave(R.id);LOBBY.leave();
+  if(R)try{sessionStorage.setItem('bd1_leave_room',R.id)}catch(e){}
+  LOBBY.leave();
   const go=()=>location.href='salas.html';
   if(window.Gate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)Gate.close().then(go);else go();
 };
+document.getElementById('home').onclick=goHome;
+// botão voltar do aparelho = INÍCIO (vai para as salas, sem sair do jogo por engano)
+try{history.pushState({idx:1},'')}catch(e){}
+addEventListener('popstate',()=>{if(window.__leaving){try{history.pushState({idx:1},'')}catch(e){}return}goHome()});
+addEventListener('pageshow',e=>{if(e.persisted)location.reload()});
 render();
 if(window.Gate)Gate.arrive();
 const _st=document.getElementById('stage');

@@ -85,6 +85,11 @@ $('#home').onclick = () => {
   if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(go); else go();
 };
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
+try { const lr = sessionStorage.getItem('bd1_leave_room'); sessionStorage.removeItem('bd1_leave_room'); const cur = NET.room();
+  if (lr || cur) { const id = lr || cur.id; NET.leave(id); } } catch (e) {}
+// botão voltar do aparelho = INÍCIO (capa)
+try { history.pushState({ sl: 1 }, ''); } catch (e) {}
+addEventListener('popstate', () => { if (leaving) { try { history.pushState({ sl: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
 if (window.Gate) Gate.arrive();
 load(); poll();
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));

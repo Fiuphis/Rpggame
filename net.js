@@ -48,6 +48,12 @@ const M = (() => {
     async counts(id) { const r = rooms.find(x => x.id === id); return GROUPS.map(g => ({ grp: g, n: r ? r.counts[g] : 0 })); },
     async pick(id, g) { const r = rooms.find(x => x.id === id); if (g && r && r.counts[g] >= 7) throw new Error('grupo_cheio'); }
   };
+// Presença: enquanto o jogador estiver numa sala, avisa o servidor a cada 15 s em qualquer tela (seleção, mapa, batalha), para a contagem não "cair".
+if (!/salas\.html$/.test(location.pathname)) {
+  const beat = () => { const r = room(); if (r && !document.hidden && !MOCK) window.NET.heartbeat(r.id); };
+  setInterval(beat, 15000); setTimeout(beat, 1500);
+  addEventListener('visibilitychange', () => { if (!document.hidden) beat(); });
+}
 })();
 
 const room = () => { try { return JSON.parse(ss.get(RK)); } catch { return null; } };
@@ -65,4 +71,10 @@ window.NET = {
   async heartbeat(id) { if (MOCK) return; try { await rpc('heartbeat', { p_room: id }); } catch {} },
   async leave(id) { setRoom(null); if (MOCK) return; try { await rpc('leave_room', { p_room: id }); } catch {} }
 };
+// Presença: enquanto o jogador estiver numa sala, avisa o servidor a cada 15 s em qualquer tela (seleção, mapa, batalha), para a contagem não "cair".
+if (!/salas\.html$/.test(location.pathname)) {
+  const beat = () => { const r = room(); if (r && !document.hidden && !MOCK) window.NET.heartbeat(r.id); };
+  setInterval(beat, 15000); setTimeout(beat, 1500);
+  addEventListener('visibilitychange', () => { if (!document.hidden) beat(); });
+}
 })();

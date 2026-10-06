@@ -7,6 +7,13 @@ if (window === window.top && !/[?&]noshell/.test(location.search)) {
   const f = location.pathname.split('/').pop() || 'index.html';
   if (/^[\w-]+\.html$/.test(f) && f !== 'shell.html') { location.replace('shell.html#' + f + location.search); return; }
 }
+// Toque longo / botão direito: nenhum menu do navegador (abrir/baixar imagem, copiar, compartilhar). Só as funções do próprio jogo.
+{ const ok = t => t && t.closest && t.closest('input,textarea,[contenteditable="true"]');
+  addEventListener('contextmenu', e => { if (!ok(e.target)) e.preventDefault(); }, true);
+  addEventListener('dragstart', e => { if (!ok(e.target)) e.preventDefault(); }, true);
+  const st = document.createElement('style');
+  st.textContent = 'html,body,body *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}input,textarea,[contenteditable="true"]{-webkit-user-select:text;user-select:text}img,svg,canvas,video{-webkit-user-drag:none;-webkit-touch-callout:none}';
+  (document.head || document.documentElement).appendChild(st); }
 const T = (() => { try { return window.top.document ? window.top : window; } catch { return window; } })(), TD = T.document;
 const KEY = 'bd1_fs', de = TD.documentElement;
 const AC = new AbortController(); addEventListener('pagehide', () => AC.abort());
