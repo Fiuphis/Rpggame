@@ -200,7 +200,7 @@ $('#srv-send').onclick = async () => {
 };
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 // voltar (link ou botão do aparelho) leva ao início; com alterações não enviadas, pergunta antes
-function edLeave() { if (dirty && !confirm('Há alterações não enviadas. Sair mesmo assim?')) return false; dirty = false; try { sessionStorage.setItem('bd1_cover_back', '1'); } catch (e) {} location.href = 'cover.html' + location.search; return true; }
+function edLeave() { if (dirty && !confirm('Há alterações não enviadas. Sair mesmo assim?')) return false; dirty = false; location.href = 'cover.html' + location.search; return true; }
 document.getElementById('ed-home').addEventListener('click', e => { e.preventDefault(); edLeave(); });
 try { history.pushState({ ed: 1 }, ''); } catch (e) {}
 addEventListener('popstate', () => { const md = $('#modal'); if (md && md.classList.contains('open')) { md.classList.remove('open'); try { history.pushState({ ed: 1 }, ''); } catch (e) {} return; } if (!edLeave()) { try { history.pushState({ ed: 1 }, ''); } catch (e) {} } });

@@ -1658,7 +1658,7 @@ function onlFinish(win){
   MATCH.end(ONL.matchId, win ? 'won' : 'lost').catch(() => {});
   setTimeout(() => ONL.stop(), 4000);
 }
-function onlLeave(page){ try { sessionStorage.setItem('bd1_gate', '1'); if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); location.href = page + location.search; }
+function onlLeave(page){ try { if (page !== 'salas.html') sessionStorage.setItem('bd1_gate', '1'); if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); location.href = page + location.search; }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
