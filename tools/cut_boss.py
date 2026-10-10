@@ -1,9 +1,9 @@
-# Recorta as 12 poses do BOSS da folha 3 (fundo xadrez falso) -> boss/B_1..B_12.png + boss/meta.json (escala 2x, pés ancorados)
+# Recorta as 12 poses do BOSS da folha 3 (fundo xadrez falso) -> assets/bosses/lorde/B_1..B_12.png + assets/bosses/lorde/meta.json (escala 2x, pés ancorados)
 import numpy as np, json, os, cv2, glob
 from PIL import Image
 from scipy import ndimage as ndi
 SRC = '/root/.claude/uploads/3a96d84d-702c-52a6-9324-e85ba38ea593/ffa7b21f-image.png'
-OUT = 'boss'; SC = 2.0
+OUT = 'assets/bosses/lorde'; SC = 2.0
 S8 = ndi.generate_binary_structure(2, 2)
 os.makedirs(OUT, exist_ok=True)
 for f in glob.glob(OUT + '/B_*.png'): os.remove(f)

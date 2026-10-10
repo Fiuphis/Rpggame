@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Recorta os efeitos (folhas de fundo PRETO) da Maga -> mage4/fx_*.png (v229). Brilho vira transparencia (efeitos aditivos);
+"""Recorta os efeitos (folhas de fundo PRETO) da Maga -> assets/characters/mage/fx_*.png (v229). Brilho vira transparencia (efeitos aditivos);
 os de terra (add:false no jogo) usam mascara dura. Uso: python3 tools/cut_maga4_fx.py PASTA_FOLHAS [PASTA_SAIDA=mage4]"""
 import numpy as np, json, sys, os
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'mage4'
+SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'assets/characters/mage'
 # nome: (folha, indice, tamanho alvo (maior lado, px), modo 'add'|'solid', rotacao antihoraria em graus)
 FX = {
  'orbb':('ME1',1,120,'add',0), 'orb_red':('ME1',2,190,'add',0), 'orb_blue':('ME1',3,130,'add',0), 'whirl':('ME1',4,244,'add',0), 'orb_orange':('ME1',5,170,'add',0),

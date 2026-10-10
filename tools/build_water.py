@@ -1,7 +1,7 @@
-"""Gera map/water.png (204x214, branco = água) a partir de map/base.webp, para os efeitos vivos do mapa (mapfx.js)."""
+"""Gera assets/map/water.png (204x214, branco = água) a partir de assets/map/base.webp, para os efeitos vivos do mapa (js/pages/mapfx.js)."""
 import numpy as np, cv2, os
 from PIL import Image
-D=os.path.dirname(__file__); O=os.path.join(D,'..','map')
+D=os.path.dirname(__file__); O=os.path.join(D,'..','assets','map')
 a=np.array(Image.open(os.path.join(O,'base.webp')).convert('RGB')); H0,W0=a.shape[:2]
 hsv=cv2.cvtColor(a,cv2.COLOR_RGB2HSV).astype(int); H,S,V=hsv[:,:,0],hsv[:,:,1],hsv[:,:,2]
 w=((H>=96)&(H<=120)&(S>=170)&(V>=26)&(V<=120)).astype(np.uint8)*255

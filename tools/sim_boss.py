@@ -1,4 +1,4 @@
-# Simulador Monte-Carlo do combate (espelha as regras de app.js). Uso: python3 tools/sim_boss.py [N]
+# Simulador Monte-Carlo do combate (espelha as regras de js/game/app.js). Uso: python3 tools/sim_boss.py [N]
 import random, sys, statistics as st
 P = dict(boss_hp=700, prep=.2, prep_mult=1.5, tele=1/6, tele_from=4, tele_dmg=20, stun=1.25, thrust=24, enr_aoe=2, new=True, hard_acc=-.2, easy_acc=.12)
 DIFF = {1:(18,3), 2:(32,5), 3:(50,9)}

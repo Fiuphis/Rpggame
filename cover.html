@@ -9,14 +9,14 @@
 <link rel="manifest" href="manifest.webmanifest">
 <script>try{if(sessionStorage.getItem('bd1_cover_back'))document.documentElement.classList.add('rb')}catch(e){}</script>
 <style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
-<link rel="stylesheet" href="cover.css">
+<link rel="stylesheet" href="css/cover.css">
 <title>Crônicas do Saber</title>
 </head>
 <body>
-<img class="blurbg" src="cover_bg.webp" alt="" draggable="false">
+<img class="blurbg" src="assets/backgrounds/cover_bg.webp" alt="" draggable="false">
 <main id="cv">
   <div id="world">
-    <img id="art" src="cover_bg.webp" alt="Crônicas do Saber: seis reinos, seis lendas, um só destino" draggable="false">
+    <img id="art" src="assets/backgrounds/cover_bg.webp" alt="Crônicas do Saber: seis reinos, seis lendas, um só destino" draggable="false">
     <div id="fxd"></div>
     <canvas id="fx"></canvas>
   </div>
@@ -69,9 +69,9 @@
 </div>
 <div id="svp" hidden><iframe id="svf" title="Saves" allow="clipboard-write"></iframe></div>
 <canvas id="px"></canvas>
-<script src="rebuild.js"></script>
-<script src="saves.js"></script>
-<script src="fs.js"></script>
-<script src="cover.js"></script>
+<script src="js/core/rebuild.js"></script>
+<script src="js/pages/saves.js"></script>
+<script src="js/core/fs.js"></script>
+<script src="js/pages/cover.js"></script>
 </body>
 </html>

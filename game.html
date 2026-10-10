@@ -7,15 +7,15 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/style.css">
 <title>Banco de Dados I — RPG</title>
-<script src="gate.js"></script>
+<script src="js/core/gate.js"></script>
 </head>
 <body>
 <div id="intro" class="intro" aria-hidden="false">
   <div class="in-stage">
-    <img class="in-close" src="intro/throne_close.webp" alt="" draggable="false">
-    <img class="in-far" src="intro/throne_far.webp" alt="" draggable="false">
+    <img class="in-close" src="assets/intro/throne_close.webp" alt="" draggable="false">
+    <img class="in-far" src="assets/intro/throne_far.webp" alt="" draggable="false">
     <div class="in-eyes"></div>
     <canvas class="in-smoke"></canvas>
   </div>
@@ -24,7 +24,7 @@
 </div>
 
 <div id="game" class="game">
-  <img id="reference" src="game_nohud.png" alt="Banco de Dados I — tela de batalha" draggable="false"><script src="stage.js"></script>
+  <img id="reference" src="assets/backgrounds/game_nohud.png" alt="Banco de Dados I — tela de batalha" draggable="false"><script src="js/game/stage.js"></script>
 
   <!-- Efeitos: brilho do boss no ataque e flash de dano. -->
   <div id="fx" aria-hidden="true">
@@ -45,7 +45,7 @@
   <!-- Pergunta = ataque do boss. Só existe na tela durante o ataque. -->
   <section id="dynamic-ui" hidden>
     <div id="dynamic-question" class="dynamic-question">
-      <img class="dq-frame" src="question_panel.png" alt="" draggable="false">
+      <img class="dq-frame" src="assets/ui/question_panel.png" alt="" draggable="false">
       <div id="dq-layer" class="dq-layer"></div>
     </div>
   </section>
@@ -66,8 +66,8 @@
   <!-- Inventário + Mercador: escondido; abre ao clicar no botão da borda inferior. -->
   <div id="bag-back" class="bag-back" hidden></div>
   <section id="bag-panel" class="bag-panel" hidden aria-label="Inventário e Mercador">
-    <img src="bag_panel2.png" alt="" draggable="false">
-    <div class="m-stage" id="m-stage" aria-hidden="true"><div class="m-port"></div><div class="m-closed"><div class="m-empty"></div><img class="m-sign" src="shop_sign.png" alt="" draggable="false"></div><div class="m-shade"></div><div class="m-sway"></div><div class="m-light"></div><div class="m-rage"></div><div class="m-puffs" id="m-puffs"></div></div>
+    <img src="assets/ui/bag_panel2.png" alt="" draggable="false">
+    <div class="m-stage" id="m-stage" aria-hidden="true"><div class="m-port"></div><div class="m-closed"><div class="m-empty"></div><img class="m-sign" src="assets/ui/shop_sign.png" alt="" draggable="false"></div><div class="m-shade"></div><div class="m-sway"></div><div class="m-light"></div><div class="m-rage"></div><div class="m-puffs" id="m-puffs"></div></div>
     <i class="m-candle l"></i><i class="m-candle r"></i>
     <div class="m-say" id="m-say" aria-live="polite"></div>
     <div id="inventory-hits"></div>
@@ -86,7 +86,7 @@
       </div>
     </div>
   </section>
-  <button id="bag-toggle" class="bag-toggle" type="button" aria-label="Inventário e Mercador" aria-expanded="false"><img src="bag_button.png" alt=""></button>
+  <button id="bag-toggle" class="bag-toggle" type="button" aria-label="Inventário e Mercador" aria-expanded="false"><img src="assets/ui/bag_button.png" alt=""></button>
 
   <button id="back-lobby" class="back-lobby" type="button" aria-label="Trocar de grupo">◀ GRUPOS</button>
 
@@ -101,20 +101,20 @@
 <script>/* v207: a abertura cobre a tela desde o primeiro quadro (antes ela comecava escondida e o jogo/botoes da mochila apareciam por um instante) */
 (()=>{const q=new URLSearchParams(location.search),t=q.get('teste')==='1'||(q.get('teste')!=='0'&&localStorage.getItem('bd1_test')==='1'),on=(q.get('intro')||(t?'0':'1'))==='1',el=document.getElementById('intro');
 if(!on)el.hidden=true;else setTimeout(()=>{if(!window.Intro)el.hidden=true},6000)})();</script>
-<script src="lib/supabase.js"></script><script src="net.js"></script><script src="fs.js"></script><script src="lobby.js"></script>
-<script src="menu_meta.js"></script>
-<script src="mage.js"></script>
-<script src="fxsoft.js"></script><script src="guerreiro.js"></script><script src="tank.js"></script><script src="cleric.js"></script><script src="boss.js"></script><script src="hrimgar.js"></script>
-<script src="pxfx.js"></script>
-<script src="extras.js"></script>
-<script src="anim.js"></script>
+<script src="js/vendor/supabase.js"></script><script src="js/online/net.js"></script><script src="js/core/fs.js"></script><script src="js/pages/lobby.js"></script>
+<script src="js/game/menu_meta.js"></script>
+<script src="js/characters/mage.js"></script>
+<script src="js/core/fxsoft.js"></script><script src="js/characters/guerreiro.js"></script><script src="js/characters/tank.js"></script><script src="js/characters/cleric.js"></script><script src="js/game/boss.js"></script><script src="js/game/hrimgar.js"></script>
+<script src="js/core/pxfx.js"></script>
+<script src="js/game/extras.js"></script>
+<script src="js/game/anim.js"></script>
 <div id="scroll" class="scroll" aria-live="polite" aria-atomic="true"><div class="sc-roll top"></div><div class="sc-in"><div class="sc-t" id="sc-t"></div><div class="sc-s" id="sc-s"></div><div class="sc-n" id="sc-n"></div></div><div class="sc-roll bot"></div><div class="sc-ui" id="sc-ui"></div></div>
-<script src="paper.js"></script>
-<script src="intro.js"></script>
-<script src="intro_malg.js"></script><script src="intro_ice.js"></script>
-<script src="cine.js"></script>
-<script src="ambient.js"></script><script src="ambient_ice.js"></script>
-<script src="match.js"></script><script src="online.js"></script>
-<script src="app.js"></script>
+<script src="js/core/paper.js"></script>
+<script src="js/game/intro.js"></script>
+<script src="js/game/intro_malg.js"></script><script src="js/game/intro_ice.js"></script>
+<script src="js/game/cine.js"></script>
+<script src="js/game/ambient.js"></script><script src="js/game/ambient_ice.js"></script>
+<script src="js/online/match.js"></script><script src="js/online/online.js"></script>
+<script src="js/game/app.js"></script>
 </body>
 </html>

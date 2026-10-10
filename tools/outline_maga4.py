@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Borda fina azul-marinho nas poses da Maga (mage4/*.png, sem fx_*): cobre a linha branca residual do recorte. Rodar uma vez apos cut_maga4.py."""
+"""Borda fina azul-marinho nas poses da Maga (assets/characters/mage/*.png, sem fx_*): cobre a linha branca residual do recorte. Rodar uma vez apos cut_maga4.py."""
 import sys, glob, os
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
-D = sys.argv[1] if len(sys.argv) > 1 else 'mage4'
+D = sys.argv[1] if len(sys.argv) > 1 else 'assets/characters/mage'
 NAVY = np.array([22, 16, 52], float)
 for p in glob.glob(D + '/*.png'):
     if os.path.basename(p).startswith('fx_'): continue

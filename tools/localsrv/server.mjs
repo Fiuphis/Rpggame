@@ -68,7 +68,7 @@ export async function startServer(port = 0) {
       }
       // arquivos estaticos
       let f = normalize(join(root, decodeURIComponent(p === '/' ? '/index.html' : p)));
-      if (!f.startsWith(root) || !existsSync(f) || !statSync(f).isFile()) return send(res, 404, 'nao encontrado', 'text/plain');
+      if (!f.startsWith(root) || !existsSync(f) || !statSync(f).isFile()) { if (process.env.LOG404) console.error('404 ' + p); return send(res, 404, 'nao encontrado', 'text/plain'); }
       return send(res, 200, readFileSync(f), MIME[extname(f)] || 'application/octet-stream');
     } catch (e) { send(res, 500, { message: String(e.message || e) }); }
   });

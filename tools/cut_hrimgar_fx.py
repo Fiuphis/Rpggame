@@ -1,4 +1,4 @@
-# Efeitos de gelo do Hrimgar (folhas de fundo preto 3x2) -> hrimgar/fx_*.png com alpha pelo brilho
+# Efeitos de gelo do Hrimgar (folhas de fundo preto 3x2) -> assets/bosses/hrimgar/fx_*.png com alpha pelo brilho
 import sys, numpy as np, json
 from PIL import Image
 from scipy import ndimage as ndi
@@ -17,5 +17,5 @@ for sn, names in NAMES.items():
         ys, xs = np.where(a > .05); y0, y1, x0, x1 = max(0, ys.min() - 2), ys.max() + 3, max(0, xs.min() - 2), xs.max() + 3
         col = np.clip(cell / np.maximum(a[..., None], .08), 0, 255)
         out = np.dstack([col, a * 255]).astype(np.uint8)[y0:y1, x0:x1]
-        Image.fromarray(out, 'RGBA').save(f'hrimgar/fx_{n}.png'); meta[n] = [int(out.shape[1]), int(out.shape[0])]
-json.dump(meta, open('hrimgar/fx.json', 'w')); print(meta)
+        Image.fromarray(out, 'RGBA').save(f'assets/bosses/hrimgar/fx_{n}.png'); meta[n] = [int(out.shape[1]), int(out.shape[0])]
+json.dump(meta, open('assets/bosses/hrimgar/fx.json', 'w')); print(meta)

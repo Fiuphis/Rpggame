@@ -9,10 +9,10 @@
 <script>try{if(sessionStorage.getItem('bd1_gate'))document.documentElement.classList.add('gt')}catch(e){}</script>
 <style>html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="salas.css">
-<link rel="stylesheet" href="relatorio.css">
+<link rel="stylesheet" href="css/salas.css">
+<link rel="stylesheet" href="css/relatorio.css">
 <title>Relatório da partida</title>
-<script src="gate.js"></script>
+<script src="js/core/gate.js"></script>
 </head>
 <body data-pxt>
 <div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
@@ -29,11 +29,11 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </main>
-<script src="lib/supabase.js"></script>
-<script src="net.js"></script>
-<script src="match.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/online/net.js"></script>
+<script src="js/online/match.js"></script>
 
-<script src="relatorio.js"></script>
-<script src="fs.js"></script>
+<script src="js/pages/relatorio.js"></script>
+<script src="js/core/fs.js"></script>
 </body>
 </html>

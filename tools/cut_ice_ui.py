@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Recorta a interface de gelo (fundo branco -> transparente): caixa de fala, painel de inventario/mercador e botao.
-Uso: cut_ice_ui.py CAIXA.png PAINEL.png BOTAO.png  -> ice_cap.png, ice_panel.png, ice_button.png"""
+Uso: cut_ice_ui.py CAIXA.png PAINEL.png BOTAO.png  -> assets/ui/ice_cap.png, assets/ui/ice_panel.png, assets/ui/ice_button.png"""
 import sys, numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
@@ -17,4 +17,4 @@ def cut(src, dst, thr=238):
     im = Image.fromarray(np.dstack([a.clip(0, 255).astype(np.uint8), (al * 255).astype(np.uint8)]), 'RGBA')
     im = im.crop(im.getbbox()); im.save(dst); print(dst, im.size)
 if __name__ == '__main__':
-    for s, d in zip(sys.argv[1:4], ['ice_cap.png', 'ice_panel.png', 'ice_button.png']): cut(s, d)
+    for s, d in zip(sys.argv[1:4], ['assets/ui/ice_cap.png', 'assets/ui/ice_panel.png', 'assets/ui/ice_button.png']): cut(s, d)

@@ -1,10 +1,10 @@
-# Gera os quadros dos menus (menu_*.png) e do painel de pergunta (question_panel.png) a partir das artes enviadas.
+# Gera os quadros dos menus (menu_*.png) e do painel de pergunta (assets/ui/question_panel.png) a partir das artes enviadas.
 # Apaga só o que é dinâmico (título, caixa TIPO, tempo, contadores); o resto da arte fica como veio.
 import sys, json
 from PIL import Image, ImageDraw
 import numpy as np
 U = '/root/.claude/uploads/3a96d84d-702c-52a6-9324-e85ba38ea593/'
-OUT = '/home/claude/rpggame/'
+OUT = '/home/claude/rpggame/assets/class-select/'
 W_OUT = 1280
 META = {}
 # nome: (arquivo, título[x0,y0,x1,y1], tipo, tempo, contadores[(x,y)], cartões(cols x, rows y), extras a apagar)
@@ -82,5 +82,5 @@ if __name__ == '__main__':
             rows=[pr((130,y0,1850,y1)) for y0,y1 in ((355,437),(455,538),(558,640),(660,745))],
             lab=[pr((315,y0,1650,y1)) for y0,y1 in ((355,437),(455,538),(558,640),(660,745))],
             cnt=[pr((1700,y-27,1775,y+27)) for y in (396,496,598,700)])
-        im.resize((1280, round(h*1280/w)), Image.LANCZOS).quantize(256, method=Image.FASTOCTREE, dither=Image.NONE).save(OUT + 'question_panel.png', optimize=True)
-        open(OUT + 'menu_meta.js','w').write('const MENU_META=' + json.dumps(META, separators=(',',':')) + ';\n')
+        im.resize((1280, round(h*1280/w)), Image.LANCZOS).quantize(256, method=Image.FASTOCTREE, dither=Image.NONE).save(OUT + 'assets/ui/question_panel.png', optimize=True)
+        open(OUT + 'js/game/menu_meta.js','w').write('const MENU_META=' + json.dumps(META, separators=(',',':')) + ';\n')

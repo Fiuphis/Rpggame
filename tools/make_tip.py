@@ -1,4 +1,4 @@
-# Gera tip_frame.png: moldura 9-slice (32x32, borda de 8px) para o cartao de descricao de item.
+# Gera assets/ui/tip_frame.png: moldura 9-slice (32x32, borda de 8px) para o cartao de descricao de item.
 from PIL import Image
 W=H=32;B=8
 im=Image.new('RGBA',(W,H),(0,0,0,0))
@@ -26,4 +26,4 @@ def dia(cx,cy):
             a=abs(dx)+abs(dy)
             if a<=2: im.putpixel((cx+dx,cy+dy),OUT if a==2 else (GL if a==0 else GM))
 for (cx,cy) in [(4,4),(W-5,4),(4,H-5),(W-5,H-5)]: dia(cx,cy)
-im.save('tip_frame.png')
+im.save('assets/ui/tip_frame.png')

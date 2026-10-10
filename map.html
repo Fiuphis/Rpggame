@@ -8,15 +8,15 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <script>try{if(sessionStorage.getItem('bd1_fog'))document.documentElement.classList.add('fogin')}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="map.css">
-<link rel="stylesheet" href="fog.css">
+<link rel="stylesheet" href="css/map.css">
+<link rel="stylesheet" href="css/fog.css">
 <title>Jornada dos Heróis</title>
-<script src="gate.js"></script>
+<script src="js/core/gate.js"></script>
 </head>
 <body>
 <div class="backdrop" aria-hidden="true"></div>
 <main class="map" id="map">
-  <img class="base" src="map/base.webp" alt="Jornada dos Heróis" draggable="false">
+  <img class="base" src="assets/map/base.webp" alt="Jornada dos Heróis" draggable="false">
   <div class="layer" id="grays"></div>
   <div class="layer" id="nodes"></div>
   <div class="quote" id="quote" aria-live="polite"><p class="q-t" id="q-t"></p><p class="q-a" id="q-a"></p></div>
@@ -31,15 +31,15 @@
 <div class="confirm" id="confirm" hidden><div class="c-box"><div class="c-t">REINICIAR PROGRESSO?</div><div class="c-s">A jornada volta ao começo, como se nenhum boss tivesse sido derrotado.</div><div class="c-b"><button id="c-yes" type="button">↺ REINICIAR</button><button id="c-no" type="button">CANCELAR</button></div></div></div>
 <div class="fog top" id="fogT"></div><div class="fog bot" id="fogB"></div>
 <div class="veil" id="veil"></div>
-<script src="fog.js"></script>
-<script src="lib/supabase.js"></script>
-<script src="net.js"></script>
-<script src="match.js"></script>
-<script src="lobby.js"></script>
-<script src="hud.js"></script>
-<script src="map.js"></script>
-<script src="quotes.js"></script>
-<script src="mapfx.js"></script>
-<script src="fs.js"></script>
+<script src="js/core/fog.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/online/net.js"></script>
+<script src="js/online/match.js"></script>
+<script src="js/pages/lobby.js"></script>
+<script src="js/game/hud.js"></script>
+<script src="js/pages/map.js"></script>
+<script src="js/core/quotes.js"></script>
+<script src="js/pages/mapfx.js"></script>
+<script src="js/core/fs.js"></script>
 </body>
 </html>

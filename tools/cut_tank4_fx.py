@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Recorta os efeitos do Tanque (folhas de fundo PRETO) -> tank4/fx_*.png: brilho vira transparencia (uso aditivo). Uso: cut_tank4_fx.py PASTA_FOLHAS [PASTA_SAIDA=tank4]
+"""Recorta os efeitos do Tanque (folhas de fundo PRETO) -> assets/characters/tank/fx_*.png: brilho vira transparencia (uso aditivo). Uso: cut_tank4_fx.py PASTA_FOLHAS [PASTA_SAIDA=tank4]
 E1: ondas de choque (3 douradas + 3 azuis), espelhadas para a ponta apontar para a direita (sentido do voo)."""
 import sys, os, json
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'tank4'
+SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'assets/characters/tank'
 # nome: (folha, indice, largura alvo, espelhar)
 FX = {'tring':('E4',1,380,0,'add'),'tcirc':('E4',2,420,0,'add'),'tcol':('E4',3,260,0,'add'),'thm':('E4',4,320,0,'add'),'tspark':('E4',5,360,0,'add'),'tcr2':('E4',6,460,0,'add'),
  'tsh1':('E3',1,250,0,'add'),'tsh2':('E3',2,250,0,'add'),'tsh3':('E3',3,300,0,'add'),'tsh4':('E3',4,250,0,'add'),'tsh5':('E3',5,250,0,'add'),'tsh6':('E3',6,260,0,'add'),

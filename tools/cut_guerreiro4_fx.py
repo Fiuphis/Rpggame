@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Recorta os efeitos do Guerreiro (folhas F1-F3, fundo PRETO) -> guerreiro4/fx_*.png: brilho vira transparencia (uso aditivo).
+"""Recorta os efeitos do Guerreiro (folhas F1-F3, fundo PRETO) -> assets/characters/guerreiro/fx_*.png: brilho vira transparencia (uso aditivo).
 Uso: cut_guerreiro4_fx.py PASTA_FOLHAS [PASTA_SAIDA=guerreiro4]. Cortes que apontam para a esquerda sao espelhados (ponta/convexo para a direita = sentido do voo)."""
 import sys, os, json
 import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'guerreiro4'
+SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'assets/characters/guerreiro'
 # nome: (folha, indice, largura alvo, espelhar, modo)
 FX = {'sl1':('F1',1,360,0),'sl2':('F1',2,300,0),'sl3':('F1',3,340,1),'sl4':('F1',4,380,0),'sl5':('F1',5,300,0),'sl6':('F1',6,220,1),'sl7':('F1',7,320,1),'spk':('F1',8,300,0),
  'bur':('F2',1,360,0),'rng':('F2',2,420,0),'dust':('F2',3,420,0,'solid'),'crk':('F2',4,440,0),'fls':('F2',5,300,0),'dome':('F2',6,300,0),'str':('F2',7,360,0),'rn2':('F2',8,420,0),

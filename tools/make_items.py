@@ -13,7 +13,7 @@ def finish(im, name):
             if dx or dy: d |= np.roll(np.roll(m,dx,1),dy,0)
     ring = d & ~m; a[ring] = OL
     out = Image.fromarray(a).resize((46,68), Image.NEAREST)
-    out.save(f'item_{name}.png'); return out
+    out.save(f'assets/items/item_{name}.png'); return out
 def P(d, pts, c): d.point(pts, c)
 def px(d, x, y, c): d.point((x,y), c)
 S1=(206,214,228,255); S2=(146,158,182,255); S3=(86,98,126,255); S4=(48,56,78,255)

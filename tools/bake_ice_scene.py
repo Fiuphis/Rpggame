@@ -2,7 +2,7 @@
 import sys, numpy as np, cv2
 from PIL import Image, ImageDraw, ImageFont
 from scipy import ndimage as ndi
-SRC, NOHUD, CLEAN, TOP = sys.argv[1], 'game_nohud.png', 'game_clean.png', int(sys.argv[2]) if len(sys.argv) > 2 else 110
+SRC, NOHUD, CLEAN, TOP = sys.argv[1], 'assets/backgrounds/game_nohud.png', 'assets/backgrounds/game_clean.png', int(sys.argv[2]) if len(sys.argv) > 2 else 110
 sc = Image.open(SRC).convert('RGB'); s = 1024 / sc.width
 big = sc.resize((1024, round(sc.height * s)), Image.LANCZOS).crop((0, TOP, 1024, TOP + 1536))
 NAME = 'HRIMGAR, O REI GELADO'
@@ -24,4 +24,4 @@ def make(base_path, out):
         for dy in (-2, -1, 0, 1, 2):
             if dx or dy: d.text((x + dx, y + dy), NAME, font=ft, fill=(8, 18, 44))
     d.text((x, y), NAME, font=ft, fill=(214, 232, 255)); im.save(out); return im
-a = make(NOHUD, 'game_nohud_ice.png'); make(CLEAN, 'game_clean_ice.png'); print('ok')
+a = make(NOHUD, 'assets/backgrounds/game_nohud_ice.png'); make(CLEAN, 'assets/backgrounds/game_clean_ice.png'); print('ok')

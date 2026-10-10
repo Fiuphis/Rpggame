@@ -1,7 +1,7 @@
 # Recorta do mapa as caixas de interface (título, rosa dos ventos, legenda, frase) com máscara suave,
-# para ficarem ACIMA das nuvens (map/ui_*.webp). Coordenadas no mapa 1224x1285.
+# para ficarem ACIMA das nuvens (assets/map/ui_*.webp). Coordenadas no mapa 1224x1285.
 from PIL import Image, ImageDraw, ImageFilter
-im = Image.open('map/base.webp').convert('RGBA')
+im = Image.open('assets/map/base.webp').convert('RGBA')
 B = {'title': ('rect', 4, 10, 330, 242), 'legend': ('rect', 16, 1088, 320, 1264), 'quote': ('rect', 900, 1106, 1204, 1244), 'compass': ('circ', 1130, 92, 84)}
 meta = {}
 for k, v in B.items():
@@ -16,5 +16,5 @@ for k, v in B.items():
         yy, xx = np.mgrid[0:h, 0:w]; dd = np.hypot(xx - w / 2 + .5, yy - h / 2 + .5); a = np.clip((88 - dd) / 14, 0, 1)
         m = Image.fromarray((a * 255).astype('uint8'))
     if v[0] == 'rect': m = m.resize((w, h), Image.LANCZOS).filter(ImageFilter.GaussianBlur(1.6))
-    c = im.crop((x0, y0, x1, y1)); c.putalpha(m); c.save(f'map/ui_{k}.webp', quality=92, method=6); meta[k] = [x0, y0, w, h]
+    c = im.crop((x0, y0, x1, y1)); c.putalpha(m); c.save(f'assets/map/ui_{k}.webp', quality=92, method=6); meta[k] = [x0, y0, w, h]
 print(meta)

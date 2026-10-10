@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Recorta as folhas de fundo BRANCO da Clériga (v248) -> cleriga4/ (poses normalizadas + meta.json com o ponto da estrela do cajado).
+"""Recorta as folhas de fundo BRANCO da Clériga (v248) -> assets/characters/cleriga/ (poses normalizadas + meta.json com o ponto da estrela do cajado).
 Uso: python3 tools/cut_cleriga4.py PASTA_FOLHAS [PASTA_SAIDA=cleriga4]   (K = grade de pixel por env, padrao 2)
 Folhas: C1 ociosa, C2 ataque, C3 sagrado, C4 defesa (+ C4_p1_fix, C4_p8 avulsas), C5/C5b dano e esquiva, C6 ultimate, C7 queda e vitoria.
 Escala: i1 (em guarda, de costas) tem BODY_H px de altura; cada folha e ajustada pela area da estola vermelha (mesmo tamanho real), mais um ajuste fino por pose (MULT).
@@ -7,7 +7,7 @@ Depois pixeliza (grade K) com borda azul-marinho, como tools/cut_guerreiro4.py."
 import numpy as np, json, sys, os, shutil
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'cleriga4'
+SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'assets/characters/cleriga'
 K = int(os.environ.get('K', 2)); BODY_H = float(os.environ.get('BODY_H', 282))
 # nome: (arquivo, indice 1-based em ordem de leitura (0 = imagem unica), espelhar)
 POSES = {

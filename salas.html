@@ -9,9 +9,9 @@
 <script>try{if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb');if(sessionStorage.getItem('bd1_gate'))document.documentElement.classList.add('gt')}catch(e){}</script>
 <style>html.rb::after,html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="salas.css">
+<link rel="stylesheet" href="css/salas.css">
 <title>Salas</title>
-<script src="gate.js"></script>
+<script src="js/core/gate.js"></script>
 </head>
 <body data-pxt>
 <div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
@@ -22,8 +22,8 @@
   </header>
   <section class="plaque"><h1>SALAS</h1><p>Escolha uma sala ou crie a sua</p></section>
   <div class="acts">
-    <button id="mk" class="chip blue" type="button"><img src="salas/ic_plus.png" alt="">CRIAR SALA</button>
-    <button id="cd" class="chip gold" type="button"><img src="salas/ic_key.png" alt="">TENHO UM CÓDIGO</button>
+    <button id="mk" class="chip blue" type="button"><img src="assets/salas/ic_plus.png" alt="">CRIAR SALA</button>
+    <button id="cd" class="chip gold" type="button"><img src="assets/salas/ic_key.png" alt="">TENHO UM CÓDIGO</button>
   </div>
   <section class="list">
     <div class="lh"><b>SALAS PÚBLICAS</b><button id="rf" class="chip sm" type="button">ATUALIZAR</button></div>
@@ -40,8 +40,8 @@
       <label for="nm">NOME DA SALA (OPCIONAL)</label>
       <div class="fld"><input id="nm" maxlength="24" placeholder="EX: TURMA A" autocomplete="off" autocapitalize="characters" spellcheck="false"></div>
       <div class="seg" id="seg">
-        <button type="button" class="chip on" data-pub="1"><img src="salas/ic_unlock.png" alt="">PÚBLICA</button>
-        <button type="button" class="chip" data-pub="0"><img src="salas/ic_lock.png" alt="">PRIVADA</button>
+        <button type="button" class="chip on" data-pub="1"><img src="assets/salas/ic_unlock.png" alt="">PÚBLICA</button>
+        <button type="button" class="chip" data-pub="0"><img src="assets/salas/ic_lock.png" alt="">PRIVADA</button>
       </div>
       <p class="hint" id="mk-h">Aparece na lista para qualquer jogador entrar.</p>
       <label style="margin-top:6px">TEMPO PARA RESPONDER</label>
@@ -74,7 +74,7 @@
 
 <div class="ov" id="ov-cd" hidden>
   <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="cd-t">
-    <h2 id="cd-t"><img src="salas/ic_lock.png" alt="">CÓDIGO DA SALA</h2>
+    <h2 id="cd-t"><img src="assets/salas/ic_lock.png" alt="">CÓDIGO DA SALA</h2>
     <div class="fld code"><input id="cdv" maxlength="6" placeholder="------" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></div>
     <p class="hint">São 6 letras e números, como AB12CD.</p>
     <p class="err" id="cd-e"></p>
@@ -82,12 +82,12 @@
   </div>
 </div>
 
-<script src="lib/supabase.js"></script>
-<script src="net.js"></script>
-<script src="match.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/online/net.js"></script>
+<script src="js/online/match.js"></script>
 
-<script src="salas.js"></script>
-<script src="rebuild.js"></script>
-<script src="fs.js"></script>
+<script src="js/pages/salas.js"></script>
+<script src="js/core/rebuild.js"></script>
+<script src="js/core/fs.js"></script>
 </body>
 </html>

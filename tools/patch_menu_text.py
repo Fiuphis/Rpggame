@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 FONT = '/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf'
 def patch(name, box, new, size=None, center=False, fgmin=120):
-    im = Image.open(f'menu_{name}.png').convert('RGBA'); a = np.array(im)
+    im = Image.open(f'assets/class-select/menu_{name}.png').convert('RGBA'); a = np.array(im)
     x0, y0, x1, y1 = box; reg = a[y0:y1, x0:x1, :3].astype(int)
     bg = np.array(np.median(np.concatenate([reg[:2].reshape(-1,3), reg[-2:].reshape(-1,3)]), axis=0), dtype=np.uint8)
     lum = reg.sum(2); fg_mask = lum > lum.min() + 200
@@ -19,7 +19,7 @@ def patch(name, box, new, size=None, center=False, fgmin=120):
     px = (x0 + x1) // 2 - (bb[2] - bb[0]) // 2 if center else tx0
     py = (ty0 + ty1) // 2 - (bb[3] + bb[1]) // 2 + 1
     d.text((px, py), new, font=f, fill=fg + (255,))
-    im.save(f'menu_{name}.png'); print(name, new, (tx0, ty0, tx1, ty1), fg, sz)
+    im.save(f'assets/class-select/menu_{name}.png'); print(name, new, (tx0, ty0, tx1, ty1), fg, sz)
 import sys
 patch('mage', (262, 302, 590, 326), '4x de dano (ataque próprio)', 17)
 patch('mage', (386, 346, 603, 364), 'recarga 1 difícil', 15, center=True)

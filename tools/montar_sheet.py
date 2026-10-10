@@ -14,5 +14,5 @@ for i,f in enumerate(fr):
     if im.size!=(cw,ch): sys.exit(f'{f}: tamanho {im.size}, esperado {(cw,ch)}')
     sheet.alpha_composite(im,(i*cw,0))
 os.makedirs('anim',exist_ok=True); out=f'anim/{heroi}_{anim}.png'; sheet.save(out)
-print(f'salvo {out} ({len(fr)} quadros). Cole no anim/manifest.json em heroes.{heroi}:')
+print(f'salvo {out} ({len(fr)} quadros). Cole no data/anim_manifest.json em heroes.{heroi}:')
 print(json.dumps({anim:{"src":out,"frames":len(fr),"fps":fps}},ensure_ascii=False))

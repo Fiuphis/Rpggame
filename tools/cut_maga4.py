@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Recorta as folhas de fundo BRANCO da Maga (v229) -> mage4/ (poses normalizadas + meta.json).
+"""Recorta as folhas de fundo BRANCO da Maga (v229) -> assets/characters/mage/ (poses normalizadas + meta.json).
 Uso: python3 tools/cut_maga4.py PASTA_FOLHAS [PASTA_SAIDA=mage4]
 Escala: o diametro da gema do cajado (redonda, nao deforma com a pose) iguala o da pose idle1 antiga (mage3/idle1.png)."""
 import numpy as np, json, sys, os, shutil
 from PIL import Image, ImageOps
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'mage4'
+SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'assets/characters/mage'
 REF_GEM = float(os.environ.get('REF_GEM', 0)) or None
 
 # nome: (folha, indice 1-based em ordem de leitura, espelhar)

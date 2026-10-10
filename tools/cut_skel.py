@@ -1,4 +1,4 @@
-"""Recorta o esqueleto do usuário (skel_user_src.png, fundo cinza) em skel/skel_*.png com fundo transparente."""
+"""Recorta o esqueleto do usuário (skel_user_src.png, fundo cinza) em assets/skel/skel_*.png com fundo transparente."""
 from PIL import Image, ImageFilter
 import numpy as np, os, collections
 D=os.path.dirname(__file__); src=Image.open(os.path.join(D,'skel_user_src.png')).convert('RGBA')
@@ -18,7 +18,7 @@ alpha=np.where(seen|(dist<=16),0,255).astype(np.uint8)
 m=Image.fromarray(alpha).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(.7))
 out=src.copy(); out.putalpha(m)
 bb=out.getbbox(); out=out.crop(bb); W,H=out.size; out=out.crop((0,0,W,H-4)); W,H=out.size   # tira a linha de chão
-O=os.path.join(D,'..','skel'); os.makedirs(O,exist_ok=True)
+O=os.path.join(D,'..','assets','skel'); os.makedirs(O,exist_ok=True)
 def sv(img,n): img.save(os.path.join(O,n))
 print(out.size)
 sv(out.crop((int(W*.12),int(H*.02),int(W*.9),int(H*.40))),'skel_face.png')   # só a caveira

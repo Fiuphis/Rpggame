@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Editor de Perguntas</title>
 <style>
-@font-face{font-family:'Pixelify Sans';font-weight:500;src:url(fonts/pixelify-sans-latin-500-normal.woff2) format('woff2')}
-@font-face{font-family:'Pixelify Sans';font-weight:700;src:url(fonts/pixelify-sans-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Pixelify Sans';font-weight:500;src:url(assets/fonts/pixelify-sans-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Pixelify Sans';font-weight:700;src:url(assets/fonts/pixelify-sans-latin-700-normal.woff2) format('woff2')}
 :root{--bg:#0a0816;--card:#141028;--line:#3a3158;--gold:#ffc54e;--ink:#eee5f7;--mut:#9a90b8;
  --d1:#8fd8ff;--d2:#8fe39a;--d3:#ffb35c;--d4:#c79bff;--d5:#ffe14d}
 *{box-sizing:border-box}
@@ -87,8 +87,8 @@ a{color:var(--gold)}
   <div class="bar" style="justify-content:flex-end"><button id="cancel">CANCELAR</button><button class="pri" id="ok">SALVAR</button></div>
 </div></div>
 
-<script src="lib/supabase.js"></script>
-<script src="net.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/online/net.js"></script>
 <script>
 const R = ['C','B','A','S','SS'];
 let Q = [], filter = 0, editing = -1, dirty = false;
@@ -100,9 +100,9 @@ function say(html, cls){ $('#msg').innerHTML = html ? `<div class="${cls || 'ok'
 function missingRanks(){ return [1,2,3,4,5].filter(d => !Q.some(q => q.difficulty === d)).map(d => R[d - 1]); }
 
 async function load(){
-  let src = 'perguntas.json do jogo';
+  let src = 'data/perguntas.json do jogo';
   try { const l = JSON.parse(localStorage.getItem('bd1_questions')); if (Array.isArray(l) && l.length) { Q = l.filter(valid); src = 'salvo neste aparelho'; } } catch {}
-  if (!Q.length) { try { const r = await fetch('perguntas.json', {cache:'no-cache'}); Q = (await r.json()).filter(valid); } catch { Q = []; } }
+  if (!Q.length) { try { const r = await fetch('data/perguntas.json', {cache:'no-cache'}); Q = (await r.json()).filter(valid); } catch { Q = []; } }
   render(); say(`Carregado: ${Q.length} perguntas (${src}).`);
 }
 function render(){
@@ -172,14 +172,14 @@ $('#ok').onclick = saveForm;
 $('#search').oninput = render;
 $('#imp').onclick = () => $('#file').click();
 $('#file').onchange = e => { if (e.target.files[0]) doImport(e.target.files[0]); e.target.value = ''; };
-$('#expj').onclick = () => download('perguntas.json', JSON.stringify(Q, null, 1), 'application/json');
+$('#expj').onclick = () => download('data/perguntas.json', JSON.stringify(Q, null, 1), 'application/json');
 $('#expc').onclick = () => download('perguntas.csv', toCSV(), 'text/csv');
 $('#save').onclick = () => {
   const m = missingRanks(); if (m.length) { say(`Não dá para usar: faltam perguntas do rank ${m.join(', ')}.`, 'warn'); return; }
-  try { localStorage.setItem('bd1_questions', JSON.stringify(Q)); dirty = false; say(`Salvo neste aparelho: ${Q.length} perguntas. O jogo aberto neste aparelho já usa este banco. Para valer para todos, exporte o JSON e publique como perguntas.json.`); } catch { say('Não foi possível salvar neste aparelho.', 'warn'); }
+  try { localStorage.setItem('bd1_questions', JSON.stringify(Q)); dirty = false; say(`Salvo neste aparelho: ${Q.length} perguntas. O jogo aberto neste aparelho já usa este banco. Para valer para todos, exporte o JSON e publique como data/perguntas.json.`); } catch { say('Não foi possível salvar neste aparelho.', 'warn'); }
 };
 $('#reset').onclick = async () => {
-  if (!confirm('Apagar o banco salvo neste aparelho e voltar ao perguntas.json do jogo?')) return;
+  if (!confirm('Apagar o banco salvo neste aparelho e voltar ao data/perguntas.json do jogo?')) return;
   try { localStorage.removeItem('bd1_questions'); } catch {} Q = []; await load();
 };
 // ---- servidor ----
@@ -207,6 +207,6 @@ addEventListener('popstate', () => { const md = $('#modal'); if (md && md.classL
 // o editor é só da conta do editor (fiuphis); as outras voltam para o início
 NET.account().then(a => { if (!a || a.username !== 'fiuphis') location.replace('cover.html' + location.search); else load(); }).catch(() => location.replace('cover.html' + location.search));
 </script>
-<script src="fs.js"></script>
+<script src="js/core/fs.js"></script>
 </body>
 </html>

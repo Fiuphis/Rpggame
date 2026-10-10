@@ -1,4 +1,4 @@
-"""Gera fonts/openc.woff2: so os glifos C c Ç ç, em pixel art com a abertura bem visivel (o C das fontes ficava parecido com O/0).
+"""Gera assets/fonts/openc.woff2: so os glifos C c Ç ç, em pixel art com a abertura bem visivel (o C das fontes ficava parecido com O/0).
 Uso (raiz do repo): python3 tools/make_openc.py   — depois usar @font-face 'OpenC' com unicode-range e por primeiro nas pilhas de fontes."""
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
@@ -22,8 +22,8 @@ def build(fam, names, cmap, out):
     fb.setupNameTable({'familyName': fam, 'styleName': 'Regular'})
     fb.setupOS2(sTypoAscender=900, sTypoDescender=-250, usWinAscent=900, usWinDescent=250); fb.setupPost()
     fb.font.flavor = 'woff2'; fb.save(out); print(out)
-build('OpenC', ['C', 'Ccedilla'], {0x43: 'C', 0xC7: 'Ccedilla'}, 'fonts/openc.woff2')      # maiusculas: servem para qualquer pilha
-build('OpenCl', ['c', 'ccedilla'], {0x63: 'c', 0xE7: 'ccedilla'}, 'fonts/opencl.woff2')   # minusculas: so nas pilhas com Pixelify Sans (x-height pixel)
+build('OpenC', ['C', 'Ccedilla'], {0x43: 'C', 0xC7: 'Ccedilla'}, 'assets/fonts/openc.woff2')      # maiusculas: servem para qualquer pilha
+build('OpenCl', ['c', 'ccedilla'], {0x63: 'c', 0xE7: 'ccedilla'}, 'assets/fonts/opencl.woff2')   # minusculas: so nas pilhas com Pixelify Sans (x-height pixel)
 
 # ---- digitos 0-9 (5x7): o 2 e o 5 da Pixelify Sans lembravam S ----
 DIG = {
@@ -49,5 +49,5 @@ def build_d():
     fb.setupHorizontalMetrics({n: (590, 0) for n in order}); fb.setupHorizontalHeader(ascent=900, descent=-250)
     fb.setupNameTable({'familyName': 'OpenD', 'styleName': 'Regular'})
     fb.setupOS2(sTypoAscender=900, sTypoDescender=-250, usWinAscent=900, usWinDescent=250); fb.setupPost()
-    fb.font.flavor = 'woff2'; fb.save('fonts/opend.woff2'); print('fonts/opend.woff2')
+    fb.font.flavor = 'woff2'; fb.save('assets/fonts/opend.woff2'); print('assets/fonts/opend.woff2')
 build_d()

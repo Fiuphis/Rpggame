@@ -10,15 +10,15 @@
 if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.add('fogin');if(sessionStorage.getItem('bd1_rebuild'))document.documentElement.classList.add('rb');if(sessionStorage.getItem('bd1_gate'))document.documentElement.classList.add('gt')}catch(e){}</script>
 <style>html.rb::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="lobby.css">
-<link rel="stylesheet" href="fog.css">
+<link rel="stylesheet" href="css/lobby.css">
+<link rel="stylesheet" href="css/fog.css">
 <title>Selecione sua classe</title>
-<script src="gate.js"></script>
+<script src="js/core/gate.js"></script>
 </head>
 <body>
 <div class="fog top" id="fogT"></div><div class="fog bot" id="fogB"></div>
 <main class="stage" id="stage">
-  <img class="bg" src="select_plate.webp" alt="Selecione sua classe" draggable="false">
+  <img class="bg" src="assets/backgrounds/select_plate.webp" alt="Selecione sua classe" draggable="false">
 </main>
 <div class="above" id="above"><div class="ab-title"></div>
   <button id="home" class="home" type="button">&#9666; SALAS</button>
@@ -26,12 +26,12 @@ if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.ad
   <button id="confirm" class="confirm" type="button" disabled>ESCOLHA UMA CLASSE</button>
 </div>
 <style>html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}.rmchip{position:absolute;right:3cqw;top:2.2cqw;font:700 2.6cqw var(--F,monospace);color:#e8dcb0;letter-spacing:.1em;padding:1.4cqw 2.4cqw;background:rgba(10,6,16,.7);border:2px solid #6e5a2c;pointer-events:none}</style>
-<script src="lib/supabase.js"></script>
-<script src="net.js"></script>
-<script src="match.js"></script>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/online/net.js"></script>
+<script src="js/online/match.js"></script>
 
-<script src="fog.js"></script>
-<script src="lobby.js"></script>
+<script src="js/core/fog.js"></script>
+<script src="js/pages/lobby.js"></script>
 <script>
 const W=1024,H=1536;
 // box = área do card (arte inclusa), frame = moldura, cnt = onde fica o "n/7" (cobre o 0/7 da arte)
@@ -62,8 +62,8 @@ CARDS.forEach(c=>{
   b.style.cssText=(c.key==='mage'||c.key==='guerreiro'?'clip-path:inset(-2px -80px -80px -80px);':'')+`left:${pc(x,W)};top:${pc(y,H)};width:${pc(w,W)};height:${pc(h,H)};--c:${G.color}`;
   b.innerHTML=`<span class="tint" style="${pos(fx-x,fy-y,fx2-fx,fy2-fy)}"></span>
     <span class="glow gb" style="${pos(gx,gy,gw,gh)}"></span>
-    <img class="char" src="char_${c.key}.webp" alt="" draggable="false" style="${pos(hx-x,hy-y,hw,hh)}">
-    <img class="panel" src="panel_${c.key}.webp" alt="" draggable="false" style="${pos(px_-x,py-y,pw,ph)}">
+    <img class="char" src="assets/class-select/char_${c.key}.webp" alt="" draggable="false" style="${pos(hx-x,hy-y,hw,hh)}">
+    <img class="panel" src="assets/class-select/panel_${c.key}.webp" alt="" draggable="false" style="${pos(px_-x,py-y,pw,ph)}">
     <span class="glow gf" style="${pos(gx,gy,gw,gh)};clip-path:inset(${clipTop}% -60px -60px -60px)"></span>
     <span class="cnt" style="${pos(cx-x,cy-y,cw,ch)};background:${c.bg};color:${c.fg}"></span>`;
   b.onclick=()=>choose(c.key);
@@ -147,7 +147,7 @@ addEventListener('resize',()=>{if(!document.documentElement.classList.contains('
 window.addEventListener('storage',render);
 if('serviceWorker' in navigator){navigator.serviceWorker.addEventListener('message',e=>{if(e.data&&e.data.type==='updated')location.reload()});window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}))}
 </script>
-<script src="rebuild.js"></script>
-<script src="fs.js"></script>
+<script src="js/core/rebuild.js"></script>
+<script src="js/core/fs.js"></script>
 </body>
 </html>

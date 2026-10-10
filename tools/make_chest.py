@@ -1,5 +1,5 @@
 # Bau em pixel art detalhado (madeira gasta, ferro rebitado, fechadura). 4 quadros: fechado, abrindo 1, abrindo 2, aberto.
-# Gera chest_f0.png .. chest_f3.png (48x40 ampliado 5x, sem suavizar)
+# Gera assets/items/chest_f0.png .. assets/items/chest_f3.png (48x40 ampliado 5x, sem suavizar)
 from PIL import Image
 import math, random
 W, H, S = 48, 42, 5

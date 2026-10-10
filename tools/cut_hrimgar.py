@@ -1,10 +1,10 @@
-# Recorta as poses do Hrimgar das folhas de fundo branco (3x2 por folha) -> hrimgar/<id>.png + hrimgar/meta.json
+# Recorta as poses do Hrimgar das folhas de fundo branco (3x2 por folha) -> assets/bosses/hrimgar/<id>.png + assets/bosses/hrimgar/meta.json
 # uso: python3 tools/cut_hrimgar.py <pasta com s1.png..s13.png>
 import sys, os, json, glob
 import numpy as np, cv2
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = 'hrimgar'; SC = 2.0
+SRC = sys.argv[1]; OUT = 'assets/bosses/hrimgar'; SC = 2.0
 os.makedirs(OUT, exist_ok=True)
 for f in glob.glob(OUT + '/*.png'): os.remove(f)
 # folha -> prefixo, grade (colunas, linhas)

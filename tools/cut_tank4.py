@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Recorta as folhas de fundo BRANCO do Tanque (v233) -> tank4/ (poses normalizadas + meta.json).
+"""Recorta as folhas de fundo BRANCO do Tanque (v233) -> assets/characters/tank/ (poses normalizadas + meta.json).
 Uso: python3 tools/cut_tank4.py PASTA_FOLHAS [PASTA_SAIDA=tank4]
 Escala: o diametro da cabeca careca (redonda, nao deforma com a pose) iguala o da pose idle1; idle1 tem a altura do corpo do tanque antigo (262 px).
 Depois pixeliza (grade K) com borda azul-marinho, como tools/pixel_maga4.py."""
 import numpy as np, json, sys, os, shutil
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'tank4'
+SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'assets/characters/tank'
 K = float(os.environ.get('K', 1)); BODY_H = 262.0
 # nome: (arquivo, indice 1-based em ordem de leitura (0 = imagem unica), espelhar)
 POSES = {

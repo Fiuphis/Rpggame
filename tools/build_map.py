@@ -1,7 +1,7 @@
-"""Gera map/ a partir da arte 'Jornada dos Heróis' (tools/jornada_src.png): mapa base, overlays cinza por região, ícones e halos."""
+"""Gera assets/map/ a partir da arte 'Jornada dos Heróis' (tools/jornada_src.png): mapa base, overlays cinza por região, ícones e halos."""
 import numpy as np, os, json
 from PIL import Image, ImageDraw, ImageFilter
-D=os.path.dirname(__file__); O=os.path.join(D,'..','map'); os.makedirs(O,exist_ok=True)
+D=os.path.dirname(__file__); O=os.path.join(D,'..','assets','map'); os.makedirs(O,exist_ok=True)
 src=Image.open(os.path.join(D,'jornada_src.png')).convert('RGB'); W,H=src.size
 # v138: apaga o texto da citação do painel (canto inferior direito); as frases agora rodam ao vivo no jogo (#quote)
 import cv2

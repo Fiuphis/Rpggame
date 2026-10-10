@@ -1,4 +1,4 @@
-# Gera shop_sign.png: placa "FECHADO" gasta, em pixel art (64x40), pendurada por cordas.
+# Gera assets/ui/shop_sign.png: placa "FECHADO" gasta, em pixel art (64x40), pendurada por cordas.
 import random
 from PIL import Image, ImageDraw
 random.seed(7)
@@ -77,5 +77,5 @@ for (x,y) in cells:
     if r<.06: continue                       # tinta descascada (falha)
     put(x,y,PAINTd if r<.32 else PAINT)
 # luz no topo e escurecimento nas bordas
-img.save('shop_sign.png')
+img.save('assets/ui/shop_sign.png')
 img.resize((W*8,H*8),Image.NEAREST).save('/tmp/sign.png')

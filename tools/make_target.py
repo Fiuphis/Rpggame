@@ -1,10 +1,10 @@
-"""Gera menu_target.png (moldura da escolha de alvo, derivada de menu_elem.png) e tp_<heroi>.png (retratos).
+"""Gera assets/class-select/menu_target.png (moldura da escolha de alvo, derivada de assets/class-select/menu_elem.png) e tp_<heroi>.png (retratos).
 Uso: python3 tools/make_target.py   (rodar na raiz do repo)"""
 from PIL import Image
 import random
 random.seed(5)
 BG = (3, 4, 15, 252)
-im = Image.open('menu_elem.png').convert('RGBA')
+im = Image.open('assets/class-select/menu_elem.png').convert('RGBA')
 W, H = im.size   # 1280x757
 
 def fill(box, col=BG):
@@ -60,14 +60,14 @@ col = left.crop((tw_l - 1, 0, tw_l, th))
 for x in range(tw_l, tw - tw_l): wide.paste(col, (x, 0))
 im.paste(wide, (x0, y0))
 fill((1052, 543, 1166, 655))   # apaga o icone espelhado da direita
-im.save('menu_target.png', optimize=True)
-print('menu_target.png', im.size)
+im.save('assets/class-select/menu_target.png', optimize=True)
+print('assets/class-select/menu_target.png', im.size)
 
 # --- retratos (caixas quadradas em torno do rosto)
 BOX = {'mage': (240, 290, 940, 990), 'guerreiro': (230, 110, 930, 810),
        'tank': (230, 190, 930, 890), 'cleriga': (210, 20, 970, 780)}
 for k, b in BOX.items():
-    p = Image.open(f'char_{k}.webp').convert('RGBA')
+    p = Image.open(f'assets/class-select/char_{k}.webp').convert('RGBA')
     bg = Image.new('RGBA', p.size, (7, 8, 20, 255)); bg.alpha_composite(p)
     f = bg.crop(b).convert('RGB').resize((64, 64), Image.BOX)
     f = f.quantize(40, method=Image.MEDIANCUT, dither=Image.NONE).convert('RGBA')

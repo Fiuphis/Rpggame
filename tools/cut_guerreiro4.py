@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Recorta as folhas de fundo BRANCO do Guerreiro (v242) -> guerreiro4/ (poses normalizadas + meta.json).
+"""Recorta as folhas de fundo BRANCO do Guerreiro (v242) -> assets/characters/guerreiro/ (poses normalizadas + meta.json).
 Uso: python3 tools/cut_guerreiro4.py PASTA_FOLHAS [PASTA_SAIDA=guerreiro4]   (K = grade de pixel por env, padrao 2)
 Escala: a pose i1 (em guarda, de costas) tem BODY_H px de altura; as demais usam o mesmo fator da folha (GS), com ajuste fino por pose (MULT).
 Depois pixeliza (grade K) com borda azul-marinho, como tools/cut_tank4.py."""
 import numpy as np, json, sys, os, shutil
 from PIL import Image
 from scipy import ndimage as ndi
-SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'guerreiro4'
+SRC = sys.argv[1]; OUT = sys.argv[2] if len(sys.argv) > 2 else 'assets/characters/guerreiro'
 K = int(os.environ.get('K', 2)); BODY_H = float(os.environ.get('BODY_H', 258))
 # nome: (arquivo, indice 1-based (0 = imagem unica), espelhar)
 POSES = {
