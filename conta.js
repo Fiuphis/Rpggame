@@ -12,7 +12,7 @@ const clean = v => v.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 16);
 function go(url, flag) {
   if (leaving) return; leaving = true;
   if (flag && !EMB) SS.set(flag, '1');
-  const nav = () => { if (EMB) { if (url === 'cover.html' || url === 'salas.html') parent.postMessage({ bd1: 'close' }, location.origin); else location.href = url + location.search; } else location.href = url; };
+  const nav = () => { if (EMB) { if (url === 'cover.html' || url === 'salas.html') parent.postMessage({ bd1: 'close', popped: !!window.__popped }, location.origin); else parent.postMessage({ bd1: 'nav', url: url + location.search }, location.origin); } else location.href = url; };
   if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(nav); else nav();
 }
 const toSaves = () => go('saves.html', 'bd1_rebuild');
@@ -65,8 +65,11 @@ $('#rec-ok').onclick = async () => {
 
 $('#solo').onclick = () => go('salas.html', 'bd1_rebuild');
 $('#home').onclick = () => { if (leaving) return; if (!EMB) { try { sessionStorage.setItem('bd1_cover_back', '1'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {} } leaving = false; go('cover.html'); };
-try { history.pushState({ ct: 1 }, ''); } catch (e) {}
-addEventListener('popstate', () => { if (leaving) { try { history.pushState({ ct: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
+if (!EMB) try { history.pushState({ ct: 1 }, ''); } catch (e) {}
+function backOv(map) { const ovs = [...document.querySelectorAll('.ov')].filter(o => !o.hidden); if (!ovs.length) return false; const o = ovs[ovs.length - 1]; const b = map[o.id]; if (typeof b === 'function') b(); else if (b) { const el = document.querySelector(b); if (el && !el.hidden) el.click(); else o.hidden = true; } return true; }
+const onBack = () => { if (leaving) return; if (backOv({ 'ov-rec': '#rec-no', 'ov-code': () => {} })) { if (EMB) parent.postMessage({ bd1: 'rep' }, location.origin); else { try { history.pushState({ ct: 1 }, ''); } catch (e) {} } return; } window.__popped = true; $('#home').click(); };
+addEventListener('popstate', () => { if (leaving) { try { history.pushState({ ct: 1 }, ''); } catch (e) {} return; } if (!EMB) onBack(); });
+addEventListener('message', e => { if (EMB && e.origin === location.origin && e.data && e.data.bd1 === 'back') onBack(); });
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 
 (async () => {

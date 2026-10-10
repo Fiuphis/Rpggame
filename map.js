@@ -83,7 +83,7 @@ function leaveMap() { if (leaving) return; leaving = true; clearTimeout(enterT);
 $('#back').addEventListener('click', e => { e.preventDefault(); leaveMap(); });
 // v137: o "voltar" do celular/navegador faz o mesmo que TROCAR DE GRUPO (nuvens fecham e volta ao menu)
 history.pushState({ mapa: 1 }, '');
-addEventListener('popstate', () => { const c = $('#confirm'); if (c && !c.hidden) { c.hidden = true; history.pushState({ mapa: 1 }, ''); return; } leaveMap(); });
+addEventListener('popstate', () => { const c = $('#confirm'); if (c && !c.hidden) { c.hidden = true; history.pushState({ mapa: 1 }, ''); return; } if (!leaving && selected != null) { deselect(); history.pushState({ mapa: 1 }, ''); return; } leaveMap(); });
 function voters(){ return Math.max(1, LOBBY.counts()[grp] || 0); }
 function deselect(){ selected = null; bots.forEach(clearTimeout); bots = []; yes = 0; mine = false; $('#panel').hidden = true; document.querySelectorAll('.node,.ic').forEach(e => e.classList.remove('sel')); }
 function select(id){

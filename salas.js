@@ -149,7 +149,8 @@ try { const lr = sessionStorage.getItem('bd1_leave_room'); sessionStorage.remove
 try { if (sessionStorage.getItem('bd1_acc')) $('#home').innerHTML = '&#9666; SAVES'; } catch (e) {}
 // botão voltar do aparelho = botão do canto (SAVES ou INÍCIO)
 try { history.pushState({ sl: 1 }, ''); } catch (e) {}
-addEventListener('popstate', () => { if (leaving) { try { history.pushState({ sl: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
+function backOv(map) { const ovs = [...document.querySelectorAll('.ov')].filter(o => !o.hidden); if (!ovs.length) return false; const o = ovs[ovs.length - 1]; const b = map[o.id]; if (typeof b === 'function') b(); else if (b) { const el = document.querySelector(b); if (el && !el.hidden) el.click(); else o.hidden = true; } return true; }
+addEventListener('popstate', () => { if (leaving) { try { history.pushState({ sl: 1 }, ''); } catch (e) {} return; } if (backOv({ 'ov-mk': '#mk-no', 'ov-cd': '#cd-no', 'ov-lb': '#lb-out' })) { try { history.pushState({ sl: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
 if (window.Gate) Gate.arrive();
 load(); poll();
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));

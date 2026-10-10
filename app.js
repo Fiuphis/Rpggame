@@ -2194,6 +2194,9 @@ $('#hitmap').addEventListener('click',e=>{
 function setBag(on){ if (!on) { const t = $('#item-tip'); if (t) t.remove(); } $('#bag-panel').hidden = !on; $('#bag-back').hidden = !on; $('#bag-toggle').setAttribute('aria-expanded', on); }
 $('#bag-toggle').addEventListener('click', () => { const op = $('#bag-panel').hidden; setBag(op); if (op) merchantOpened(); else mBubble(''); });
 $('#bag-back').addEventListener('click', () => { setBag(false); mBubble(''); });
+// voltar do aparelho na partida: fecha a mochila se estiver aberta; senão avisa (sair é só pelo botão GRUPOS, para não abandonar sem querer)
+try { history.pushState({ game: 1 }, ''); } catch (e) {}
+addEventListener('popstate', () => { try { history.pushState({ game: 1 }, ''); } catch (e) {} if (!$('#bag-panel').hidden) { setBag(false); mBubble(''); return; } toast('Use o botão GRUPOS para sair da partida.'); });
 // Loja: tocar no ícone do item mostra a descrição; tocar nas moedas (parte de baixo) tenta comprar.
 function closeItemTip(){ const t = $('#item-tip'); if (t) t.remove(); }
 function showItemTip(slot){

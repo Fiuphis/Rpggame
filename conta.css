@@ -15,3 +15,4 @@
 .bigcode.sm{font-size:max(22px,6.4cqw);letter-spacing:.8cqw;text-indent:.8cqw;padding:3cqw 0}
 .ov .bigcode.sm{font-size:21px;letter-spacing:2px;text-indent:2px;padding:14px 0 12px;white-space:nowrap}
 .ov .dlg .hint{margin-bottom:10px}
+.ov .bigcode.sm{font-size:min(21px,5.3vw);letter-spacing:min(2px,.5vw);text-indent:min(2px,.5vw)}
