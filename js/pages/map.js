@@ -100,12 +100,16 @@ function select(id){
     if (TEST && !ROOM) for (let i = 0; i < n - 1; i++) bots.push(setTimeout(() => { if (selected !== id) return; if (Math.random() < .6) { yes++; upd(need); if (yes >= need) enter(); } }, 1200 + i * 800));
     if (ROOM) {
       $('#p-sub').textContent = (again ? 'Concluído · jogar de novo' : B.sub) + (isOwner ? ' · você inicia a partida' : ' · só o criador da sala escolhe');
-      go.innerHTML = isOwner ? 'INICIAR PARTIDA' : 'SÓ O CRIADOR ESCOLHE'; go.disabled = !isOwner; go.classList.remove('selected');
+      go.innerHTML = isOwner ? 'INICIAR<br>PARTIDA' : 'SÓ O CRIADOR<br>ESCOLHE'; go.classList.add('two'); go.disabled = !isOwner; go.classList.remove('selected');
       go.onclick = isOwner ? async () => { go.disabled = true; try { await MATCH.start(ROOM.id, id); enter(); } catch (e) { go.disabled = false; $('#p-sub').textContent = NET.msg(e); } } : null;
     }
-  } else { $('#p-sub').textContent = st === 'done' ? 'Concluído · este guardião já foi derrotado' : st === 'next' ? 'Em breve' : 'Bloqueado · derrote o guardião anterior'; go.disabled = true; go.innerHTML = 'INDISPONÍVEL'; go.onclick = null; }
+  } else { $('#p-sub').textContent = st === 'done' ? 'Concluído · este guardião já foi derrotado' : st === 'next' ? 'Em breve' : 'Bloqueado · derrote o guardião anterior'; go.disabled = true; go.className = 'p-go'; go.innerHTML = 'INDISPONÍVEL'; go.onclick = null; }
+  fitGo();
 }
-function upd(need){ const go = $('#p-go'); go.innerHTML = `${stateOf(done, selected) === 'done' ? 'REJOGAR' : 'ENTRAR'} <b>${yes}/${need}</b>`; go.classList.toggle('selected', mine); }
+// o texto nunca encosta nas bordas do botao: reduz a fonte ate caber com folga (80% da largura, 70% da altura)
+function fitGo(){ const g = $('#p-go'); if (!g || $('#panel').hidden) return; g.style.fontSize = ''; let fs = parseFloat(getComputedStyle(g).fontSize); const r = document.createRange();
+  for (let i = 0; i < 24; i++) { r.selectNodeContents(g); const t = r.getBoundingClientRect(), b = g.getBoundingClientRect(); if (t.width <= b.width * .8 && t.height <= b.height * .7) break; fs -= .5; if (fs < 6) break; g.style.fontSize = fs + 'px'; } }
+function upd(need){ const go = $('#p-go'); go.innerHTML = `${stateOf(done, selected) === 'done' ? 'REJOGAR' : 'ENTRAR'} <b>${yes}/${need}</b>`; go.classList.toggle('selected', mine); fitGo(); }
 let enterT = 0;
 function placePanel(){ const p = $('#panel'); if (p.hidden) return; const r = $('#map').getBoundingClientRect(), h = p.offsetHeight; p.style.bottom = 'auto'; p.style.top = Math.max(8, Math.min(r.bottom + 8, innerHeight - h - 8)) + 'px'; }
 addEventListener('resize', placePanel);

@@ -106,7 +106,7 @@ button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-v
 .err{margin:0 0 6px;min-height:16px;font-size:11px;line-height:1.5;letter-spacing:.8px;color:#ff8d9b;text-align:center}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:52px;margin-top:10px}
 .row .chip{height:100%;font-size:13px;letter-spacing:1.5px;border-width:9px;border-image-width:9px}
-.bigcode{margin:6px 0 14px;padding:14px 0 12px;font-size:38px;letter-spacing:10px;text-indent:10px;text-align:center;line-height:1;color:var(--gold);background:#120c22;border:2px solid #3a2a5a;text-shadow:0 3px 0 #4a2204}
+.bigcode{margin:6px 0 14px;padding:14px 0 12px;font-size:min(38px,10.5vw);letter-spacing:min(10px,2.6vw);text-indent:min(10px,2.6vw);text-align:center;line-height:1;color:var(--gold);background:#120c22;border:2px solid #3a2a5a;text-shadow:0 3px 0 #4a2204}
 .dlg[hidden],[hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){.torch{animation:none}.net[data-s=con] .dot{animation:none}}
 
@@ -116,4 +116,4 @@ button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-v
   .seg .chip img{height:12px}
   .dlg .chip.wide{font-size:11px;letter-spacing:.6px;border-width:7px;border-image-width:7px}
 }
-@media (max-width:350px){ .row .chip{font-size:9px;letter-spacing:.1px;border-width:6px;border-image-width:6px} }
+@media (max-width:350px){ .lbp{gap:6px;padding:8px;font-size:12px;letter-spacing:0}.lbp u{font-size:9px;padding:2px 4px} .row .chip{font-size:9px;letter-spacing:.1px;border-width:6px;border-image-width:6px} }

@@ -100,7 +100,7 @@ node test_sql.mjs        # testes das funções SQL (salas, limites, partida)
 Parâmetros úteis na URL: `?mock=1` (rede simulada), `?sb=<url local>` (aponta para o servidor de teste; só aceita localhost), `?teste=1` (modo de teste do jogo), `?noshell` (sem moldura), `?nocover`.
 
 ## Ao publicar uma versão
-1. Aumentar `CACHE` em `sw.js` (ex.: `bd1-rpg-v310`) e `V` em `js/pages/cover.js`.
+1. Aumentar `CACHE` em `sw.js` (ex.: `bd1-rpg-v312`) e `V` em `js/pages/cover.js`.
 2. Se criou arquivo que deve funcionar offline, incluí-lo na lista `ASSETS` de `sw.js`.
 3. Registrar a mudança em `docs/CHANGELOG.md`.
 4. Commit direto na `main` (o GitHub Pages publica sozinho).

@@ -63,7 +63,7 @@ export async function startServer(port = 0) {
             if (m.retset) return (await tx.query(`select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) as r from public.${fn}(${ph}) t`, vals)).rows[0].r;
             return (await tx.query(`select to_jsonb(public.${fn}(${ph})) as r`, vals)).rows[0].r;
           });
-          return send(res, 200, out === null ? '' : out);
+          return send(res, 200, out === null ? '' : JSON.stringify(out), 'application/json');
         } catch (e) { return send(res, 400, { message: String(e.message || e).replace(/^error: /i, ''), code: 'P0001' }); }
       }
       // arquivos estaticos

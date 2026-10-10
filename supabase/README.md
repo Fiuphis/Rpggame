@@ -6,7 +6,7 @@ Projeto Supabase `cdwagfofjjhnykbzixut` (Postgres + login anônimo/conta). O jog
 
 | Caminho | O que é |
 |---|---|
-| `migrations/` | Scripts SQL numerados, na ordem em que foram aplicados no Supabase real (10 a 20). Cada arquivo começa com um comentário dizendo o que muda. |
+| `migrations/` | Scripts SQL numerados, na ordem em que foram aplicados no Supabase real (10 a 21). Cada arquivo começa com um comentário dizendo o que muda. |
 | `local/schema.sql` | Retrato do schema (tabelas, funções, políticas) usado pelo servidor local de teste. Já inclui o estado até a migração 11. |
 | `local/bootstrap.sql` | Base mínima (papéis, `auth.*`, `extensions.*`) para o schema rodar num Postgres comum (PGlite). |
 
@@ -48,6 +48,7 @@ As migrações 01 a 09 (tabelas de salas, grupos, votos, Mercador, perfis e save
 - Funções com `_` no começo são internas (sorteio de rank, fechar rodada, expirar partida, checar editor) e não são chamadas pelo navegador.
 
 ## Regras que o banco impõe
+- **Voltar à sala (`21_rejoin.sql`):** na fase de espera, sair apaga a pessoa da sala; depois que a sala fecha (escolha de classe, mapa, batalha), sair só zera o sinal de presença: a pessoa continua membro, volta pelo código ou pela lista (a sala aparece para os membros mesmo vazia ou privada) e retoma a mesma classe, a menos que a vaga tenha sido ocupada por 7 ativos. Quem nunca esteve na sala continua barrado depois que ela fecha.
 - Máximo de **3 salas por criador**, **7 jogadores por classe** e **28 por sala** (`20_room_cap.sql`); quem já está na sala sempre consegue voltar.
 - Código de sala com 6 letras/números; limite de tentativas erradas (`join_fails`).
 - Presença ativa: sinal nos últimos 45 s. Partida sem sinal por 3 horas é encerrada como abandonada (`14_expire_match.sql`).

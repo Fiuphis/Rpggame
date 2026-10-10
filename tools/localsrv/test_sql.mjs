@@ -128,3 +128,26 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await call(ps[0], 'join_room', { p_room: r.id, p_code: r.code });   // quem ja esta volta
   await call(ps[0], 'leave_room', { p_room: r.id }).catch(() => {});
   ok('sala limitada a 28 jogadores; membro existente volta'); }
+
+// voltar para a sala no mesmo ponto (migracao 21)
+{ const [a, b, c, x] = U(4); const r = await call(a, 'create_room', { p_public: true, p_name: 'VOLTA' });
+  await call(b, 'join_room', { p_room: r.id, p_code: r.code }); await call(c, 'join_room', { p_room: r.id, p_code: r.code });
+  // na espera, sair apaga a pessoa e ela pode entrar de novo
+  await call(c, 'leave_room', { p_room: r.id }); assert.equal((await call(a, 'room_lobby', { p_room: r.id })).total, 2);
+  await call(c, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' }); await call(c, 'pick_group', { p_room: r.id, p_grp: 'cleriga' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' });
+  await call(a, 'leave_room', { p_room: r.id });                       // o criador sai depois do fechamento
+  let l = await call(b, 'room_lobby', { p_room: r.id }); assert.equal(l.total, 2, 'criador sem sinal nao conta');
+  await fails(call(x, 'join_room', { p_room: r.id, p_code: r.code }), 'sala_fechada');   // estranho segue barrado
+  const back = await call(a, 'join_room', { p_room: r.id }); assert.equal(back.id, r.id);
+  l = await call(a, 'room_lobby', { p_room: r.id }); assert.equal(l.total, 3); assert.equal(l.owner, true); assert.equal(l.me, 'mage', 'volta com a mesma classe');
+  // sala vazia e antiga continua na lista de quem e membro
+  await db.query("update public.rooms set created_at = now() - interval '2 hours' where id = $1", [r.id]);
+  await db.query("update public.player_presence set last_seen = now() - interval '1 hour' where room_id = $1", [r.id]);
+  const lst = u => db.transaction(async tx => { await tx.query(`select set_config('request.jwt.claims', $1, true)`, [JSON.stringify({ sub: u, role: 'authenticated', is_anonymous: true })]); await tx.exec('set local role authenticated'); return (await tx.query('select * from public.list_public_rooms()')).rows; });
+  assert.ok((await lst(a)).some(z => z.id === r.id), 'membro ve a sala');
+  assert.ok(!(await lst(x)).some(z => z.id === r.id), 'estranho nao ve sala vazia');
+  // vaga tomada enquanto estava fora: volta sem classe
+  await call(a, 'leave_room', { p_room: r.id });
+  ok('sair e voltar a sala no mesmo ponto'); }
