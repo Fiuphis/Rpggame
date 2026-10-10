@@ -138,16 +138,13 @@ $('#solo').onclick = () => { try { localStorage.removeItem('bd1_auto'); } catch 
 $('#home').onclick = () => {
   if (leaving) return; leaving = true;
   try { sessionStorage.setItem('bd1_cover_back', '1'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
-  let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); } catch (e) {}
-  if (acc) { try { sessionStorage.setItem('bd1_rebuild', '1'); sessionStorage.removeItem('bd1_cover_back'); } catch (e) {} }
-  const go = () => { location.href = acc ? 'saves.html' : 'cover.html'; };
+  const go = () => { location.href = 'cover.html'; };
   if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(go); else go();
 };
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 try { const lr = sessionStorage.getItem('bd1_leave_room'); sessionStorage.removeItem('bd1_leave_room'); const cur = NET.room();
   if (lr || cur) { const id = lr || cur.id; NET.leave(id); } } catch (e) {}
-try { if (sessionStorage.getItem('bd1_acc')) $('#home').innerHTML = '&#9666; SAVES'; } catch (e) {}
-// botão voltar do aparelho = botão do canto (SAVES ou INÍCIO)
+// botão voltar do aparelho = botão do canto (INÍCIO)
 try { history.pushState({ sl: 1 }, ''); } catch (e) {}
 function backOv(map) { const ovs = [...document.querySelectorAll('.ov')].filter(o => !o.hidden); if (!ovs.length) return false; const o = ovs[ovs.length - 1]; const b = map[o.id]; if (typeof b === 'function') b(); else if (b) { const el = document.querySelector(b); if (el && !el.hidden) el.click(); else o.hidden = true; } return true; }
 addEventListener('popstate', () => { if (leaving) { try { history.pushState({ sl: 1 }, ''); } catch (e) {} return; } if (backOv({ 'ov-mk': '#mk-no', 'ov-cd': '#cd-no', 'ov-lb': '#lb-out' })) { try { history.pushState({ sl: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
