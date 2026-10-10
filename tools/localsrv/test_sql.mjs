@@ -120,3 +120,11 @@ const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert
   ok('editor so da conta fiuphis, historico preservado');
 }
 console.log('TODOS OS TESTES SQL PASSARAM');
+
+// teto de 28 por sala
+{ const [own, ...ps] = U(31); const r = await call(own, 'create_room', { p_public: true, p_name: 'CAP' });
+  for (let i = 0; i < 27; i++) await call(ps[i], 'join_room', { p_room: r.id, p_code: r.code });
+  await fails(call(ps[27], 'join_room', { p_room: r.id, p_code: r.code }), 'sala_cheia');
+  await call(ps[0], 'join_room', { p_room: r.id, p_code: r.code });   // quem ja esta volta
+  await call(ps[0], 'leave_room', { p_room: r.id }).catch(() => {});
+  ok('sala limitada a 28 jogadores; membro existente volta'); }
