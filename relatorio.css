@@ -1,0 +1,42 @@
+/* Relatório final da partida: tela separada, legível, no visual do jogo (não é o papiro). */
+.pg{gap:3cqw;padding-bottom:6cqw}
+.plaque.win h1{color:#9fe3a8;text-shadow:0 .9cqw 0 #0e3a1c,.5cqw 0 0 #0e3a1c,-.5cqw 0 0 #0e3a1c,0 -.5cqw 0 #0e3a1c}
+.plaque.lose h1{color:#ff8a98;text-shadow:0 .9cqw 0 #4a0a14,.5cqw 0 0 #4a0a14,-.5cqw 0 0 #4a0a14,0 -.5cqw 0 #4a0a14}
+.rp{flex:none;display:flex;flex-direction:column;gap:2.2cqw;padding:3cqw 3cqw 3.2cqw;border:solid transparent;border-width:2.6cqw;border-image:url(tip_frame.png) 8 fill/2.6cqw stretch;image-rendering:pixelated;background:#0b0718}
+.rp[hidden]{display:none}
+.rt{margin:0;font-size:3.3cqw;letter-spacing:.4cqw;color:var(--gold);text-shadow:0 .3cqw 0 #1a0c06}
+.rt small{font-size:2.4cqw;color:var(--dim);letter-spacing:.2cqw;margin-left:1.4cqw}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:2cqw}
+.kv div{padding:2cqw 2.4cqw;border:solid transparent;border-width:1.8cqw;border-image:url(ui_chip.png) 6 fill/1.8cqw stretch;image-rendering:pixelated;display:flex;flex-direction:column;gap:.8cqw}
+.kv span{font-size:2.3cqw;letter-spacing:.2cqw;color:var(--dim)}
+.kv b{font-size:4.4cqw;color:#fff1c8;letter-spacing:.2cqw}
+.bars{display:flex;flex-direction:column;gap:1.8cqw}
+.br{display:grid;grid-template-columns:19cqw 1fr 16cqw;align-items:center;gap:2cqw;font-size:2.7cqw;letter-spacing:.15cqw}
+.br em{font-style:normal;color:var(--c);text-shadow:0 .3cqw 0 #1a0c06}
+.br i{display:block;height:3cqw;background:#140e24;border:.4cqw solid #3a3050;position:relative}
+.br i s{position:absolute;left:0;top:0;bottom:0;background:var(--c)}
+.br span{text-align:right;color:#fff1c8}
+.rk{display:grid;grid-template-columns:repeat(5,1fr);gap:1.4cqw;text-align:center}
+.rk div{padding:1.4cqw 0;border:.4cqw solid #3a3050;background:#140e24;font-size:2.4cqw;color:var(--dim)}
+.rk b{display:block;font-size:3cqw;color:var(--gold)}
+.pt{display:flex;flex-direction:column;gap:1.4cqw}
+.pr{display:grid;grid-template-columns:1fr 17cqw 13cqw 11cqw;gap:1.6cqw;align-items:center;font-size:2.6cqw;letter-spacing:.1cqw;color:#fff1c8;padding:1.2cqw 0;border-bottom:.3cqw solid #241a38}
+.pr:last-child{border-bottom:0}
+.pr .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr .n.me{color:var(--gold)}
+.pr .g{color:var(--c)}
+.pr.h{color:var(--dim);font-size:2.2cqw}
+.hq{display:flex;flex-direction:column;gap:2cqw}
+.qi{display:flex;flex-direction:column;gap:1.2cqw;padding:2cqw 2.4cqw;border:solid transparent;border-width:1.8cqw;border-image:url(ui_chip.png) 6 fill/1.8cqw stretch;image-rendering:pixelated}
+.qh{display:flex;gap:1.6cqw;align-items:center;font-size:2.4cqw;color:var(--dim);letter-spacing:.2cqw}
+.qh b{color:var(--gold)}
+.qx{font-size:2.8cqw;line-height:1.35;color:#fff1c8;letter-spacing:.1cqw}
+.qa{font-size:2.6cqw;color:#9fe3a8;letter-spacing:.1cqw;line-height:1.3}
+.cs{display:flex;gap:1.4cqw;flex-wrap:wrap}
+.cs span{font-size:2.2cqw;padding:.6cqw 1.4cqw;border:.4cqw solid #3a3050;color:var(--dim);letter-spacing:.1cqw}
+.cs span.ok{color:#9fe3a8;border-color:#2f7a45}
+.cs span.no{color:#ff8a98;border-color:#7a2f3c}
+.ql{display:flex;flex-direction:column;gap:2cqw;max-height:120cqw;overflow-y:auto;padding-right:1.2cqw;scrollbar-width:thin;scrollbar-color:#c8902a #140e24}
+.empty{font-size:2.8cqw;color:var(--dim);line-height:1.5;text-align:center;padding:3cqw 0;letter-spacing:.2cqw}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:2.6cqw;height:15cqw;flex:none}
+.acts .chip{height:100%;font-size:3cqw}

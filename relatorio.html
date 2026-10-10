@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script>try{if(sessionStorage.getItem('bd1_gate'))document.documentElement.classList.add('gt')}catch(e){}</script>
+<style>html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}</style>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="salas.css">
+<link rel="stylesheet" href="relatorio.css">
+<title>Relatório da partida</title>
+</head>
+<body data-pxt>
+<div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
+<main class="pg" id="pg">
+  <section class="plaque" id="hd"><h1 id="rs">RELATÓRIO</h1><p id="rb">Carregando</p></section>
+  <section class="rp" id="me"></section>
+  <section class="rp" id="gr"></section>
+  <section class="rp" id="pl"></section>
+  <section class="rp" id="hq"></section>
+  <section class="rp" id="qs"></section>
+  <div class="acts">
+    <button id="again" class="chip blue" type="button">JOGAR DE NOVO</button>
+    <button id="map" class="chip gold" type="button">IR PARA O MAPA</button>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</main>
+<script src="lib/supabase.js"></script>
+<script src="net.js"></script>
+<script src="match.js"></script>
+<script src="gate.js"></script>
+<script src="relatorio.js"></script>
+<script src="fs.js"></script>
+</body>
+</html>

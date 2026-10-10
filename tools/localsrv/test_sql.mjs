@@ -81,4 +81,8 @@ const fin = await call(u2, 'end_match', { p_match: m.id, p_result: 'won' }); ass
 st = await call(u1, 'match_state', { p_room: room.id }); assert.equal(st.room.status, 'lobby'); assert.equal(st.match.status, 'won'); assert.deepEqual(st.room.progress.done, [0]);
 const rep = await call(u1, 'match_report', { p_match: m.id }); assert.ok(rep.rounds.length >= 1); assert.equal(rep.players.length, 1); ok('fim, snapshot, relatorio');
 await call(u1, 'start_match', { p_room: room.id, p_boss: 1 }); ok('revanche cria nova partida');
+// partida abandonada: sem sinal por mais de 3 horas -> encerrada como abandonada, sala volta ao lobby, revanche possivel
+await db.exec(`update public.player_presence set last_seen = now() - interval '4 hours' where room_id = '${room.id}'`);
+st = await call(u1, 'match_state', { p_room: room.id }); assert.equal(st.match.status, 'aborted'); assert.equal(st.room.status, 'lobby');
+const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert.equal(m3.status, 'playing'); ok('partida abandonada expira e permite nova');
 console.log('TODOS OS TESTES SQL PASSARAM');

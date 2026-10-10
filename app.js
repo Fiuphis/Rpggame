@@ -1652,13 +1652,19 @@ async function onlActions(SR){
 function onlFinish(win){
   if (!ONL.on || ONL.fin) return; ONL.fin = true;
   const st = state.stats;
-  MATCH.stats(ONL.matchId, {hero:activeGroup, rounds:state.round, rank:st.rank, gained:st.gained, spent:st.spent, used:st.used, boss_pct:Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100)), win:!!win}).catch(() => {});
+  const mine = {hero:activeGroup, rounds:state.round, rank:st.rank, gained:st.gained, spent:st.spent, used:st.used, boss_pct:Math.max(0, Math.round(state.bossHp / BOSS_MAX_HP * 100)), win:!!win};
+  try { sessionStorage.setItem('bd1_report', JSON.stringify({match:ONL.matchId, win:!!win, hero:activeGroup, stats:mine, rounds:state.round, bossName:ST.name, members:(ONL.s && ONL.s.members ? ONL.s.members.length : 1)})); } catch (e) {}
+  MATCH.stats(ONL.matchId, mine).catch(() => {});
   MATCH.end(ONL.matchId, win ? 'won' : 'lost').catch(() => {});
   setTimeout(() => ONL.stop(), 4000);
 }
 function onlLeave(page){ try { sessionStorage.setItem('bd1_gate', '1'); if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); location.href = page + location.search; }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
-function onlMatchOver(s){ if (state.over) return; const m = s && s.match; endGame(!!(m && m.status === 'won')); }
+function onlMatchOver(s){
+  if (state.over) return; const m = s && s.match;
+  if (m && m.status === 'aborted') { state.over = true; ONL.fin = true; showBanner('PARTIDA ENCERRADA', 'ficou sem jogadores por muito tempo'); setTimeout(() => onlLeave('espera.html'), 3500); return; }
+  endGame(!!(m && m.status === 'won'));
+}
 
 async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   if (state.over) return;
@@ -2014,6 +2020,10 @@ function endGame(win){
   state.over = true; onlFinish(win); if (state.tsOv) timeResume(); clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
   if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }
   else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
+  if (ONL.on) {   // online: o resultado fica no jogo por alguns segundos e o relatorio completo abre em tela separada
+    try { if (win) sessionStorage.setItem('bd1_justwon', String(ST.id)); } catch (e) {}
+    showBanner(win ? 'VITÓRIA!' : 'DERROTA', 'preparando o relatório da partida'); setTimeout(() => onlLeave('relatorio.html'), 5000); return;
+  }
   const o = $('#end-screen'); o.querySelector('h2').textContent = win ? 'VITÓRIA!' : 'DERROTA';
   o.querySelector('p').textContent = win ? ST.win : 'Todos os heróis caíram.';
   if (win) { try { const d = JSON.parse(localStorage.getItem('bd1_progress')) || {done:[]}; if (!d.done.includes(ST.id)) d.done.push(ST.id); localStorage.setItem('bd1_progress', JSON.stringify(d)); sessionStorage.setItem('bd1_justwon', String(ST.id)); } catch {} }

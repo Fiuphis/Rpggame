@@ -64,9 +64,11 @@ function floatBtn(){
     const w = size(), mx = Math.max(1, innerWidth - w), my = Math.max(1, innerHeight - w), l = Math.min(mx, Math.max(0, e.clientX - drag.ox)), t = Math.min(my, Math.max(0, e.clientY - drag.oy)); pos = {x:l / mx, y:t / my}; place(); });
   const end = e => { if (!drag || e.pointerId !== drag.id) return; e.stopPropagation(); const moved = drag.moved; drag = null; try { b.releasePointerCapture(e.pointerId); } catch {} heat(); if (moved) save(); };
   b.addEventListener('pointerup', e => { const was = drag && !drag.moved; end(e); if (was) { cur() ? window.FS.exit() : window.FS.enter(); setTimeout(paint, 250); setTimeout(paint, 900); } });
-  b.addEventListener('pointercancel', e => { drag = null; heat(); });
+  b.addEventListener('pointercancel', e => { if (drag && drag.moved) save(); drag = null; heat(); });
   b.addEventListener('click', e => { e.stopPropagation(); e.preventDefault(); });
-  ['touchstart', 'touchend', 'mousedown', 'mouseup'].forEach(t => b.addEventListener(t, e => e.stopPropagation()));
+  ['touchstart', 'touchmove', 'touchend', 'mousedown', 'mouseup'].forEach(t => b.addEventListener(t, e => { e.stopPropagation(); if (t === 'touchstart' || t === 'touchmove') { if (e.cancelable) e.preventDefault(); } }, {passive: false}));   // segurar e arrastar: nada de rolagem, selecao ou menu do navegador
+  b.addEventListener('contextmenu', e => { e.preventDefault(); e.stopPropagation(); });
+  b.addEventListener('dragstart', e => e.preventDefault());
   window.FS.onChange(() => { paint(); heat(); });
   addEventListener('resize', place); addEventListener('orientationchange', () => setTimeout(place, 200));
   place(); paint(); if (/(^|\/)cover\.html$/.test(location.pathname)) heat(10000);   // aceso 10 s só ao entrar na tela inicial (junto do aviso); nas outras páginas só acende ao tocar, arrastar ou segurar
