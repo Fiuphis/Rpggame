@@ -23,8 +23,13 @@ const col = k => (G.find(g => g[0] === k) || G[0])[2], nme = k => (G.find(g => g
 
 function meta(s) {
   const r = s.resumo || {}; const parts = [];
-  if (s.rev === 0) parts.push('<b>NOVO</b> · ainda não jogado'); else { if (r.fase != null) parts.push('<b>FASE ' + esc(r.fase) + '</b>'); if (r.moedas != null) parts.push(esc(r.moedas) + ' moedas'); if (!parts.length) parts.push('<b>EM ANDAMENTO</b>'); parts.push('salvo ' + ago(s.updated_at)); }
-  return parts.join(' · ');
+  if (s.rev === 0) parts.push('<b>NOVO</b> · ainda não jogado'); else { if (r.fase != null) parts.push('<b>GUARDIÕES ' + esc(r.fase) + '/6</b>'); if (!parts.length) parts.push('<b>EM ANDAMENTO</b>'); parts.push('salvo ' + ago(s.updated_at)); }
+  let h = parts.join(' · ');
+  if (s.rev !== 0 && r.her) {   // status por herói: moedas e itens guardados
+    const row = G.filter(g => r.her[g[0]]).map(([k, n, c]) => `<span class="hs" style="--c:${c}"><img src="salas/ic_${k}.png" alt="${n}"><b>${esc(r.her[k].o)}</b><i>${esc(r.her[k].i)} it.</i></span>`).join('');
+    if (row) h += `<span class="hrow">${row}</span>`;
+  }
+  return h;
 }
 function cur() { try { return JSON.parse(SS.get('bd1_save')); } catch (e) { return null; } }
 function list() {
@@ -64,8 +69,25 @@ $('#nw-ok').onclick = async () => {
   busy = false; $('#nw-ok').disabled = false;
 };
 
+// ---------- exportar / importar código do save ----------
+const enc = o => 'BD1S:' + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const dec = c => { c = String(c || '').trim(); if (!c.startsWith('BD1S:')) return null; try { const o = JSON.parse(decodeURIComponent(escape(atob(c.slice(5))))); return o && (o.v === 1 || o.v === 2) ? o : null; } catch (e) { return null; } };
+$('#ed-exp').onclick = async () => {
+  if (busy || !editing) return; busy = true;
+  try { const full = await NET.readSave(editing.id); const code = enc(full.data && full.data.v ? full.data : { v: 2, cls: null, prog: null, saves: {}, resumo: { fase: 0, moedas: 0, her: {} } }); $('#ed-code').value = code; $('#ed-code').hidden = false; $('#ed-codeap').hidden = true; try { await navigator.clipboard.writeText(code); $('#ed-e').textContent = 'Código copiado. Guarde em lugar seguro.'; } catch (e) { $('#ed-e').textContent = 'Copie o código abaixo e guarde.'; } $('#ed-code').select(); }
+  catch (e) { $('#ed-e').textContent = NET.msg(e); } busy = false;
+};
+$('#ed-imp').onclick = () => { $('#ed-code').value = ''; $('#ed-code').hidden = false; $('#ed-codeap').hidden = false; $('#ed-e').textContent = 'Cole o código. Isso substitui o progresso deste save.'; $('#ed-code').focus(); };
+$('#ed-codeap').onclick = async () => {
+  if (busy || !editing) return; const d = dec($('#ed-code').value); if (!d) { $('#ed-e').textContent = 'Código inválido.'; return; }
+  busy = true;
+  try { const full = await NET.readSave(editing.id); const rev = await NET.writeSave(editing.id, d, full.rev); editing.rev = rev; editing.resumo = d.resumo || null; const c = cur(); if (c && c.id === editing.id) { NET.SV.apply(d); SS.set('bd1_save', JSON.stringify({ id: editing.id, name: editing.name, rev, cls: d.cls || d.class || null })); }
+    $('#ov-ed').hidden = true; list(); toast('Save importado.'); }
+  catch (e) { $('#ed-e').textContent = NET.msg(e); } busy = false;
+};
+
 // ---------- editar ----------
-function openEdit(s) { editing = s; $('#ed-n').value = s.name; $('#ed-e').textContent = ''; $('#ed-main').hidden = false; $('#ed-conf').hidden = true; $('#ov-ed').hidden = false; }
+function openEdit(s) { editing = s; $('#ed-n').value = s.name; $('#ed-e').textContent = ''; $('#ed-code').hidden = true; $('#ed-codeap').hidden = true; $('#ed-main').hidden = false; $('#ed-conf').hidden = true; $('#ov-ed').hidden = false; }
 $('#ed-no').onclick = () => { $('#ov-ed').hidden = true; };
 $('#ed-ok').onclick = async () => {
   if (busy || !editing) return; const n = $('#ed-n').value.trim(); if (!n) { $('#ed-e').textContent = 'Dê um nome de 1 a 20 letras.'; return; }

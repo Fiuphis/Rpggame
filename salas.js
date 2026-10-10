@@ -47,14 +47,20 @@ function close(id) { $(id).hidden = true; }
 let pub = true;
 function setPub(v) { pub = v; document.querySelectorAll('#seg .chip').forEach(b => b.classList.toggle('on', (b.dataset.pub === '1') === v)); $('#mk-h').textContent = v ? 'Aparece na lista para qualquer jogador entrar.' : 'Fica escondida da lista. Só entra quem tiver o código.'; }
 $('#seg').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) setPub(b.dataset.pub === '1'); });
-$('#mk').onclick = () => { setPub(true); setTest(false); $('#nm').value = ''; $('#mk-e').textContent = ''; made = null; open('#ov-mk'); };
+$('#mk').onclick = () => { setPub(true); setTest(false); setTm('normal'); $('#nm').value = ''; $('#mk-e').textContent = ''; made = null; open('#ov-mk'); };
 $('#mk-no').onclick = () => close('#ov-mk');
+let tmode = 'normal';
+const TM = { fast: ['RÁPIDO', 'Tempo rápido: 70% do normal (17 s no rank C, 32 s no SS).'], normal: ['NORMAL', 'Tempo normal: de 25 s (rank C) a 45 s (rank SS).'], long: ['LONGO', 'Tempo longo: 150% do normal (38 s no rank C, 68 s no SS).'] };
+function setTm(v) { tmode = v; document.querySelectorAll('#seg-tm .chip').forEach(b => b.classList.toggle('on', b.dataset.tm === v)); $('#tm-h').textContent = TM[v][1]; }
+$('#seg-tm').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) setTm(b.dataset.tm); });
 let testOn = false;
 function setTest(v) { testOn = v; const b = $('#tt'); b.classList.toggle('on', v); b.setAttribute('aria-pressed', v); b.textContent = 'MODO TESTE: ' + (v ? 'LIGADO' : 'DESLIGADO'); }
 $('#tt').onclick = () => setTest(!testOn);
 $('#mk-ok').onclick = async () => {
   const b = $('#mk-ok'); b.disabled = true; $('#mk-e').textContent = '';
   try { await NET.ready(); made = await NET.createRoom(pub, $('#nm').value.trim());
+    if (tmode !== 'normal' && !NET.MOCK) { try { await NET.rpc('set_room_config', { p_room: made.id, p_time: tmode }); } catch (e) { toast(NET.msg(e)); } }
+    made.tmode = tmode;
     try { testOn ? localStorage.setItem('bd1_auto', '1') : localStorage.removeItem('bd1_auto'); } catch (e) {}   // o modo teste é uma regra da sala, definida só por quem a cria
     close('#ov-mk'); lobby(made, true); }
   catch (e) { $('#mk-e').textContent = NET.msg(e); }
@@ -94,7 +100,8 @@ function lobby(r, owner) {
   lbRoom = r; lbOwner = !!owner; clearInterval(timer);
   $('#lb-t').textContent = r.name ? r.name : 'SALA'; $('#lb-c').textContent = r.code || '------';
   $('#lb-h').textContent = r.is_public === false || r.pub === false ? 'Sala privada. Passe o código para os colegas entrarem.' : 'Sala pública. O código também serve para chamar amigos.';
-  $('#lb-n').textContent = '1 JOGADOR'; $('#lb-l').innerHTML = ''; $('#lb-go').hidden = !lbOwner; $('#lb-go').disabled = false; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.';
+  $('#lb-n').textContent = '1 JOGADOR'; $('#lb-l').innerHTML = '';
+  if (r.tmode && r.tmode !== 'normal') $('#lb-h').textContent += ' Tempo ' + TM[r.tmode][0].toLowerCase() + '.'; $('#lb-go').hidden = !lbOwner; $('#lb-go').disabled = false; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.';
   document.querySelectorAll('.ov').forEach(o => o.hidden = true); open('#ov-lb');
   const tick = async () => {
     if (leaving) return;

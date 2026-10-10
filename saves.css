@@ -46,3 +46,5 @@
 .dlg .chip.wide{font-size:13px;letter-spacing:1.5px;height:46px;border-width:9px;border-image-width:9px}
 
 .tabs.two{grid-template-columns:1fr 1fr;height:11cqw}.tabs.two .tab{font-size:3.2cqw;letter-spacing:.3cqw}
+
+.hrow{display:flex;flex-wrap:wrap;gap:1.4cqw 2.4cqw;margin-top:1.4cqw}.hs{display:inline-flex;align-items:center;gap:.9cqw;font-size:2.4cqw;color:#fff1c8}.hs img{height:3.6cqw;width:auto}.hs i{font-style:normal;color:var(--dim)}.sv.sel::before{box-shadow:0 0 3cqw var(--c)}

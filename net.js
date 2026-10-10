@@ -158,7 +158,8 @@ const SV = {
     GK.forEach(g => { const v = lsg('bd1_save_' + g); if (v != null) saves[g] = v; });
     if (!GK.includes(cls)) { const a = SV.active(); cls = a && a.cls || null; }
     const s = jp(saves[cls || 'mage']) || {};
-    return { v: 2, cls, prog, saves, resumo: { fase: Array.isArray(p.done) ? p.done.length : 0, moedas: Number(s.gold) || 0, cls } };
+    const her = {}; GK.forEach(g => { const x = jp(saves[g]); if (x) her[g] = { o: Number(x.gold) || 0, i: Array.isArray(x.inventory) ? x.inventory.length : 0 }; });
+    return { v: 2, cls, prog, saves, resumo: { fase: Array.isArray(p.done) ? p.done.length : 0, moedas: Number(s.gold) || 0, cls, her } };
   },
   apply(data) {   // coloca o save da conta no jogo (vazio = jogo novo); aceita o formato antigo (por classe)
     GK.forEach(g => lss('bd1_save_' + g, null)); lss('bd1_progress', null);

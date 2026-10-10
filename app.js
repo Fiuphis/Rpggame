@@ -1472,7 +1472,7 @@ function onlNet(SR){
     counts: i => { const r = onlRd(SR.id); return r && r.tally ? (r.tally[String(i)] || 0) : 0; },
     my: () => { const r = onlRd(SR.id); return r && r.my_vote; },
     vote: i => { MATCH.vote(SR.id, i).catch(e => { toast(NET.msg(e)); }).then(() => ONL.refresh()); },
-    done: () => { const r = onlRd(SR.id), g = grp(r); return !r ? true : (r.status !== 'open' || !!(g && g.locked)); },
+    done: () => { const r = onlRd(SR.id), g = grp(r), m = ONL.match(); return !r || (m && m.status !== 'playing') ? true : (r.status !== 'open' || !!(g && g.locked)); },
     result: () => { const g = grp(onlRd(SR.id)); return g && g.chosen != null ? g.chosen : null; }
   };
 }
@@ -1482,7 +1482,7 @@ function onlActNet(SR, cnt){
     kind:'act',
     endsAt: () => { const r = onlRd(SR.id); return r && r.act_ends_at ? ONL.local(r.act_ends_at) : Date.now() + 1000; },
     counts: cnt || null,
-    done: () => { const r = onlRd(SR.id), g = r && r.groups && r.groups[ONL.me]; return !r || r.status !== 'acting' || !!(g && g.act_locked); },
+    done: () => { const r = onlRd(SR.id), g = r && r.groups && r.groups[ONL.me], m = ONL.match(); return !r || (m && m.status !== 'playing') || r.status !== 'acting' || !!(g && g.act_locked); },
     result: () => null
   };
 }

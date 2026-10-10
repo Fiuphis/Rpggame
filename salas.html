@@ -43,7 +43,14 @@
         <button type="button" class="chip" data-pub="0"><img src="salas/ic_lock.png" alt="">PRIVADA</button>
       </div>
       <p class="hint" id="mk-h">Aparece na lista para qualquer jogador entrar.</p>
-      <button type="button" class="chip wide" id="tt" aria-pressed="false">MODO TESTE: DESLIGADO</button>
+      <label style="margin-top:6px">TEMPO PARA RESPONDER</label>
+      <div class="seg" id="seg-tm" style="grid-template-columns:1fr 1fr 1fr">
+        <button type="button" class="chip" data-tm="fast">RÁPIDO</button>
+        <button type="button" class="chip on" data-tm="normal">NORMAL</button>
+        <button type="button" class="chip" data-tm="long">LONGO</button>
+      </div>
+      <p class="hint" id="tm-h">Tempo normal: de 25 s (rank C) a 45 s (rank SS).</p>
+      <button type="button" class="chip wide" id="tt" aria-pressed="false" style="width:100%;height:46px;margin:0 0 8px">MODO TESTE: DESLIGADO</button>
       <p class="hint" id="tt-h">Só o criador liga ou desliga, e só aqui. Ligado: os heróis sem jogador acertam tudo e a resposta certa aparece marcada.</p>
       <p class="err" id="mk-e"></p>
       <div class="row"><button id="mk-ok" class="chip blue" type="button">CRIAR</button><button id="mk-no" class="chip" type="button">CANCELAR</button></div>

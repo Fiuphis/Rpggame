@@ -474,6 +474,7 @@ Guerreiro: âncora das poses trocada (centro do corpo azul + chão por percentil
 - v296: removida a tela de espera apos a escolha de classe; a sala de espera generica (lista de pessoas, sem classe) fica na tela de salas; na selecao de classe o criador ve IR PARA O MAPA so quando todos escolheram (supabase/17).
 - v297: botao SAVES virou PERFIL: painel com duas abas (SAVES e PERFIL, com nome de usuario e troca de senha); sem save, JOGAR avisa que so contas criadas salvam o jogo (CRIAR CONTA ou JOGAR SEM SALVAR).
 - v298: auditoria de navegacao: voltar do mapa para a selecao de classe nao volta mais sozinho para o mapa (botao VOLTAR AO MAPA), saida do mapa com nuvem tambem na volta, relatorio entra no mapa com nuvem.
+- v300: fim de partida externo encerra a votacao na hora; status por heroi (moedas e itens) nos saves; exportar/importar codigo de save; tempo das perguntas por sala (rapido/normal/longo, supabase/18); editor de perguntas ligado ao servidor com senha (CARREGAR/ENVIAR AO SERVIDOR); secao de backup.
 - v264: modo teste realista: os outros heróis começam com 0 moedas, ganham ao acertar, têm a própria prateleira de mercador e só usam o que compraram; saves protegidos (cópia em IndexedDB, armazenamento persistente) e exportar/importar por código
 - v263: saves: 3 compartimentos na tela inicial (botão SAVES): carregar, salvar o jogo atual em outro compartimento, novo jogo, renomear, apagar; o progresso que já existia vira o SAVE 1; botão INÍCIO no menu de grupos volta à capa (saves.js)
 - v262: botão TESTE na tela inicial (liga e desliga, fica salvo): os outros três heróis acertam 100% das perguntas, escolhem a melhor habilidade (inclusive Passar a Vez e Proteção contra o Passo Gélido e o Contra-ataque), usam o ultimate na hora certa e gastam itens deles mesmos e dos aliados (curas, mana, proteção, buffs); a resposta certa da sua pergunta aparece em verde
@@ -543,3 +544,9 @@ Ele abre selecao, mapa e batalha em 7 formatos de celular + tablet e confere que
 - v249: animações extras dos heróis: reação a acerto/erro, combo de acertos (3+ e 5+), pose de pouca vida (vida abaixo de 30%) com pulso vermelho, entrada em cena, revive com coluna de luz (Clériga e Maga ganham levantar), cobertura do Tanque, luz de cura, rastro de movimento nos golpes, mais ociosas e golpes extras, poeira e rachadura nos golpes da Clériga (extras.js)
 - v248: Clériga refeita com 57 poses novas (costas, 2 px) e 24 efeitos dourados novos; estrela do cajado como origem dos disparos
 - v247: Guerreiro maior (escala 1,03): mais alto que Maga/Clériga e bem menor que o Tanque; esfera de proteção ajustada
+
+## Backup do banco (Supabase)
+- Perguntas: o editor (editor.html) exporta JSON/CSV; o `perguntas.json` do repositorio e a copia de referencia. Com a senha do editor, "CARREGAR DO SERVIDOR" baixa as perguntas que valem nas salas online.
+- Contas, saves e salas: NAO sao versionados no repositorio (dados pessoais). Copia completa: no painel do Supabase, Database > Backups (diario, conforme o plano), ou pelo terminal: `pg_dump "postgresql://postgres:SENHA@db.cdwagfofjjhnykbzixut.supabase.co:5432/postgres" --schema=public -Fc -f backup.dump` (restaurar com `pg_restore`). O esquema esta versionado em `supabase/*.sql`.
+- Saves de jogadores: cada save pode ser exportado como codigo (EDITAR > EXPORTAR CODIGO) e importado em outro save.
+- Senha do editor: guardada so como hash na tabela `editor_admin`; troque pelo botao TROCAR SENHA do editor.

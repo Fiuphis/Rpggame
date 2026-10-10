@@ -59,6 +59,13 @@ a{color:var(--gold)}
   <button id="expc">EXPORTAR CSV</button>
   <input type="file" id="file" accept=".json,.csv,.txt,application/json,text/csv" hidden>
 </div>
+<div class="bar" style="align-items:center">
+  <input id="pass" type="password" placeholder="Senha do editor (servidor)" autocomplete="off" style="flex:1;min-width:180px">
+  <button id="srv-load">CARREGAR DO SERVIDOR</button>
+  <button id="srv-send" class="pri">ENVIAR AO SERVIDOR</button>
+  <button id="srv-pass">TROCAR SENHA</button>
+</div>
+<p class="sub" style="margin-top:0">As perguntas do servidor são as que valem nas salas online. Só quem tem a senha altera.</p>
 <div id="list"></div>
 
 <div class="foot">
@@ -82,6 +89,8 @@ a{color:var(--gold)}
   <div class="bar" style="justify-content:flex-end"><button id="cancel">CANCELAR</button><button class="pri" id="ok">SALVAR</button></div>
 </div></div>
 
+<script src="lib/supabase.js"></script>
+<script src="net.js"></script>
 <script>
 const R = ['C','B','A','S','SS'];
 let Q = [], filter = 0, editing = -1, dirty = false;
@@ -118,7 +127,7 @@ function openForm(i){
 function saveForm(){
   const q = {difficulty: +$('#f-rank').value, tema: $('#f-tema').value.trim(), text: $('#f-text').value.trim(), answers: [...document.querySelectorAll('.a')].map(e => e.value.trim()), correct: +(document.querySelector('input[name=c]:checked') || {value:-1}).value};
   if (!valid(q)) { const e = $('#ferr'); e.hidden = false; e.textContent = 'Preencha a pergunta, as 4 alternativas e marque a correta.'; return; }
-  if (editing >= 0) Q[editing] = q; else Q.push(q);
+  if (editing >= 0) { if (Q[editing].id) q.id = Q[editing].id; Q[editing] = q; } else Q.push(q);
   dirty = true; $('#modal').classList.remove('open'); render(); say('Alterado. Toque em USAR NESTE APARELHO para valer no jogo deste aparelho, ou exporte o JSON.');
 }
 function download(name, text, type){ const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
@@ -145,7 +154,7 @@ function parseCSV(text){
 }
 async function doImport(file){
   const text = await file.text(); let list = [], bad = [];
-  try { if (/\.json$/i.test(file.name) || /^\s*[\[{]/.test(text)) { const j = JSON.parse(text); const all = Array.isArray(j) ? j : j.perguntas || []; list = all.filter(valid); bad = all.map((q, i) => valid(q) ? 0 : i + 1).filter(Boolean); } else { const r = parseCSV(text); list = r.out; bad = r.bad; } }
+  try { if (/\.json$/i.test(file.name) || /^\s*[\[{]/.test(text)) { const j = JSON.parse(text); const all = Array.isArray(j) ? j : j.perguntas || []; list = all.filter(valid).map(q => { const c = {...q}; delete c.id; return c; }); bad = all.map((q, i) => valid(q) ? 0 : i + 1).filter(Boolean); } else { const r = parseCSV(text); list = r.out; bad = r.bad; } }
   catch (e) { say('Arquivo inválido: ' + esc(e.message), 'warn'); return; }
   if (!list.length) { say('Nenhuma pergunta válida encontrada no arquivo.', 'warn'); return; }
   const add = confirm(`${list.length} perguntas válidas encontradas${bad.length ? ` (${bad.length} linhas ignoradas)` : ''}.\n\nOK = SUBSTITUIR o banco atual.\nCancelar = ADICIONAR às existentes.`);
@@ -174,6 +183,27 @@ $('#save').onclick = () => {
 $('#reset').onclick = async () => {
   if (!confirm('Apagar o banco salvo neste aparelho e voltar ao perguntas.json do jogo?')) return;
   try { localStorage.removeItem('bd1_questions'); } catch {} Q = []; await load();
+};
+// ---- servidor ----
+const toLocal = r => ({id: r.id, difficulty: r.rank, tema: r.theme, text: r.text, answers: r.options, correct: r.correct});
+const toServer = q => ({id: q.id || null, rank: q.difficulty, theme: q.tema || '', text: q.text, options: q.answers, correct: q.correct});
+const srvErr = r => r && r.error === 'senha' ? 'Senha incorreta (5 erros bloqueiam por 15 minutos).' : r && r.error === 'pergunta_invalida' ? 'Pergunta ' + (r.n || '?') + ' inválida.' : (r && r.error) || 'Erro desconhecido.';
+async function srv(fn, args){ try { await NET.ready(); return await NET.rpc(fn, args); } catch (e) { return {ok:false, error: /faltam_ranks/.test(String(e.message || e)) ? 'Faltam perguntas de algum rank (C, B, A, S, SS).' : NET.msg(e)}; } }
+$('#srv-load').onclick = async () => {
+  const r = await srv('admin_questions', {p_pass: $('#pass').value}); if (!r.ok) { say(esc(srvErr(r)), 'warn'); return; }
+  Q = r.list.map(toLocal); dirty = false; render(); say(`Carregado do servidor: ${Q.length} perguntas.`);
+};
+$('#srv-send').onclick = async () => {
+  const m = missingRanks(); if (m.length) { say(`Não dá para enviar: faltam perguntas do rank ${m.join(', ')}.`, 'warn'); return; }
+  if (!confirm(`Enviar ${Q.length} perguntas ao servidor? Elas passam a valer nas salas online.`)) return;
+  const r = await srv('admin_save_questions', {p_pass: $('#pass').value, p_list: Q.map(toServer)}); if (!r.ok) { say(esc(srvErr(r)), 'warn'); return; }
+  dirty = false; say(`Enviado: ${r.count} perguntas valem agora nas salas online.`);
+  const l = await srv('admin_questions', {p_pass: $('#pass').value}); if (l.ok) { Q = l.list.map(toLocal); render(); }
+};
+$('#srv-pass').onclick = async () => {
+  const n = prompt('Nova senha do editor (mínimo 8 caracteres):'); if (!n) return;
+  const r = await srv('admin_set_password', {p_old: $('#pass').value, p_new: n}); if (!r.ok) { say(esc(r.error === 'senha_curta' ? 'A senha precisa de pelo menos 8 caracteres.' : srvErr(r)), 'warn'); return; }
+  $('#pass').value = ''; say('Senha do editor alterada. Digite a nova senha para continuar.');
 };
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
 load();
