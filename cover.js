@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v302', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v303', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -148,14 +148,18 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   const loadPanel = u => { const f = document.createElement('iframe'); f.id = 'svf'; f.title = 'Saves'; f.setAttribute('allow', 'clipboard-write'); f.src = u; svp.replaceChildren(f); svf = f; };
   window.__pickSave = up => { let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
     loadPanel((acc ? 'saves.html' : 'conta.html') + '?embed' + (up && !acc ? '&m=up' : '') + location.search.replace(/^\?/, '&')); svp.hidden = false; try { history.pushState({ svp: 1 }, ''); } catch (e) {} };
-  addEventListener('message', e => { if (e.origin !== location.origin || !e.data || !e.data.bd1) return; if (e.data.bd1 === 'nav' && typeof e.data.url === 'string' && /^(saves|conta)\.html\?/.test(e.data.url)) { loadPanel(e.data.url); return; } if (e.data.bd1 === 'rep') { try { history.pushState({ svp: 1 }, ''); } catch (x) {} return; } if (e.data.bd1 === 'close' || e.data.bd1 === 'chosen') { svp.hidden = true; svp.replaceChildren(); window.__paintSv(); if (!e.data.popped && history.state && history.state.svp) { ignorePop = true; history.back(); } } });
+  addEventListener('message', e => { if (e.origin !== location.origin || !e.data || !e.data.bd1) return; if (e.data.bd1 === 'nav' && typeof e.data.url === 'string' && /^(saves|conta)\.html\?/.test(e.data.url)) { loadPanel(e.data.url); return; } if (e.data.bd1 === 'rep') { try { history.pushState({ svp: 1 }, ''); } catch (x) {} return; } if (e.data.bd1 === 'close' || e.data.bd1 === 'chosen') { svp.hidden = true; svp.replaceChildren(); window.__paintSv(); if (!e.data.popped && history.state && history.state.svp) { try { history.replaceState({ dead: 1 }, ''); dead++; } catch (x) {} } } });
   // botão voltar do aparelho: fecha o painel/janela aberto em vez de sair da tela; cada janela empilha um estado
-  let ignorePop = false; const OVS = ['#how', '#ns', '#fs-ask', '#sv'].map(i => $(i)).filter(Boolean);
+  // cada janela aberta empilha um estado; ao fechar por botão o estado vira "morto" e é pulado automaticamente no próximo voltar (sem history.back assíncrono, que atrapalhava trocar de tela)
+  const OVS = ['#how', '#ns', '#fs-ask', '#sv'].map(i => $(i)).filter(Boolean); let dead = 0;
   const anyOv = () => OVS.some(o => !o.hidden);
-  new MutationObserver(() => { if (anyOv() && !(history.state && history.state.ov)) { try { history.pushState({ ov: 1 }, ''); } catch (e) {} } else if (!anyOv() && history.state && history.state.ov) { ignorePop = true; history.back(); } }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
-  addEventListener('popstate', () => { if (ignorePop) { ignorePop = false; return; }
+  const st = () => history.state || {};
+  if (st().ov || st().dead) history.back();   // voltou de outra tela e caiu num estado de janela já fechada
+  new MutationObserver(() => { if (anyOv() && !st().ov) { try { history.pushState({ ov: 1 }, ''); } catch (e) {} } else if (!anyOv() && st().ov) { try { history.replaceState({ dead: 1 }, ''); dead++; } catch (e) {} } }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+  addEventListener('popstate', () => {
     if (!svp.hidden) { svf.contentWindow.postMessage({ bd1: 'back' }, location.origin); return; }
-    if (anyOv()) { OVS.forEach(o => { if (!o.hidden) o.hidden = true; }); } });
+    if (anyOv()) { OVS.forEach(o => { if (!o.hidden) o.hidden = true; }); return; }   // o estado da janela foi consumido pelo próprio voltar
+    if (dead > 0) { dead--; history.back(); } });
   $('#sv-btn').onclick = () => window.__pickSave();
   $('#sv-close').onclick = () => { sv.hidden = true; };
   sv.addEventListener('click', e => { if (e.target === sv) sv.hidden = true; });

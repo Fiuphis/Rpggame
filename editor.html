@@ -48,7 +48,7 @@ a{color:var(--gold)}
 </head>
 <body>
 <h1>EDITOR DE PERGUNTAS</h1>
-<p class="sub">Banco de Dados I. Edite, importe ou exporte. <a href="index.html">Voltar ao jogo</a></p>
+<p class="sub">Banco de Dados I. Edite, importe ou exporte. <a href="cover.html" id="ed-home">Voltar ao início</a></p>
 <div id="msg"></div>
 <div class="bar" id="chips"></div>
 <div class="bar"><input id="search" placeholder="Buscar no texto ou no tema" style="flex:1;min-width:180px"></div>
@@ -199,6 +199,11 @@ $('#srv-send').onclick = async () => {
   const l = await srv('admin_get_questions', {}); if (l.ok) { Q = l.list.map(toLocal); render(); }
 };
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+// voltar (link ou botão do aparelho) leva ao início; com alterações não enviadas, pergunta antes
+function edLeave() { if (dirty && !confirm('Há alterações não enviadas. Sair mesmo assim?')) return false; dirty = false; try { sessionStorage.setItem('bd1_cover_back', '1'); } catch (e) {} location.href = 'cover.html' + location.search; return true; }
+document.getElementById('ed-home').addEventListener('click', e => { e.preventDefault(); edLeave(); });
+try { history.pushState({ ed: 1 }, ''); } catch (e) {}
+addEventListener('popstate', () => { const md = $('#modal'); if (md && md.classList.contains('open')) { md.classList.remove('open'); try { history.pushState({ ed: 1 }, ''); } catch (e) {} return; } if (!edLeave()) { try { history.pushState({ ed: 1 }, ''); } catch (e) {} } });
 // o editor é só da conta do editor (fiuphis); as outras voltam para o início
 NET.account().then(a => { if (!a || a.username !== 'fiuphis') location.replace('cover.html' + location.search); else load(); }).catch(() => location.replace('cover.html' + location.search));
 </script>
