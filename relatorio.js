@@ -87,7 +87,7 @@ function go(page, flags) {
   const nav = () => { location.href = page + location.search; };
   if (window.Gate && !reduce()) Gate.close().then(nav); else nav();
 }
-$('#again').onclick = () => go(room ? 'map.html' : 'index.html');
+$('#again').onclick = () => go(room ? 'map.html' : 'index.html', room ? ['bd1_fog'] : []);
 $('#map').onclick = () => go('map.html', ['bd1_fog']);
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 try { history.pushState({ rp: 1 }, ''); } catch (e) {}

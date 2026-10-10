@@ -106,15 +106,17 @@ function goMap(){
 function waitMode(){
   if(!ONLINE||!LB||!LB.me||selected!==LB.me)return false;
   const all=LB.total>0&&LB.picked>=LB.total;
+  if(LB.stage==='map'){confirmBtn.style.setProperty('--c',LOBBY_GROUPS[selected].color);confirmBtn.disabled=false;confirmBtn.textContent='VOLTAR AO MAPA';return true}
   confirmBtn.style.setProperty('--c',LOBBY_GROUPS[selected].color);
   if(LB.owner){ if(all){confirmBtn.disabled=false;confirmBtn.textContent='IR PARA O MAPA'}else{confirmBtn.disabled=true;confirmBtn.textContent='AGUARDANDO TODOS ('+LB.picked+'/'+LB.total+')'} }
   else{confirmBtn.disabled=true;confirmBtn.textContent=all?'AGUARDANDO O CRIADOR':'AGUARDANDO TODOS ('+LB.picked+'/'+LB.total+')'}
   return true;
 }
-if(ONLINE){const pull=async()=>{try{LB=await MATCH.lobby(R.id);if(LB.stage==='map'&&LB.me)goMap();else render()}catch(e){}};pull();setInterval(pull,1500)}
+let BACK=false;try{BACK=sessionStorage.getItem('bd1_from_map')==='1';sessionStorage.removeItem('bd1_from_map')}catch(e){}   /* veio do botão voltar do mapa: não volta sozinho para lá */
+if(ONLINE){const pull=async()=>{try{LB=await MATCH.lobby(R.id);if(LB.stage==='map'&&LB.me&&!BACK&&selected===LB.me)goMap();else render()}catch(e){}};pull();setInterval(pull,1500)}
 confirmBtn.onclick=async()=>{
   if(!selected||confirmBtn.dataset.b)return;
-  if(waitMode()){ if(LB.owner&&LB.total>0&&LB.picked>=LB.total){confirmBtn.dataset.b='1';try{await MATCH.stage(R.id,'map');goMap()}catch(e){say(NET.msg(e))}delete confirmBtn.dataset.b} return; }
+  if(waitMode()){ if(LB.stage==='map'){goMap();return} if(LB.owner&&LB.total>0&&LB.picked>=LB.total){confirmBtn.dataset.b='1';try{await MATCH.stage(R.id,'map');goMap()}catch(e){say(NET.msg(e))}delete confirmBtn.dataset.b} return; }
   try{sessionStorage.setItem('bd1_pref_class',selected)}catch(e){}
   if(R){confirmBtn.dataset.b='1';try{await NET.pickGroup(R.id,selected)}catch(e){delete confirmBtn.dataset.b;say(NET.msg(e));selected=null;render();return}delete confirmBtn.dataset.b}
   const r=LOBBY.join(selected);
