@@ -108,16 +108,15 @@ const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert
   const [row] = (await db.query(`select extract(epoch from (ends_at - started_at))::int as s, question_id from public.rounds where match_id = $1`, [mm.id])).rows;
   const rank = (await db.query(`select rank from public.questions where id = $1`, [row.question_id])).rows[0].rank;
   assert.equal(row.s, Math.round((20 + 5 * rank) * 1.5) + 4); ok('tempo longo (x1,5) por sala');
-  assert.equal((await call(u1, 'admin_questions', { p_pass: 'x' })).error, 'senha');
-  assert.equal((await call(u1, 'admin_set_password', { p_old: '', p_new: 'curta' })).error, 'senha_curta');
-  assert.equal((await call(u1, 'admin_set_password', { p_old: '', p_new: 'senha-do-editor' })).ok, true);
-  assert.equal((await call(u2, 'admin_set_password', { p_old: 'errada', p_new: 'outrasenha1' })).error, 'senha');
-  const lst = await call(u1, 'admin_questions', { p_pass: 'senha-do-editor' }); assert.equal(lst.ok, true); assert.equal(lst.list.length, 20);
+  await db.exec(`insert into auth.users (id, is_anonymous) values ('${u1}', false), ('${u2}', false) on conflict do nothing`);
+  await db.exec(`insert into public.profiles (user_id, username, recovery_hash) values ('${u1}', 'fiuphis', 'x'), ('${u2}', 'outro', 'x')`);
+  assert.equal((await call(u2, 'admin_get_questions', {})).error, 'sem_permissao');
+  assert.equal((await call(u2, 'admin_put_questions', { p_list: [] })).error, 'sem_permissao');
+  const lst = await call(u1, 'admin_get_questions', {}); assert.equal(lst.ok, true); assert.equal(lst.list.length, 20);
   const edit = lst.list.map(q => ({ ...q })); edit[0].text = 'Editada?'; edit.push({ rank: 1, theme: 'T', text: 'Nova?', options: ['a', 'b', 'c', 'd'], correct: 2 }); edit.splice(1, 1);
-  const sv = await call(u1, 'admin_save_questions', { p_pass: 'senha-do-editor', p_list: edit }); assert.equal(sv.ok, true); assert.equal(sv.count, 20);
-  const l2 = await call(u1, 'admin_questions', { p_pass: 'senha-do-editor' }); assert.equal(l2.list.length, 20); assert.ok(l2.list.some(q => q.text === 'Nova?' && q.correct === 2));
-  assert.equal((await call(u1, 'admin_save_questions', { p_pass: 'senha-do-editor', p_list: [{ rank: 1, text: 'x', options: ['a'], correct: 0 }] })).error, 'pergunta_invalida');
-  for (let i = 0; i < 5; i++) await call(u3, 'admin_questions', { p_pass: 'errada' });
-  assert.equal((await call(u1, 'admin_questions', { p_pass: 'senha-do-editor' })).error, 'senha', 'bloqueado apos 5 erros'); ok('editor de perguntas com senha, bloqueio e historico preservado');
+  const sv = await call(u1, 'admin_put_questions', { p_list: edit }); assert.equal(sv.ok, true); assert.equal(sv.count, 20);
+  const l2 = await call(u1, 'admin_get_questions', {}); assert.equal(l2.list.length, 20); assert.ok(l2.list.some(q => q.text === 'Nova?' && q.correct === 2));
+  assert.equal((await call(u1, 'admin_put_questions', { p_list: [{ rank: 1, text: 'x', options: ['a'], correct: 0 }] })).error, 'pergunta_invalida');
+  ok('editor so da conta fiuphis, historico preservado');
 }
 console.log('TODOS OS TESTES SQL PASSARAM');

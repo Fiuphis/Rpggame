@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v300', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v301', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -141,12 +141,13 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   // o save é escolhido aqui no início (saves genéricos da conta); o painel antigo de compartimentos locais não é mais aberto
   const cur = () => { try { return JSON.parse(sessionStorage.getItem('bd1_save')); } catch (e) { return null; } };
   const paintSv = () => { const c = cur(); let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} act.textContent = c && c.name ? c.name : (u ? u.toUpperCase() : 'ENTRAR'); $('#sv-btn').classList.toggle('chosen', !!c); };
-  window.__paintSv = paintSv; paintSv();
+  const edl = () => { let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} const l = $('#ed-link'); if (l) l.hidden = u !== 'fiuphis'; };
+  const paintSv0 = paintSv; window.__paintSv = () => { paintSv0(); edl(); }; paintSv(); edl();
   // a escolha de save abre dentro do próprio menu (painel sobre a tela inicial), sem trocar de página nem animar
   const svp = $('#svp'), svf = $('#svf');
   window.__pickSave = up => { let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
     svf.src = (acc ? 'saves.html' : 'conta.html') + '?embed' + (up && !acc ? '&m=up' : '') + location.search.replace(/^\?/, '&'); svp.hidden = false; };
-  addEventListener('message', e => { if (e.origin !== location.origin || !e.data || !e.data.bd1) return; if (e.data.bd1 === 'close' || e.data.bd1 === 'chosen') { svp.hidden = true; svf.src = 'about:blank'; paintSv(); } });
+  addEventListener('message', e => { if (e.origin !== location.origin || !e.data || !e.data.bd1) return; if (e.data.bd1 === 'close' || e.data.bd1 === 'chosen') { svp.hidden = true; svf.src = 'about:blank'; window.__paintSv(); } });
   $('#sv-btn').onclick = () => window.__pickSave();
   $('#sv-close').onclick = () => { sv.hidden = true; };
   sv.addEventListener('click', e => { if (e.target === sv) sv.hidden = true; });

@@ -59,13 +59,11 @@ a{color:var(--gold)}
   <button id="expc">EXPORTAR CSV</button>
   <input type="file" id="file" accept=".json,.csv,.txt,application/json,text/csv" hidden>
 </div>
-<div class="bar" style="align-items:center">
-  <input id="pass" type="password" placeholder="Senha do editor (servidor)" autocomplete="off" style="flex:1;min-width:180px">
+<div class="bar">
   <button id="srv-load">CARREGAR DO SERVIDOR</button>
   <button id="srv-send" class="pri">ENVIAR AO SERVIDOR</button>
-  <button id="srv-pass">TROCAR SENHA</button>
 </div>
-<p class="sub" style="margin-top:0">As perguntas do servidor são as que valem nas salas online. Só quem tem a senha altera.</p>
+<p class="sub" style="margin-top:0">As perguntas do servidor são as que valem nas salas online. Só a conta do editor altera.</p>
 <div id="list"></div>
 
 <div class="foot">
@@ -187,26 +185,22 @@ $('#reset').onclick = async () => {
 // ---- servidor ----
 const toLocal = r => ({id: r.id, difficulty: r.rank, tema: r.theme, text: r.text, answers: r.options, correct: r.correct});
 const toServer = q => ({id: q.id || null, rank: q.difficulty, theme: q.tema || '', text: q.text, options: q.answers, correct: q.correct});
-const srvErr = r => r && r.error === 'senha' ? 'Senha incorreta (5 erros bloqueiam por 15 minutos).' : r && r.error === 'pergunta_invalida' ? 'Pergunta ' + (r.n || '?') + ' inválida.' : (r && r.error) || 'Erro desconhecido.';
+const srvErr = r => r && r.error === 'sem_permissao' ? 'Esta conta não pode editar as perguntas do servidor.' : r && r.error === 'pergunta_invalida' ? 'Pergunta ' + (r.n || '?') + ' inválida.' : (r && r.error) || 'Erro desconhecido.';
 async function srv(fn, args){ try { await NET.ready(); return await NET.rpc(fn, args); } catch (e) { return {ok:false, error: /faltam_ranks/.test(String(e.message || e)) ? 'Faltam perguntas de algum rank (C, B, A, S, SS).' : NET.msg(e)}; } }
 $('#srv-load').onclick = async () => {
-  const r = await srv('admin_questions', {p_pass: $('#pass').value}); if (!r.ok) { say(esc(srvErr(r)), 'warn'); return; }
+  const r = await srv('admin_get_questions', {}); if (!r.ok) { say(esc(srvErr(r)), 'warn'); return; }
   Q = r.list.map(toLocal); dirty = false; render(); say(`Carregado do servidor: ${Q.length} perguntas.`);
 };
 $('#srv-send').onclick = async () => {
   const m = missingRanks(); if (m.length) { say(`Não dá para enviar: faltam perguntas do rank ${m.join(', ')}.`, 'warn'); return; }
   if (!confirm(`Enviar ${Q.length} perguntas ao servidor? Elas passam a valer nas salas online.`)) return;
-  const r = await srv('admin_save_questions', {p_pass: $('#pass').value, p_list: Q.map(toServer)}); if (!r.ok) { say(esc(srvErr(r)), 'warn'); return; }
+  const r = await srv('admin_put_questions', {p_list: Q.map(toServer)}); if (!r.ok) { say(esc(srvErr(r)), 'warn'); return; }
   dirty = false; say(`Enviado: ${r.count} perguntas valem agora nas salas online.`);
-  const l = await srv('admin_questions', {p_pass: $('#pass').value}); if (l.ok) { Q = l.list.map(toLocal); render(); }
-};
-$('#srv-pass').onclick = async () => {
-  const n = prompt('Nova senha do editor (mínimo 8 caracteres):'); if (!n) return;
-  const r = await srv('admin_set_password', {p_old: $('#pass').value, p_new: n}); if (!r.ok) { say(esc(r.error === 'senha_curta' ? 'A senha precisa de pelo menos 8 caracteres.' : srvErr(r)), 'warn'); return; }
-  $('#pass').value = ''; say('Senha do editor alterada. Digite a nova senha para continuar.');
+  const l = await srv('admin_get_questions', {}); if (l.ok) { Q = l.list.map(toLocal); render(); }
 };
 window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
-load();
+// o editor é só da conta do editor (fiuphis); as outras voltam para o início
+NET.account().then(a => { if (!a || a.username !== 'fiuphis') location.replace('cover.html' + location.search); else load(); }).catch(() => location.replace('cover.html' + location.search));
 </script>
 <script src="fs.js"></script>
 </body>
