@@ -161,3 +161,5 @@ textarea.sc-in{height:auto;padding:1cqw 1.4cqw;font-size:1.9cqw;text-transform:n
 .how{position:fixed}
 .how .hw{width:90cqw;height:min(84%,150cqw)}
 .fs-ask .hw{height:auto;width:84cqw}
+
+#svp{position:fixed;inset:0;z-index:50;background:#050711}#svp[hidden]{display:none}#svp iframe{display:block;width:100%;height:100%;border:0;background:#050711}

@@ -1,7 +1,7 @@
 /* Tela de conta: entrar, criar conta (nome + senha) e trocar a senha com o código de recuperação. */
 (() => {
 'use strict';
-const $ = s => document.querySelector(s), reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EMB = /[?&]embed/.test(location.search), $ = s => document.querySelector(s), reduce = () => EMB || matchMedia('(prefers-reduced-motion: reduce)').matches;
 let mode = 'in', busy = false, leaving = false, toastT = 0;
 const SS = { set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} } };
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), 2600); }
@@ -11,8 +11,8 @@ const clean = v => v.toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 16);
 // vai para outra tela com os blocos de brasa (a próxima tela os desfaz)
 function go(url, flag) {
   if (leaving) return; leaving = true;
-  if (flag) SS.set(flag, '1');
-  const nav = () => { location.href = url; };
+  if (flag && !EMB) SS.set(flag, '1');
+  const nav = () => { if (EMB) { if (url === 'cover.html' || url === 'salas.html') parent.postMessage({ bd1: 'close' }, location.origin); else location.href = url + location.search; } else location.href = url; };
   if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(nav); else nav();
 }
 const toSaves = () => go('saves.html', 'bd1_rebuild');
@@ -64,14 +64,14 @@ $('#rec-ok').onclick = async () => {
 };
 
 $('#solo').onclick = () => go('salas.html', 'bd1_rebuild');
-$('#home').onclick = () => { if (leaving) return; try { sessionStorage.setItem('bd1_cover_back', '1'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {} leaving = false; go('cover.html'); };
+$('#home').onclick = () => { if (leaving) return; if (!EMB) { try { sessionStorage.setItem('bd1_cover_back', '1'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {} } leaving = false; go('cover.html'); };
 try { history.pushState({ ct: 1 }, ''); } catch (e) {}
 addEventListener('popstate', () => { if (leaving) { try { history.pushState({ ct: 1 }, ''); } catch (e) {} return; } $('#home').click(); });
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 
 (async () => {
   try { await NET.ready(); netState(NET.MOCK ? 'mock' : 'on', NET.MOCK ? 'SIMULADO' : 'ONLINE'); } catch (e) { netState('off', 'SEM SERVIDOR'); }
-  try { const a = await NET.account(); if (a) { SS.set('bd1_acc', a.username); location.replace('saves.html'); } } catch (e) {}
+  try { const a = await NET.account(); if (a) { SS.set('bd1_acc', a.username); location.replace('saves.html' + location.search); } } catch (e) {}
 })();
 setMode('in');
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));

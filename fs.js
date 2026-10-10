@@ -41,7 +41,7 @@ window.FS = {
 // ---- botão flutuante (só ícone), em todas as páginas ----
 const PKEY = 'bd1_fs_pos';
 function floatBtn(){
-  if (!window.FS.ok() || document.getElementById('fs-float')) return;
+  if (!window.FS.ok() || document.getElementById('fs-float') || /[?&]embed/.test(location.search)) return;
   const st = document.createElement('style');
   st.textContent = `#fs-float{position:fixed;z-index:2147483000;left:0;top:0;width:clamp(38px,11vw,54px);height:clamp(38px,11vw,54px);padding:0;margin:0;border:solid transparent;border-width:7px;border-image:url(ui_chip.png) 6 fill/7px stretch;background:transparent;image-rendering:pixelated;touch-action:none;-webkit-tap-highlight-color:transparent;cursor:pointer;opacity:.55;transition:opacity 2.2s ease;user-select:none;-webkit-user-select:none;outline:none}
 #fs-float.hot{opacity:1;transition:opacity .15s ease}

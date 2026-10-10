@@ -3,14 +3,14 @@
 'use strict';
 const $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const G = [['mage', 'MAGA', '#4da3ff'], ['guerreiro', 'GUERREIRO', '#ff5a4d'], ['tank', 'TANQUE', '#cfd8ff'], ['cleriga', 'CLÉRIGA', '#ffd24d']], MAXS = 4, DEF = 2;
-const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EMB = /[?&]embed/.test(location.search), reduce = () => EMB || matchMedia('(prefers-reduced-motion: reduce)').matches;
 const SS = { get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} } };
 let saves = [], busy = false, leaving = false, toastT = 0, editing = null, loaded = false;
 
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), 2600); }
 function go(url, flag) {
-  if (leaving) return; leaving = true; if (flag) SS.set(flag, '1');
-  const nav = () => { location.href = url; };
+  if (leaving) return; leaving = true; if (flag && !EMB) SS.set(flag, '1');
+  const nav = () => { if (EMB) { if (url === 'cover.html') parent.postMessage({ bd1: flag === 'bd1_cover_back' && SS.get('bd1_save') ? 'chosen' : 'close' }, location.origin); else location.href = url + location.search; } else location.href = url; };
   if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(nav); else nav();
 }
 function ago(iso) {
@@ -80,7 +80,7 @@ $('#ed-yes').onclick = async () => {
 };
 
 // ---------- saídas ----------
-$('#home').onclick = () => { if (leaving) return; SS.set('bd1_cover_back', '1'); SS.set('bd1_rebuild', null); go('cover.html'); };
+$('#home').onclick = () => { if (leaving) return; if (!EMB) { SS.set('bd1_cover_back', '1'); SS.set('bd1_rebuild', null); } go('cover.html'); };
 $('#out').onclick = async () => {
   if (leaving || busy) return; busy = true;
   try { await NET.SV.sync(true); } catch (e) {}                               // guarda o que estava em jogo
@@ -92,7 +92,7 @@ $('#out').onclick = async () => {
     }
     localStorage.removeItem('bd1_acc_applied');
   } catch (e) {}   // devolve ao aparelho o progresso de antes da conta
-  SS.set('bd1_save', null); SS.set('bd1_pref_class', null);
+  SS.set('bd1_save', null); SS.set('bd1_pref_class', null); SS.set('bd1_acc', null);
   busy = false; go('conta.html', 'bd1_rebuild');
 };
 try { history.pushState({ sv: 1 }, ''); } catch (e) {}
@@ -102,7 +102,7 @@ addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 (async () => {
   $('#sl').innerHTML = '<div class="empty">CARREGANDO...</div>';
   try {
-    const a = await NET.account(); if (!a) { location.replace('conta.html'); return; }
+    const a = await NET.account(); if (!a) { location.replace('conta.html' + location.search); return; }
     SS.set('bd1_acc', a.username); $('#who').textContent = 'Conta: ' + a.username.toUpperCase();
     saves = await NET.listSaves(); loaded = true;
     list();

@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v294', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v295', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -142,7 +142,11 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   const cur = () => { try { return JSON.parse(sessionStorage.getItem('bd1_save')); } catch (e) { return null; } };
   const paintSv = () => { const c = cur(); act.textContent = c && c.name ? c.name : 'ESCOLHER'; $('#sv-btn').classList.toggle('chosen', !!c); };
   window.__paintSv = paintSv; paintSv();
-  window.__pickSave = () => { let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = acc ? 'saves.html' : 'conta.html'; };
+  // a escolha de save abre dentro do próprio menu (painel sobre a tela inicial), sem trocar de página nem animar
+  const svp = $('#svp'), svf = $('#svf');
+  window.__pickSave = () => { let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
+    svf.src = (acc ? 'saves.html' : 'conta.html') + '?embed' + location.search.replace(/^\?/, '&'); svp.hidden = false; };
+  addEventListener('message', e => { if (e.origin !== location.origin || !e.data || !e.data.bd1) return; if (e.data.bd1 === 'close' || e.data.bd1 === 'chosen') { svp.hidden = true; svf.src = 'about:blank'; paintSv(); } });
   $('#sv-btn').onclick = () => window.__pickSave();
   $('#sv-close').onclick = () => { sv.hidden = true; };
   sv.addEventListener('click', e => { if (e.target === sv) sv.hidden = true; });
