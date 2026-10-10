@@ -83,7 +83,8 @@ button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-v
 .toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* janelas */
-.ov{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:4vw;background:rgba(3,2,8,.8)}
+.ov{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:4vw;background:rgba(3,2,8,.8);overflow-y:auto;overscroll-behavior:contain}
+.ov>.dlg{margin:auto}
 .ov[hidden]{display:none}
 .dlg{width:min(92vw,520px);container-type:inline-size;border:solid transparent;border-width:11px;border-width:3.4cqw;image-rendering:pixelated;background:#0b0716}
 .dlg{display:block;padding:0}

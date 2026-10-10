@@ -42,7 +42,7 @@ $('#rf').onclick = () => load(true);
 function poll() { clearInterval(timer); timer = setInterval(() => { if (!document.hidden && !leaving && $('#ov-mk').hidden && $('#ov-cd').hidden) load(); }, 6000); }
 
 // ---------- janelas ----------
-function open(id) { const o = $(id); o.hidden = false; const f = o.querySelector('input'); if (f) setTimeout(() => f.focus(), 50); }
+function open(id) { const o = $(id); o.hidden = false; const f = o.querySelector('input'); if (f && id !== '#ov-mk') setTimeout(() => f.focus(), 50); }   // criar sala: o nome é opcional, então o teclado só abre se tocar no campo
 function close(id) { $(id).hidden = true; }
 let pub = true;
 function setPub(v) { pub = v; document.querySelectorAll('#seg .chip').forEach(b => b.classList.toggle('on', (b.dataset.pub === '1') === v)); $('#mk-h').textContent = v ? 'Aparece na lista para qualquer jogador entrar.' : 'Fica escondida da lista. Só entra quem tiver o código.'; }

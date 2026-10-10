@@ -7,6 +7,17 @@ if (window === window.top && !/[?&]noshell/.test(location.search)) {
   const f = location.pathname.split('/').pop() || 'index.html';
   if (/^[\w-]+\.html$/.test(f) && f !== 'shell.html') { location.replace('shell.html#' + f + location.search); return; }
 }
+// Teclado virtual: tocar fora do campo, apertar Enter/Ir, usar o voltar ou recolher o teclado pela setinha tiram o foco do campo (o teclado some e um novo toque no campo o reabre).
+{ const isField = t => t && t.closest && t.closest('input,textarea,select,[contenteditable="true"]');
+  const isClick = t => t && t.closest && t.closest('button,a,[role=button],.chip,.card,.node,.tab,.sv,label');
+  const blurNow = () => { const a = document.activeElement; if (a && a !== document.body && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) a.blur(); };
+  addEventListener('pointerdown', e => { if (!isField(e.target) && !isClick(e.target)) blurNow(); }, true);   // fundo/texto: some na hora
+  addEventListener('click', e => { if (!isField(e.target) && isClick(e.target)) setTimeout(blurNow, 0); }, false);   // botões: depois do clique, para o layout não pular antes
+  addEventListener('keydown', e => { if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') setTimeout(blurNow, 0); }, false);
+  addEventListener('popstate', blurNow, true);
+  addEventListener('focusin', e => { const t = e.target; if (t && t.closest && t.closest('.ov,.dlg') && /^(INPUT|TEXTAREA)$/.test(t.tagName)) setTimeout(() => { try { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) {} }, 320); });
+  const vv = window.visualViewport; if (vv) { let h = vv.height; vv.addEventListener('resize', () => { if (vv.height > h + 80) blurNow(); h = vv.height; }); }
+}
 // Toque longo / botão direito: nenhum menu do navegador (abrir/baixar imagem, copiar, compartilhar). Só as funções do próprio jogo.
 { const ok = t => t && t.closest && t.closest('input,textarea,[contenteditable="true"]');
   addEventListener('contextmenu', e => { if (!ok(e.target)) e.preventDefault(); }, true);
