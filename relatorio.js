@@ -87,8 +87,8 @@ function go(page, flags) {
   const nav = () => { location.href = page + location.search; };
   if (window.Gate && !reduce()) Gate.close().then(nav); else nav();
 }
-$('#again').onclick = () => go(room ? 'map.html' : 'index.html', room ? ['bd1_fog'] : []);
-$('#map').onclick = () => go('map.html', ['bd1_fog']);
+$('#again').onclick = () => go(room ? 'map.html' : 'index.html', []);
+$('#map').onclick = () => go('map.html', []);
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 try { history.pushState({ rp: 1 }, ''); } catch (e) {}
 addEventListener('popstate', () => { if (leaving) { try { history.pushState({ rp: 1 }, ''); } catch (e) {} return; } $('#map').click(); });

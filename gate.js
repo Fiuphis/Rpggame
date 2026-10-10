@@ -3,6 +3,7 @@
    Usada entre a tela de salas e a seleção de classe (nos dois sentidos). */
 (() => {
 'use strict';
+if (window.Gate) return;
 const de = document.documentElement, reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rnd = (() => { let s = 7; return () => (s = (s * 16807) % 2147483647) / 2147483647; })();
 let door = null, dk = '';
@@ -37,7 +38,7 @@ function build(w, h) {
 function layer() {
   const vw = innerWidth, vh = innerHeight, P = Math.max(3, Math.round(vw / 120)), c = document.createElement('canvas');
   c.style.cssText = 'position:fixed;left:0;top:0;width:100vw;height:100vh;z-index:9999;pointer-events:auto;image-rendering:pixelated;touch-action:none';
-  c.width = Math.ceil(vw / P); c.height = Math.ceil(vh / P); document.body.appendChild(c);
+  c.width = Math.ceil(vw / P); c.height = Math.ceil(vh / P); (document.body||de).appendChild(c);
   const x = c.getContext('2d'); x.imageSmoothingEnabled = false;
   const half = Math.ceil(c.width / 2) + 2, d = build(half, c.height);
   // poeira que cai quando as portas batem/abrem
@@ -55,6 +56,9 @@ function layer() {
 }
 const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 function run(ms, fn) { return new Promise(res => { const T0 = performance.now(); const st = now => { const t = Math.min(1, (now - T0) / ms); fn(t); if (t < 1) requestAnimationFrame(st); else res(); }; requestAnimationFrame(st); }); }
+// chegada: se veio pelos portões, as portas fechadas já são desenhadas ao carregar o script (no head), antes de qualquer pintura da página
+let pre = null;
+try { if (sessionStorage.getItem('bd1_gate') && !reduce()) { pre = layer(); pre.draw(1, 0, 0, 0); const mine = pre; setTimeout(() => { if (pre === mine) { mine.remove(); pre = null; de.classList.remove('gt'); } }, 9000); } } catch (e) {}
 window.Gate = {
   close(ms = 950) {
     if (reduce()) return Promise.resolve();
@@ -65,7 +69,7 @@ window.Gate = {
     let on = false; try { on = !!sessionStorage.getItem('bd1_gate'); sessionStorage.removeItem('bd1_gate'); } catch (e) {}
     if (!on) { de.classList.remove('gt'); return Promise.resolve(); }
     if (reduce()) { de.classList.remove('gt'); return Promise.resolve(); }
-    const L = layer(); L.draw(1, 0, 0, 0); de.classList.remove('gt');
+    const L = pre || layer(); pre = null; L.draw(1, 0, 0, 0); de.classList.remove('gt');
     return new Promise(r => setTimeout(r, 380)).then(() => run(ms, t => L.draw(1 - ease(t), t < .15 ? Math.round(Math.sin(t * 90) * 2) : 0, Math.sin(Math.min(1, t * 1.6) * Math.PI) * .9 + .1, t < .9 ? 1 : (1 - t) * 10))).then(() => L.remove());
   }
 };

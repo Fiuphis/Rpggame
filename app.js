@@ -1658,7 +1658,7 @@ function onlFinish(win){
   MATCH.end(ONL.matchId, win ? 'won' : 'lost').catch(() => {});
   setTimeout(() => ONL.stop(), 4000);
 }
-function onlLeave(page){ try { if (page !== 'salas.html') sessionStorage.setItem('bd1_gate', '1'); if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); location.href = page + location.search; }
+function onlLeave(page){ let gate = false; try { if (page === 'relatorio.html') { sessionStorage.setItem('bd1_gate', '1'); gate = true; } if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
@@ -2238,6 +2238,7 @@ if (ONL.on) {   // online: entra na partida do servidor (ou volta ao ponto do gr
     beginBattle(800);
   }).catch(() => { location.replace('salas.html' + location.search); });
 } else beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
+if (window.Gate) Gate.arrive();   // veio da sala pelos portões: abrem aqui
 // v132: o aviso de nova versão saiu do jogo; a atualização manual fica no menu de seleção de grupo (botão ↻ ATUALIZAR)
 if('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
 

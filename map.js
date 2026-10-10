@@ -29,7 +29,7 @@ const boot = ROOM ? NET.ready().then(() => MATCH.state(ROOM.id)).then(s => {
 }).catch(() => {}) : Promise.resolve();
 // quem não é o criador só assiste ao mapa: quando o criador inicia a partida, todos entram juntos
 boot.then(() => { if (!ROOM || isOwner) return; const w = MATCH.watch(ROOM.id, st => { if (leaving || !(st.match && st.match.status === 'playing' && st.me)) return; leaving = true; w.stop();
-  try { sessionStorage.setItem('bd1_boss', String(st.match.boss || 0)); sessionStorage.setItem('bd1_gate', '1'); } catch (e) {}
+  try { sessionStorage.setItem('bd1_boss', String(st.match.boss || 0)); } catch (e) {}
   const go = () => { location.href = 'game.html' + location.search; }; document.body.classList.add('mleaving'); Fog.close($('#map'), 1000).then(go); }); });
 boot.then(() => fetch('map/meta.json')).then(r => r.json()).then(m => { meta = m; build(); });
 function build(){
@@ -49,6 +49,7 @@ function build(){
   const won = sessionStorage.getItem('bd1_justwon'); sessionStorage.removeItem('bd1_justwon');
   const before = won !== null && done.includes(+won) ? done.filter(d => d !== +won) : done;
   paint(before, true);
+  if (window.Gate) Gate.arrive();   // veio do relatório pelos portões: as portas abrem
   const fogFlag = sessionStorage.getItem('bd1_fog'); sessionStorage.removeItem('bd1_fog');
   const veil = $('#veil'), mp = $('#map');
   if (fogFlag) {   // veio da seleção de grupo: nuvens cobrem tudo (paradas no meio), depois saem do meio até as bordas do mapa
