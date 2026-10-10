@@ -94,13 +94,14 @@ function lobby(r, owner) {
   lbRoom = r; lbOwner = !!owner; clearInterval(timer);
   $('#lb-t').textContent = r.name ? r.name : 'SALA'; $('#lb-c').textContent = r.code || '------';
   $('#lb-h').textContent = r.is_public === false || r.pub === false ? 'Sala privada. Passe o código para os colegas entrarem.' : 'Sala pública. O código também serve para chamar amigos.';
-  $('#lb-n').textContent = '1 JOGADOR'; $('#lb-go').hidden = !lbOwner; $('#lb-go').disabled = false; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.';
+  $('#lb-n').textContent = '1 JOGADOR'; $('#lb-l').innerHTML = ''; $('#lb-go').hidden = !lbOwner; $('#lb-go').disabled = false; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.';
   document.querySelectorAll('.ov').forEach(o => o.hidden = true); open('#ov-lb');
   const tick = async () => {
     if (leaving) return;
     try { const l = await MATCH.lobby(r.id); if (leaving) return;
       if (lbOwner !== !!l.owner) { lbOwner = !!l.owner; $('#lb-go').hidden = !lbOwner; }
       $('#lb-n').textContent = l.total + (l.total === 1 ? ' JOGADOR' : ' JOGADORES');
+      $('#lb-l').innerHTML = (l.members || []).map((m, i) => `<div class="lbp${m.me ? ' me' : ''}"><i></i><span>${m.name ? esc(m.name) : 'JOGADOR ' + (i + 1)}</span>${m.owner ? '<u>CRIADOR</u>' : ''}</div>`).join('');
       if (l.stage !== 'gather') { proceed(l); return; } } catch (e) { $('#lb-m').textContent = NET.msg(e); }
   };
   tick(); lbT = setInterval(tick, 1500);
@@ -108,8 +109,8 @@ function lobby(r, owner) {
 function proceed(l) {
   if (leaving) return; leaving = true; clearInterval(lbT);
   try { sessionStorage.setItem('bd1_gate', '1'); sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
-  const dest = l.stage === 'map' && l.me ? 'espera.html' : 'index.html';
-  if (dest === 'espera.html') { try { const id = localStorage.getItem('bd1_player_id') || ('p' + Math.random().toString(36).slice(2, 10)); localStorage.setItem('bd1_player_id', id); const d = { mage: [], guerreiro: [], tank: [], cleriga: [] }; d[l.me] = [id]; localStorage.setItem('bd1_lobby', JSON.stringify(d)); localStorage.setItem('bd1_lobby_seeded', '1'); } catch (e) {} }
+  const dest = 'index.html';
+  if (false) { try { const id = localStorage.getItem('bd1_player_id') || ('p' + Math.random().toString(36).slice(2, 10)); localStorage.setItem('bd1_player_id', id); const d = { mage: [], guerreiro: [], tank: [], cleriga: [] }; d[l.me] = [id]; localStorage.setItem('bd1_lobby', JSON.stringify(d)); localStorage.setItem('bd1_lobby_seeded', '1'); } catch (e) {} }
   const go = () => { location.href = dest + location.search; };
   if (window.Gate && !reduce()) Gate.close().then(go); else go();
 }

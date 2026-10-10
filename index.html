@@ -27,6 +27,7 @@ if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.ad
 <style>html.gt::after{content:"";position:fixed;inset:0;background:#050308;z-index:9998}.rmchip{position:absolute;right:3cqw;top:2.2cqw;font:700 2.6cqw var(--F,monospace);color:#e8dcb0;letter-spacing:.1em;padding:1.4cqw 2.4cqw;background:rgba(10,6,16,.7);border:2px solid #6e5a2c;pointer-events:none}</style>
 <script src="lib/supabase.js"></script>
 <script src="net.js"></script>
+<script src="match.js"></script>
 <script src="gate.js"></script>
 <script src="fog.js"></script>
 <script src="lobby.js"></script>
@@ -92,13 +93,34 @@ function render(){
   confirmBtn.disabled=!selected;
   confirmBtn.style.setProperty('--c',selected?LOBBY_GROUPS[selected].color:'#6e6580');
   confirmBtn.textContent=selected?`CONFIRMAR: ${LOBBY_GROUPS[selected].name}`:'ESCOLHA UMA CLASSE';
+  if(typeof waitMode==='function')waitMode();
 }
+let LB=null;
+const ONLINE=!!(R&&!NET.MOCK&&window.MATCH);
+function goMap(){
+  if(window.__leaving)return;window.__leaving=true;
+  document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');
+  setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search})},520);   /* os botões somem antes das nuvens fecharem */
+}
+/* online: depois de confirmar a classe a pessoa fica nesta tela; só o criador vê o botão do mapa, e só quando todos da sala já escolheram */
+function waitMode(){
+  if(!ONLINE||!LB||!LB.me||selected!==LB.me)return false;
+  const all=LB.total>0&&LB.picked>=LB.total;
+  confirmBtn.style.setProperty('--c',LOBBY_GROUPS[selected].color);
+  if(LB.owner){ if(all){confirmBtn.disabled=false;confirmBtn.textContent='IR PARA O MAPA'}else{confirmBtn.disabled=true;confirmBtn.textContent='AGUARDANDO TODOS ('+LB.picked+'/'+LB.total+')'} }
+  else{confirmBtn.disabled=true;confirmBtn.textContent=all?'AGUARDANDO O CRIADOR':'AGUARDANDO TODOS ('+LB.picked+'/'+LB.total+')'}
+  return true;
+}
+if(ONLINE){const pull=async()=>{try{LB=await MATCH.lobby(R.id);if(LB.stage==='map'&&LB.me)goMap();else render()}catch(e){}};pull();setInterval(pull,1500)}
 confirmBtn.onclick=async()=>{
-  if(!selected||confirmBtn.dataset.b)return;try{sessionStorage.setItem('bd1_pref_class',selected)}catch(e){}
+  if(!selected||confirmBtn.dataset.b)return;
+  if(waitMode()){ if(LB.owner&&LB.total>0&&LB.picked>=LB.total){confirmBtn.dataset.b='1';try{await MATCH.stage(R.id,'map');goMap()}catch(e){say(NET.msg(e))}delete confirmBtn.dataset.b} return; }
+  try{sessionStorage.setItem('bd1_pref_class',selected)}catch(e){}
   if(R){confirmBtn.dataset.b='1';try{await NET.pickGroup(R.id,selected)}catch(e){delete confirmBtn.dataset.b;say(NET.msg(e));selected=null;render();return}delete confirmBtn.dataset.b}
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}
-  const online=R&&!NET.MOCK;document.body.classList.add('leaving');if(!online)sessionStorage.setItem('bd1_fog','1');else sessionStorage.setItem('bd1_gate','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href=(online?'espera.html':'map.html')+location.search})},520);   /* os botões somem antes das nuvens fecharem */
+  if(ONLINE){try{LB=await MATCH.lobby(R.id)}catch(e){}render();return}
+  document.body.classList.add('leaving');sessionStorage.setItem('bd1_fog','1');setTimeout(()=>{Fog.close(document.getElementById('stage'),1000).then(()=>{location.href='map.html'+location.search})},520);
 };
 const goHome=()=>{
   if(window.__leaving)return;window.__leaving=true;

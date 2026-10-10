@@ -25,7 +25,7 @@ const pct = (v, t) => (v / t * 100) + '%';
 
 const boot = ROOM ? NET.ready().then(() => MATCH.state(ROOM.id)).then(s => {
   isOwner = !!(s.room && s.room.owner); if (s.room && s.room.progress && Array.isArray(s.room.progress.done)) done = s.room.progress.done;
-  if (s.match && s.match.status === 'playing' && s.me) { location.replace('espera.html' + location.search); return new Promise(() => {}); }
+  if (s.match && s.match.status === 'playing' && s.me) { location.replace('salas.html' + location.search); return new Promise(() => {}); }
 }).catch(() => {}) : Promise.resolve();
 // quem não é o criador só assiste ao mapa: quando o criador inicia a partida, todos entram juntos
 boot.then(() => { if (!ROOM || isOwner) return; const w = MATCH.watch(ROOM.id, st => { if (leaving || !(st.match && st.match.status === 'playing' && st.me)) return; leaving = true; w.stop();
@@ -79,7 +79,7 @@ $('#c-no').onclick = () => { $('#confirm').hidden = true; };
 $('#c-yes').onclick = () => { localStorage.removeItem(KEY); sessionStorage.removeItem('bd1_justwon'); done = []; $('#confirm').hidden = true; deselect(); paint(done, false); };
 // voltar = trocar de grupo (o progresso fica salvo no aparelho)
 let leaving = false;
-function leaveMap() { if (leaving) return; leaving = true; clearTimeout(enterT); bots.forEach(clearTimeout); $('#panel').hidden = true; selected = null; document.body.classList.add('mleaving'); window.HUD && HUD.hide(); if (ROOM) { try { sessionStorage.setItem('bd1_gate', '1'); } catch {} setTimeout(() => Fog.close($('#map'), 1000).then(() => { location.href = 'espera.html' + location.search; }), 420); return; } LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); setTimeout(() => Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }), 420); }   // botões e painéis somem antes das nuvens fecharem
+function leaveMap() { if (leaving) return; leaving = true; clearTimeout(enterT); bots.forEach(clearTimeout); $('#panel').hidden = true; selected = null; document.body.classList.add('mleaving'); window.HUD && HUD.hide(); if (ROOM) { try { sessionStorage.setItem('bd1_gate', '1'); } catch {} setTimeout(() => Fog.close($('#map'), 1000).then(() => { location.href = 'index.html' + location.search; }), 420); return; } LOBBY.leave(); sessionStorage.setItem('bd1_fog_lobby', '1'); setTimeout(() => Fog.close($('#map'), 1000).then(() => { location.href = 'index.html'; }), 420); }   // botões e painéis somem antes das nuvens fecharem
 $('#back').addEventListener('click', e => { e.preventDefault(); leaveMap(); });
 // v137: o "voltar" do celular/navegador faz o mesmo que TROCAR DE GRUPO (nuvens fecham e volta ao menu)
 history.pushState({ mapa: 1 }, '');

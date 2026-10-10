@@ -1662,7 +1662,7 @@ function onlLeave(page){ try { sessionStorage.setItem('bd1_gate', '1'); if (page
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
-  if (m && m.status === 'aborted') { state.over = true; ONL.fin = true; showBanner('PARTIDA ENCERRADA', 'ficou sem jogadores por muito tempo'); setTimeout(() => onlLeave('espera.html'), 3500); return; }
+  if (m && m.status === 'aborted') { state.over = true; ONL.fin = true; showBanner('PARTIDA ENCERRADA', 'ficou sem jogadores por muito tempo'); setTimeout(() => onlLeave('map.html'), 3500); return; }
   endGame(!!(m && m.status === 'won'));
 }
 
@@ -2226,14 +2226,14 @@ $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote
 
 state.shop = newShop(); renderShop();
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
-$('#restart').addEventListener('click',() => { if (ONL.on) { onlLeave('espera.html'); return; } restartRun(); });
+$('#restart').addEventListener('click',() => { if (ONL.on) { onlLeave('map.html'); return; } restartRun(); });
 $('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;if(ONL.on){onlLeave('map.html');return}location.href='map.html'+location.search});
 if (ONL.on) setInterval(() => { if (!state.over && ONL.matchId && Date.now() - ONL.lastOk > 8000) toast('Sem conexão com a sala. Tentando reconectar...'); }, 4000);
 if (ONL.on) {   // online: entra na partida do servidor (ou volta ao ponto do grupo se caiu)
   ONL.init().then(() => {
     if (ONL.snap) { ONL.unpack(state, ONL.snap.state); ONL.planned = true; renderHud(); }
     beginBattle(800);
-  }).catch(() => { location.replace('espera.html' + location.search); });
+  }).catch(() => { location.replace('salas.html' + location.search); });
 } else beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
 // v132: o aviso de nova versão saiu do jogo; a atualização manual fica no menu de seleção de grupo (botão ↻ ATUALIZAR)
 if('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));

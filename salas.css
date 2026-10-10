@@ -108,3 +108,5 @@ button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-v
 .bigcode{margin:6px 0 14px;padding:14px 0 12px;font-size:38px;letter-spacing:10px;text-indent:10px;text-align:center;line-height:1;color:var(--gold);background:#120c22;border:2px solid #3a2a5a;text-shadow:0 3px 0 #4a2204}
 .dlg[hidden],[hidden]{display:none!important}
 @media (prefers-reduced-motion:reduce){.torch{animation:none}.net[data-s=con] .dot{animation:none}}
+
+.lb-l{max-height:34vh;overflow-y:auto;margin:0 0 12px;display:flex;flex-direction:column;gap:6px}.lbp{display:flex;align-items:center;gap:10px;padding:8px 12px;border:2px solid #3b2a52;background:#120c20;font-size:14px;letter-spacing:1px;color:#e8dcc0}.lbp.me{border-color:#7fc8ff}.lbp i{width:10px;height:10px;background:#46e08a;flex:none}.lbp span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lbp u{text-decoration:none;font-size:11px;color:var(--gold);border:1px solid var(--gold);padding:2px 6px}
