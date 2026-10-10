@@ -22,8 +22,8 @@
     <button id="out" class="chip" type="button">SAIR DA CONTA</button>
   </header>
   <section class="plaque"><h1>PERFIL</h1><p id="who">Sua conta e seus saves</p></section>
-  <nav class="tabs two" id="tabs" role="tablist"><button class="tab on" type="button" role="tab" data-t="saves" aria-selected="true">SAVES</button><button class="tab" type="button" role="tab" data-t="perfil" aria-selected="false">PERFIL</button></nav>
-  <section class="list" id="sec-perfil" hidden>
+  <nav class="tabs two" id="tabs" role="tablist"><button class="tab on" type="button" role="tab" data-t="perfil" aria-selected="true">PERFIL</button><button class="tab" type="button" role="tab" data-t="saves" aria-selected="false">SAVES</button></nav>
+  <section class="list" id="sec-perfil">
     <div class="lh"><b style="color:#7fc8ff">SUA CONTA</b></div>
     <div class="ls">
       <div class="sv" style="--c:#7fc8ff"><div class="tx"><span class="mt">NOME DE USUÁRIO</span><span class="nm" id="pf-u">-</span></div></div>
@@ -31,7 +31,7 @@
       <p class="hint" style="text-align:center;color:var(--dim);font-size:2.6cqw;letter-spacing:.2cqw;line-height:1.5">Só contas criadas salvam o jogo. Seus saves ficam guardados na conta e abrem em qualquer aparelho com este nome e senha.</p>
     </div>
   </section>
-  <section class="list" id="sec-saves">
+  <section class="list" id="sec-saves" hidden>
     <div class="lh"><b id="th">MAGO</b><span class="cnt" id="tc">0/4</span></div>
     <div class="ls" id="sl"></div>
   </section>

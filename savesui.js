@@ -148,7 +148,7 @@ addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
     const a = await NET.account(); if (!a) { location.replace('conta.html' + location.search); return; }
     SS.set('bd1_acc', a.username); account = a.username; $('#pf-u').textContent = a.username.toUpperCase(); $('#who').textContent = 'Conta: ' + a.username.toUpperCase();
     saves = await NET.listSaves(); loaded = true;
-    list(); tab('saves');
+    list(); tab('perfil');
   } catch (e) { $('#sl').innerHTML = `<div class="empty">NÃO FOI POSSÍVEL CARREGAR OS SAVES<br>${esc(NET.msg(e))}<br><br><button id="rt" class="chip blue" type="button" style="margin:0 auto;min-width:40cqw;height:11cqw">TENTAR DE NOVO</button></div>`; $('#rt').onclick = () => location.reload(); }
 })();
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));
