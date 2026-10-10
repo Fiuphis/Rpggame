@@ -28,7 +28,7 @@
     <div class="dock" id="dock">
       <button id="play" class="c-play" type="button"><span>JOGAR</span></button>
       <button id="how-btn" class="c-how" type="button"><i class="ic-book"></i><span>COMO JOGAR</span></button>
-      <button id="sv-btn" class="c-sv" type="button"><span>SAVES<small id="sv-act">ESCOLHER</small></span></button>
+      <button id="sv-btn" class="c-sv" type="button"><span>PERFIL<small id="sv-act">ENTRAR</small></span></button>
       <div class="c-msg" aria-live="polite"><i class="ic-gem"></i><p id="msg"></p></div>
     </div>
   </div>
@@ -41,9 +41,9 @@
   </div>
   <div id="ns" class="how fs-ask" hidden role="dialog" aria-modal="true" aria-label="Sem save">
     <div class="hw">
-      <div class="hw-head"><b>NENHUM SAVE ESCOLHIDO</b></div>
-      <p class="sv-note">Sem um save, o progresso desta partida fica só neste aparelho e não vai para a sua conta. Deseja escolher um save antes de jogar?</p>
-      <div class="sv-io"><button id="ns-pick" class="chip go" type="button">ESCOLHER SAVE</button><button id="ns-go" class="chip" type="button">JOGAR SEM SALVAR</button></div>
+      <div class="hw-head"><b id="ns-h">SALVAR O JOGO</b></div>
+      <p class="sv-note"><span id="ns-t">Só contas criadas salvam o jogo. Crie uma conta para guardar seu progresso em um save, ou jogue sem salvar.</span></p>
+      <div class="sv-io"><button id="ns-pick" class="chip go" type="button">CRIAR CONTA</button><button id="ns-go" class="chip" type="button">JOGAR SEM SALVAR</button></div>
     </div>
   </div>
   <div id="sv" class="how sv" hidden role="dialog" aria-modal="true" aria-label="Saves">

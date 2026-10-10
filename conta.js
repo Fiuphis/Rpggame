@@ -73,6 +73,6 @@ addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
   try { await NET.ready(); netState(NET.MOCK ? 'mock' : 'on', NET.MOCK ? 'SIMULADO' : 'ONLINE'); } catch (e) { netState('off', 'SEM SERVIDOR'); }
   try { const a = await NET.account(); if (a) { SS.set('bd1_acc', a.username); location.replace('saves.html' + location.search); } } catch (e) {}
 })();
-setMode('in');
+setMode(/[?&]m=up/.test(location.search) ? 'up' : 'in');
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));
 })();

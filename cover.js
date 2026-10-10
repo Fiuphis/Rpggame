@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v296', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v297', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -140,12 +140,12 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   });
   // o save é escolhido aqui no início (saves genéricos da conta); o painel antigo de compartimentos locais não é mais aberto
   const cur = () => { try { return JSON.parse(sessionStorage.getItem('bd1_save')); } catch (e) { return null; } };
-  const paintSv = () => { const c = cur(); act.textContent = c && c.name ? c.name : 'ESCOLHER'; $('#sv-btn').classList.toggle('chosen', !!c); };
+  const paintSv = () => { const c = cur(); let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} act.textContent = c && c.name ? c.name : (u ? u.toUpperCase() : 'ENTRAR'); $('#sv-btn').classList.toggle('chosen', !!c); };
   window.__paintSv = paintSv; paintSv();
   // a escolha de save abre dentro do próprio menu (painel sobre a tela inicial), sem trocar de página nem animar
   const svp = $('#svp'), svf = $('#svf');
-  window.__pickSave = () => { let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
-    svf.src = (acc ? 'saves.html' : 'conta.html') + '?embed' + location.search.replace(/^\?/, '&'); svp.hidden = false; };
+  window.__pickSave = up => { let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
+    svf.src = (acc ? 'saves.html' : 'conta.html') + '?embed' + (up && !acc ? '&m=up' : '') + location.search.replace(/^\?/, '&'); svp.hidden = false; };
   addEventListener('message', e => { if (e.origin !== location.origin || !e.data || !e.data.bd1) return; if (e.data.bd1 === 'close' || e.data.bd1 === 'chosen') { svp.hidden = true; svf.src = 'about:blank'; paintSv(); } });
   $('#sv-btn').onclick = () => window.__pickSave();
   $('#sv-close').onclick = () => { sv.hidden = true; };
@@ -272,9 +272,13 @@ async function startPlay() {
 $('#play').onclick = () => {
   let c = null; try { c = JSON.parse(sessionStorage.getItem('bd1_save')); } catch (e) {}
   if (c && c.id) { startPlay(); return; }
+  let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {}
+  $('#ns-h').textContent = u ? 'ESCOLHA UM SAVE' : 'SALVAR O JOGO';
+  $('#ns-t').textContent = u ? 'Você está na conta ' + u.toUpperCase() + ', mas nenhum save foi escolhido. Escolha um save para guardar seu progresso, ou jogue sem salvar.' : 'Só contas criadas salvam o jogo. Crie uma conta para guardar seu progresso em um save, ou jogue sem salvar.';
+  $('#ns-pick').textContent = u ? 'ESCOLHER SAVE' : 'CRIAR CONTA';
   $('#ns').hidden = false;
 };
-$('#ns-pick').onclick = () => { $('#ns').hidden = true; window.__pickSave(); };
+$('#ns-pick').onclick = () => { $('#ns').hidden = true; window.__pickSave(true); };
 $('#ns-go').onclick = () => { $('#ns').hidden = true; try { sessionStorage.removeItem('bd1_save'); sessionStorage.removeItem('bd1_pref_class'); } catch (e) {} startPlay(); };
 $('#ns').addEventListener('click', e => { if (e.target === $('#ns')) $('#ns').hidden = true; });
 

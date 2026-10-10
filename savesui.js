@@ -79,6 +79,24 @@ $('#ed-yes').onclick = async () => {
   catch (e) { $('#ed-ct').textContent = NET.msg(e); } busy = false;
 };
 
+// ---------- abas PERFIL / SAVES ----------
+let account = null;
+function tab(t) {
+  document.querySelectorAll('#tabs .tab').forEach(b => { const on = b.dataset.t === t; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  $('#sec-saves').hidden = t !== 'saves'; $('#sec-perfil').hidden = t !== 'perfil'; SS.set('bd1_perfil_tab', t);
+}
+document.querySelectorAll('#tabs .tab').forEach(b => b.onclick = () => tab(b.dataset.t));
+$('#pf-chg').onclick = () => { ['#pw-o', '#pw-n', '#pw-n2'].forEach(i => $(i).value = ''); $('#pw-e').textContent = ''; $('#ov-pw').hidden = false; };
+$('#pw-no').onclick = () => { $('#ov-pw').hidden = true; };
+$('#pw-ok').onclick = async () => {
+  if (busy || !account) return; const o = $('#pw-o').value, n = $('#pw-n').value, e = $('#pw-e'); e.textContent = '';
+  if (n.length < 6) { e.textContent = 'A nova senha precisa de pelo menos 6 caracteres.'; return; }
+  if (n !== $('#pw-n2').value) { e.textContent = 'As senhas novas não são iguais.'; return; }
+  busy = true; $('#pw-ok').disabled = true;
+  try { await NET.changePassword(account, o, n); $('#ov-pw').hidden = true; toast('Senha alterada.'); } catch (x) { e.textContent = NET.msg(x); }
+  busy = false; $('#pw-ok').disabled = false;
+};
+
 // ---------- saídas ----------
 $('#home').onclick = () => { if (leaving) return; if (!EMB) { SS.set('bd1_cover_back', '1'); SS.set('bd1_rebuild', null); } go('cover.html'); };
 $('#out').onclick = async () => {
@@ -103,9 +121,9 @@ addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
   $('#sl').innerHTML = '<div class="empty">CARREGANDO...</div>';
   try {
     const a = await NET.account(); if (!a) { location.replace('conta.html' + location.search); return; }
-    SS.set('bd1_acc', a.username); $('#who').textContent = 'Conta: ' + a.username.toUpperCase();
+    SS.set('bd1_acc', a.username); account = a.username; $('#pf-u').textContent = a.username.toUpperCase(); $('#who').textContent = 'Conta: ' + a.username.toUpperCase();
     saves = await NET.listSaves(); loaded = true;
-    list();
+    list(); tab('saves');
   } catch (e) { $('#sl').innerHTML = `<div class="empty">NÃO FOI POSSÍVEL CARREGAR OS SAVES<br>${esc(NET.msg(e))}<br><br><button id="rt" class="chip blue" type="button" style="margin:0 auto;min-width:40cqw;height:11cqw">TENTAR DE NOVO</button></div>`; $('#rt').onclick = () => location.reload(); }
 })();
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));

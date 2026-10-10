@@ -103,6 +103,12 @@ const ACC = {
     if (MOCK) { await AM.wait(300); const a = AM.accs()[user]; if (!a || a.p !== pass) fail('credenciais'); ss.set('bd1_mock_user', user); return { username: user }; }
     await real(); const r = await sb.auth.signInWithPassword({ email: mail(user), password: pass }); if (r.error) throw r.error; return { username: user };
   },
+  async changePassword(user, old, nw) {   // confere a senha atual e troca por a nova
+    if (String(nw || '').length < 6) fail('senha_curta');
+    if (MOCK) { await AM.wait(250); const a = AM.accs(), x = a[user]; if (!x || x.p !== old) fail('credenciais'); x.p = nw; LS.set('bd1_mock_acc', a); return true; }
+    await real(); const r = await sb.auth.signInWithPassword({ email: mail(user), password: old }); if (r.error) fail('credenciais');
+    const u = await sb.auth.updateUser({ password: nw }); if (u.error) throw u.error; return true;
+  },
   async signOut() {
     ss.set(RK, null); ss.set('bd1_save', null); ss.set('bd1_acc', null);
     if (MOCK) { ss.set('bd1_mock_user', null); return; }

@@ -44,3 +44,5 @@
 @media (prefers-reduced-motion:reduce){.orbw::before,.orbw img,.orbw i,.sv{animation:none!important}}
 
 .dlg .chip.wide{font-size:13px;letter-spacing:1.5px;height:46px;border-width:9px;border-image-width:9px}
+
+.tabs.two{grid-template-columns:1fr 1fr;height:11cqw}.tabs.two .tab{font-size:3.2cqw;letter-spacing:.3cqw}
