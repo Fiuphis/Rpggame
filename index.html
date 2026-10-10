@@ -48,7 +48,7 @@ if(R){const pull=async()=>{try{const a=await NET.counts(R.id),o={mage:0,guerreir
 const stage=document.getElementById('stage'), msg=document.getElementById('msg'), confirmBtn=document.getElementById('confirm');
 const pc=(v,t)=>(v/t*100)+'%';
 let SVA=null;try{SVA=JSON.parse(sessionStorage.getItem('bd1_save'))}catch(e){}
-let selected=LOBBY.myGroup()||(SVA&&SVA.class)||null;
+let selected=LOBBY.myGroup()||(SVA&&SVA.cls)||null;
 const els={};
 CARDS.forEach(c=>{
   const a=A[c.key], [x,y,x2,y2]=a.box, w=x2-x, h=y2-y, G=LOBBY_GROUPS[c.key];
@@ -72,7 +72,6 @@ CARDS.forEach(c=>{
 function say(t){msg.textContent=t;msg.classList.add('show');clearTimeout(window.__m);window.__m=setTimeout(()=>msg.classList.remove('show'),2200)}
 function hop(key,cls){const b=els[key].ch;b.classList.remove('hop-in','hop-out');void b.offsetWidth;b.classList.add(cls)}
 function choose(g){
-  if(SVA&&SVA.class&&g!==SVA.class){say('Seu save é do herói '+LOBBY_GROUPS[SVA.class].name+'. Para jogar com outro herói, troque de save.');return}
   const counts=LOBBY.counts(), mine=LOBBY.myGroup();
   if(counts[g]>=LOBBY_MAX && mine!==g){say('Essa classe está cheia.');return}
   if(selected===g){selected=null;hop(g,'hop-out')}          // tocar de novo desfaz a seleção
@@ -95,7 +94,7 @@ function render(){
   confirmBtn.textContent=selected?`CONFIRMAR: ${LOBBY_GROUPS[selected].name}`:'ESCOLHA UMA CLASSE';
 }
 confirmBtn.onclick=async()=>{
-  if(!selected||confirmBtn.dataset.b)return;
+  if(!selected||confirmBtn.dataset.b)return;try{sessionStorage.setItem('bd1_pref_class',selected)}catch(e){}
   if(R){confirmBtn.dataset.b='1';try{await NET.pickGroup(R.id,selected)}catch(e){delete confirmBtn.dataset.b;say(NET.msg(e));selected=null;render();return}delete confirmBtn.dataset.b}
   const r=LOBBY.join(selected);
   if(!r.ok){say(r.reason==='full'?'Essa classe acabou de lotar.':'Classe inválida.');selected=null;render();return}

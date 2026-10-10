@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v293', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v294', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -138,8 +138,12 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
     else if (a === 'ok-ren') { const v = body.querySelector(`.sc[data-n="${n}"] .sc-in`); if (v && Saves.rename(n, v.value)) say('Nome alterado.'); else say('Digite um nome.'); delete mode[n]; }
     render();
   });
-  try { if (localStorage.getItem('bd1_acc_applied')) $('#sv-btn').style.display = 'none'; } catch (e) {}   // com conta, os saves são os da conta
-  $('#sv-btn').onclick = () => { mode = {}; note.textContent = ''; render(); sv.hidden = false; };
+  // o save é escolhido aqui no início (saves genéricos da conta); o painel antigo de compartimentos locais não é mais aberto
+  const cur = () => { try { return JSON.parse(sessionStorage.getItem('bd1_save')); } catch (e) { return null; } };
+  const paintSv = () => { const c = cur(); act.textContent = c && c.name ? c.name : 'ESCOLHER'; $('#sv-btn').classList.toggle('chosen', !!c); };
+  window.__paintSv = paintSv; paintSv();
+  window.__pickSave = () => { let acc = false; try { acc = !!sessionStorage.getItem('bd1_acc'); sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = acc ? 'saves.html' : 'conta.html'; };
+  $('#sv-btn').onclick = () => window.__pickSave();
   $('#sv-close').onclick = () => { sv.hidden = true; };
   sv.addEventListener('click', e => { if (e.target === sv) sv.hidden = true; });
   addEventListener('keydown', e => { if (e.key === 'Escape') sv.hidden = true; });
@@ -147,14 +151,9 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   $('#sv-exp').onclick = async () => { ta.value = Saves.exportCode(); box.hidden = false; ap.hidden = true; ta.select(); let ok = false; try { await navigator.clipboard.writeText(ta.value); ok = true; } catch {} say(ok ? 'Código copiado. Guarde em lugar seguro.' : 'Copie o código abaixo e guarde.'); };
   $('#sv-imp').onclick = () => { ta.value = ''; box.hidden = false; ap.hidden = false; ta.focus(); say('Cole o código. Isso substitui todos os saves.'); };
   ap.onclick = () => { if (Saves.importCode(ta.value)) { box.hidden = true; mode = {}; render(); say('Saves importados.'); } else say('Código inválido.'); };
-  Saves.ready.then(() => { act.textContent = (Saves.state(), Saves.activeName()); }); }
+  }
 
-// ---------- modo teste (os outros heróis jogam perfeito) ----------
-{ const b = $('#auto'), KEY = 'bd1_auto';
-  const get = () => { try { return localStorage.getItem(KEY) === '1'; } catch { return false; } };
-  const paint = () => { const on = get(); b.firstElementChild.textContent = on ? 'TESTE LIGADO' : 'TESTE DESLIGADO'; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); };
-  b.onclick = () => { try { if (get()) localStorage.removeItem(KEY); else localStorage.setItem(KEY, '1'); } catch {} paint(); window.__autoMsg = get() ? 'Modo teste ligado: os outros heróis acertam tudo, usam itens e habilidades certos para vencer, e a resposta certa aparece em verde.' : 'Modo teste desligado: os outros heróis voltam a jogar como no jogo normal.'; flashMsg(window.__autoMsg); };
-  paint(); window.__autoPaint = paint; }
+// o modo teste agora é uma opção da criação de sala (salas.html)
 
 // ---------- mensagens ----------
 const MSGS = [
@@ -227,9 +226,9 @@ addEventListener('keydown', e => { if (e.key === 'Escape') how.hidden = true; })
 // ---------- JOGAR: zoom nos heróis -> clarão -> a cena vira cinzas de pixels -> seleção reconstrói ----------
 let busy = false;
 const BS = 14;   // tamanho do "pixel" da dissolução (px da tela)
-$('#play').onclick = async () => {
+async function startPlay() {
   if (busy) return; busy = true; try { sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
-  const leave = () => { try { sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = 'conta.html'; };
+  const leave = () => { try { sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = 'salas.html'; };
   if (RM) { cv.classList.add('go'), $('#scr').classList.add('go'); setTimeout(leave, 300); return; }
   how.hidden = true; cv.classList.add('go'), $('#scr').classList.add('go'); boost = 3.2;
   const ox = .5, oy = .755, S = 3, ZMS = 1700, org = `${ox * 100}% ${oy * 100}%`;
@@ -264,7 +263,17 @@ $('#play').onclick = async () => {
     pc.globalAlpha = 1;
     if (!navigated && t > total - 380) { navigated = true; leave(); }
     if (t < total) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+}
+// sem save escolhido: aviso perguntando se a pessoa quer escolher um save antes de jogar
+$('#play').onclick = () => {
+  let c = null; try { c = JSON.parse(sessionStorage.getItem('bd1_save')); } catch (e) {}
+  if (c && c.id) { startPlay(); return; }
+  $('#ns').hidden = false;
 };
+$('#ns-pick').onclick = () => { $('#ns').hidden = true; window.__pickSave(); };
+$('#ns-go').onclick = () => { $('#ns').hidden = true; try { sessionStorage.removeItem('bd1_save'); sessionStorage.removeItem('bd1_pref_class'); } catch (e) {} startPlay(); };
+$('#ns').addEventListener('click', e => { if (e.target === $('#ns')) $('#ns').hidden = true; });
+
 
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));

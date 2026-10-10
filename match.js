@@ -15,6 +15,8 @@
       if (s && s.now) offset = s.now - (t0 + t1) / 2;
       return s;
     },
+    lobby: room => call('room_lobby', { p_room: room }),
+    stage: (room, st) => call('set_room_stage', { p_room: room, p_stage: st }),
     start: (room, boss) => call('start_match', { p_room: room, p_boss: boss || 0 }),
     vote: (round, option) => call('cast_vote', { p_round: round, p_option: option }),
     /* sempre com os 6 argumentos nomeados (existem versoes antigas da funcao) */

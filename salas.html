@@ -43,15 +43,23 @@
         <button type="button" class="chip" data-pub="0"><img src="salas/ic_lock.png" alt="">PRIVADA</button>
       </div>
       <p class="hint" id="mk-h">Aparece na lista para qualquer jogador entrar.</p>
+      <button type="button" class="chip wide" id="tt" aria-pressed="false">MODO TESTE: DESLIGADO</button>
+      <p class="hint" id="tt-h">Só o criador liga ou desliga, e só aqui. Ligado: os heróis sem jogador acertam tudo e a resposta certa aparece marcada.</p>
       <p class="err" id="mk-e"></p>
       <div class="row"><button id="mk-ok" class="chip blue" type="button">CRIAR</button><button id="mk-no" class="chip" type="button">CANCELAR</button></div>
     </div>
-    <div id="mk-done" hidden>
-      <h2>SALA CRIADA</h2>
-      <p class="hint" id="dn-t">Passe este código para os colegas entrarem.</p>
-      <div class="bigcode" id="dn-c">------</div>
-      <div class="row"><button id="dn-cp" class="chip gold" type="button">COPIAR CÓDIGO</button><button id="dn-go" class="chip blue" type="button">ENTRAR NA SALA</button></div>
-    </div>
+  </div>
+</div>
+
+<div class="ov" id="ov-lb" hidden>
+  <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="lb-t">
+    <h2 id="lb-t">SALA</h2>
+    <div class="bigcode" id="lb-c">------</div>
+    <p class="hint" id="lb-h">Passe este código para os colegas entrarem.</p>
+    <div class="bigcode" id="lb-n" style="font-size:.7em">1 JOGADOR</div>
+    <p class="hint" id="lb-m"></p>
+    <div class="row"><button id="lb-cp" class="chip gold" type="button">COPIAR CÓDIGO</button><button id="lb-go" class="chip blue" type="button" hidden>CONTINUAR</button></div>
+    <button id="lb-out" class="chip wide" type="button">SAIR DA SALA</button>
   </div>
 </div>
 

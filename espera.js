@@ -6,7 +6,7 @@ const $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>"]/g
 const G = [['mage', 'MAGO', '#4da3ff'], ['guerreiro', 'GUERREIRO', '#ff5a4d'], ['tank', 'TANQUE', '#cfd8ff'], ['cleriga', 'CLÉRIGA', '#ffd24d']], MAXG = 7;
 const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const room = NET.room();
-let leaving = false, last = null, toastT = 0, watcher = null, starting = false;
+let leaving = false, last = null, toastT = 0, watcher = null, starting = false, LB = null, lbT = 0;
 
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), 2600); }
 function netState(s, t) { const e = $('#net'); e.dataset.s = s; e.querySelector('b').textContent = t; }
@@ -25,20 +25,29 @@ function paint(s) {
     return `<div class="wc${me === k ? ' me' : ''}" style="--c:${col}"><div class="wh"><img src="salas/ic_${k}.png" alt=""><b>${nm}</b><em>${l.length}/${MAXG}</em></div><div class="pl">${rows || '<div class="pe">Ninguém ainda</div>'}</div></div>`;
   }).join('');
 
-  const owner = !!rm.owner, done = (rm.progress && rm.progress.done) || [];
-  const playing = s.match && s.match.status === 'playing';
+  const owner = !!rm.owner, playing = s.match && s.match.status === 'playing';
   if (playing && me) { goGame(s.match.boss); return; }
   const go = $('#go'), msg = $('#msg');
   go.hidden = !owner;
   if (!me) { msg.textContent = playing ? 'A partida já começou. Você não escolheu classe a tempo; aguarde o fim dela.' : 'Escolha uma classe para participar.'; go.disabled = true; return; }
   if (playing) { msg.textContent = 'A partida já começou.'; go.disabled = true; return; }
-  if (owner) { go.disabled = leaving || n < 1; msg.textContent = 'Quando todos estiverem prontos, escolha o guardião no mapa para iniciar a partida. Grupos vazios serão simulados.'; }
-  else msg.textContent = 'Aguardando o criador da sala iniciar a partida.';
+  const tot = LB ? LB.total : ms.length, got = LB ? LB.picked : n, all = tot > 0 && got >= tot;
+  if (LB && LB.stage === 'map' && !leaving) { goMap(); return; }
+  go.textContent = 'IR PARA O MAPA';
+  if (owner) { go.disabled = leaving || !all; msg.textContent = all ? 'Todos já escolheram uma classe. No mapa só você escolhe o guardião. Grupos vazios serão simulados.' : 'Aguardando todos escolherem uma classe (' + got + ' de ' + tot + ').'; }
+  else msg.textContent = all ? 'Todos prontos. Aguardando o criador levar a sala ao mapa.' : 'Aguardando todos escolherem uma classe (' + got + ' de ' + tot + ').';
 }
-$('#go').onclick = () => {
-  if (leaving) return; leaving = true; watcher && watcher.stop();
+function goMap() {
+  if (leaving) return; leaving = true; watcher && watcher.stop(); clearInterval(lbT);
   try { sessionStorage.setItem('bd1_fog', '1'); } catch (e) {}
-  location.href = 'map.html' + location.search;
+  document.body.classList.add('leaving');
+  const go = () => { location.href = 'map.html' + location.search; };
+  if (window.Fog && !reduce()) { try { Fog.close(document.getElementById('pg'), 1000).then(go); return; } catch (e) {} }
+  go();
+}
+$('#go').onclick = async () => {
+  if (leaving) return; const b = $('#go'); b.disabled = true;
+  try { await MATCH.stage(room.id, 'map'); goMap(); } catch (x) { toast(NET.msg(x)); b.disabled = false; }
 };
 function goGame(b) {
   if (leaving) return; leaving = true; watcher && watcher.stop();
@@ -60,6 +69,8 @@ addEventListener('popstate', () => { if (leaving) { try { history.pushState({ es
 if (window.Gate) Gate.arrive();
 NET.ready().then(() => {
   netState(NET.MOCK ? 'mock' : 'on', NET.MOCK ? 'SIMULADO' : 'ONLINE');
+  const pull = () => MATCH.lobby(room.id).then(l => { LB = l; if (last && !leaving) paint(last); }).catch(() => {});
+  pull(); lbT = setInterval(pull, 1500);
   watcher = MATCH.watch(room.id, paint, { onError: e => netState('off', 'SEM SERVIDOR') });
 }).catch(() => netState('off', 'SEM SERVIDOR'));
 })();

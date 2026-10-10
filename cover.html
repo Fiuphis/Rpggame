@@ -28,8 +28,7 @@
     <div class="dock" id="dock">
       <button id="play" class="c-play" type="button"><span>JOGAR</span></button>
       <button id="how-btn" class="c-how" type="button"><i class="ic-book"></i><span>COMO JOGAR</span></button>
-      <button id="sv-btn" class="c-sv" type="button"><span>SAVES<small id="sv-act">SAVE 1</small></span></button>
-      <button id="auto" class="c-auto" type="button" aria-pressed="false"><span>TESTE DESLIGADO</span></button>
+      <button id="sv-btn" class="c-sv" type="button"><span>SAVES<small id="sv-act">ESCOLHER</small></span></button>
       <div class="c-msg" aria-live="polite"><i class="ic-gem"></i><p id="msg"></p></div>
     </div>
   </div>
@@ -38,6 +37,13 @@
       <div class="hw-head"><i class="fs-ic big" aria-hidden="true"></i>TELA CHEIA</div>
       <p class="sv-note">Esconde a barra do navegador e deixa mais espaço para a batalha. Um botão flutuante, que você pode arrastar, deixa entrar e sair quando quiser.</p>
       <div class="sv-io"><button id="fs-yes" class="chip go" type="button">ENTRAR EM TELA CHEIA</button><button id="fs-no" class="chip" type="button">AGORA NÃO</button></div>
+    </div>
+  </div>
+  <div id="ns" class="how fs-ask" hidden role="dialog" aria-modal="true" aria-label="Sem save">
+    <div class="hw">
+      <div class="hw-head"><b>NENHUM SAVE ESCOLHIDO</b></div>
+      <p class="sv-note">Sem um save, o progresso desta partida fica só neste aparelho e não vai para a sua conta. Deseja escolher um save antes de jogar?</p>
+      <div class="sv-io"><button id="ns-pick" class="chip go" type="button">ESCOLHER SAVE</button><button id="ns-go" class="chip" type="button">JOGAR SEM SALVAR</button></div>
     </div>
   </div>
   <div id="sv" class="how sv" hidden role="dialog" aria-modal="true" aria-label="Saves">

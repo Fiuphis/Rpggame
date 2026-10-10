@@ -118,7 +118,11 @@ const ACC = {
     if (MOCK) { await AM.wait(200); const u = AM.cur(); return AM.saves().filter(x => x.owner === u).map(({ data, owner, ...r }) => ({ ...r, resumo: data && data.resumo || null })); }
     await real(); const r = await sb.from('saves').select('id,class,slot,name,rev,updated_at,resumo:data->resumo').order('slot'); if (r.error) throw r.error; return r.data || [];
   },
-  async createSave(cls, name) {
+  async createSave(name) {
+    for (const c of ['mage', 'guerreiro', 'tank', 'cleriga']) { try { return await ACC._create(c, name); } catch (e) { if (!String((e && e.message) || e).includes('limite_de_saves')) throw e; } }
+    fail('limite_de_saves');
+  },
+  async _create(cls, name) {
     if (MOCK) { await AM.wait(250); const u = AM.cur(), all = AM.saves(), mine = all.filter(x => x.owner === u && x.class === cls); let s = 1; while (mine.some(x => x.slot === s) && s <= 4) s++; if (s > 4) fail('limite_de_saves');
       const row = { id: 'sv' + gen(8), owner: u, class: cls, slot: s, name: (String(name || '').trim() || 'SAVE ' + s).slice(0, 20), rev: 0, updated_at: new Date().toISOString(), data: {} }; all.push(row); LS.set('bd1_mock_saves', all); const { data, owner, ...o } = row; return o; }
     return rpc('create_save', { p_class: cls, p_name: name || '' });
@@ -143,18 +147,24 @@ const lsg = k => { try { return localStorage.getItem(k); } catch { return null; 
 const jp = s => { try { return JSON.parse(s); } catch { return null; } };
 const SV = {
   active() { return jp(ss.get('bd1_save')); },
-  snapshot(cls) {
-    const prog = lsg('bd1_progress'), save = lsg('bd1_save_' + cls), p = jp(prog) || {}, s = jp(save) || {};
-    return { v: 1, class: cls, prog, save, resumo: { fase: Array.isArray(p.done) ? p.done.length : 0, moedas: Number(s.gold) || 0 } };
+  snapshot() {   // save generico: guarda o progresso e o ouro/itens de TODAS as classes, mais a classe escolhida por ultimo
+    const prog = lsg('bd1_progress'), p = jp(prog) || {}, saves = {}; let cls = ss.get('bd1_pref_class') || null;
+    GK.forEach(g => { const v = lsg('bd1_save_' + g); if (v != null) saves[g] = v; });
+    if (!GK.includes(cls)) { const a = SV.active(); cls = a && a.cls || null; }
+    const s = jp(saves[cls || 'mage']) || {};
+    return { v: 2, cls, prog, saves, resumo: { fase: Array.isArray(p.done) ? p.done.length : 0, moedas: Number(s.gold) || 0, cls } };
   },
-  apply(cls, data) {   // coloca o save da conta no jogo (vazio = jogo novo)
+  apply(data) {   // coloca o save da conta no jogo (vazio = jogo novo); aceita o formato antigo (por classe)
     GK.forEach(g => lss('bd1_save_' + g, null)); lss('bd1_progress', null);
-    if (data && data.v === 1) { if (data.prog != null) lss('bd1_progress', data.prog); if (data.save != null) lss('bd1_save_' + cls, data.save); }
-    try { ss.set('bd1_save_hash', null); } catch {}
+    let cls = null;
+    if (data && data.v === 2) { if (data.prog != null) lss('bd1_progress', data.prog); GK.forEach(g => { if (data.saves && data.saves[g] != null) lss('bd1_save_' + g, data.saves[g]); }); cls = data.cls || null; }
+    else if (data && data.v === 1) { if (data.prog != null) lss('bd1_progress', data.prog); if (data.save != null && data.class) lss('bd1_save_' + data.class, data.save); cls = data.class || null; }
+    try { ss.set('bd1_save_hash', null); ss.set('bd1_pref_class', GK.includes(cls) ? cls : null); } catch {}
+    return cls;
   },
   async sync(force) {
     const a = SV.active(); if (!a || !a.id) return false;
-    const data = SV.snapshot(a.class), h = JSON.stringify(data);
+    const data = SV.snapshot(), h = JSON.stringify(data);
     if (!force && ss.get('bd1_save_hash') === h) return false;
     const act = async () => { const rev = await ACC.writeSave(a.id, data, a.rev); a.rev = rev; ss.set('bd1_save', JSON.stringify(a)); ss.set('bd1_save_hash', h); return true; };
     try { return await act(); }

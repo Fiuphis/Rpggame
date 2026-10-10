@@ -13,6 +13,18 @@ const room = await call(u1, 'create_room', { p_public: true, p_name: 'T' });
 await call(u1, 'pick_group', { p_room: room.id, p_grp: 'mage' });
 for (const [u, g] of [[u2, 'guerreiro'], [u3, 'tank'], [u4, 'tank']]) { await call(u, 'join_room', { p_room: room.id, p_code: room.code }); await call(u, 'pick_group', { p_room: room.id, p_grp: g }); }
 
+// etapas da sala
+let lb = await call(u2, 'room_lobby', { p_room: room.id }); assert.equal(lb.stage, 'gather'); assert.equal(lb.total, 4); assert.equal(lb.owner, false);
+await fails(call(u2, 'set_room_stage', { p_room: room.id, p_stage: 'pick' }), 'so_o_criador');
+await call(u1, 'set_room_stage', { p_room: room.id, p_stage: 'pick' });
+const [u9] = U(1); await fails(call(u9, 'join_room', { p_room: room.id, p_code: room.code }), 'sala_fechada');
+await call(u2, 'join_room', { p_room: room.id, p_code: room.code });   // quem ja estava volta
+await call(u3, 'pick_group', { p_room: room.id, p_grp: null });
+await fails(call(u1, 'set_room_stage', { p_room: room.id, p_stage: 'map' }), 'faltam_classes');
+await call(u3, 'pick_group', { p_room: room.id, p_grp: 'tank' });
+lb = await call(u1, 'room_lobby', { p_room: room.id }); assert.equal(lb.picked, 4);
+await call(u1, 'set_room_stage', { p_room: room.id, p_stage: 'map' }); ok('etapas da sala (sala fecha, mapa so com todos em uma classe)');
+
 // sala de espera: estado sem partida
 let st = await call(u2, 'match_state', { p_room: room.id });
 assert.equal(st.members.length, 4); assert.equal(st.me, 'guerreiro'); assert.equal(st.room.owner, false); assert.equal(st.match, undefined);

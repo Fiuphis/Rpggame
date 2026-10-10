@@ -27,6 +27,10 @@ const boot = ROOM ? NET.ready().then(() => MATCH.state(ROOM.id)).then(s => {
   isOwner = !!(s.room && s.room.owner); if (s.room && s.room.progress && Array.isArray(s.room.progress.done)) done = s.room.progress.done;
   if (s.match && s.match.status === 'playing' && s.me) { location.replace('espera.html' + location.search); return new Promise(() => {}); }
 }).catch(() => {}) : Promise.resolve();
+// quem não é o criador só assiste ao mapa: quando o criador inicia a partida, todos entram juntos
+boot.then(() => { if (!ROOM || isOwner) return; const w = MATCH.watch(ROOM.id, st => { if (leaving || !(st.match && st.match.status === 'playing' && st.me)) return; leaving = true; w.stop();
+  try { sessionStorage.setItem('bd1_boss', String(st.match.boss || 0)); sessionStorage.setItem('bd1_gate', '1'); } catch (e) {}
+  const go = () => { location.href = 'game.html' + location.search; }; document.body.classList.add('mleaving'); Fog.close($('#map'), 1000).then(go); }); });
 boot.then(() => fetch('map/meta.json')).then(r => r.json()).then(m => { meta = m; build(); });
 function build(){
   const W = meta.w, H = meta.h, g = $('#grays'), n = $('#nodes');

@@ -36,7 +36,7 @@ async function load(manual) {
 $('#ls').addEventListener('click', e => {
   if (e.target.id === 'retry') { netState('con', 'CONECTANDO'); load(true); return; }
   const b = e.target.closest('.go'); if (!b || b.disabled) return; const id = b.closest('.rm').dataset.id; b.disabled = true;
-  NET.joinRoom(id).then(enter, err => { b.disabled = false; toast(NET.msg(err)); load(); });
+  NET.joinRoom(id).then(r => { try { localStorage.removeItem('bd1_auto'); } catch (e) {} enter(r); }, err => { b.disabled = false; toast(NET.msg(err)); load(); });
 });
 $('#rf').onclick = () => load(true);
 function poll() { clearInterval(timer); timer = setInterval(() => { if (!document.hidden && !leaving && $('#ov-mk').hidden && $('#ov-cd').hidden) load(); }, 6000); }
@@ -47,28 +47,29 @@ function close(id) { $(id).hidden = true; }
 let pub = true;
 function setPub(v) { pub = v; document.querySelectorAll('#seg .chip').forEach(b => b.classList.toggle('on', (b.dataset.pub === '1') === v)); $('#mk-h').textContent = v ? 'Aparece na lista para qualquer jogador entrar.' : 'Fica escondida da lista. Só entra quem tiver o código.'; }
 $('#seg').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) setPub(b.dataset.pub === '1'); });
-$('#mk').onclick = () => { setPub(true); $('#nm').value = ''; $('#mk-e').textContent = ''; $('#mk-form').hidden = false; $('#mk-done').hidden = true; made = null; open('#ov-mk'); };
+$('#mk').onclick = () => { setPub(true); setTest(false); $('#nm').value = ''; $('#mk-e').textContent = ''; made = null; open('#ov-mk'); };
 $('#mk-no').onclick = () => close('#ov-mk');
+let testOn = false;
+function setTest(v) { testOn = v; const b = $('#tt'); b.classList.toggle('on', v); b.setAttribute('aria-pressed', v); b.textContent = 'MODO TESTE: ' + (v ? 'LIGADO' : 'DESLIGADO'); }
+$('#tt').onclick = () => setTest(!testOn);
 $('#mk-ok').onclick = async () => {
   const b = $('#mk-ok'); b.disabled = true; $('#mk-e').textContent = '';
   try { await NET.ready(); made = await NET.createRoom(pub, $('#nm').value.trim());
-    $('#dn-c').textContent = made.code; $('#dn-t').textContent = pub ? 'Sala pública criada. O código serve para chamar amigos.' : 'Sala privada criada. Passe este código para os colegas entrarem.';
-    $('#mk-form').hidden = true; $('#mk-done').hidden = false; }
+    try { testOn ? localStorage.setItem('bd1_auto', '1') : localStorage.removeItem('bd1_auto'); } catch (e) {}   // o modo teste é uma regra da sala, definida só por quem a cria
+    close('#ov-mk'); lobby(made, true); }
   catch (e) { $('#mk-e').textContent = NET.msg(e); }
   finally { b.disabled = false; }
 };
-$('#dn-cp').onclick = async () => { const c = made && made.code; if (!c) return; try { await navigator.clipboard.writeText(c); toast('Código copiado.'); } catch { toast('Anote o código: ' + c); } };
-$('#dn-go').onclick = () => enter(made);
 $('#cd').onclick = () => { $('#cdv').value = ''; $('#cd-e').textContent = ''; open('#ov-cd'); };
 $('#cd-no').onclick = () => close('#ov-cd');
 $('#cdv').addEventListener('input', e => { e.target.value = NET.norm(e.target.value); $('#cd-e').textContent = ''; });
 async function byCode() {
   const code = NET.norm($('#cdv').value); if (code.length !== 6) { $('#cd-e').textContent = 'Digite os 6 caracteres do código.'; return; }
   const b = $('#cd-ok'); b.disabled = true;
-  try { await NET.ready(); enter(await NET.joinRoom(null, code)); } catch (e) { $('#cd-e').textContent = NET.msg(e); } finally { b.disabled = false; }
+  try { await NET.ready(); const r = await NET.joinRoom(null, code); try { localStorage.removeItem('bd1_auto'); } catch (e) {} enter(r); } catch (e) { $('#cd-e').textContent = NET.msg(e); } finally { b.disabled = false; }
 }
 $('#cd-ok').onclick = byCode; $('#cdv').addEventListener('keydown', e => { if (e.key === 'Enter') byCode(); });
-document.querySelectorAll('.ov').forEach(o => o.addEventListener('pointerdown', e => { if (e.target === o && o.id !== 'ov-mk') o.hidden = true; }));
+document.querySelectorAll('.ov').forEach(o => o.addEventListener('pointerdown', e => { if (e.target === o && o.id !== 'ov-mk' && o.id !== 'ov-lb') o.hidden = true; }));
 
 // ---------- saídas ----------
 // voltar para uma partida em andamento (sinal perdido, aba fechada): o grupo continua sem a pessoa e ela volta ao mesmo ponto
@@ -87,15 +88,45 @@ async function resume(r) {
     return true;
   } catch (e) { return false; }
 }
+// sala online: a mesma tela mostra quantas pessoas estão dentro; o criador decide quando seguir para a escolha de classe
+let lbT = 0, lbRoom = null, lbOwner = false;
+function lobby(r, owner) {
+  lbRoom = r; lbOwner = !!owner; clearInterval(timer);
+  $('#lb-t').textContent = r.name ? r.name : 'SALA'; $('#lb-c').textContent = r.code || '------';
+  $('#lb-h').textContent = r.is_public === false || r.pub === false ? 'Sala privada. Passe o código para os colegas entrarem.' : 'Sala pública. O código também serve para chamar amigos.';
+  $('#lb-n').textContent = '1 JOGADOR'; $('#lb-go').hidden = !lbOwner; $('#lb-go').disabled = false; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.';
+  document.querySelectorAll('.ov').forEach(o => o.hidden = true); open('#ov-lb');
+  const tick = async () => {
+    if (leaving) return;
+    try { const l = await MATCH.lobby(r.id); if (leaving) return;
+      if (lbOwner !== !!l.owner) { lbOwner = !!l.owner; $('#lb-go').hidden = !lbOwner; }
+      $('#lb-n').textContent = l.total + (l.total === 1 ? ' JOGADOR' : ' JOGADORES');
+      if (l.stage !== 'gather') { proceed(l); return; } } catch (e) { $('#lb-m').textContent = NET.msg(e); }
+  };
+  tick(); lbT = setInterval(tick, 1500);
+}
+function proceed(l) {
+  if (leaving) return; leaving = true; clearInterval(lbT);
+  try { sessionStorage.setItem('bd1_gate', '1'); sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
+  const dest = l.stage === 'map' && l.me ? 'espera.html' : 'index.html';
+  if (dest === 'espera.html') { try { const id = localStorage.getItem('bd1_player_id') || ('p' + Math.random().toString(36).slice(2, 10)); localStorage.setItem('bd1_player_id', id); const d = { mage: [], guerreiro: [], tank: [], cleriga: [] }; d[l.me] = [id]; localStorage.setItem('bd1_lobby', JSON.stringify(d)); localStorage.setItem('bd1_lobby_seeded', '1'); } catch (e) {} }
+  const go = () => { location.href = dest + location.search; };
+  if (window.Gate && !reduce()) Gate.close().then(go); else go();
+}
+$('#lb-go').onclick = async () => { const b = $('#lb-go'); b.disabled = true; try { await MATCH.stage(lbRoom.id, 'pick'); proceed({ stage: 'pick', me: null }); } catch (e) { b.disabled = false; $('#lb-m').textContent = NET.msg(e); } };
+$('#lb-cp').onclick = async () => { const c = lbRoom && lbRoom.code; if (!c) return; try { await navigator.clipboard.writeText(c); toast('Código copiado.'); } catch { toast('Anote o código: ' + c); } };
+$('#lb-out').onclick = () => { clearInterval(lbT); const id = lbRoom && lbRoom.id; lbRoom = null; if (id) NET.leave(id); $('#ov-lb').hidden = true; load(); poll(); };
 async function enter(r) {
   if (leaving || !r) return;
   if (r.id && await resume(r)) return;
-  if (leaving) return; leaving = true; clearInterval(timer);
+  if (leaving) return;
+  if (r.id && !NET.MOCK && window.MATCH) { lobby(r, !!(r.created_by && false) || r === made); return; }
+  leaving = true; clearInterval(timer);
   document.querySelectorAll('.ov').forEach(o => o.hidden = true);
   try { sessionStorage.setItem('bd1_gate', '1'); sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
   if (window.Gate && !reduce()) Gate.close().then(() => { location.href = 'index.html'; }); else location.href = 'index.html';
 }
-$('#solo').onclick = () => { NET.setRoom(null); enter({}); };
+$('#solo').onclick = () => { try { localStorage.removeItem('bd1_auto'); } catch (e) {} NET.setRoom(null); enter({}); };
 $('#home').onclick = () => {
   if (leaving) return; leaving = true;
   try { sessionStorage.setItem('bd1_cover_back', '1'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
