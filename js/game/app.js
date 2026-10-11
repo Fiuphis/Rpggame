@@ -1768,7 +1768,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   state.stats.rank[q.difficulty][correct[activeGroup] ? 0 : 1]++;
   if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; state.stats.gained += g; persist(); goldGain(g); }
   else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
-  if (AUTO) { autoEarn(meta); autoShop(); }
+  if (AUTO && !ONL.on) { autoEarn(meta); autoShop(); }
   state.missN = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length;   // quem errou alimenta o vampirismo
   if (state.curAttack.leech && state.missN > 0) toast(`Ataque ${state.curAttack.tipo.toLowerCase()} ${ST.famAdj}: o boss suga ${Math.round(leechRate() * 100)}% da vida que tirar.`);
   if (isHardQ(q)) { const miss = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length; if (miss) { state.rage = Math.min(RAGE_MAX, state.rage + miss); toast(ST.ice ? `Erro no rank ${meta.rank}: Ímpeto +${miss}.` : `Erro no rank ${meta.rank}: fúria +${miss} e ${ST.aoe} mais forte.`); } }
@@ -1811,7 +1811,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
 
   closePanel(); hideRing();
   state.curActions = actions;
-  if (AUTO) await autoOffense(actions);
+  if (AUTO && !ONL.on) await autoOffense(actions);
   // ---- 3) resolução, um herói por vez
   state.guardFor = (actions.tank && actions.tank !== 'ult' && actions.tank.skill.id === 'guard' && state.heroes.tank.hp > 0) ? actions.tank.target : null;
   const kindOf = k => { const a = actions[k]; return a && a !== 'ult' && a.skill ? a.skill : null; };

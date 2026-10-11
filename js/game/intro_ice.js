@@ -89,7 +89,16 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
     ev(T.shatter, () => { setShake(14, 1100); const [ax] = pt(far, [PIL.x0, 0]), [bx] = pt(far, [PIL.x1, 0]), pw = bx - ax, cx = (ax + bx) / 2; let n = 0; while (n < 80) { const fx2 = rnd(PIL.x0, PIL.x1), fy2 = rnd(.34, PIL.y1); if (!inPoly(fx2, fy2)) continue; n++; const [x, y] = pt(far, [fx2, fy2]), dx = (x - cx) / pw; shards.push({x, y, vx:dx * pw * 1.8 + rnd(-.3, .3) * pw, vy:rnd(-.5, .25) * pw * 1.4, s:rnd(.04, .13) * pw, rot:rnd(0, 6.28), vr:rnd(-6, 6), born:performance.now(), life:rnd(900, 1900), z:Math.random()}); } flashA = .9; });   // estilhaços nascem dentro da silhueta do gelo e ficam na escala dele
     let flashA = 0, whiteMax = 0;
 
+    let ferr = 0;   // uma excecao de desenho nao pode travar a partida: tenta de novo no proximo quadro e, se persistir, encerra a abertura
     function frame(now){
+      try { frame0(now); ferr = 0; }
+      catch (e) {
+        if (done) return; if (ferr === 0) console.warn('abertura: erro no quadro', e);
+        if (++ferr > 90) { done = true; window.removeEventListener('resize', fit); root.remove(); stage.style.transform = ''; btn.onclick = null; clearInterval(poll); if (!revealed) { revealed = true; try { onReveal(); } catch (e2) {} } resolve(); return; }
+        requestAnimationFrame(frame);
+      }
+    }
+    function frame0(now){
       if (done) return; let skf = 0; if (skipAt) { skf = eio(clamp((now - skipAt) / 420)); if (now - skipAt >= 420) { t0 = now - T.white[1]; skipAt = 0; skf = 0; } } const t = now - t0, dt = Math.min(50, now - lastNow); lastNow = now;
       evs.forEach(e => { if (!e.done && t >= e.t) { e.done = true; e.fn(); } });
       // ---- câmera (face = close/rachando; far = nave) ----

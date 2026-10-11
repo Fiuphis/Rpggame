@@ -87,7 +87,16 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
     ev(T.white[0], () => setShake(5, 900));
     ev(T.reveal, () => { setShake(9, 800); burst(fx.width / 2, fx.height * .62, 70, 700); });
 
+    let ferr = 0;   // uma excecao de desenho nao pode travar a partida: tenta de novo no proximo quadro e, se persistir, encerra a abertura
     function frame(now){
+      try { frame0(now); ferr = 0; }
+      catch (e) {
+        if (done) return; if (ferr === 0) console.warn('abertura: erro no quadro', e);
+        if (++ferr > 90) { done = true; window.removeEventListener('resize', fit); root.remove(); stage.style.transform = ''; btn.onclick = null; clearInterval(poll); if (!revealed) { revealed = true; try { onReveal(); } catch (e2) {} } resolve(); return; }
+        requestAnimationFrame(frame);
+      }
+    }
+    function frame0(now){
       if (done) return; let skf = 0; if (skipAt) { skf = eio(clamp((now - skipAt) / 420)); if (now - skipAt >= 420) { t0 = now - T.white[1]; skipAt = 0; skf = 0; } } const t = now - t0, dt = Math.min(50, now - lastNow); lastNow = now;
       evs.forEach(e => { if (!e.done && t >= e.t) { e.done = true; e.fn(); } });
       const flick = Math.sin(t * .04) * Math.sin(t * .013) > .12 ? 1 : .55;
@@ -112,10 +121,10 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
         dc.globalCompositeOperation = 'source-over'; dc.clearRect(0, 0, cw, ch); dc.fillStyle = `rgba(3,0,8,${(.94 - .3 * full - .4 * seg(t, T.zoom[0], T.zoom[1])).toFixed(3)})`; dc.fillRect(0, 0, cw, ch);
         dc.globalCompositeOperation = 'destination-out';
         TORCHES.forEach((tc, i) => { if (lit[i] < 0) return; const u = (now - lit[i]) / 1000, r = cw * (.11 + .09 * eo(clamp(u * 1.2)) + .05 * Math.max(0, 1 - u * 3)) * (.95 + .05 * Math.sin(t * .02 + i));
-          const g = dc.createRadialGradient(tc[0] * cw, tc[1] * ch, 0, tc[0] * cw, tc[1] * ch, r); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.55, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); dc.fillStyle = g; dc.fillRect(0, 0, cw, ch); });
+          const g = dc.createRadialGradient(tc[0] * cw, tc[1] * ch, 0, tc[0] * cw, tc[1] * ch, Math.max(.01, r)); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(.55, 'rgba(0,0,0,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)'); dc.fillStyle = g; dc.fillRect(0, 0, cw, ch); });
         dc.globalCompositeOperation = 'source-over';
         TORCHES.forEach((tc, i) => { if (lit[i] < 0) return; const u = (now - lit[i]) / 1000, a = Math.max(0, 1 - u * 2.2) * .55; if (a <= .01) return; const r = cw * .06 * (1 + u);
-          const g = dc.createRadialGradient(tc[0] * cw, tc[1] * ch, 0, tc[0] * cw, tc[1] * ch, r); g.addColorStop(0, `rgba(255,220,150,${a})`); g.addColorStop(1, 'rgba(255,120,40,0)'); dc.fillStyle = g; dc.fillRect(0, 0, cw, ch); });
+          const g = dc.createRadialGradient(tc[0] * cw, tc[1] * ch, 0, tc[0] * cw, tc[1] * ch, Math.max(.01, r)); g.addColorStop(0, `rgba(255,220,150,${a})`); g.addColorStop(1, 'rgba(255,120,40,0)'); dc.fillStyle = g; dc.fillRect(0, 0, cw, ch); });
       }
       // ---- 4. Malgorath de pé ----
       const stOp = eio(seg(t, T.stand[0], T.stand[1])) * (1 - seg(t, T.white[0] + 300, T.white[1] + 200));
@@ -143,7 +152,7 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
       if (t > T.faceIn[0] && t < T.ignite + 400 && Math.random() < 5 * dt / 1000) { const [x, y] = pt(face, TORCH_FACE); ember(x, y, 1, .6, 6); }
       if (t > T.zoom[0] && t < T.stand[1] + 200) {   // o trono pega fogo: brilho de chamas crescente atrás do Malgorath
         const k = eo(seg(t, T.zoom[0], T.flash)), [gx, gy] = pt(far, BOSS_FAR), r = fx.width * (.12 + .5 * k), fl = .85 + .15 * Math.sin(t * .03) * Math.sin(t * .011);
-        ctx.save(); ctx.globalCompositeOperation = 'lighter'; const g = ctx.createRadialGradient(gx, gy + r * .25, 0, gx, gy + r * .25, r);
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; const g = ctx.createRadialGradient(gx, gy + r * .25, 0, gx, gy + r * .25, Math.max(.01, r));
         g.addColorStop(0, `rgba(255,210,120,${.55 * k * fl})`); g.addColorStop(.35, `rgba(255,100,30,${.4 * k * fl})`); g.addColorStop(1, 'rgba(160,20,0,0)'); ctx.fillStyle = g; ctx.fillRect(gx - r, gy - r, r * 2, r * 2.4); ctx.restore();
         if (Math.random() < 90 * k * dt / 1000) ember(gx, gy + r * .3, 1, 1.6, r * .35);
       }
