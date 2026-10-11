@@ -15,7 +15,10 @@ if (window === window.top && !/[?&]noshell/.test(location.search)) {
   addEventListener('click', e => { if (!isField(e.target) && isClick(e.target)) setTimeout(blurNow, 0); }, false);   // botões: depois do clique, para o layout não pular antes
   addEventListener('keydown', e => { if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') setTimeout(blurNow, 0); }, false);
   addEventListener('popstate', blurNow, true);
-  addEventListener('focusin', e => { const t = e.target; if (t && t.closest && t.closest('.ov,.dlg') && /^(INPUT|TEXTAREA)$/.test(t.tagName)) setTimeout(() => { try { t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) {} }, 320); });
+  // campo focado sempre fica a vista: rola quando o teclado abre e de novo quando a janela termina de encolher
+  addEventListener('focusin', e => { const t = e.target; if (!t || !/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.type === 'hidden') return;
+    const go = () => { try { if (document.activeElement === t) t.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (x) {} };
+    setTimeout(go, 320); let n = 0; const on = () => { if (++n > 3) { removeEventListener('resize', on); return; } setTimeout(go, 120); }; addEventListener('resize', on); setTimeout(() => removeEventListener('resize', on), 1500); });
   const vv = window.visualViewport; if (vv) { let h = vv.height; vv.addEventListener('resize', () => { if (vv.height > h + 80) blurNow(); h = vv.height; }); }
 }
 // Toque longo / botão direito: nenhum menu do navegador (abrir/baixar imagem, copiar, compartilhar). Só as funções do próprio jogo.
@@ -110,8 +113,12 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
     ov.innerHTML = `<svg viewBox="0 0 12 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#3a1a06" d="M2 1h9v1h1v13h-1v1H2v-1H1V2h1z"/><path fill="#ffd978" d="M1 0h9v1h1v13h-1v1H1v-1H0V1h1z"/><path fill="#0b1633" d="M2 2h7v10H2z"/><path fill="#7fc8ff" d="M3 3h5v1H3zM3 5h5v1H3zM3 7h3v1H3z"/><path fill="#ffd978" d="M4 13h3v1H4z"/></svg><div>GIRE O APARELHO<small>O JOGO É JOGADO NA VERTICAL</small></div>`;
     document.body.appendChild(ov);
   };
-  const check = () => { if (!document.body) return; if (!ov) build(); const land = innerWidth > innerHeight * 1.05; ov.classList.toggle('on', land); };
+  // teclado virtual encolhe a janela (largura > altura) sem o aparelho girar: nao conta como paisagem
+  const typing = () => { let a = document.activeElement; while (a && a.tagName === 'IFRAME') { try { a = a.contentDocument.activeElement; } catch (e) { break; } } return !!a && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable); };
+  const portraitScreen = () => { try { const o = T.screen.orientation; return !!(o && o.type && /portrait/.test(o.type)); } catch (e) { return false; } };
+  const check = () => { if (!document.body) return; if (!ov) build(); const land = innerWidth > innerHeight * 1.05 && !typing() && !portraitScreen(); ov.classList.toggle('on', land); };
   addEventListener('resize', check); addEventListener('orientationchange', () => setTimeout(check, 150));
+  addEventListener('focusin', check); addEventListener('focusout', () => setTimeout(check, 350));
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', check); else check();
 })();
 })();
