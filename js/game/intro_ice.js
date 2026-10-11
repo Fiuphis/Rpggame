@@ -61,7 +61,8 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
     let poll = null; if (net) { const tick = () => net.state().then(apply).catch(() => {}); poll = setInterval(tick, 1000); tick(); }
     paintBtn();
     if (bots) for (let i = 0; i < voters - 1; i++) setTimeout(() => { if (done || revealed || skipped || Math.random() > .5) return; yes++; paintBtn(); if (yes >= need) skip(); }, 1500 + i * 900);
-    function skip(){ if (skipped) return; skipped = true; const t = performance.now() - t0; if (t < T.white[0]) t0 -= (T.white[0] - t); }
+    let skipAt = 0;   // pular: a cena escurece em branco (0,4 s) e so entao salta para o clarao final, sem corte seco
+    function skip(){ if (skipped) return; skipped = true; if (performance.now() - t0 < T.white[0]) skipAt = performance.now(); }
     window.__introSkip = skip; window.__introSeek = ms => { t0 = performance.now() - ms; };
 
     // ---- layout: cada camada tem o tamanho da imagem "cover" dentro da janela (as sobreposições usam fração da imagem) ----
@@ -89,7 +90,7 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
     let flashA = 0, whiteMax = 0;
 
     function frame(now){
-      if (done) return; const t = now - t0, dt = Math.min(50, now - lastNow); lastNow = now;
+      if (done) return; let skf = 0; if (skipAt) { skf = eio(clamp((now - skipAt) / 420)); if (now - skipAt >= 420) { t0 = now - T.white[1]; skipAt = 0; skf = 0; } } const t = now - t0, dt = Math.min(50, now - lastNow); lastNow = now;
       evs.forEach(e => { if (!e.done && t >= e.t) { e.done = true; e.fn(); } });
       // ---- câmera (face = close/rachando; far = nave) ----
       const flick = t < T.fadeIn[1] + 400 ? (Math.sin(t * .04) * Math.sin(t * .013) > .12 ? 1 : .4) : 1;
@@ -122,7 +123,7 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
       // ---- tarjas de cinema, vinheta, flash, tremor ----
       const bh = lerp(0, 1, eio(seg(t, 200, 1400))); bars.forEach(b => { b.style.transform = `scaleY(${bh})`; });
       vig.style.opacity = .75 + .25 * Math.sin(t * .003);
-      flashA = Math.max(0, flashA - dt / 520); const wh = eio(seg(t, ...T.white)) * (1 - eio(seg(t, T.reveal, T.end)) ); whiteMax = Math.max(wh, 0); flash.style.opacity = Math.max(flashA * .85, wh);
+      flashA = Math.max(0, flashA - dt / 520); const wh = eio(seg(t, ...T.white)) * (1 - eio(seg(t, T.reveal, T.end)) ); whiteMax = Math.max(wh, 0); flash.style.opacity = Math.max(flashA * .85, wh, skf);
       const sk = shake.a * Math.max(0, 1 - (performance.now() - shake.t) / shake.d); stage.style.transform = sk > .05 ? `translate(${(Math.random() - .5) * 2 * sk}px,${(Math.random() - .5) * 2 * sk}px)` : '';
       // ---- efeitos de tela: névoa, neve, estilhaços, feixe de luz ----
       ctx.clearRect(0, 0, fx.width, fx.height);

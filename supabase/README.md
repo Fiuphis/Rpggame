@@ -6,7 +6,7 @@ Projeto Supabase `cdwagfofjjhnykbzixut` (Postgres + login anônimo/conta). O jog
 
 | Caminho | O que é |
 |---|---|
-| `migrations/` | Scripts SQL numerados, na ordem em que foram aplicados no Supabase real (10 a 22). Cada arquivo começa com um comentário dizendo o que muda. |
+| `migrations/` | Scripts SQL numerados, na ordem em que foram aplicados no Supabase real (10 a 23). Cada arquivo começa com um comentário dizendo o que muda. |
 | `local/schema.sql` | Retrato do schema (tabelas, funções, políticas) usado pelo servidor local de teste. Já inclui o estado até a migração 11. |
 | `local/bootstrap.sql` | Base mínima (papéis, `auth.*`, `extensions.*`) para o schema rodar num Postgres comum (PGlite). |
 
@@ -50,6 +50,7 @@ As migrações 01 a 09 (tabelas de salas, grupos, votos, Mercador, perfis e save
 ## Regras que o banco impõe
 - **Voltar à sala (`21_rejoin.sql`):** na fase de espera, sair apaga a pessoa da sala; depois que a sala fecha (escolha de classe, mapa, batalha), sair só zera o sinal de presença: a pessoa continua membro, volta pelo código ou pela lista (a sala aparece para os membros mesmo vazia ou privada) e retoma a mesma classe, a menos que a vaga tenha sido ocupada por 7 ativos. Quem nunca esteve na sala continua barrado depois que ela fecha.
 - **Abertura do boss (`22_intro.sql`):** `start_match` marca `matches.intro_until` (agora + 75 s) e empurra o fim da rodada 1 na mesma medida. `intro_vote(p_room, p_yes)` marca/desmarca o voto de pular e `intro_done(p_room)` registra quem terminou de assistir (tabela `intro_votes`); `intro_state(p_room)` devolve `{on, voters, need, skip, done, mine}`. A abertura é liberada quando pulam a maioria dos membros ativos da sala (`voters/2 + 1`, qualquer classe) ou quando todos terminam; na liberação o fim da rodada 1 volta a "agora + tempo da rodada".
+- **Poderes do criador (`23_owner_room.sql`):** `owner_room(p_room, p_action)` com `end` (encerra a partida, a sala volta ao mapa), `restart` (encerra, zera progresso e classes, reabre a espera) e `delete` (sala some das listas); só o criador, mesmo sem estar na sala. `list_public_rooms()` ganhou a coluna `owner` e sempre inclui as salas do próprio criador.
 - Máximo de **3 salas por criador**, **7 jogadores por classe** e **28 por sala** (`20_room_cap.sql`); quem já está na sala sempre consegue voltar.
 - Código de sala com 6 letras/números; limite de tentativas erradas (`join_fails`).
 - Presença ativa: sinal nos últimos 45 s. Partida sem sinal por 3 horas é encerrada como abandonada (`14_expire_match.sql`).

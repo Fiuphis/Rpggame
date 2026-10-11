@@ -2,6 +2,8 @@
    O navegador sai da tela cheia ao trocar de página (cover.html <-> game.html): se o jogador escolheu tela cheia, ela é pedida de novo no primeiro toque da página seguinte. */
 (() => {
 'use strict';
+// Avisa a pagina-mae (shell.html) que esta pagina ja pintou: ela solta a copia dos portoes/nuvens que segurava durante a troca de pagina.
+if (window !== window.top) { const say = () => requestAnimationFrame(() => requestAnimationFrame(() => { try { parent.postMessage({ bd1gate: 'ready' }, location.origin); } catch (e) {} })); if (document.readyState === 'loading') addEventListener('DOMContentLoaded', say); else say(); }
 // O navegador sai da tela cheia quando a página navega. Por isso o jogo roda dentro de shell.html, que nunca navega: as telas (cover, index, map, game) trocam dentro do quadro e a tela cheia é do shell.
 if (window === window.top && !/[?&]noshell/.test(location.search)) {
   const f = location.pathname.split('/').pop() || 'index.html';

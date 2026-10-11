@@ -20,7 +20,7 @@ window.Cine = {
       tb.innerHTML = NAME.split('').map((c, i) => `<u style="--i:${i}">${c}</u>`).join(''); ts.innerHTML = SUB.split('').map((ch, i) => `<u>${ch === ' ' ? '&nbsp;' : ch}</u>`).join('');
       bc.style.opacity = 1; bc.style.filter = 'brightness(0)';
       g.style.transformOrigin = '49% 12%';
-      const A = window.Anim, FL = [1900, 2350, 2700], T0 = performance.now(), TOT = ICE ? 8900 : 8200, X = ICE ? 700 : 0; let awake = false, shook = false, lastScan = -1e9;
+      const A = window.Anim, FL = [1900, 2350, 2700], T0 = performance.now(), TOT = ICE ? 8900 : 8200, X = ICE ? 700 : 0; let rs = false, awake = false, shook = false, lastScan = -1e9;
       // posicao real dos olhos: o rig do boss grava (em coordenadas do canvas) onde desenhou cada olho
       const scan = () => { const E2 = window.__bossEyes; if (!E2 || E2.length < 2) return; const r = bc.getBoundingClientRect(), gr = g.getBoundingClientRect(); E2.slice(0, 2).forEach((c, i) => { eyes[i].style.left = ((r.left + c[0] / bc.width * r.width - gr.left) / gr.width * 100) + '%'; eyes[i].style.top = ((r.top + c[1] / bc.height * r.height - gr.top) / gr.height * 100) + '%'; }); };
       const sc = () => +(window.__ts || 1);
@@ -92,6 +92,7 @@ window.Cine = {
         const ta = eio(seg(t, 4300, 4900));
         ti.style.opacity = ta; ti.style.setProperty('--k', eio(seg(t, 4300, 5400)));
         burn(t);
+        if (t >= TOT - 500 && !rs) { rs = true; res(); }   // a luta comeca ja nos ultimos instantes (tudo ja apagou), sem tempo morto entre a cena e o jogo
         if (t < TOT) requestAnimationFrame(tick);
         else { g.style.transform = ''; g.style.transformOrigin = ''; bc.style.filter = ''; el.remove(); res(); }
       })(T0);

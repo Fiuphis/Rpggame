@@ -637,7 +637,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sk-tipo,.sk-attr,.dq-val,.chip{border:0;border-style:solid;border-width:.6cqw;border-image-slice:2 fill;border-image-repeat:stretch;image-rendering:pixelated;background:none;border-image-source:url(../assets/ui/ui_cs_blue.png);box-sizing:border-box}
 .sk-attr.demon,.dq-val.demon,.chip.demon{border-image-source:url(../assets/ui/ui_cs_purple.png)}
 .sk-attr.none,.dq-val.none,.chip.none,.sk-attr.elem,.dq-val.elem,.chip.elem{border-image-source:url(../assets/ui/ui_cs_grey.png)}
-.sk-tipo,.sk-attr{display:flex;align-items:center;justify-content:center;gap:1cqw;padding:0 .4cqw;overflow:hidden}
+.sk-tipo,.sk-attr{display:flex;align-items:center;justify-content:center;gap:1cqw;padding:0 1.2cqw;overflow:hidden}
 .sk-tipo img,.sk-attr img,.dq-val img,.chip img{height:1.9cqw;width:1.9cqw;image-rendering:pixelated;flex:none}
 .sk-attr div{display:flex;flex-direction:column;gap:.5cqw;line-height:1}
 .sk-attr small{font-size:1cqw;color:#c9b8f0;letter-spacing:.1cqw}
@@ -647,7 +647,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .dq-val{justify-content:center;gap:.8cqw;padding:0 .4cqw;color:#fff;text-shadow:0 .2cqw 0 #000}
 .dq-val.demon{color:#e6c2ff}
 .dq-val.none,.dq-val.elem{color:var(--ec,#fff)}
-.chip{padding:.2cqw .6cqw;border-left-width:.9cqw}
+.chip{padding:.4cqw 1.4cqw .4cqw 1cqw;border-left-width:.9cqw}
 .chip b{display:flex;align-items:center;gap:.6cqw}
 .sk-tipo,.sk-attr{gap:.6cqw}
 .sk-tipo img,.sk-attr img{height:1.5cqw;width:1.5cqw}
@@ -655,7 +655,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sk-attr b{font-size:1.2cqw!important}
 .sk-tipo div{gap:.4cqw}
 /* painel de pergunta: a moldura ja vem na arte; so o valor (icone + texto) fica por cima */
-.dq-val{border:0!important;border-image:none!important;padding:0 .6cqw!important;justify-content:flex-start}
+.dq-val{border:0!important;border-image:none!important;padding:0 1.4cqw!important;justify-content:flex-start}
 .dq-val img{height:1.4cqw;width:1.4cqw;margin-right:.5cqw}
 .dq-val.tp img{display:none}
 .dq-val.sm{font-size:1.3cqw}
@@ -669,7 +669,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .sk-timer .sk-time,.sk-timer .dq-side-timer{position:static;font-family:OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;font-weight:700;font-size:2.2cqw;line-height:1;letter-spacing:0;width:auto;height:auto;display:block;text-shadow:0 .2cqw 0 #000}
 #am-timer{display:flex;align-items:center;gap:.7cqw}#am-timer .hg{flex:none;width:1.3cqw;height:1.7cqw;background:url(../assets/ui/icon_chip_hourglass.png) center/100% 100% no-repeat;image-rendering:pixelated}
 /* chips Tipo/Atributo do painel de pergunta (cobrem os da arte) */
-.qchip{display:flex;align-items:center;gap:.8cqw;padding:0 .6cqw;overflow:hidden;white-space:nowrap;border:0;border-style:solid;border-width:max(2px,.6cqw);border-image:url(../assets/ui/ui_cs_blue.png) 2 fill/auto stretch;image-rendering:pixelated;box-sizing:border-box}
+.qchip{display:flex;align-items:center;gap:.8cqw;padding:0 1.2cqw 0 1.6cqw;overflow:hidden;white-space:nowrap;border:0;border-style:solid;border-width:max(2px,.6cqw);border-image:url(../assets/ui/ui_cs_blue.png) 2 fill/auto stretch;image-rendering:pixelated;box-sizing:border-box}
 .qchip.demon{border-image-source:url(../assets/ui/ui_cs_purple.png)}
 .qchip.none,.qchip.elem{border-image-source:url(../assets/ui/ui_cs_grey.png)}
 .qchip img{flex:none;width:1.6cqw;height:1.6cqw;image-rendering:pixelated}
@@ -692,7 +692,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .qchip div{display:flex;flex-direction:column;justify-content:center;gap:.35cqw;line-height:1;min-width:0}
 .qchip b{margin:0;font-size:1.9cqw}
 .qchip small{font-size:1cqw}
-.qchip{gap:1cqw;padding:0 .8cqw}
+.qchip{gap:1cqw;padding:0 1.2cqw 0 1.8cqw}
 .qchip div{gap:.25cqw}.qchip b{font-size:1.7cqw}.qchip small{font-size:.95cqw}
 .sk-tipo img,.sk-attr img,.qchip img,.chip img{flex:none!important;min-width:0}
 .sk-timer{gap:.5cqw;padding:0 .3cqw}
@@ -720,7 +720,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 /* v215: um unico visual para todos os chips vermelhos (SEM EFEITO, BOSS IMUNE, RECARGA, SEM MANA...): moldura pixel, texto centralizado e sempre dentro da borda */
 .sk-card .el-chip{left:25.6%;top:51%;width:31%;height:33%;padding:0;container-type:inline-size;border-width:max(2px,.45cqw)}
 .sk-card .el-chip b{display:block;font:inherit;font-size:10.5cqi;font-weight:700;letter-spacing:.04em;line-height:1;white-space:nowrap}
-.sk-card .lock{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:3.6cqw;padding:0 1.1cqw;font-size:1.25cqw;line-height:1;background:none;border:0;border-style:solid;border-width:max(2px,.4cqw);border-image:url(../assets/ui/ui_cs_red.png) 2 fill/auto stretch;image-rendering:pixelated;text-shadow:0 .2cqw 0 #000}
+.sk-card .lock{display:flex;align-items:center;justify-content:center;box-sizing:border-box;height:3.6cqw;padding:0 1.6cqw;font-size:1.25cqw;line-height:1;background:none;border:0;border-style:solid;border-width:max(2px,.4cqw);border-image:url(../assets/ui/ui_cs_red.png) 2 fill/auto stretch;image-rendering:pixelated;text-shadow:0 .2cqw 0 #000}
 .sk-card.ult.off .lock{background:none;border-image-source:url(../assets/ui/ui_cs_gold.png);color:#ffd98a}
 .sk-card .tp-chips .tag.block{height:3.6cqw!important}
 

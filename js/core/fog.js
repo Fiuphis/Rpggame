@@ -16,7 +16,7 @@ addEventListener('resize', refit); addEventListener('load', refit); addEventList
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(refit);
 window.Fog = {
   rest(el){ cancel(); cur = el; atRest = true; if (window.ResizeObserver && !ro) { ro = new ResizeObserver(refit); ro.observe(el); } put(el, edge(el), REST); banks().forEach(x => x.classList.add('drift')); document.documentElement.classList.remove('fogin'); },
-  close(el, ms = 1000){ banks().forEach(x => x.classList.add('drift')); return run(el, 1, 0, ms, 'cubic-bezier(.4,0,.2,1)'); },
+  close(el, ms = 1000){ banks().forEach(x => x.classList.add('drift')); return run(el, 1, 0, ms, 'cubic-bezier(.4,0,.2,1)').then(() => { try { if (parent !== window) parent.postMessage({ bd1gate: 'hold', kind: 'fog' }, location.origin); } catch (e) {} }); },   // no shell: a mae segura uma copia das nuvens fechadas ate a proxima pagina aparecer (sem tela escura no meio)
   open(el, ms = 2600){ return run(el, 0, 1, ms, 'cubic-bezier(.45,0,.2,1)').then(() => Fog.rest(el)); }
 };
 })();

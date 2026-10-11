@@ -170,3 +170,26 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   // vaga tomada enquanto estava fora: volta sem classe
   await call(a, 'leave_room', { p_room: r.id });
   ok('sair e voltar a sala no mesmo ponto'); }
+
+// poderes do criador (migracao 23): encerrar, reiniciar, excluir; mesmo depois de sair
+{ const lstr = u => db.transaction(async tx => { await tx.query(`select set_config('request.jwt.claims', $1, true)`, [JSON.stringify({ sub: u, role: 'authenticated', is_anonymous: true })]); await tx.exec('set local role authenticated'); return (await tx.query('select * from public.list_public_rooms()')).rows; });
+  const [a, b, c] = U(3); const r = await call(a, 'create_room', { p_public: true, p_name: 'DONO' });
+  await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  await fails(call(b, 'owner_room', { p_room: r.id, p_action: 'delete' }), 'so_o_criador');
+  await fails(call(a, 'owner_room', { p_room: r.id, p_action: 'xx' }), 'acao_invalida');
+  await call(a, 'leave_room', { p_room: r.id });                                   // criador sai e volta ao menu
+  let ls = await lstr(a); const mine = ls.find(x => x.id === r.id); assert.ok(mine && mine.owner === true, 'criador ve a sala com owner');
+  assert.equal((await lstr(b)).find(x => x.id === r.id).owner, false);
+  await call(a, 'owner_room', { p_room: r.id, p_action: 'end' });
+  assert.equal((await db.query("select status from public.matches where room_id = $1", [r.id])).rows[0].status, 'aborted');
+  assert.equal((await db.query("select status, stage from public.rooms where id = $1", [r.id])).rows[0].status, 'lobby');
+  await call(a, 'owner_room', { p_room: r.id, p_action: 'restart' });
+  const rr = (await db.query("select stage, progress from public.rooms where id = $1", [r.id])).rows[0]; assert.equal(rr.stage, 'gather');
+  assert.equal((await db.query("select count(*)::int n from public.room_players where room_id = $1 and grp is not null", [r.id])).rows[0].n, 0);
+  await call(a, 'owner_room', { p_room: r.id, p_action: 'delete' });
+  assert.ok(!(await lstr(a)).some(x => x.id === r.id), 'sala excluida some da lista');
+  await fails(call(c, 'join_room', { p_room: r.id }), 'sala_nao_encontrada');
+  ok('criador encerra, reinicia e exclui a sala (mesmo depois de sair); outros nao'); }

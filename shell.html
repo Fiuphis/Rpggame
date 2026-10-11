@@ -11,11 +11,12 @@
 <style>html,body{margin:0;height:100%;background:#050711;overflow:hidden}html{--t:0px}iframe{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));border:0;display:block;background:#050711}
 /* em tela cheia o jogo desce um pouco, para a câmera frontal e a barra de status não taparem nada */
 html.fs{--t:max(env(safe-area-inset-top),28px)}
-#gh{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#050308;image-rendering:pixelated;display:none;pointer-events:auto}#gh.on{display:block}</style>
+#gh{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#050308;image-rendering:pixelated;display:none;pointer-events:auto}#gh.on{display:block}
+#gf{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#c9d3ea;overflow:hidden;display:none}#gf.on{display:block}#gf i{position:absolute;left:-10%;width:120%;height:60%;overflow:hidden}#gf i::before{content:"";position:absolute;top:0;bottom:0;left:-60vw;width:calc(100% + 60vw);background-repeat:repeat-x;background-size:60vw 100%}#gf .t{top:0}#gf .b{bottom:0}#gf .t::before{background-image:url(assets/fog/top.webp)}#gf .b::before{background-image:url(assets/fog/bot.webp)}</style>
 </head>
 <body>
 <iframe id="g" allow="fullscreen" title="Jogo"></iframe>
-<img id="gh" alt="">
+<img id="gh" alt=""><div id="gf"><i class="t"></i><i class="b"></i></div>
 <script>
 /* Página-mãe fixa: nunca navega, para que a tela cheia não seja encerrada na troca de telas. O jogo roda no quadro. */
 (function(){
@@ -26,13 +27,15 @@ html.fs{--t:max(env(safe-area-inset-top),28px)}
   document.addEventListener('fullscreenchange', fsOn); document.addEventListener('webkitfullscreenchange', fsOn); fsOn();
   /* portoes: a pagina que fecha as portas manda uma copia delas; some quando a proxima ja pintou as dela (ou, no maximo, 8 s) */
   var gh = document.getElementById('gh'), ght = 0;
-  var ghOff = function(){ clearTimeout(ght); gh.classList.remove('on'); gh.removeAttribute('src'); };
+  var gf = document.getElementById('gf');
+  var ghOff = function(){ clearTimeout(ght); gh.classList.remove('on'); gh.removeAttribute('src'); gf.classList.remove('on'); };
   addEventListener('message', function(e){
     var d = e.data; if (e.origin !== location.origin || e.source !== f.contentWindow || !d || !d.bd1gate) return;
-    if (d.bd1gate === 'hold' && d.img) { gh.src = d.img; gh.classList.add('on'); clearTimeout(ght); ght = setTimeout(ghOff, 8000); }
+    if (d.bd1gate === 'hold' && d.kind === 'fog') { gf.classList.add('on'); clearTimeout(ght); ght = setTimeout(ghOff, 8000); }
+    else if (d.bd1gate === 'hold' && d.img) { gh.src = d.img; gh.classList.add('on'); clearTimeout(ght); ght = setTimeout(ghOff, 8000); }
     else if (d.bd1gate === 'ready') ghOff();
   });
-  f.addEventListener('load', function(){ if (gh.classList.contains('on')) { clearTimeout(ght); ght = setTimeout(ghOff, 700); }
+  f.addEventListener('load', function(){ if (gh.classList.contains('on') || gf.classList.contains('on')) { clearTimeout(ght); ght = setTimeout(ghOff, 700); }
     try { var l = f.contentWindow.location, p = l.pathname.split('/').pop() + l.search; if (/^[\w-]+\.html/.test(p)) history.replaceState(null, '', '#' + p); } catch (e) {}
   });
 })();

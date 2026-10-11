@@ -20,6 +20,7 @@ function card(r) {
     <div class="r1"><img class="ico" src="assets/salas/ic_unlock.png" alt=""><span class="nm">${nm}</span><span class="bd${bt ? ' bt' : ''}">${bt ? 'EM BATALHA' : 'AGUARDANDO'}</span></div>
     <div class="grs">${rows}</div>
     <div class="r3"><span class="inf">GUARDIÃO <b>${(r.boss_idx || 0) + 1}/6</b><br><b>${tot}</b> ${tot === 1 ? 'JOGADOR' : 'JOGADORES'}</span><button class="chip blue go" type="button"${full ? ' disabled' : ''}>${full ? 'CHEIA' : 'ENTRAR'}</button></div>
+    ${r.owner ? `<div class="r4"><span class="ow">SUA SALA</span>${bt ? '<button class="chip own" type="button" data-a="end">ENCERRAR</button>' : ''}<button class="chip own" type="button" data-a="restart">REINICIAR</button><button class="chip own red" type="button" data-a="delete">EXCLUIR</button></div>` : ''}
   </div>`;
 }
 function paint() {
@@ -35,6 +36,14 @@ async function load(manual) {
 }
 $('#ls').addEventListener('click', e => {
   if (e.target.id === 'retry') { netState('con', 'CONECTANDO'); load(true); return; }
+  const ob = e.target.closest('.own');   // poderes do criador (valem mesmo depois de sair da sala): toque duplo para confirmar
+  if (ob) {
+    const OW = { end: 'ENCERRAR', restart: 'REINICIAR', delete: 'EXCLUIR' }, a = ob.dataset.a, id = ob.closest('.rm').dataset.id;
+    if (!ob.dataset.sure) { ob.dataset.sure = '1'; ob.textContent = 'CONFIRMAR?'; ob.classList.add('sure'); setTimeout(() => { if (ob.isConnected) { delete ob.dataset.sure; ob.textContent = OW[a]; ob.classList.remove('sure'); } }, 3500); return; }
+    ob.disabled = true;
+    NET.rpc('owner_room', { p_room: id, p_action: a }).then(() => { toast(a === 'delete' ? 'Sala excluída.' : a === 'restart' ? 'Sala reiniciada.' : 'Partida encerrada.'); load(); }, err => { ob.disabled = false; toast(NET.msg(err)); });
+    return;
+  }
   const b = e.target.closest('.go'); if (!b || b.disabled) return; const id = b.closest('.rm').dataset.id; b.disabled = true;
   NET.joinRoom(id).then(r => { try { localStorage.removeItem('bd1_auto'); } catch (e) {} enter(r); }, err => { b.disabled = false; toast(NET.msg(err)); load(); });
 });

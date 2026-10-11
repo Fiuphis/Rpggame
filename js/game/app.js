@@ -2065,7 +2065,7 @@ function beginBattle(delay){
         MATCH.introDone(ONL.room).catch(() => {});
         const t0 = Date.now(); let warned = false;
         const wait = () => MATCH.introState(ONL.room).then(x => x, () => null).then(x => {   // espera os outros terminarem (ou o limite do servidor)
-          if (!x || !x.on || Date.now() - t0 > 80000) return setTimeout(go, 400);
+          if (!x || !x.on || Date.now() - t0 > 80000) return setTimeout(go, 150);
           if (!warned) { warned = true; toast('Aguardando os outros jogadores...'); }
           setTimeout(wait, 1000);
         });
@@ -2075,7 +2075,7 @@ function beginBattle(delay){
     return;
   }
   const n = groupMembers();
-  show({voters:n, need:majorityOf(n), bots:TEST_MODE}, () => setTimeout(go, 400));
+  show({voters:n, need:majorityOf(n), bots:TEST_MODE}, () => setTimeout(go, 150));
 }
 function restartRun(){
   A.reset(); closeTargetPick(); paperUIClose();
