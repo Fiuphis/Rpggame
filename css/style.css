@@ -855,3 +855,14 @@ body,button,input{font-family:OpenC,OpenD,monospace}
 
 /* Hrimgar: heroi congelado */
 canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop-shadow(0 0 .8cqw #9fe8ff) !important}
+
+/* arca do tesouro: votacao so com dois botoes, logo abaixo da arca (sem painel de pergunta e sem mercador) */
+.chest-vote{position:absolute;z-index:46;left:50%;top:62%;transform:translateX(-50%);width:68%;display:grid;grid-template-columns:1fr 1fr;gap:2.6cqw;pointer-events:auto}
+.cv-timer{grid-column:1/-1;justify-self:center;font-style:normal;font:700 2.4cqw/1 OpenC,OpenD,monospace;color:#ffe9a8;letter-spacing:.1cqw;text-shadow:0 .2cqw 0 #000;padding:.8cqw 2.2cqw;background:rgba(8,6,16,.78);border:.4cqw solid #5b447f}
+.cv-timer.urgent{color:#ff8a8a;border-color:#ff536b}
+.cv-btn{appearance:none;-webkit-appearance:none;margin:0;border:0;border-radius:0;height:9.4cqw;display:flex;align-items:center;justify-content:center;gap:1.4cqw;padding:0 6cqw 0 4.6cqw;min-width:0;cursor:pointer;color:#fff0ff;font:700 2.3cqw/1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.1cqw;text-shadow:0 .2cqw 0 #000;background:url(../assets/ui/ui_chip.png) center/100% 100% no-repeat;image-rendering:pixelated;white-space:nowrap}
+.cv-btn.yes{color:#fff3c4}.cv-btn.no{color:#ffb8c0}
+.cv-btn .cv-l{flex:1;text-align:center;min-width:0}
+.cv-btn .cnt{color:#ffc54e;font-size:2.3cqw;flex:none;min-width:2.4cqw;text-align:center}
+.cv-btn.selected,.cv-btn.chosen{background:url(../assets/ui/ui_chip_hi.png) center/100% 100% no-repeat}
+.cv-btn:disabled:not(.chosen){opacity:.55}

@@ -33,7 +33,7 @@ function column(x, yb, w, h, col, a){          // coluna de luz com base no chã
   g.globalCompositeOperation = 'destination-out'; g.fillStyle = gx; g.globalAlpha = .55; g.fillRect(x - w / 2, yb - h, w, h); g.restore();
 }
 function puff(x, y, s, a, col = '200,190,170'){   // fumaça/poeira (normal, não aditiva)
-  if (a <= .01) return; g.save(); const gr = g.createRadialGradient(x, y, 0, x, y, s); gr.addColorStop(0, `rgba(${col},${clamp(a)})`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(x - s, y - s, s * 2, s * 2); g.restore();
+  if (a <= .01 || s <= 0) return; g.save(); const gr = g.createRadialGradient(x, y, 0, x, y, s); gr.addColorStop(0, `rgba(${col},${clamp(a)})`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(x - s, y - s, s * 2, s * 2); g.restore();
 }
 
 const FX = {

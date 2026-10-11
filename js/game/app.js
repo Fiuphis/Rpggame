@@ -642,6 +642,10 @@ function buildSkillFrame(panel, title, text, at, seconds, note){
   fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
   return M;
 }
+function buildChestVote(seconds){
+  const old = $('#chest-vote'); if (old) old.remove();
+  const d = document.createElement('div'); d.id = 'chest-vote'; d.className = 'chest-vote'; d.innerHTML = `<em id="cv-timer" class="cv-timer">${seconds}s</em>`; $('#game').appendChild(d); return d;
+}
 function buildQuestionPanel(text, at, seconds, side){
   const Q = MENU_META.question, L = $('#dq-layer'); L.innerHTML = '';
   const add = (id, cls, box, html) => { const d = document.createElement('div'); if (id) d.id = id; d.className = cls; d.style.cssText = pc(box, /sk-timer|qchip/.test(cls) ? .3 : 0); d.innerHTML = html; L.appendChild(d); return d; };
@@ -735,7 +739,7 @@ function flashHit(){
 
 // Votação genérica dentro do grupo: mostra contagem ao vivo (o grupo vê entre si), decide por maioria.
 // Empate entre as mais votadas = sorteio; ninguém votou = null. O painel continua aberto ao terminar.
-function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd, note, net}){
+function runVote({type, text, options, seconds, side, menu, title, attack, panel, endsAt:fixedEnd, note, net, chest}){
   return new Promise(resolve => {
     let endsAt = net ? net.endsAt() : (fixedEnd || Date.now() + seconds * 1000); seconds = Math.max(0, Math.ceil((endsAt - Date.now()) / 1000));   // prazo único: pode ser compartilhado entre menus (habilidade → elemento → voltar)
     const voters = groupMembers(), need = majorityOf(voters);
@@ -751,7 +755,8 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       $('#am-attack').innerHTML = attackChips(attack);
       $('#am-timer').innerHTML = timerHtml(seconds, 'dq-side-timer');
       list = $('#am-list'); list.innerHTML = '';
-    } else { list = buildQuestionPanel(text, attack, seconds, side); }
+    } else if (chest) { list = buildChestVote(seconds); }   // arca: so dois botoes embaixo dela (sem painel de pergunta nem mercador)
+    else { list = buildQuestionPanel(text, attack, seconds, side); }
     const enabled = options.map((o, i) => o.disabled ? -1 : i).filter(i => i >= 0);
     const btns = options.map((o, i) => {
       const b = document.createElement('button'); b.type = 'button';
@@ -780,6 +785,8 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.querySelector('.ac-name').textContent = o.label; b.querySelector('.ac-desc').textContent = o.desc || '';
         b.querySelector('.ac-chips').innerHTML = o.chips || '';
         if (o.color) b.style.setProperty('--ec', o.color);
+      } else if (chest) {
+        b.className = 'cv-btn ' + (o.kind || ''); b.innerHTML = '<span class="cv-l"></span><b class="cnt">0</b>'; b.querySelector('.cv-l').textContent = o.label;
       } else {
         b.className = 'dq-answer'; b.style.cssText = pc(MENU_META.question.rows[i]);
         if (o.hint) b.classList.add('hint');
@@ -795,6 +802,9 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     const top = () => { const m = Math.max(...sv); return {m, c: sv.map((v, i) => v === m ? i : -1).filter(i => i >= 0)}; };
     let cf = false;   // online: voto da pergunta ja confirmado (segundo toque na mesma alternativa)
     function pick(i){
+      if (net && chest) {   // arca: um toque vota e confirma
+        if (locked || cf) return; my = i; cf = true; const v = net.vote(i); Promise.resolve(v).then(() => net.vote(i)); btns[i].classList.add('chosen'); btns.forEach((b, j) => { if (j !== i) b.disabled = true; }); paint(); return;
+      }
       if (net) {   // 1o toque = escolhe (azul); 2o toque na mesma = confirma
         if (locked || cf) return;
         if (my === i) { if (net.vote) { cf = true; net.vote(i); btns[i].classList.add('chosen'); btns.forEach((b, j) => { if (j !== i) b.disabled = true; }); paint(); } else finish(i, false); return; }
@@ -810,12 +820,14 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
     async function finish(idx, tie){
       if (locked) return; locked = true; clearInterval(timer); bots.forEach(clearTimeout);
       qExtend = null; btns.forEach(b => b.disabled = true); paint(true);
-      if (idx !== null) { btns[idx].classList.add('chosen'); if (tie) toast(`Empate! ${String.fromCharCode(97 + idx)}) sorteada.`); }
-      resolve({idx, btns});
+      if (chest && tie) { idx = 1; tie = true; toast('Empate. A arca fica.'); }   // arca: empate nao abre
+      else if (idx !== null && tie) toast(`Empate! ${String.fromCharCode(97 + idx)}) sorteada.`);
+      if (idx !== null) btns[idx].classList.add('chosen');
+      resolve({idx, btns, my, tie});
     }
-    if (P) { $('#dynamic-question').hidden = true; $('#action-menu').hidden = true; $('#skill-menu').hidden = true; $('#dynamic-ui').hidden = false; } else panel ? openSkillMenu() : menu ? openMenu() : openPanel();
+    if (P) { $('#dynamic-question').hidden = true; $('#action-menu').hidden = true; $('#skill-menu').hidden = true; $('#dynamic-ui').hidden = false; } else if (!chest) panel ? openSkillMenu() : menu ? openMenu() : openPanel();
     fitText();
-    const timerEl = () => P ? $('#pp-timer') : $(panel ? '#skm-layer' : menu ? '#am-timer' : '#dq-layer').querySelector('#vote-timer');   // cada painel tem o seu (o id repetido pegava o da pergunta, escondido)
+    const timerEl = () => P ? $('#pp-timer') : chest ? $('#cv-timer') : $(panel ? '#skm-layer' : menu ? '#am-timer' : '#dq-layer').querySelector('#vote-timer');   // cada painel tem o seu (o id repetido pegava o da pergunta, escondido)
     const tick = () => {
       if (net) {   // online: prazo, contagem e fim vem do servidor
         endsAt = net.endsAt();
@@ -932,6 +944,7 @@ async function chestVanish(img){   // some: treme, pisca, vira poeira
 // Rodada de baú: ocupa a rodada inteira (sem pergunta). O grupo vota abrir ou ignorar; quem votou em abrir leva um item da loja ou uma armadilha.
 const CHEST_ITEM_P = .7, CHEST_RARE_P = .1, CHEST_LEGEND_P = .02;
 function chestEligible(){
+  if (TEST_MODE && window.__force === 'chest' && !state.over) return true;   // teste: forca a arca na proxima rodada
   return !state.over && state.round >= CHEST_FROM && state.round - state.chestAt >= CHEST_GAP && R() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest');
 }
 // item da arca voando para a mochila: surge da arca num clarao, flutua brilhando, faz um arco ate o botao da mochila e estoura em faiscas
@@ -982,17 +995,19 @@ function flyItemToBag(type, fromEl){
     setTimeout(finish, 4000);   // trava de seguranca
   });
 }
+const closeChestVote = () => { const v = $('#chest-vote'); if (v) v.remove(); };
 async function runChestRound(SR){
   state.chestAt = state.round;
   const g = $('#game'), img = document.createElement('img');
   img.className = 'chest'; img.src = CHEST_FRAMES[0]; img.alt = ''; g.appendChild(img);
+  setBag(false); mBubble('');   // a arca nao abre o mercador nem a mochila
   timeStop(img);
-  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Abrir ou ignorar? (sem pergunta nesta rodada)');
+  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Votem em ABRIR ou NÃO ABRIR (sem pergunta nesta rodada)');
   let open, mine, opens = null, rolls = null;
   if (ONL.on) {   // cada grupo decide pelo seu voto; o sorteio (item ou armadilha) e o mesmo em todos os aparelhos
-    const res = await runVote({text:'Abrir a arca do tesouro?', seconds:25, options:[{label:'ABRIR A ARCA'}, {label:'IGNORAR'}], net:onlNet(SR)});
+    const res = await runVote({chest:true, text:'Abrir a arca do tesouro?', seconds:25, options:[{label:'ABRIR', kind:'yes'}, {label:'NÃO ABRIR', kind:'no'}], net:onlNet(SR)});
     const s2 = await onlWaitIn(SR, r => r.status !== 'open');
-    await closePanel();
+    closeChestVote();
     if (!s2 || s2.behind) { hideBanner(); img.remove(); if (s2) onlSkip(s2); return 'skip'; }
     const rc = s2.round; opens = {}; rolls = {};
     HERO_ORDER.forEach(k => { opens[k] = !!(rc.groups[k] && rc.groups[k].chosen === 0); });
@@ -1001,9 +1016,9 @@ async function runChestRound(SR){
     hideBanner();
   } else {
   while (state.pendingAction || state.voteLocked) await wait(300);
-  state.chestVote = null;
-  open = await new Promise(res => { state.chestDone = res; openMerchantVote('Abrir a arca?', {type:'chest'}); });
-  mine = state.chestVote === 'yes';
+  const res = await runVote({chest:true, text:'Abrir a arca do tesouro?', seconds:VOTE_SECONDS, options:[{label:'ABRIR', kind:'yes'}, {label:'NÃO ABRIR', kind:'no'}]});
+  await wait(700); closeChestVote();
+  open = res.idx === 0; mine = res.my === 0;
   hideBanner(); }
   const otherTraps = async () => {   // armadilhas dos outros grupos (valem para todos os aparelhos)
     if (!ONL.on) return;
@@ -1471,7 +1486,7 @@ function onlNet(SR){
     endsAt: () => { const r = onlRd(SR.id); return r ? ONL.local(r.ends_at) + ((grp(r) || {}).extra || 0) * 1000 : Date.now() + 1000; },
     counts: i => { const r = onlRd(SR.id); return r && r.tally ? (r.tally[String(i)] || 0) : 0; },
     my: () => { const r = onlRd(SR.id); return r && r.my_vote; },
-    vote: i => { MATCH.vote(SR.id, i).catch(e => { toast(NET.msg(e)); }).then(() => ONL.refresh()); },
+    vote: i => MATCH.vote(SR.id, i).catch(e => { toast(NET.msg(e)); }).then(() => ONL.refresh()),
     done: () => { const r = onlRd(SR.id), g = grp(r), m = ONL.match(); return !r || (m && m.status !== 'playing') ? true : (r.status !== 'open' || !!(g && g.locked)); },
     result: () => { const g = grp(onlRd(SR.id)); return g && g.chosen != null ? g.chosen : null; }
   };
@@ -1516,7 +1531,7 @@ async function onlBegin(){
 // sorteia o tipo/rank da proxima rodada (mesma conta em todos os aparelhos: a semente da rodada atual continua)
 function onlPlan(){
   const nr = state.round + 1;
-  if (!state.over && nr >= CHEST_FROM && nr - state.chestAt >= CHEST_GAP && R() < CHEST_CHANCE && !(TEST_MODE && window.__force === 'nochest')) return {kind:'chest', rank:null};
+  if (!state.over && nr >= CHEST_FROM && nr - state.chestAt >= CHEST_GAP && (R() < CHEST_CHANCE || (TEST_MODE && window.__force === 'chest')) && !(TEST_MODE && window.__force === 'nochest')) return {kind:'chest', rank:null};
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;
   const rank = state.forceHard ? (R() < .7 ? 4 : 5) : rollDiff();
