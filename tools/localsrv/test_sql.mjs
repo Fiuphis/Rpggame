@@ -35,6 +35,25 @@ const m = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 });
 assert.equal(m.status, 'playing'); assert.ok(m.seed != null);
 assert.equal((await call(u1, 'start_match', { p_room: room.id, p_boss: 0 })).id, m.id); ok('iniciar e idempotente');
 
+// abertura do boss (migracao 22): voto de pular conta a sala inteira; relogio da rodada 1 so corre depois
+{ const e0 = Number((await db.query("select extract(epoch from ends_at - now()) s from public.rounds where match_id = $1 and n = 1", [m.id])).rows[0].s);
+  assert.ok(e0 > 80, 'rodada 1 segurada durante a abertura: ' + e0);
+  let it = await call(u2, 'intro_state', { p_room: room.id }); assert.equal(it.on, true); assert.equal(it.voters, 4); assert.equal(it.need, 3);
+  it = await call(u1, 'intro_vote', { p_room: room.id, p_yes: true }); assert.equal(it.skip, 1); assert.equal(it.mine, true);
+  it = await call(u2, 'intro_vote', { p_room: room.id, p_yes: true }); assert.equal(it.on, true, '2 de 4 nao basta');
+  it = await call(u2, 'intro_vote', { p_room: room.id, p_yes: false }); assert.equal(it.skip, 1); assert.equal(it.mine, false);
+  it = await call(u3, 'intro_vote', { p_room: room.id, p_yes: true }); assert.equal(it.on, true);
+  it = await call(u4, 'intro_vote', { p_room: room.id, p_yes: true }); assert.equal(it.on, false, '3 de 4 (maioria da sala, grupos diferentes) libera');
+  const e1 = Number((await db.query("select extract(epoch from ends_at - now()) s from public.rounds where match_id = $1 and n = 1", [m.id])).rows[0].s);
+  assert.ok(e1 < 60 && e1 > 25, 'relogio volta ao normal apos liberar: ' + e1);
+  ok('abertura: voto de pular conta a sala inteira e libera o relogio da rodada 1'); }
+{ const [a, b] = U(2); const r = await call(a, 'create_room', { p_public: true, p_name: 'INTRO' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  await call(a, 'start_match', { p_room: r.id, p_boss: 1 });
+  let it = await call(a, 'intro_done', { p_room: r.id }); assert.equal(it.on, true, 'um assistindo ainda');
+  it = await call(b, 'intro_done', { p_room: r.id }); assert.equal(it.on, false, 'todos terminaram: libera');
+  ok('abertura: libera quando todos terminam de assistir'); }
 st = await call(u1, 'match_state', { p_room: room.id });
 let rd = st.round; assert.equal(rd.n, 1); assert.equal(rd.status, 'open'); assert.equal(rd.correct, null);
 assert.equal(rd.groups.cleriga.sim, true); assert.equal(rd.groups.mage.sim, false);
@@ -107,7 +126,7 @@ const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert
   const mm = await call(o, 'start_match', { p_room: r2.id, p_boss: 0 });
   const [row] = (await db.query(`select extract(epoch from (ends_at - started_at))::int as s, question_id from public.rounds where match_id = $1`, [mm.id])).rows;
   const rank = (await db.query(`select rank from public.questions where id = $1`, [row.question_id])).rows[0].rank;
-  assert.equal(row.s, Math.round((20 + 5 * rank) * 1.5) + 4); ok('tempo longo (x1,5) por sala');
+  assert.equal(row.s - 75, Math.round((20 + 5 * rank) * 1.5) + 4, 'tempo da rodada + janela da abertura (75 s)'); ok('tempo longo (x1,5) por sala');
   await db.exec(`insert into auth.users (id, is_anonymous) values ('${u1}', false), ('${u2}', false) on conflict do nothing`);
   await db.exec(`insert into public.profiles (user_id, username, recovery_hash) values ('${u1}', 'fiuphis', 'x'), ('${u2}', 'outro', 'x')`);
   assert.equal((await call(u2, 'admin_get_questions', {})).error, 'sem_permissao');

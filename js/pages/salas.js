@@ -100,15 +100,15 @@ function lobby(r, owner) {
   lbRoom = r; lbOwner = !!owner; clearInterval(timer);
   $('#lb-t').textContent = r.name ? r.name : 'SALA'; $('#lb-c').textContent = r.code || '------';
   $('#lb-h').textContent = r.is_public === false || r.pub === false ? 'Sala privada. Passe o código para os colegas entrarem.' : 'Sala pública. O código também serve para chamar amigos.';
-  $('#lb-n').textContent = '1 JOGADOR'; $('#lb-l').innerHTML = '';
+  $('#lb-n').textContent = '1'; $('#lb-l').innerHTML = ''; $('#lb-l').dataset.h = '';
   if (r.tmode && r.tmode !== 'normal') $('#lb-h').textContent += ' Tempo ' + TM[r.tmode][0].toLowerCase() + '.'; $('#lb-go').hidden = !lbOwner; $('#lb-go').disabled = false; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.';
   document.querySelectorAll('.ov').forEach(o => o.hidden = true); open('#ov-lb');
   const tick = async () => {
     if (leaving) return;
     try { const l = await MATCH.lobby(r.id); if (leaving) return;
       if (lbOwner !== !!l.owner) { lbOwner = !!l.owner; $('#lb-go').hidden = !lbOwner; }
-      $('#lb-n').textContent = l.total + (l.total === 1 ? ' JOGADOR' : ' JOGADORES');
-      $('#lb-l').innerHTML = (l.members || []).map((m, i) => `<div class="lbp${m.me ? ' me' : ''}"><i></i><span>${m.name ? esc(m.name) : 'JOGADOR ' + (i + 1)}</span>${m.owner ? '<u>CRIADOR</u>' : ''}</div>`).join('');
+      $('#lb-n').textContent = String(l.total);
+      { const box = $('#lb-l'), h = (l.members || []).map((m, i) => `<div class="lbp${m.me ? ' me' : ''}"><i></i><span>${m.name ? esc(m.name) : 'JOGADOR ' + (i + 1)}</span>${m.owner ? '<u>CRIADOR</u>' : ''}${m.me ? '<u class="vc">VOCÊ</u>' : ''}</div>`).join(''); if (box.dataset.h !== h) { const y = box.scrollTop; box.innerHTML = h; box.dataset.h = h; box.scrollTop = y; } }   // nao reinicia a rolagem a cada consulta
       if (l.stage !== 'gather') { proceed(l); return; } } catch (e) { $('#lb-m').textContent = NET.msg(e); }
   };
   tick(); lbT = setInterval(tick, 1500);

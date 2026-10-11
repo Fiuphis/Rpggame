@@ -2042,18 +2042,40 @@ function endGame(win){
   o.hidden = false;
 }
 // Abertura da batalha (js/game/intro.js). Em ?teste=1 fica desligada, a menos que ?intro=1; ?intro=0 sempre desliga.
-const INTRO_ON = (new URLSearchParams(location.search).get('intro') || (TEST_MODE || ONL.on ? '0' : '1')) === '1';   // online: sem abertura (o relogio da rodada 1 ja corre no servidor)
+const INTRO_ON = (new URLSearchParams(location.search).get('intro') || (TEST_MODE ? '0' : '1')) === '1';   // online: a abertura toca para a sala toda (voto de pular da sala inteira, no servidor; o relogio da rodada 1 espera)
 const bossCanvas = () => document.querySelector('canvas.hero.boss');
 function beginBattle(delay){
   clearTimeout(turnTimer); HERO_ORDER.forEach(k => A.enterPrep(k));   // heróis entram em cena quando a batalha começa
   const go = () => { HERO_ORDER.forEach((k, i) => A.enter(k, i * 200)); turnTimer = setTimeout(playRound, delay + 900); };
   const intro = document.getElementById('intro');
   if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; return go(); }
-  const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça
-  const n = groupMembers();
   const IP = ST.ice && window.IntroIce ? window.IntroIce : (window.IntroMalg || Intro), NEW = IP !== Intro;   // abertura cinematográfica do Malgorath (v253); js/game/intro.js fica como reserva
-  IP.play({voters:n, need:majorityOf(n), bots:TEST_MODE, onReveal:() => { if (window.Cine && NEW) { window.__cinep = Cine.play(); return; } const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', 'tpBack'); }}).then(() => (window.__cinep || Promise.resolve()).then(() => setTimeout(go, 400)));
-  if (NEW && intro) intro.hidden = true;   // a nova cria a própria camada preta (já está no DOM)
+  const show = (opts, after) => {
+    const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça
+    IP.play(Object.assign({onReveal:() => { if (window.Cine && NEW) { window.__cinep = Cine.play(); return; } const c = bossCanvas(); if (c) c.style.opacity = ''; A.play('boss', 'tpBack'); }}, opts)).then(() => (window.__cinep || Promise.resolve()).then(after));
+    if (NEW && intro) intro.hidden = true;   // a nova cria a própria camada preta (já está no DOM)
+  };
+  if (ONL.on) {   // online: so no comeco da partida; quem volta no meio nao revê. O voto de pular conta a sala inteira (servidor).
+    if (ONL.snap || ONL.cur > 0 || ONL.introSeen) { if (intro) intro.hidden = true; return go(); }
+    ONL.introSeen = true;
+    MATCH.introState(ONL.room).then(s => {
+      if (!s || !s.on) { if (intro) intro.hidden = true; return go(); }
+      const net = {state:() => MATCH.introState(ONL.room), vote:y => MATCH.introVote(ONL.room, y)};
+      show({voters:s.voters, need:s.need, net}, () => {
+        MATCH.introDone(ONL.room).catch(() => {});
+        const t0 = Date.now(); let warned = false;
+        const wait = () => MATCH.introState(ONL.room).then(x => x, () => null).then(x => {   // espera os outros terminarem (ou o limite do servidor)
+          if (!x || !x.on || Date.now() - t0 > 80000) return setTimeout(go, 400);
+          if (!warned) { warned = true; toast('Aguardando os outros jogadores...'); }
+          setTimeout(wait, 1000);
+        });
+        wait();
+      });
+    }).catch(() => { if (intro) intro.hidden = true; go(); });
+    return;
+  }
+  const n = groupMembers();
+  show({voters:n, need:majorityOf(n), bots:TEST_MODE}, () => setTimeout(go, 400));
 }
 function restartRun(){
   A.reset(); closeTargetPick(); paperUIClose();

@@ -37,7 +37,7 @@ function build(){
   document.body.append(root); return root;
 }
 
-function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
+function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => {}} = {}){
   return new Promise(async resolve => {
     const root = build(), $ = s => root.querySelector(s);
     const stage = $('.ic-stage'), view = $('.ic-view'), hand = $('.mg-hand'), face = $('.mg-face'), far = $('.mg-far'), stand = $('.mg-stand'),
@@ -49,7 +49,14 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
     const ctx = fx.getContext('2d'), dc = dk.getContext('2d');
     let yes = 0, mine = false, skipped = false, revealed = false, done = false, t0 = performance.now(), lastNow = t0, W = 0, H = 0, sparks = [], evs = [], shake = {a:0, t:0, d:1}, flashA = 0, lit = TORCHES.map(() => -1), tsim = [];
     const paintBtn = () => { cnt.textContent = `${yes}/${need}`; btn.classList.toggle('selected', mine); };
-    btn.onclick = () => { if (done || revealed) return; mine = !mine; yes += mine ? 1 : -1; paintBtn(); if (yes >= need) skip(); };
+    btn.onclick = () => {
+      if (done || revealed) return;
+      if (net) { mine = !mine; paintBtn(); net.vote(mine).then(apply).catch(() => {}); return; }   // online: quem decide e o servidor (votos da sala inteira)
+      mine = !mine; yes += mine ? 1 : -1; paintBtn(); if (yes >= need) skip();
+    };
+    // online (net = {state, vote}): placar de votos e liberacao vem do servidor, a cada 1 s
+    function apply(s){ if (!s || done) return; yes = s.skip || 0; need = s.need || need; if (typeof s.mine === 'boolean') mine = s.mine; paintBtn(); if (s.on === false) skip(); }
+    let poll = null; if (net) { const tick = () => net.state().then(apply).catch(() => {}); poll = setInterval(tick, 1000); tick(); }
     paintBtn();
     if (bots) for (let i = 0; i < voters - 1; i++) setTimeout(() => { if (done || revealed || skipped || Math.random() > .5) return; yes++; paintBtn(); if (yes >= need) skip(); }, 1500 + i * 900);
     function skip(){ if (skipped) return; skipped = true; const t = performance.now() - t0; if (t < T.white[0]) t0 -= (T.white[0] - t); }
@@ -147,7 +154,7 @@ function play({voters = 1, need = 1, bots = false, onReveal = () => {}} = {}){
       // ---- jogo aparece ----
       if (!revealed && t >= T.reveal) { revealed = true; onReveal(); }
       if (t >= T.reveal) root.style.opacity = 1 - eio(seg(t, T.reveal, T.end));
-      if (t >= T.end) { done = true; window.removeEventListener('resize', fit); root.remove(); stage.style.transform = ''; btn.onclick = null; resolve(); return; }
+      if (t >= T.end) { done = true; window.removeEventListener('resize', fit); root.remove(); stage.style.transform = ''; btn.onclick = null; clearInterval(poll); resolve(); return; }
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);

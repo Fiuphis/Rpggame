@@ -28,6 +28,9 @@
     end: (match, result) => call('end_match', { p_match: match, p_result: result }),
     stats: (match, stats) => call('report_stats', { p_match: match, p_stats: stats }),
     report: match => call('match_report', { p_match: match }),
+    introState: room => call('intro_state', { p_room: room }),
+    introVote: (room, yes) => call('intro_vote', { p_room: room, p_yes: !!yes }),
+    introDone: room => call('intro_done', { p_room: room }),
 
     /* acompanha o estado: consulta a cada 1,5 s (3 s com a aba escondida) e logo depois de cada acao propria */
     watch(room, onState, opts) {

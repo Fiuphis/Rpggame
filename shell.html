@@ -10,10 +10,12 @@
 <title>Banco de Dados I — RPG</title>
 <style>html,body{margin:0;height:100%;background:#050711;overflow:hidden}html{--t:0px}iframe{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));border:0;display:block;background:#050711}
 /* em tela cheia o jogo desce um pouco, para a câmera frontal e a barra de status não taparem nada */
-html.fs{--t:max(env(safe-area-inset-top),28px)}</style>
+html.fs{--t:max(env(safe-area-inset-top),28px)}
+#gh{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#050308;image-rendering:pixelated;display:none;pointer-events:auto}#gh.on{display:block}</style>
 </head>
 <body>
 <iframe id="g" allow="fullscreen" title="Jogo"></iframe>
+<img id="gh" alt="">
 <script>
 /* Página-mãe fixa: nunca navega, para que a tela cheia não seja encerrada na troca de telas. O jogo roda no quadro. */
 (function(){
@@ -22,7 +24,15 @@ html.fs{--t:max(env(safe-area-inset-top),28px)}</style>
   f.src = h;
   var fsOn = function(){ document.documentElement.classList.toggle('fs', !!(document.fullscreenElement || document.webkitFullscreenElement)); };
   document.addEventListener('fullscreenchange', fsOn); document.addEventListener('webkitfullscreenchange', fsOn); fsOn();
-  f.addEventListener('load', function(){
+  /* portoes: a pagina que fecha as portas manda uma copia delas; some quando a proxima ja pintou as dela (ou, no maximo, 8 s) */
+  var gh = document.getElementById('gh'), ght = 0;
+  var ghOff = function(){ clearTimeout(ght); gh.classList.remove('on'); gh.removeAttribute('src'); };
+  addEventListener('message', function(e){
+    var d = e.data; if (e.origin !== location.origin || e.source !== f.contentWindow || !d || !d.bd1gate) return;
+    if (d.bd1gate === 'hold' && d.img) { gh.src = d.img; gh.classList.add('on'); clearTimeout(ght); ght = setTimeout(ghOff, 8000); }
+    else if (d.bd1gate === 'ready') ghOff();
+  });
+  f.addEventListener('load', function(){ if (gh.classList.contains('on')) { clearTimeout(ght); ght = setTimeout(ghOff, 700); }
     try { var l = f.contentWindow.location, p = l.pathname.split('/').pop() + l.search; if (/^[\w-]+\.html/.test(p)) history.replaceState(null, '', '#' + p); } catch (e) {}
   });
 })();

@@ -57,13 +57,17 @@ function layer() {
 const ease = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 function run(ms, fn) { return new Promise(res => { const T0 = performance.now(); const st = now => { const t = Math.min(1, (now - T0) / ms); fn(t); if (t < 1) requestAnimationFrame(st); else res(); }; requestAnimationFrame(st); }); }
 // chegada: se veio pelos portões, as portas fechadas já são desenhadas ao carregar o script (no head), antes de qualquer pintura da página
+// No shell (pagina-mae com o jogo num quadro) a troca de pagina deixa o quadro vazio por um instante: a mae guarda uma copia das portas fechadas
+// (hold) ate a pagina nova ter pintado as dela (ready), assim as portas ficam fechadas o tempo todo.
+const tell = m => { try { if (parent !== window) parent.postMessage(m, location.origin); } catch (e) {} };
+function hold(c) { let img = ''; try { img = c.toDataURL('image/png'); } catch (e) {} tell({ bd1gate: 'hold', img, w: c.width, h: c.height }); }
 let pre = null;
-try { if (sessionStorage.getItem('bd1_gate') && !reduce()) { pre = layer(); pre.draw(1, 0, 0, 0); const mine = pre; setTimeout(() => { if (pre === mine) { mine.remove(); pre = null; de.classList.remove('gt'); } }, 9000); } } catch (e) {}
+try { if (sessionStorage.getItem('bd1_gate') && !reduce()) { pre = layer(); pre.draw(1, 0, 0, 0); const mine = pre; requestAnimationFrame(() => requestAnimationFrame(() => tell({ bd1gate: 'ready' }))); setTimeout(() => { if (pre === mine) { mine.remove(); pre = null; de.classList.remove('gt'); } }, 9000); } } catch (e) {}
 window.Gate = {
   close(ms = 950) {
     if (reduce()) return Promise.resolve();
     const L = layer(); L.draw(0, 0, 1, 0);
-    return run(ms, t => L.draw(ease(t), 0, 1 - t, 0)).then(() => run(260, t => L.draw(1, Math.round(Math.sin(t * 24) * (1 - t) * 2), 0, 0))).then(() => { L.draw(1, 0, 0, 0); });
+    return run(ms, t => L.draw(ease(t), 0, 1 - t, 0)).then(() => run(260, t => L.draw(1, Math.round(Math.sin(t * 24) * (1 - t) * 2), 0, 0))).then(() => { L.draw(1, 0, 0, 0); hold(L.c); });
   },
   arrive(ms = 1250) {
     let on = false; try { on = !!sessionStorage.getItem('bd1_gate'); sessionStorage.removeItem('bd1_gate'); } catch (e) {}
