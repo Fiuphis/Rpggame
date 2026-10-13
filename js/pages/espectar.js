@@ -65,7 +65,7 @@ $('#ls').addEventListener('click', e => {
   try { sessionStorage.setItem('bd1_spec', JSON.stringify({ room: b.closest('.rm').dataset.id, grp: b.dataset.g })); } catch (x) {}
   location.href = 'game.html' + location.search;
 });
-$('#home').onclick = () => { if (leaving) return; leaving = true; try { sessionStorage.removeItem('bd1_spec'); sessionStorage.setItem('bd1_cover_back', '1'); } catch (e) {} const go = () => { location.href = 'cover.html' + location.search; }; if (window.PxT && !matchMedia('(prefers-reduced-motion: reduce)').matches) PxT.conceal(.5, .2).then(go); else go(); };
+$('#home').onclick = () => { if (leaving) return; leaving = true; try { sessionStorage.removeItem('bd1_spec'); } catch (e) {} location.href = 'cover.html' + location.search; };   // v338: sem transicao ao sair do espectador para a tela inicial
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
 (async () => {
   try { sessionStorage.removeItem('bd1_spec'); } catch (e) {}
