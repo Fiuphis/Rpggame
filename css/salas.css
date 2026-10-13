@@ -122,3 +122,5 @@ button,input{font:inherit;color:inherit;outline:none}button:focus,button:focus-v
   .dlg .chip.wide{font-size:11px;letter-spacing:.6px;border-width:7px;border-image-width:7px}
 }
 @media (max-width:350px){ .lbp{gap:6px;padding:8px;font-size:12px;letter-spacing:0}.lbp u{font-size:9px;padding:2px 4px} .row .chip{font-size:9px;letter-spacing:.1px;border-width:6px;border-image-width:6px} }
+
+.r4 .chip.mg{width:auto;min-width:26cqw;padding:0 2cqw}.r4.b{justify-content:flex-end;margin-top:0}

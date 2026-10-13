@@ -11,6 +11,7 @@ const MOCK = ss.get('bd1_mock') === '1';
 { const m = location.search.match(/[?&]sb=([^&]+)/); if (m && /^http:\/\/(localhost|127\.0\.0\.1)[:/]/.test(decodeURIComponent(m[1]))) ss.set('bd1_sb', decodeURIComponent(m[1])); const o = ss.get('bd1_sb'); if (o) URL_ = o; }   // so para testes locais (servidor de teste)
 
 const MSG = {
+  expulso: 'Você foi removido desta sala e não pode voltar.', sala_trancada: 'Esta sala está trancada pelo criador.', nome_invalido: 'Nome inválido (até 24 letras).', tempo_invalido: 'Tempo inválido.', partida_em_andamento: 'Só dá para mudar entre partidas.', so_o_criador: 'Só o criador da sala pode fazer isso.', nao_pode_em_si_mesmo: 'Não dá para fazer isso com você mesmo.',
   sem_partida: 'Não há partida em andamento.',
   sem_permissao: 'Sem permissão.', mensagem_invalida: 'Mensagem inválida (1 a 120 letras).', rodada_sem_tempo: 'Esta fase não tem relógio agora.', jogador_nao_encontrado: 'Não há jogador nessa classe.', acao_invalida: 'Ação inválida.',
   nao_autenticado: 'Entre novamente no jogo.', sala_nao_encontrada: 'Sala não encontrada. Confira o código.', muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos.',

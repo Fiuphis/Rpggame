@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,interactive-widget=resizes-content">
+<meta name="theme-color" content="#050711">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/salas.css">
+<link rel="stylesheet" href="css/gerenciar.css">
+<title>Gerenciar sala</title>
+</head>
+<body data-pxt>
+<div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
+<main class="pg" id="pg">
+  <header class="top">
+    <button id="back" class="chip" type="button">&#9666; VOLTAR</button>
+    <span id="net" class="chip net" data-s="con"><i class="dot"></i><b>CONECTANDO</b></span>
+  </header>
+  <section class="plaque"><h1>GERENCIAR</h1><p id="sub">Ajustes e jogadores da sala</p></section>
+  <div class="gm" id="gm"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</main>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/online/net.js"></script>
+<script src="js/pages/gerenciar.js"></script>
+<script src="js/core/rebuild.js"></script>
+<script src="js/core/fs.js"></script>
+</body>
+</html>

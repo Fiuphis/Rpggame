@@ -286,7 +286,7 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   // mensagem chega a quem esta na sala
   await act(adm, 'msg', { text: 'Boa sorte, turma' });
   let s = await call(a, 'match_state', { p_room: r.id, p_snapshot: false });
-  assert.equal(s.notice.text, 'Boa sorte, turma'); assert.equal(s.notice.kind, 'msg');
+  assert.equal(s.notices.at(-1).text, 'Boa sorte, turma'); assert.equal(s.notices.at(-1).kind, 'msg');
   // mais tempo na pergunta
   const e0 = Number((await db.query("select extract(epoch from ends_at) e from public.rounds where match_id = $1 order by n desc limit 1", [s.match.id])).rows[0].e);
   await act(adm, 'time', { secs: 20 });
@@ -296,7 +296,7 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await act(adm, 'close');
   s = await call(a, 'match_state', { p_room: r.id, p_snapshot: false });
   assert.notEqual(s.round.status, 'open', 'fase encerrada: ' + s.round.status);
-  assert.equal(s.notice.kind, 'close');
+  assert.equal(s.notices.at(-1).kind, 'close'); assert.ok(s.notices.length >= 3, 'todas as mensagens chegam (nao so a ultima)');
   // arca forcada na proxima rodada
   await act(adm, 'chest');
   assert.equal((await db.query('select force_chest f from public.rooms where id = $1', [r.id])).rows[0].f, true);
@@ -307,6 +307,10 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await fails(act(adm, 'kick', { grp: 'cleriga' }), 'jogador_nao_encontrado');
   await act(adm, 'kick', { grp: 'tank' });
   await fails(call(b, 'match_state', { p_room: r.id, p_snapshot: false }), 'fora_da_sala');
+  await fails(call(b, 'join_room', { p_room: r.id, p_code: r.code }), 'expulso');   // expulso pelo adm nao volta
+  const pidB = (await call(adm, 'room_bans_list', { p_room: r.id }))[0].pid; assert.ok(pidB);
+  await act(adm, 'forgive', { pid: pidB }); assert.equal((await call(adm, 'room_bans_list', { p_room: r.id })).length, 0);   // perdoado (a sala ja esta no mapa, entao a volta e barrada por outro motivo)
+  await fails(call(b, 'join_room', { p_room: r.id, p_code: r.code }), 'sala_fechada');
   // registro
   const lg = await call(adm, 'admin_log_list', { p_limit: 20 }); assert.ok(lg.length >= 5 && lg.some(x => x.action === 'kick' && x.admin === null || true));
   await fails(call(plain, 'admin_log_list', { p_limit: 5 }), 'sem_permissao');
@@ -315,3 +319,36 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await fails(act(adm, 'time'), 'sem_partida');
   await act(adm, 'delete'); assert.equal((await db.query('select status from public.rooms where id = $1', [r.id])).rows[0].status, 'ended');
   ok('poderes do adm: mensagem, tempo, fechar fase, arca, expulsar, encerrar, excluir; so adm; com registro'); }
+
+// poderes do criador (migracao 27): expulsar com bloqueio, perdoar, passar o comando, trancar, renomear, tempo, publica/privada
+{ const [a, b, c, d] = U(4);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'CRIADOR' });
+  await call(b, 'join_room', { p_room: r.id, p_code: r.code }); await call(c, 'join_room', { p_room: r.id, p_code: r.code });
+  const pw = (u, ac, arg) => call(u, 'owner_power', { p_room: r.id, p_action: ac, p_arg: arg || {} });
+  const lob = await call(a, 'room_lobby', { p_room: r.id }); assert.equal(lob.members.length, 3); assert.ok(lob.members.every(m => m.pid && m.pid.length === 8));
+  const pb = lob.members.find(m => !m.me && !m.owner).pid, pa = lob.members.find(m => m.me).pid;
+  await fails(pw(b, 'lock', { on: true }), 'so_o_criador'); await fails(pw(a, 'xx'), 'acao_invalida');
+  await fails(pw(a, 'kick', { pid: pa }), 'nao_pode_em_si_mesmo'); await fails(pw(a, 'kick', { pid: 'zzzzzzzz' }), 'jogador_nao_encontrado');
+  // trancar: ninguem novo entra, quem ja estava volta
+  await pw(a, 'lock', { on: true }); await fails(call(d, 'join_room', { p_room: r.id, p_code: r.code }), 'sala_trancada'); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await pw(a, 'lock', { on: false }); await call(d, 'join_room', { p_room: r.id, p_code: r.code });
+  assert.equal((await call(a, 'room_lobby', { p_room: r.id })).members.length, 4);
+  // renomear, tempo, privada
+  await pw(a, 'rename', { name: 'NOVO NOME' }); assert.equal((await call(a, 'room_lobby', { p_room: r.id })).name, 'NOVO NOME');
+  await fails(pw(a, 'rename', { name: 'x'.repeat(30) }), 'nome_invalido');
+  await pw(a, 'time', { mode: 'long' }); assert.equal((await call(a, 'room_lobby', { p_room: r.id })).time_mode, 'long'); await fails(pw(a, 'time', { mode: 'rapido' }), 'tempo_invalido');
+  await pw(a, 'public', { on: false }); assert.equal((await call(a, 'room_lobby', { p_room: r.id })).public, false);
+  // expulsar bloqueia a volta; perdoar libera
+  await pw(a, 'kick', { pid: pb }); await fails(call(b, 'room_lobby', { p_room: r.id }), 'fora_da_sala');
+  await fails(call(b, 'join_room', { p_room: r.id, p_code: r.code }), 'expulso');
+  assert.equal((await call(a, 'room_bans_list', { p_room: r.id })).length, 1); await fails(call(c, 'room_bans_list', { p_room: r.id }), 'so_o_criador');
+  await pw(a, 'forgive', { pid: pb }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  // passar o comando
+  const lob2 = await call(a, 'room_lobby', { p_room: r.id }); const pc = lob2.members.find(m => !m.me).pid;
+  await pw(a, 'transfer', { pid: pc }); await fails(pw(a, 'lock', { on: true }), 'so_o_criador');
+  ok('criador: trancar, renomear, tempo, privada, expulsar com bloqueio, perdoar e passar o comando'); }
+{ const [a, b] = U(2); const r = await call(a, 'create_room', { p_public: true, p_name: 'INFO' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  const i = await call(a, 'owner_room_info', { p_room: r.id }); assert.equal(i.members.length, 2); assert.equal(i.locked, false); assert.equal(i.bans.length, 0);
+  await fails(call(b, 'owner_room_info', { p_room: r.id }), 'so_o_criador');
+  await call(a, 'leave_room', { p_room: r.id }); assert.equal((await call(a, 'owner_room_info', { p_room: r.id })).name, 'INFO');   // criador consulta mesmo fora da sala
+  ok('gerenciar sala: informacoes do criador, mesmo fora da sala'); }

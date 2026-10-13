@@ -871,3 +871,11 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 .vote-choice b{display:none}
 .dq-answer .cnt,.act-card .cnt,.pp-card .cnt,.cv-btn .cnt{display:none}   /* um jogador por classe: sem contagem de votos */
 .sk-cnt{display:none}
+
+/* faixa de avisos da administracao no topo do papiro (fila; nao toca em #sc-t/#sc-s/#sc-n) */
+.sc-adm{position:absolute;left:6%;right:6%;top:7px;z-index:6;display:flex;align-items:center;gap:8px;min-height:26px;max-height:40px;padding:3px 8px;overflow:hidden;background:linear-gradient(180deg,#4a1218,#1b0709);border:2px solid #e8c46a;box-shadow:0 0 10px rgba(232,196,106,.75),inset 0 0 0 1px #8a2a31;color:#ffe9a8;font:700 clamp(10px,2.9vw,12px)/1.15 OpenC,OpenD,monospace;text-align:left;pointer-events:none;animation:admIn .35s ease-out}
+.sc-adm[hidden]{display:none}
+.sc-adm .seal{flex:none;background:#e8c46a;color:#3a0f14;padding:2px 5px;letter-spacing:.08em;font-size:inherit}
+.sc-adm span{flex:1;min-width:0;word-break:break-word}
+@keyframes admIn{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sc-adm{animation:none}}

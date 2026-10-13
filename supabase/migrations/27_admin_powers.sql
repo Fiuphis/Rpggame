@@ -19,6 +19,20 @@ revoke all on public.room_notices from public, anon, authenticated;
 create index room_notices_room on public.room_notices(room_id, id desc);
 
 alter table public.rooms add column force_chest boolean not null default false;
+alter table public.rooms add column locked boolean not null default false;
+
+-- expulsos de uma sala (valem so para aquela sala; o criador ou um adm pode perdoar)
+create table public.room_bans (
+  room_id uuid not null references public.rooms(id) on delete cascade, user_id uuid not null,
+  by_user uuid, at timestamptz not null default now(), primary key (room_id, user_id)
+);
+alter table public.room_bans enable row level security;
+revoke all on public.room_bans from public, anon, authenticated;
+
+-- identificador curto e estavel de um jogador dentro de uma sala (nao revela o id da conta)
+create or replace function public._pid(p_room uuid, p_user uuid) returns text language sql immutable set search_path = '' as
+$$ select left(md5(p_room::text || ':' || p_user::text), 8) $$;
+revoke all on function public._pid(uuid, uuid) from public, anon, authenticated;
 
 create or replace function public._new_round(p_room uuid, p_match uuid, p_rank int, p_kind text) returns public.rounds language plpgsql security definer set search_path = '' as
 $$
@@ -71,7 +85,7 @@ begin
     if found then perform public._try_close(rd.id); end if;
   end if;
 
-  select coalesce(jsonb_agg(jsonb_build_object('grp', rp.grp, 'me', rp.user_id = uid, 'owner', rp.user_id = r.created_by,
+  select coalesce(jsonb_agg(jsonb_build_object('pid', public._pid(rp.room_id, rp.user_id), 'grp', rp.grp, 'me', rp.user_id = uid, 'owner', rp.user_id = r.created_by,
       'name', (select p.username from public.profiles p where p.user_id = rp.user_id),
       'active', coalesce(pp.last_seen > now() - interval '45 seconds', false)) order by rp.joined_at), '[]'::jsonb)
     into members_ from public.room_players rp left join public.player_presence pp on pp.room_id = rp.room_id and pp.user_id = rp.user_id where rp.room_id = p_room;
@@ -79,7 +93,8 @@ begin
   res := jsonb_build_object('now', floor(extract(epoch from clock_timestamp()) * 1000)::bigint,
     'room', jsonb_build_object('id', r.id, 'code', r.code, 'name', r.name, 'status', r.status, 'boss_idx', r.boss_idx, 'progress', r.progress, 'owner', r.created_by = uid),
     'me', me, 'members', members_,
-    'notice', (select jsonb_build_object('id', nt.id, 'kind', nt.kind, 'text', nt.text) from public.room_notices nt where nt.room_id = p_room and nt.at > now() - interval '2 minutes' order by nt.id desc limit 1));
+    'notices', coalesce((select jsonb_agg(jsonb_build_object('id', z.id, 'kind', z.kind, 'text', z.text) order by z.id)
+      from (select * from public.room_notices nt where nt.room_id = p_room and nt.at > now() - interval '2 minutes' order by nt.id desc limit 10) z), '[]'::jsonb));
 
   if m.id is not null then
     res := res || jsonb_build_object('match', jsonb_build_object('id', m.id, 'status', m.status, 'boss', m.boss, 'seed', m.seed, 'started_at', m.started_at, 'ended_at', m.ended_at, 'snapshot_round', m.snapshot_round));
@@ -120,7 +135,7 @@ $$
 declare uid uuid := (select auth.uid()); r public.rooms; m public.matches; rd public.rounds; nm text; secs int; t text; g text; tu uuid; msg text;
 begin
   if not public.is_admin() then raise exception 'sem_permissao'; end if;
-  if p_action not in ('msg', 'time', 'close', 'chest', 'kick', 'end', 'delete') then raise exception 'acao_invalida'; end if;
+  if p_action not in ('msg', 'time', 'close', 'chest', 'kick', 'forgive', 'end', 'delete') then raise exception 'acao_invalida'; end if;
   perform 1 from public.rooms where id = p_room for update;
   select * into r from public.rooms where id = p_room;
   if not found or r.status = 'ended' then raise exception 'sala_nao_encontrada'; end if;
@@ -151,12 +166,17 @@ begin
     update public.rooms set force_chest = true where id = p_room;
     msg := 'A administração preparou uma arca para a próxima rodada.';
   elsif p_action = 'kick' then
-    g := p_arg->>'grp';
-    select user_id into tu from public.room_players where room_id = p_room and grp = g limit 1;
+    if p_arg ? 'pid' then select user_id into tu from public.room_players where room_id = p_room and public._pid(room_id, user_id) = p_arg->>'pid';
+    else g := p_arg->>'grp'; select user_id into tu from public.room_players where room_id = p_room and grp = g limit 1; end if;
     if tu is null then raise exception 'jogador_nao_encontrado'; end if;
     delete from public.room_players where room_id = p_room and user_id = tu;
     delete from public.player_presence where room_id = p_room and user_id = tu;
+    insert into public.room_bans (room_id, user_id, by_user) values (p_room, tu, uid) on conflict do nothing;
     msg := 'A administração removeu um jogador da sala.';
+  elsif p_action = 'forgive' then
+    delete from public.room_bans where room_id = p_room and public._pid(room_id, user_id) = p_arg->>'pid';
+    if not found then raise exception 'jogador_nao_encontrado'; end if;
+    msg := 'A administração perdoou um jogador expulso.';
   elsif p_action = 'end' then
     update public.matches set status = 'aborted', ended_at = now() where room_id = p_room and status = 'playing';
     update public.rooms set status = 'lobby', last_active_at = now() where id = p_room;
@@ -184,4 +204,145 @@ do $$ begin
   grant execute on function public.admin_act(uuid, text, jsonb) to authenticated;
   revoke all on function public.admin_log_list(int) from public, anon;
   grant execute on function public.admin_log_list(int) to authenticated;
+end $$;
+
+
+-- criador: lista de expulsos (criador ou adm)
+create or replace function public.room_bans_list(p_room uuid) returns jsonb language plpgsql stable security definer set search_path = '' as
+$$
+begin
+  if not (public.is_admin() or exists (select 1 from public.rooms where id = p_room and created_by = (select auth.uid()))) then raise exception 'so_o_criador'; end if;
+  return coalesce((select jsonb_agg(jsonb_build_object('pid', public._pid(b.room_id, b.user_id), 'name', (select p.username from public.profiles p where p.user_id = b.user_id)) order by b.at)
+    from public.room_bans b where b.room_id = p_room), '[]'::jsonb);
+end $$;
+
+-- entrar: expulso nao volta (ate ser perdoado); sala trancada nao aceita gente nova (quem ja estava volta)
+create or replace function public.join_room(p_room uuid default null, p_code text default null) returns public.rooms language plpgsql security definer set search_path = '' as
+$$
+declare uid uuid := (select auth.uid()); r public.rooms; was boolean; g text;
+begin
+  if uid is null then raise exception 'nao_autenticado'; end if;
+  if p_code is not null and length(trim(p_code)) > 0 then
+    if (select count(*) from public.join_fails where user_id = uid and at > now() - interval '10 minutes') >= 10 then raise exception 'muitas_tentativas'; end if;
+    select * into r from public.rooms where code = upper(trim(p_code)) and status <> 'ended';
+    if not found then
+      insert into public.join_fails (user_id) values (uid);
+      return null;
+    end if;
+  else
+    select * into r from public.rooms where id = p_room and status <> 'ended' and (is_public or public.is_member(id));
+    if not found then raise exception 'sala_nao_encontrada'; end if;
+  end if;
+  if exists (select 1 from public.room_bans where room_id = r.id and user_id = uid) then raise exception 'expulso'; end if;
+  was := public.is_member(r.id);
+  if r.stage <> 'gather' and not was then raise exception 'sala_fechada'; end if;
+  if r.locked and not was then raise exception 'sala_trancada'; end if;
+  perform 1 from public.rooms where id = r.id for update;
+  if not was then
+    delete from public.room_players rp where rp.room_id = r.id and rp.user_id <> uid
+      and not exists (select 1 from public.player_presence pp where pp.room_id = rp.room_id and pp.user_id = rp.user_id and pp.last_seen > now() - interval '45 seconds');
+    if (select count(*) from public.room_players rp where rp.room_id = r.id) >= 4 then raise exception 'sala_cheia'; end if;
+  end if;
+  insert into public.room_players (room_id, user_id) values (r.id, uid) on conflict do nothing;
+  if was then
+    select grp into g from public.room_players where room_id = r.id and user_id = uid;
+    if g is not null and exists (select 1 from public.room_players rp where rp.room_id = r.id and rp.grp = g and rp.user_id <> uid)
+    then update public.room_players set grp = null where room_id = r.id and user_id = uid; end if;
+  end if;
+  insert into public.player_presence (room_id, user_id) values (r.id, uid)
+    on conflict (room_id, user_id) do update set last_seen = now();
+  return r;
+end $$;
+
+-- espera: a lista de pessoas passa a trazer o identificador (pid) e a sala traz trancada/publica/tempo
+create or replace function public.room_lobby(p_room uuid) returns jsonb language plpgsql security definer set search_path = '' as
+$$
+declare uid uuid := (select auth.uid()); r public.rooms; tot int; got int; mem jsonb;
+begin
+  if not public.is_member(p_room) then raise exception 'fora_da_sala'; end if;
+  select * into r from public.rooms where id = p_room;
+  update public.player_presence set last_seen = now() where room_id = p_room and user_id = uid;
+  select count(*), count(rp.grp) into tot, got from public.room_players rp join public.player_presence pp using (room_id, user_id)
+    where rp.room_id = p_room and pp.last_seen > now() - interval '45 seconds';
+  select coalesce(jsonb_agg(jsonb_build_object('pid', public._pid(rp.room_id, rp.user_id), 'name', (select p.username from public.profiles p where p.user_id = rp.user_id),
+      'owner', rp.user_id = r.created_by, 'me', rp.user_id = uid) order by rp.joined_at), '[]'::jsonb) into mem
+    from public.room_players rp join public.player_presence pp using (room_id, user_id)
+    where rp.room_id = p_room and pp.last_seen > now() - interval '45 seconds';
+  return jsonb_build_object('stage', r.stage, 'code', r.code, 'name', r.name, 'owner', r.created_by = uid, 'total', tot, 'picked', got, 'members', mem,
+    'me', (select grp from public.room_players where room_id = p_room and user_id = uid), 'status', r.status,
+    'locked', r.locked, 'public', r.is_public, 'time_mode', r.time_mode);
+end $$;
+
+-- criador: expulsar (com bloqueio), perdoar, passar o comando, trancar, renomear, tempo de resposta, publica/privada
+create or replace function public.owner_power(p_room uuid, p_action text, p_arg jsonb default '{}'::jsonb) returns jsonb language plpgsql security definer set search_path = '' as
+$$
+declare uid uuid := (select auth.uid()); r public.rooms; tu uuid; v text;
+begin
+  if p_action not in ('kick', 'forgive', 'transfer', 'lock', 'rename', 'time', 'public') then raise exception 'acao_invalida'; end if;
+  perform 1 from public.rooms where id = p_room for update;
+  select * into r from public.rooms where id = p_room;
+  if not found or r.status = 'ended' then raise exception 'sala_nao_encontrada'; end if;
+  if r.created_by <> uid then raise exception 'so_o_criador'; end if;
+  if p_action in ('kick', 'transfer') then
+    select user_id into tu from public.room_players where room_id = p_room and public._pid(room_id, user_id) = p_arg->>'pid';
+    if tu is null then raise exception 'jogador_nao_encontrado'; end if;
+    if tu = uid then raise exception 'nao_pode_em_si_mesmo'; end if;
+  end if;
+  if p_action = 'kick' then
+    delete from public.room_players where room_id = p_room and user_id = tu;
+    delete from public.player_presence where room_id = p_room and user_id = tu;
+    insert into public.room_bans (room_id, user_id, by_user) values (p_room, tu, uid) on conflict do nothing;
+  elsif p_action = 'forgive' then
+    delete from public.room_bans where room_id = p_room and public._pid(room_id, user_id) = p_arg->>'pid';
+    if not found then raise exception 'jogador_nao_encontrado'; end if;
+  elsif p_action = 'transfer' then
+    update public.rooms set created_by = tu where id = p_room;
+  elsif p_action = 'lock' then
+    update public.rooms set locked = coalesce((p_arg->>'on')::boolean, true) where id = p_room;
+  elsif p_action = 'rename' then
+    v := btrim(coalesce(p_arg->>'name', ''));
+    if char_length(v) > 24 then raise exception 'nome_invalido'; end if;
+    update public.rooms set name = nullif(v, '') where id = p_room;
+  elsif p_action = 'time' then
+    v := p_arg->>'mode';
+    if v not in ('fast', 'normal', 'long') then raise exception 'tempo_invalido'; end if;
+    if exists (select 1 from public.matches where room_id = p_room and status = 'playing') then raise exception 'partida_em_andamento'; end if;
+    update public.rooms set time_mode = v where id = p_room;
+  else
+    update public.rooms set is_public = coalesce((p_arg->>'on')::boolean, true) where id = p_room;
+  end if;
+  return jsonb_build_object('ok', true, 'action', p_action);
+end $$;
+
+do $$ begin
+  revoke all on function public.room_bans_list(uuid) from public, anon;
+  grant execute on function public.room_bans_list(uuid) to authenticated;
+  revoke all on function public.join_room(uuid, text) from public, anon;
+  grant execute on function public.join_room(uuid, text) to authenticated;
+  revoke all on function public.room_lobby(uuid) from public, anon;
+  grant execute on function public.room_lobby(uuid) to authenticated;
+  revoke all on function public.owner_power(uuid, text, jsonb) from public, anon;
+  grant execute on function public.owner_power(uuid, text, jsonb) to authenticated;
+end $$;
+
+-- painel "gerenciar sala" do criador (funciona mesmo depois de sair da sala) e dos adm
+create or replace function public.owner_room_info(p_room uuid) returns jsonb language plpgsql stable security definer set search_path = '' as
+$$
+declare uid uuid := (select auth.uid()); r public.rooms;
+begin
+  select * into r from public.rooms where id = p_room and status <> 'ended';
+  if not found then raise exception 'sala_nao_encontrada'; end if;
+  if r.created_by <> uid and not public.is_admin() then raise exception 'so_o_criador'; end if;
+  return jsonb_build_object('owner', r.created_by = uid, 'name', r.name, 'locked', r.locked, 'public', r.is_public, 'time_mode', r.time_mode, 'stage', r.stage,
+    'playing', exists (select 1 from public.matches m where m.room_id = r.id and m.status = 'playing'),
+    'members', coalesce((select jsonb_agg(jsonb_build_object('pid', public._pid(rp.room_id, rp.user_id), 'name', (select p.username from public.profiles p where p.user_id = rp.user_id),
+        'grp', rp.grp, 'owner', rp.user_id = r.created_by, 'me', rp.user_id = uid,
+        'active', coalesce(pp.last_seen > now() - interval '45 seconds', false)) order by rp.joined_at)
+      from public.room_players rp left join public.player_presence pp on pp.room_id = rp.room_id and pp.user_id = rp.user_id where rp.room_id = r.id), '[]'::jsonb),
+    'bans', coalesce((select jsonb_agg(jsonb_build_object('pid', public._pid(b.room_id, b.user_id), 'name', (select p.username from public.profiles p where p.user_id = b.user_id)) order by b.at)
+      from public.room_bans b where b.room_id = r.id), '[]'::jsonb));
+end $$;
+do $$ begin
+  revoke all on function public.owner_room_info(uuid) from public, anon;
+  grant execute on function public.owner_room_info(uuid) to authenticated;
 end $$;

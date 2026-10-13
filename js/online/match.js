@@ -4,7 +4,7 @@
 (() => {
   const N = () => window.NET;
   const call = (fn, args) => N().rpc(fn, args);
-  let offset = 0;   // relogio do servidor menos o relogio local (ms)
+  let offset = 0, seenOk = false;   // relogio do servidor menos o relogio local (ms)
   /* modo espectador (so adm): le o estado da classe escolhida e nao grava nada */
   let SP = null; try { const q = /[?&]spec=([0-9a-f-]{36}):(mage|guerreiro|tank|cleriga)/.exec(location.search); SP = q ? { room: q[1], grp: q[2], mini: /[?&]mini=1/.test(location.search) } : JSON.parse(sessionStorage.getItem('bd1_spec') || 'null'); } catch (e) {}
   if (SP && !(SP.room && SP.grp)) SP = null;
@@ -16,7 +16,12 @@
     srvNow: () => Date.now() + offset,
     /* estado da sala/partida; ajusta o relogio com o horario do servidor */
     async state(room, snap) {
-      const t0 = Date.now(), s = await (SP ? call('spectate_state', { p_room: SP.room, p_grp: SP.grp, p_snapshot: !!snap }) : call('match_state', { p_room: room, p_snapshot: !!snap })), t1 = Date.now();
+      const t0 = Date.now(); let s;
+      try { s = await (SP ? call('spectate_state', { p_room: SP.room, p_grp: SP.grp, p_snapshot: !!snap }) : call('match_state', { p_room: room, p_snapshot: !!snap })); seenOk = true; }
+      catch (e) {   // removido da sala (pelo criador ou por um adm) depois de ja estar nela: volta para a lista de salas com aviso (a tela de batalha trata sozinha)
+        if (!SP && seenOk && /fora_da_sala/.test(String(e && e.message || e)) && !window.__onlKicked) { try { sessionStorage.setItem('bd1_kicked', '1'); } catch (x) {} location.replace('salas.html' + location.search); }
+        throw e; }
+      const t1 = Date.now();
       if (s && s.now) offset = s.now - (t0 + t1) / 2;
       return s;
     },
