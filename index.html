@@ -45,7 +45,7 @@ const CARDS=[
 const R=window.NET&&NET.room();let RC=null;
 const _lc=LOBBY.counts.bind(LOBBY);LOBBY.counts=()=>RC?{...RC}:_lc();
 if(R){const pull=async()=>{try{const a=await NET.counts(R.id),o={mage:0,guerreiro:0,tank:0,cleriga:0};for(const k in a)o[k]=a[k];RC=o;render()}catch(e){}};
- pull();setInterval(pull,3000);
+ pull();setInterval(pull,1500);
  const ab0=document.getElementById('above'),ch=document.createElement('div');ch.className='rmchip';ch.textContent=(R.pub?'SALA ':'SALA PRIVADA ')+R.code;ab0.appendChild(ch)}
 const stage=document.getElementById('stage'), msg=document.getElementById('msg'), confirmBtn=document.getElementById('confirm');
 const pc=(v,t)=>(v/t*100)+'%';

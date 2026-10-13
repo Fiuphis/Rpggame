@@ -23,7 +23,7 @@ body{display:flex;flex-direction:column;align-items:center;min-height:100vh;padd
 .card .cnt.red{color:#ff536b !important}
 .card.selected .tint,.card.selected .glow{opacity:1}
 .card.selected .char{transform:translateY(calc(var(--u)*-8)) scale(1.03);filter:brightness(1.08)}
-.card.full{cursor:not-allowed}.card.full .char,.card.full .panel{filter:grayscale(.55) brightness(.6)}
+.card.full{cursor:not-allowed}.card.full .char,.card.full .panel{filter:grayscale(1) brightness(.5)}.card.full .tint{opacity:1;mix-blend-mode:normal;background:rgba(36,36,44,.6)}.card.full .glow{opacity:0}
 .card:active:not(.full) .char{filter:brightness(1.12)}
 .char.hop-in{animation:hop-in .6s cubic-bezier(.3,1.2,.5,1)}
 .char.hop-out{animation:hop-out .45s cubic-bezier(.3,1.2,.5,1)}
