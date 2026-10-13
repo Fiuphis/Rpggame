@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v320', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v321', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -191,12 +191,12 @@ showMsg(); setInterval(() => { if (!document.hidden && !cv.classList.contains('g
 
 // ---------- Como jogar ----------
 const GUARDS = [
-  {n:'MALGORATH', h:'Castelo de Malgorath', b:`<p>O primeiro guardião: um demônio vampiro com 650 de vida. Todo o dano dele é demoníaco.</p>
+  {n:'MALGORATH', id:0, lk:'CASTELO DO LORDE DAS TREVAS', h:'Castelo de Malgorath', b:`<p>O primeiro guardião: um demônio vampiro com 650 de vida. Todo o dano dele é demoníaco.</p>
 <h4>FRAQUEZAS</h4><ul><li><b class="r">FOGO</b>A Maga causa 1,5x de dano e ainda queima o boss por 2 perguntas</li><li><b class="g">SAGRADO</b>O Ataque Sagrado da Clériga causa 2x e a Defesa Sagrada corta 80% do dano</li><li><b>IMUNE</b>Água, ar e terra não causam dano (só efeito visual). Não gastem mana nisso</li></ul>
 <h4>ATAQUES</h4><ul><li><b>FÍSICO</b>Golpe comum, o mais fraco</li><li><b class="p">DEMONÍACO</b>Mais forte e rouba vida: ele cura parte do que vocês perderem</li><li><b class="r">ELEMENTAL</b>O mais forte e o que mais rouba vida. Aparece mais nos ranks altos</li><li><b>ONDA SOMBRIA</b>Fere os quatro heróis de uma vez, mais forte nos ranks altos</li></ul>
 <h4>HABILIDADES</h4><ul><li><b>PREPARANDO</b>Aviso na tela: a rodada seguinte tem golpes 50% mais fortes. Defendam</li><li><b>TELEPORTE</b>Depois da 4ª pergunta ele some e ataca o herói mais fraco. Esquivar anula e deixa o boss atordoado (+25% de dano nele)</li><li><b>ESTOCADA</b>Fura Provocação e Proteção Específica. Só aparece quando uma delas está ativa</li></ul>
 <h4>FÚRIA E FASE 2</h4><ul><li><b class="r">FÚRIA</b>Cada herói que erra rank S ou SS enche a barra. Acertar e defender ou esquivar à toa enche tudo de uma vez. Cheia, a Onda Sombria bate mais forte</li><li><b class="r">FASE 2</b>Com metade da vida o boss desperta: raios, Onda Sombria mais forte até o fim</li></ul>`},
-  {n:'HRIMGAR', h:'Túmulo do Rei Gelado', b:`<p>O segundo guardião: Hrimgar, o Rei Gelado, um duelista com 600 de vida. Ele não rouba vida: faz muitos golpes pequenos em cada herói, e o dano vem por acúmulo (Frio e sangramento).</p>
+  {n:'HRIMGAR', id:1, lk:'TÚMULO DO REI GELADO', h:'Túmulo do Rei Gelado', b:`<p>O segundo guardião: Hrimgar, o Rei Gelado, um duelista com 600 de vida. Ele não rouba vida: faz muitos golpes pequenos em cada herói, e o dano vem por acúmulo (Frio e sangramento).</p>
 <h4>FRAQUEZAS</h4><ul><li><b class="r">FOGO</b>A Maga causa 1,5x, queima o boss por 2 perguntas, ignora a Armadura de Gelo e descongela os aliados</li><li><b>IMUNE</b>Água não causa dano (só efeito visual). Ar e terra causam dano normal. O sagrado também é normal: a Clériga vira suporte</li></ul>
 <h4>FASE 1: A ARMADURA</h4><ul><li><b>ARMADURA DE GELO</b>Corta 15% do dano que ele recebe (o fogo ignora). Cada herói leva 1 golpe por rodada</li></ul>
 <h4>GOLPES E EFEITOS</h4><ul><li><b>CORTE</b>Dano puro</li><li><b class="p">GÉLIDO</b>Dano e +1 de Frio. Com 4 de Frio o herói congela: não age (ainda responde) e leva +25% de dano. Congelado dura 1 pergunta na fase 1 e 2 na fase 2; depois ele fica 1 rodada imune. O Frio cai 1 por rodada sem golpe gélido</li><li><b class="r">SANGRENTO</b>Dano e sangramento (5 por acúmulo, até 3, por 3 rodadas, ignora defesa)</li><li><b>CRÍTICO</b>1,5x de dano, com aviso na tela</li><li><b>DEFESA</b>Vale por golpe: o Elmo Reforçado fica ótimo e o Escudo de Ferro só bloqueia um golpe</li></ul>
@@ -209,11 +209,13 @@ const GUARDS = [
   {n:'RAINHA', lock:'PÂNTANO DA RAINHA ESPECTRAL'}
 ];
 let gi = 0;
+const wonIds = () => { try { const d = JSON.parse(localStorage.getItem('bd1_progress')); return d && Array.isArray(d.done) ? d.done : []; } catch { return []; } };
 function renderBoss(el) {
+  const won = wonIds(), isLock = x => !!x.lock || (x.id != null && !won.includes(x.id));
   const g = GUARDS[gi];
-  const row = GUARDS.map((x, i) => `<button type="button" class="chip gt${i === gi ? ' on' : ''}${x.lock ? ' lk' : ''}" data-i="${i}">${x.lock ? '? ' : ''}${x.n}</button>`).join('');
-  const body = g.lock
-    ? `<h3>${g.lock}</h3><div class="lockbox"><p><b class="r">BLOQUEADO</b></p><p>Derrote o guardião anterior na Jornada dos Heróis para descobrir as fraquezas, os ataques e as habilidades deste inimigo. Cada guardião luta de um jeito, então o que funciona contra um pode não funcionar contra o outro.</p></div>`
+  const row = GUARDS.map((x, i) => `<button type="button" class="chip gt${i === gi ? ' on' : ''}${isLock(x) ? ' lk' : ''}" data-i="${i}">${isLock(x) ? '? ' : ''}${x.n}</button>`).join('');
+  const body = isLock(g)
+    ? `<h3>${g.lock || g.lk}</h3><div class="lockbox"><p><b class="r">BLOQUEADO</b></p><p>${g.lock ? 'Derrote o guardião anterior na Jornada dos Heróis para descobrir as fraquezas, os ataques e as habilidades deste inimigo.' : 'Derrote este guardião uma vez na Jornada dos Heróis para descobrir as fraquezas, os ataques e as habilidades dele.'} Cada guardião luta de um jeito, então o que funciona contra um pode não funcionar contra o outro.</p></div>`
     : `<h3>${g.h}</h3>${g.b}`;
   el.innerHTML = `<div class="gtabs">${row}</div>${body}`;
   el.querySelectorAll('.gt').forEach(b => b.onclick = () => { gi = +b.dataset.i; renderBoss(el); el.scrollTop = 0; });
