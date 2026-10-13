@@ -410,3 +410,33 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await g({ kind: 'boss_hp', amount: 50 }); await g({ kind: 'boss_hp', amount: 5000 }); await g({ kind: 'rage_full' }); await g({ kind: 'rage_zero' }); await fails(g({ kind: 'boss_xx' }), 'presente_invalido');
   const s = await call(a, 'match_state', { p_room: r.id }); assert.deepEqual(s.gifts.map(x => x.kind), ['boss_hp', 'boss_hp', 'rage_full', 'rage_zero']); assert.equal(s.gifts[1].amount, 100);
   ok('adm controla o chefe: vida em %, furia cheia/zerada; valor limitado a 100'); }
+
+// pausar/retomar e forcar rodada (migracao 31)
+{ const [a, b, adm] = U(3);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'pausa@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'PAUSA' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  const m = await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  const act = (u, ac, arg) => call(u, 'admin_act', { p_room: r.id, p_action: ac, p_arg: arg || {} });
+  const left = async () => Number((await db.query("select extract(epoch from ends_at - now()) s from public.rounds where match_id = $1 order by n desc limit 1", [m.id])).rows[0].s);
+  await fails(act(b, 'pause'), 'sem_permissao'); await fails(act(adm, 'resume'), 'nao_pausada');
+  const l0 = await left(); assert.ok(l0 > 20 && l0 < 200, 'tempo da rodada ' + l0);
+  await act(adm, 'pause'); await fails(act(adm, 'pause'), 'ja_pausada');
+  assert.ok(await left() > 86400 * 300, 'relogio empurrado'); assert.equal((await call(a, 'match_state', { p_room: r.id })).room.paused, true);
+  assert.equal((await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'mage' })).room.paused, true);
+  await act(adm, 'resume'); const l1 = await left(); assert.ok(l1 > 20 && l1 <= l0, 'tempo restaurado ' + l1 + ' de ' + l0); assert.equal((await call(a, 'match_state', { p_room: r.id })).room.paused, false);
+  // forcar: rank invalido, rank, arca armadilha/rara
+  await fails(act(adm, 'force', { rank: 9 }), 'rank_invalido'); await fails(act(adm, 'force', { mode: 'x' }), 'acao_invalida'); await fails(act(b, 'force', { rank: 5 }), 'sem_permissao');
+  await act(adm, 'force', { rank: 5 });
+  // fecha a rodada 1 e avanca: com pausa nao cria rodada, sem pausa a pergunta sai com rank 5
+  await db.exec(`update public.rounds set status = 'played', played_at = now() - interval '61 seconds' where match_id = '${m.id}'`);
+  await act(adm, 'pause'); const w = await call(a, 'advance_round', { p_room: r.id, p_rank: 1, p_kind: 'q' }); assert.equal(w.ok, false); assert.equal(w.paused, true);
+  await act(adm, 'resume'); const n2 = await call(a, 'advance_round', { p_room: r.id, p_rank: 1, p_kind: 'q' }); assert.equal(n2.ok, true);
+  const q2 = (await db.query("select q.rank from public.rounds r join public.questions q on q.id = r.question_id where r.id = $1", [n2.round.id])).rows[0]; assert.equal(q2.rank, 5);
+  assert.equal((await db.query("select force_rank from public.rooms where id = $1", [r.id])).rows[0].force_rank, null);
+  await act(adm, 'force', { mode: 'trap' }); await db.exec(`update public.rounds set status = 'played', played_at = now() - interval '61 seconds' where match_id = '${m.id}'`);
+  const n3 = await call(a, 'advance_round', { p_room: r.id, p_rank: 1, p_kind: 'q' }); assert.equal(n3.round.kind, 'chest'); assert.equal(n3.round.force, 'trap');
+  assert.equal((await call(a, 'match_state', { p_room: r.id })).round.force, 'trap');
+  ok('pausar segura os relogios e o avanco, retomar devolve o tempo; forcar rank e arca (armadilha/rara) valem uma vez'); }

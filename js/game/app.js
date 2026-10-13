@@ -996,7 +996,7 @@ async function runChestRound(SR){
   setBag(false); mBubble('');   // a arca nao abre o mercador nem a mochila
   timeStop(img);
   showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Escolha ABRIR ou NÃO ABRIR (sem pergunta nesta rodada)');
-  let open, mine, opens = null, rolls = null;
+  let open, mine, opens = null, rolls = null, onlChestForce = null;
   if (ONL.on) {   // cada grupo decide pelo seu voto; o sorteio (item ou armadilha) e o mesmo em todos os aparelhos
     const res = await runVote({chest:true, text:'Abrir a arca do tesouro?', seconds:25, options:[{label:'ABRIR', kind:'yes'}, {label:'NÃO ABRIR', kind:'no'}], net:onlNet(SR)});
     const s2 = await onlWaitIn(SR, r => r.status !== 'open');
@@ -1004,7 +1004,8 @@ async function runChestRound(SR){
     if (!s2 || s2.behind) { hideBanner(); img.remove(); if (s2) onlSkip(s2); return 'skip'; }
     const rc = s2.round; opens = {}; rolls = {};
     HERO_ORDER.forEach(k => { opens[k] = !!(rc.groups[k] && rc.groups[k].chosen === 0); });
-    HERO_ORDER.forEach(k => { rolls[k] = R() < CHEST_ITEM_P; });
+    HERO_ORDER.forEach(k => { rolls[k] = R() < CHEST_ITEM_P; if (rc.force === 'trap') rolls[k] = false; else if (rc.force === 'rare') rolls[k] = true; });   // R() sempre sorteia (mesma sequencia em todos); a administracao pode forcar o resultado
+    onlChestForce = rc.force || null;
     open = opens[activeGroup]; mine = !!(rc.my_vote && rc.my_vote.option === 0);
     hideBanner();
   } else {
@@ -1028,7 +1029,7 @@ async function runChestRound(SR){
   const trapNow = ONL.on ? !itemRoll : (mine && !itemRoll);   // online: a armadilha vale para o heroi do grupo que abriu, mesmo para quem votou em ignorar
   if (!mine && !trapNow) { showBanner('A ARCA ABRIU', 'você escolheu não abrir: nada para você'); await wait(1900); hideBanner(); }
   else if (!trapNow) {   // item aleatório da loja (raro com pouca chance)
-    const t = Math.random() < CHEST_LEGEND_P ? LEGEND_POOL[Math.floor(Math.random() * LEGEND_POOL.length)] : Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
+    const t = onlChestForce === 'rare' ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : Math.random() < CHEST_LEGEND_P ? LEGEND_POOL[Math.floor(Math.random() * LEGEND_POOL.length)] : Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
     if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); await flyItemToBag(t, img); }   // sem aviso no papiro: o item voa para a mochila (segure o item para ler os detalhes)
     else { const n = ITEMS[t].price; state.gold += n; state.stats.gained += n; persist(); goldGain(n); showBanner('MOCHILA CHEIA', `${ITEMS[t].name} virou ${n} moedas`); await wait(2300); hideBanner(); }
   } else {                                   // armadilha: só para quem abriu
@@ -1522,6 +1523,16 @@ async function onlBegin(){
   await onlGifts(s.gifts, rd.n);
   return rd;
 }
+// partida pausada pela administracao (v331): cobertura sobre a tela; os relogios do servidor ficam parados e a proxima rodada nao comeca
+window.__onlPause = on => {
+  let o = document.getElementById('pause-ov');
+  if (!on) { if (o) o.remove(); return; }
+  if (o) return;
+  o = document.createElement('div'); o.id = 'pause-ov'; o.setAttribute('role', 'alert');
+  o.style.cssText = 'position:fixed;inset:0;z-index:99980;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(5,3,12,.8);color:#ffe08a;font:700 22px/1.3 OpenC,OpenD,monospace;letter-spacing:.12em;text-align:center;padding:24px;touch-action:none';
+  o.innerHTML = '<div>PARTIDA PAUSADA</div><div style="font-size:13px;letter-spacing:.06em;color:#f4e2b0">A administração pausou a partida.<br>Aguarde: ela volta do mesmo ponto.</div>';
+  document.body.appendChild(o);
+};
 // ajuda do adm (v329): presentes registrados no servidor entram no comeco da rodada indicada, iguais em todos os aparelhos.
 // cura, reviver e mana mexem no combate da sala (todos aplicam); moedas e item so no aparelho do jogador alvo (e uma vez so por presente).
 async function onlGifts(list, n){
