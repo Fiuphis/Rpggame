@@ -6,7 +6,7 @@ Projeto Supabase `cdwagfofjjhnykbzixut` (Postgres + login anônimo/conta). O jog
 
 | Caminho | O que é |
 |---|---|
-| `migrations/` | Scripts SQL numerados, na ordem em que foram aplicados no Supabase real (10 a 30; a 31, pausar e forçar rodada, ainda não foi aplicada). Cada arquivo começa com um comentário dizendo o que muda. |
+| `migrations/` | Scripts SQL numerados, na ordem em que foram aplicados no Supabase real (10 a 31). Cada arquivo começa com um comentário dizendo o que muda. |
 | `local/schema.sql` | Retrato do schema (tabelas, funções, políticas) usado pelo servidor local de teste. Já inclui o estado até a migração 11. |
 | `local/bootstrap.sql` | Base mínima (papéis, `auth.*`, `extensions.*`) para o schema rodar num Postgres comum (PGlite). |
 
