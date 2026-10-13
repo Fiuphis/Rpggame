@@ -352,3 +352,31 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await fails(call(b, 'owner_room_info', { p_room: r.id }), 'so_o_criador');
   await call(a, 'leave_room', { p_room: r.id }); assert.equal((await call(a, 'owner_room_info', { p_room: r.id })).name, 'INFO');   // criador consulta mesmo fora da sala
   ok('gerenciar sala: informacoes do criador, mesmo fora da sala'); }
+
+// chat da sala (migracao 28)
+{ const [a, b, o, adm] = U(4);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'chatadm@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'CHAT' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  const send = (u, t) => call(u, 'chat_send', { p_room: r.id, p_text: t }), list = (u, af) => call(u, 'chat_list', { p_room: r.id, p_after: af || 0 });
+  await fails(send(o, 'oi'), 'fora_da_sala'); await fails(list(o), 'fora_da_sala');
+  await fails(send(a, '   '), 'mensagem_invalida'); await fails(send(a, 'x'.repeat(141)), 'mensagem_invalida');
+  const m1 = await send(a, 'ola turma'); await fails(send(a, 'de novo'), 'devagar');
+  await send(b, 'oi criador');
+  let l = await list(b); assert.equal(l.msgs.length, 2); assert.equal(l.msgs[0].mine, false); assert.equal(l.msgs[1].mine, true); assert.equal(l.can_send, true); assert.equal(l.can_del, false);
+  assert.equal((await list(a, m1.id)).msgs.length, 1); assert.equal((await list(a)).can_del, true);
+  // admin fala de fora com selo, e ve a sala sem ser membro
+  const ma = await send(adm, 'aviso da administracao'); l = await list(adm); assert.equal(l.msgs[l.msgs.length - 1].adm, true); assert.equal(l.can_del, true);
+  // so criador e adm apagam
+  await fails(call(b, 'chat_delete', { p_room: r.id, p_id: m1.id }), 'sem_permissao');
+  await call(a, 'chat_delete', { p_room: r.id, p_id: ma.id }); l = await list(b); assert.equal(l.msgs.length, 2); assert.ok(l.dels.includes(ma.id));
+  // historico: no maximo 100 na lista
+  await db.exec(`insert into public.room_chat (room_id, user_id, name, body) select '${r.id}', '${a}', 'x', 'm' || g from generate_series(1, 120) g`);
+  assert.equal((await list(b)).msgs.length, 100);
+  // luta: jogador nao fala, adm fala
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  await new Promise(x => setTimeout(x, 2100));
+  await fails(send(b, 'na luta'), 'chat_na_batalha'); assert.equal((await list(b)).can_send, false); await send(adm, 'adm na luta');
+  ok('chat da sala: so membros, limites, selo de adm, apagar so criador/adm, 100 ultimas, fechado na luta (adm fala)'); }

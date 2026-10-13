@@ -23,6 +23,7 @@ const stateOf = (done, id) => done.includes(id) ? 'done' : (ORDER.find(b => !don
 let meta = null, selected = null, yes = 0, mine = false, bots = [];
 const pct = (v, t) => (v / t * 100) + '%';
 
+if (ROOM && window.CHAT) CHAT.mount({ room: ROOM.id });
 const boot = ROOM ? NET.ready().then(() => MATCH.state(ROOM.id)).then(s => {
   isOwner = !!(s.room && s.room.owner); if (s.room && s.room.progress && Array.isArray(s.room.progress.done)) done = s.room.progress.done;
   if (s.match && s.match.status === 'playing' && s.me) { location.replace('salas.html' + location.search); return new Promise(() => {}); }

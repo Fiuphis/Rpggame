@@ -13,7 +13,7 @@ function card(r) {
   return `<div class="rm" role="listitem" data-id="${esc(r.id)}">
     <div class="r1"><img class="ico" src="assets/salas/ic_${r.public ? 'unlock' : 'lock'}.png" alt=""><span class="nm">${nm}</span><span class="bd${bt ? ' bt' : ''}">${bt ? 'EM BATALHA' : 'AGUARDANDO'}</span></div>
     <div class="meta">${r.public ? 'PÚBLICA' : 'PRIVADA'} · CÓDIGO <b>${esc(r.code || '-')}</b> · GUARDIÃO <b>${(r.boss_idx || 0) + 1}/6</b></div>
-    <div class="pl">${pl}</div><div class="pl" style="margin-top:1cqw">${bt && ps.length > 1 ? '<button type="button" class="chip blue mos" style="height:9cqw">MOSAICO</button>' : ''}<button type="button" class="chip gold gmn" style="height:9cqw">GERENCIAR</button></div>${bt ? '' : '<div class="meta">Só dá para espectar quando a batalha começar.</div>'}
+    <div class="pl">${pl}</div><div class="pl" style="margin-top:1cqw">${bt && ps.length > 1 ? '<button type="button" class="chip blue mos" style="height:9cqw">MOSAICO</button>' : ''}<button type="button" class="chip blue cht" style="height:9cqw">CHAT</button><button type="button" class="chip gold gmn" style="height:9cqw">GERENCIAR</button></div>${bt ? '' : '<div class="meta">Só dá para espectar quando a batalha começar.</div>'}
   </div>`;
 }
 function paint() {
@@ -28,6 +28,7 @@ async function load(manual) {
 }
 $('#rf').onclick = () => load(true);
 $('#ls').addEventListener('click', e => {
+  const ct = e.target.closest('.cht'); if (ct && !leaving) { const id = ct.closest('.rm').dataset.id; if (window.CHAT) { if (CHAT.room() !== id) CHAT.mount({ room: id }); CHAT.open(); } return; }
   const gn = e.target.closest('.gmn'); if (gn && !leaving) { leaving = true; clearInterval(timer); location.href = 'gerenciar.html?room=' + gn.closest('.rm').dataset.id + '&from=espectar' + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); return; }
   const mo = e.target.closest('.mos'); if (mo && !leaving) { leaving = true; clearInterval(timer); location.href = 'mosaico.html?room=' + mo.closest('.rm').dataset.id + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); return; }
   const b = e.target.closest('.pb'); if (!b || b.disabled || leaving) return;

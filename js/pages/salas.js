@@ -112,14 +112,14 @@ function lobby(r, owner) {
   $('#lb-h').textContent = r.is_public === false || r.pub === false ? 'Sala privada. Passe o código para os colegas entrarem.' : 'Sala pública. O código também serve para chamar amigos.';
   $('#lb-n').textContent = '1'; $('#lb-l').innerHTML = ''; $('#lb-l').dataset.h = '';
   if (r.tmode && r.tmode !== 'normal') $('#lb-h').textContent += ' Tempo ' + TM[r.tmode][0].toLowerCase() + '.'; $('#lb-go').hidden = !lbOwner; $('#lb-go').disabled = false; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.';
-  document.querySelectorAll('.ov').forEach(o => o.hidden = true); open('#ov-lb');
+  document.querySelectorAll('.ov').forEach(o => o.hidden = true); open('#ov-lb'); if (window.CHAT && r.id) CHAT.mount({ room: r.id });
   const tick = async () => {
     if (leaving) return;
     try { const l = await MATCH.lobby(r.id); if (leaving) return;
       if (lbOwner !== !!l.owner) { lbOwner = !!l.owner; $('#lb-go').hidden = !lbOwner; } $('#lb-mg').hidden = !lbOwner;
       $('#lb-n').textContent = String(l.total);
       { const box = $('#lb-l'), h = (l.members || []).map((m, i) => `<div class="lbp${m.me ? ' me' : ''}"><i></i><span>${m.name ? esc(m.name) : 'JOGADOR ' + (i + 1)}</span>${m.owner ? '<u>CRIADOR</u>' : ''}${m.me ? '<u class="vc">VOCÊ</u>' : ''}</div>`).join(''); if (box.dataset.h !== h) { const y = box.scrollTop; box.innerHTML = h; box.dataset.h = h; box.scrollTop = y; } }   // nao reinicia a rolagem a cada consulta
-      if (l.stage !== 'gather') { proceed(l); return; } } catch (e) { if (/fora_da_sala/.test(String(e && e.message || e))) { clearInterval(lbT); lbRoom = null; $('#ov-lb').hidden = true; toast('Você foi removido da sala.'); load(); poll(); return; } $('#lb-m').textContent = NET.msg(e); }
+      if (l.stage !== 'gather') { proceed(l); return; } } catch (e) { if (/fora_da_sala/.test(String(e && e.message || e))) { if (window.CHAT) CHAT.unmount(); clearInterval(lbT); lbRoom = null; $('#ov-lb').hidden = true; toast('Você foi removido da sala.'); load(); poll(); return; } $('#lb-m').textContent = NET.msg(e); }
   };
   tick(); lbT = setInterval(tick, 1500);
 }
@@ -134,7 +134,7 @@ function proceed(l) {
 $('#lb-go').onclick = async () => { const b = $('#lb-go'); b.disabled = true; try { await MATCH.stage(lbRoom.id, 'pick'); proceed({ stage: 'pick', me: null }); } catch (e) { b.disabled = false; $('#lb-m').textContent = NET.msg(e); } };
 $('#lb-cp').onclick = async () => { const c = lbRoom && lbRoom.code; if (!c) return; try { await navigator.clipboard.writeText(c); toast('Código copiado.'); } catch { toast('Anote o código: ' + c); } };
 $('#lb-mg').onclick = () => { if (!lbRoom) return; clearInterval(lbT); location.href = 'gerenciar.html?room=' + lbRoom.id + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); };
-$('#lb-out').onclick = () => { clearInterval(lbT); const id = lbRoom && lbRoom.id; lbRoom = null; if (id) NET.leave(id); $('#ov-lb').hidden = true; load(); poll(); };
+$('#lb-out').onclick = () => { if (window.CHAT) CHAT.unmount(); clearInterval(lbT); const id = lbRoom && lbRoom.id; lbRoom = null; if (id) NET.leave(id); $('#ov-lb').hidden = true; load(); poll(); };
 async function enter(r) {
   if (leaving || !r) return;
   if (r.id && await resume(r)) return;

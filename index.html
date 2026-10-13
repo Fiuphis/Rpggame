@@ -29,6 +29,7 @@ if(sessionStorage.getItem('bd1_fog_lobby'))document.documentElement.classList.ad
 <script src="js/vendor/supabase.js"></script>
 <script src="js/online/net.js"></script>
 <script src="js/online/match.js"></script>
+<script src="js/online/chat.js"></script>
 
 <script src="js/core/fog.js"></script>
 <script src="js/pages/lobby.js"></script>
@@ -44,6 +45,7 @@ const CARDS=[
 ];
 const R=window.NET&&NET.room();let RC=null;
 const _lc=LOBBY.counts.bind(LOBBY);LOBBY.counts=()=>RC?{...RC}:_lc();
+if(R&&window.CHAT)CHAT.mount({room:R.id});
 if(R){const pull=async()=>{try{const a=await NET.counts(R.id),o={mage:0,guerreiro:0,tank:0,cleriga:0};for(const k in a)o[k]=a[k];RC=o;render()}catch(e){}};
  pull();setInterval(pull,1500);
  const ab0=document.getElementById('above'),ch=document.createElement('div');ch.className='rmchip';ch.textContent=(R.pub?'SALA ':'SALA PRIVADA ')+R.code;ab0.appendChild(ch)}
