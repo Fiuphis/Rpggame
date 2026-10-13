@@ -32,7 +32,7 @@
       const snap = s.snapshot && typeof s.snapshot === 'object' && s.snapshot.state ? s.snapshot : null;
       this.snap = snap && m.snapshot_round ? { round: m.snapshot_round, state: snap.state } : null;
       this.cur = this.snap ? this.snap.round : (s.round ? s.round.n - 1 : 0);
-      watcher = MATCH.watch(room.id, st => { this.s = st; this.lastOk = Date.now(); this.err = null; this.flush(); }, { onError: e => { this.err = e; this.flush(); } });
+      watcher = MATCH.watch(room.id, st => { this.s = st; this.lastOk = Date.now(); this.err = null; if (window.__onlNotice) { try { __onlNotice(st && st.notice); } catch (x) {} } this.flush(); }, { onError: e => { this.err = e; if (!MATCH.spec && /fora_da_sala/.test(String(e && e.message || e)) && window.__onlKicked) { try { __onlKicked(); } catch (x) {} } this.flush(); } });
       return s;
     },
     flush() { const w = waiters; waiters = []; w.forEach(f => { if (!f.done()) waiters.push(f); }); },

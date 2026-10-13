@@ -14,7 +14,7 @@
   if (MINI) st.textContent += '#spec-bar{font-size:22px;padding:8px 10px}#spec-bar .d{font-size:21px;gap:2px}#spec-bar button{display:none}';
   const blk = document.createElement('div'); blk.id = 'spec-block';
   const bar = document.createElement('div'); bar.id = 'spec-bar';
-  bar.innerHTML = '<div class="r"><span class="t"></span><button type="button" id="spec-k">GABARITO</button><button type="button" id="spec-x">SAIR</button></div><div class="d" hidden></div>';
+  bar.innerHTML = '<div class="r"><span class="t"></span><button type="button" id="spec-p">PODERES</button><button type="button" id="spec-k">GABARITO</button><button type="button" id="spec-x">SAIR</button></div><div class="pw" hidden></div><div class="d" hidden></div>';
   document.body.append(blk, bar);
   const t = bar.querySelector('.t'), d = bar.querySelector('.d'); let open = true;
   bar.querySelector('#spec-x').onclick = () => { ONL.stop(); location.href = 'espectar.html' + location.search; };
@@ -40,5 +40,21 @@
     if (g.sim || g.act_sim) rows.push('<div>Classe sem jogador ativo: jogada simulada pelo servidor.</div>');
     d.innerHTML = rows.join('');
   }
+  // poderes (so fora do mosaico): cada um chama admin_act no servidor, que confere se e adm, avisa os jogadores e registra
+  if (!MINI) {
+    const pw = bar.querySelector('.pw'), say = t => { let m = bar.querySelector('.pm'); if (!m) { m = document.createElement('div'); m.className = 'pm'; bar.appendChild(m); } m.textContent = t; clearTimeout(say.t); say.t = setTimeout(() => { m.textContent = ''; }, 3500); };
+    const P = [['time', '+15 S', 0, { secs: 15 }], ['close', 'FECHAR FASE', 1], ['chest', 'ARCA NA PRÓXIMA', 0], ['msg', 'MENSAGEM', 0], ['kick', 'EXPULSAR ' + (NM[SP.grp] || ''), 1, { grp: SP.grp }], ['end', 'ENCERRAR PARTIDA', 1, null, 1], ['delete', 'EXCLUIR SALA', 1, null, 1]];
+    pw.innerHTML = P.map(x => '<button type="button" data-a="' + x[0] + '"' + (x[4] ? ' class="red"' : '') + '>' + x[1] + '</button>').join('');
+    let armed = null, at = 0;
+    pw.onclick = async e => { const b = e.target.closest('button'); if (!b) return; const a = b.dataset.a, def = P.find(x => x[0] === a); let arg = def[3] || {};
+      if (def[2] && !(armed === a && Date.now() - at < 4000)) { armed = a; at = Date.now(); b.classList.add('sure'); const o = b.textContent; b.textContent = 'CONFIRMAR?'; setTimeout(() => { b.textContent = o; b.classList.remove('sure'); }, 4000); return; }
+      armed = null;
+      if (a === 'msg') { const t = prompt('Mensagem para a sala (até 120 letras):'); if (!t || !t.trim()) return; arg = { text: t.trim().slice(0, 120) }; }
+      b.disabled = true;
+      try { await NET.rpc('admin_act', { p_room: SP.room, p_action: a, p_arg: arg }); say('Feito: ' + b.textContent.toLowerCase()); if (a === 'delete') { setTimeout(() => { ONL.stop(); location.href = 'espectar.html' + location.search; }, 800); } ONL.refresh(); }
+      catch (x) { say(NET.msg(x)); }
+      b.disabled = false; };
+    bar.querySelector('#spec-p').onclick = () => { pw.hidden = !pw.hidden; };
+  } else { const pb = bar.querySelector('#spec-p'); if (pb) pb.remove(); }
   setInterval(draw, 500); draw();
 })();

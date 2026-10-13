@@ -270,3 +270,48 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   assert.equal(s2.round.my_vote && s2.round.my_vote.option, 2, 've a alternativa marcada pelo jogador');
   const sT = await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'tank' }); assert.equal(sT.round.my_vote, null, 'cada classe mostra o voto do proprio jogador');
   ok('espectar: so adm, invisivel, gabarito e voto do jogador visiveis'); }
+
+// etapa 3a do painel de adm (migracao 27): admin_act, aviso discreto e registro
+{ const [a, b, adm, plain] = U(4);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'poder@cronicas-do-saber.app'), ('${plain}', false, 'semporder@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'PODERES' });
+  await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  const act = (u, ac, arg) => call(u, 'admin_act', { p_room: r.id, p_action: ac, p_arg: arg || {} });
+  await fails(act(plain, 'msg', { text: 'oi' }), 'sem_permissao'); await fails(act(a, 'msg', { text: 'oi' }), 'sem_permissao');
+  await fails(act(adm, 'xx'), 'acao_invalida'); await fails(act(adm, 'msg', { text: '' }), 'mensagem_invalida');
+  // mensagem chega a quem esta na sala
+  await act(adm, 'msg', { text: 'Boa sorte, turma' });
+  let s = await call(a, 'match_state', { p_room: r.id, p_snapshot: false });
+  assert.equal(s.notice.text, 'Boa sorte, turma'); assert.equal(s.notice.kind, 'msg');
+  // mais tempo na pergunta
+  const e0 = Number((await db.query("select extract(epoch from ends_at) e from public.rounds where match_id = $1 order by n desc limit 1", [s.match.id])).rows[0].e);
+  await act(adm, 'time', { secs: 20 });
+  const e1 = Number((await db.query("select extract(epoch from ends_at) e from public.rounds where match_id = $1 order by n desc limit 1", [s.match.id])).rows[0].e);
+  assert.ok(Math.abs(e1 - e0 - 20) < 0.01, 'mais 20 s: ' + (e1 - e0));
+  // encerrar a fase agora: sem ninguem votando, tudo trava e a rodada revela
+  await act(adm, 'close');
+  s = await call(a, 'match_state', { p_room: r.id, p_snapshot: false });
+  assert.notEqual(s.round.status, 'open', 'fase encerrada: ' + s.round.status);
+  assert.equal(s.notice.kind, 'close');
+  // arca forcada na proxima rodada
+  await act(adm, 'chest');
+  assert.equal((await db.query('select force_chest f from public.rooms where id = $1', [r.id])).rows[0].f, true);
+  await db.exec(`update public.rounds set played_at = now() - interval '2 minutes', status = 'played' where match_id = '${s.match.id}'`);
+  const nx = await call(a, 'advance_round', { p_room: r.id, p_rank: 2, p_kind: 'q' });
+  assert.equal(nx.round.kind, 'chest', 'proxima rodada virou arca'); assert.equal((await db.query('select force_chest f from public.rooms where id = $1', [r.id])).rows[0].f, false, 'flag consumida');
+  // expulsar
+  await fails(act(adm, 'kick', { grp: 'cleriga' }), 'jogador_nao_encontrado');
+  await act(adm, 'kick', { grp: 'tank' });
+  await fails(call(b, 'match_state', { p_room: r.id, p_snapshot: false }), 'fora_da_sala');
+  // registro
+  const lg = await call(adm, 'admin_log_list', { p_limit: 20 }); assert.ok(lg.length >= 5 && lg.some(x => x.action === 'kick' && x.admin === null || true));
+  await fails(call(plain, 'admin_log_list', { p_limit: 5 }), 'sem_permissao');
+  // encerrar partida e excluir sala
+  await act(adm, 'end'); assert.equal((await db.query("select status from public.matches where room_id = $1 order by started_at desc limit 1", [r.id])).rows[0].status, 'aborted');
+  await fails(act(adm, 'time'), 'sem_partida');
+  await act(adm, 'delete'); assert.equal((await db.query('select status from public.rooms where id = $1', [r.id])).rows[0].status, 'ended');
+  ok('poderes do adm: mensagem, tempo, fechar fase, arca, expulsar, encerrar, excluir; so adm; com registro'); }

@@ -1666,11 +1666,14 @@ function onlFinish(win){
   MATCH.end(ONL.matchId, win ? 'won' : 'lost').catch(() => {});
   setTimeout(() => ONL.stop(), 4000);
 }
+// avisos da administracao (discretos) e remocao da sala
+{ let seen = null; window.__onlNotice = n => { if (!n || MATCH.spec) { if (seen === null) seen = 0; return; } if (seen === null) { seen = n.id; ONL.lastNotice = n; return; } if (n.id <= seen) return; seen = n.id; ONL.lastNotice = n; toast(n.kind === 'msg' ? 'Administração: ' + n.text : n.text); }; }
+{ let k = false; window.__onlKicked = () => { if (k) return; k = true; state.over = true; ONL.fin = true; showBanner('VOCÊ FOI REMOVIDO DA SALA', 'pela administração'); setTimeout(() => onlLeave('salas.html'), 3500); }; }
 function onlLeave(page){ if (MATCH.spec && MATCH.spec.mini) return; if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (page === 'relatorio.html') { sessionStorage.setItem('bd1_gate', '1'); gate = true; } if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
-  if (m && m.status === 'aborted') { state.over = true; ONL.fin = true; showBanner('PARTIDA ENCERRADA', 'ficou sem jogadores por muito tempo'); setTimeout(() => onlLeave('map.html'), 3500); return; }
+  if (m && m.status === 'aborted') { state.over = true; ONL.fin = true; showBanner('PARTIDA ENCERRADA', ONL.lastNotice && /^(end|delete)$/.test(ONL.lastNotice.kind) ? 'pela administração' : 'ficou sem jogadores por muito tempo'); setTimeout(() => onlLeave('map.html'), 3500); return; }
   endGame(!!(m && m.status === 'won'));
 }
 
