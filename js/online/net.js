@@ -13,7 +13,7 @@ const MOCK = ss.get('bd1_mock') === '1';
 const MSG = {
   nao_autenticado: 'Entre novamente no jogo.', sala_nao_encontrada: 'Sala não encontrada. Confira o código.', muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos.',
   limite_de_salas: 'Você já tem 3 salas abertas.', so_o_criador: 'Só o criador da sala pode fazer isso.', acao_invalida: 'Ação inválida.', grupo_cheio: 'Essa classe já tem dono.', sala_cheia: 'Sala cheia (limite de 4 jogadores).', limite_global_de_salas: 'O servidor já tem 10 salas abertas. Tente de novo em instantes ou entre numa sala existente.', sala_fechada: 'Essa sala já começou e não aceita mais jogadores.', fora_da_sala: 'Você não está nessa sala.', grupo_invalido: 'Classe inválida.',
-  offline: 'Sem conexão com o servidor.', usuario_existe: 'Esse nome de usuário já existe.', email_exists: 'Esse nome de usuário já existe.', user_already_exists: 'Esse nome de usuário já existe.', usuario_invalido: 'Use de 3 a 16 letras minúsculas, números ou _.', 'Invalid login credentials': 'Usuário ou senha incorretos.', credenciais: 'Usuário ou senha incorretos.', codigo_invalido: 'Código de recuperação incorreto.', senha_curta: 'A senha precisa de pelo menos 6 caracteres.', weak_password: 'Senha fraca. Use pelo menos 6 caracteres.', limite_de_saves: 'Limite de 4 saves nesta classe.', precisa_de_conta: 'Entre na sua conta para usar saves.', save_desatualizado: 'Este save foi alterado em outro aparelho.', save_nao_encontrado: 'Save não encontrado.', nome_invalido: 'Dê um nome de 1 a 20 letras.', over_request_rate_limit: 'Muitas tentativas. Aguarde um pouco.', auth: 'Não foi possível entrar no servidor. Tente de novo.'
+  offline: 'Sem conexão com o servidor.', usuario_existe: 'Esse nome de usuário já existe.', nome_reservado: 'Esse nome é reservado. Escolha outro.', sem_permissao: 'Sem permissão.', usuario_nao_encontrado: 'Nenhuma conta com esse nome.', conta_principal: 'A conta principal não pode ser alterada.', email_exists: 'Esse nome de usuário já existe.', user_already_exists: 'Esse nome de usuário já existe.', usuario_invalido: 'Use de 3 a 16 letras minúsculas, números ou _.', 'Invalid login credentials': 'Usuário ou senha incorretos.', credenciais: 'Usuário ou senha incorretos.', codigo_invalido: 'Código de recuperação incorreto.', senha_curta: 'A senha precisa de pelo menos 6 caracteres.', weak_password: 'Senha fraca. Use pelo menos 6 caracteres.', limite_de_saves: 'Limite de 4 saves nesta classe.', precisa_de_conta: 'Entre na sua conta para usar saves.', save_desatualizado: 'Este save foi alterado em outro aparelho.', save_nao_encontrado: 'Save não encontrado.', nome_invalido: 'Dê um nome de 1 a 20 letras.', over_request_rate_limit: 'Muitas tentativas. Aguarde um pouco.', auth: 'Não foi possível entrar no servidor. Tente de novo.'
 };
 const msg = e => { const m = String((e && (e.message || e.code)) || e || ''); const k = Object.keys(MSG).find(x => m.includes(x)); return k ? MSG[k] : 'Algo deu errado. Tente de novo.'; };
 const norm = c => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
@@ -87,10 +87,18 @@ const ACC = {
     if (!us || us.is_anonymous || !us.email) return null;
     return { username: us.email.split('@')[0] };
   },
+  // 'disponivel' | 'em_uso' | 'reservado' | 'invalido' (so consulta; o cadastro confere de novo no servidor)
+  async userStatus(user) {
+    user = String(user || '').toLowerCase(); if (!userOk(user)) return 'invalido';
+    if (MOCK) { await AM.wait(150); return /^(adm|admin|fiuphis)/.test(user) ? 'reservado' : (AM.accs()[user] ? 'em_uso' : 'disponivel'); }
+    await real(); return rpc('username_status', { p_username: user });
+  },
+  async isAdmin() { if (MOCK) return false; try { await real(); return !!(await rpc('is_admin')); } catch { return false; } },
   async signUp(user, pass) {
     user = String(user || '').toLowerCase(); if (!userOk(user)) fail('usuario_invalido'); if (String(pass || '').length < 6) fail('senha_curta');
     if (MOCK) { await AM.wait(300); const a = AM.accs(); if (a[user]) fail('usuario_existe'); const c = code12(); a[user] = { p: pass, c }; LS.set('bd1_mock_acc', a); ss.set('bd1_mock_user', user); return c; }
-    await real(); const { data } = await sb.auth.getSession(); const cur = data.session && data.session.user;
+    await real(); { let stt = null; try { stt = await rpc('username_status', { p_username: user }); } catch {} /* servidor sem a funcao: o servidor confere ao criar */ if (stt === 'reservado') fail('nome_reservado'); if (stt === 'em_uso') fail('usuario_existe'); if (stt === 'invalido') fail('usuario_invalido'); }
+    const { data } = await sb.auth.getSession(); const cur = data.session && data.session.user;
     if (cur && cur.is_anonymous) {            // o jogador anônimo vira conta (mesmo usuário, mesmas salas)
       const r = await sb.auth.updateUser({ email: mail(user), password: pass }); if (r.error) throw r.error;
       const rf = await sb.auth.refreshSession(); if (rf.error) throw rf.error;

@@ -50,6 +50,13 @@ a{color:var(--gold)}
 <h1>EDITOR DE PERGUNTAS</h1>
 <p class="sub">Banco de Dados I. Edite, importe ou exporte. <a href="cover.html" id="ed-home">Voltar ao início</a></p>
 <div id="msg"></div>
+<div class="q" id="adm">
+  <b style="color:var(--gold)">CONTAS DE ADM</b>
+  <p class="sub" style="margin:4px 0 8px">Quem pode espectar salas e usar poderes de adm. Só a conta principal (fiuphis) altera esta lista.</p>
+  <div id="adm-l"></div>
+  <div class="bar" style="margin-bottom:0"><input id="adm-u" placeholder="Nome da conta" maxlength="16" autocomplete="off" autocapitalize="none" spellcheck="false" style="flex:1 1 100%"><button class="pri" id="adm-add">ADICIONAR ADM</button></div>
+  <div id="adm-e" class="warn" hidden></div>
+</div>
 <div class="bar" id="chips"></div>
 <div class="bar"><input id="search" placeholder="Buscar no texto ou no tema" style="flex:1;min-width:180px"></div>
 <div class="bar">
@@ -204,8 +211,23 @@ function edLeave() { if (dirty && !confirm('Há alterações não enviadas. Sair
 document.getElementById('ed-home').addEventListener('click', e => { e.preventDefault(); edLeave(); });
 try { history.pushState({ ed: 1 }, ''); } catch (e) {}
 addEventListener('popstate', () => { const md = $('#modal'); if (md && md.classList.contains('open')) { md.classList.remove('open'); try { history.pushState({ ed: 1 }, ''); } catch (e) {} return; } if (!edLeave()) { try { history.pushState({ ed: 1 }, ''); } catch (e) {} } });
+
+// contas de adm (lista no servidor; so a conta principal altera)
+async function admLoad(){
+  const box = $('#adm-l');
+  try { await NET.ready(); const rows = await NET.rpc('admin_list'); box.innerHTML = (rows || []).map(r => `<div class="top" style="margin:4px 0"><span style="flex:1">${esc(r.username)}${r.is_super ? ' <span style="color:var(--mut)">(principal)</span>' : ''}</span>${r.is_super ? '' : `<button class="dng" data-u="${esc(r.username)}">REMOVER</button>`}</div>`).join('') || '<p class="sub">Nenhuma conta.</p>'; }
+  catch (e) { box.innerHTML = '<p class="sub">Não foi possível carregar a lista.</p>'; }
+  box.querySelectorAll('button[data-u]').forEach(b => b.onclick = () => admSet(b.dataset.u, false));
+}
+async function admSet(u, on){
+  const er = $('#adm-e'); er.hidden = true;
+  try { await NET.ready(); await NET.rpc('admin_set', { p_username: u, p_on: on }); $('#adm-u').value = ''; await admLoad(); }
+  catch (e) { er.textContent = NET.msg(e); er.hidden = false; }
+}
+$('#adm-add').onclick = () => { const u = $('#adm-u').value.toLowerCase().replace(/[^a-z0-9_]/g, ''); if (u.length < 3) { const er = $('#adm-e'); er.textContent = 'Informe o nome da conta.'; er.hidden = false; return; } admSet(u, true); };
+$('#adm-u').addEventListener('input', e => { const v = e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''); if (v !== e.target.value) e.target.value = v; });
 // o editor é só da conta do editor (fiuphis); as outras voltam para o início
-NET.account().then(a => { if (!a || a.username !== 'fiuphis') location.replace('cover.html' + location.search); else load(); }).catch(() => location.replace('cover.html' + location.search));
+NET.account().then(a => { if (!a || a.username !== 'fiuphis') location.replace('cover.html' + location.search); else { load(); admLoad(); } }).catch(() => location.replace('cover.html' + location.search));
 </script>
 <script src="js/core/fs.js"></script>
 </body>

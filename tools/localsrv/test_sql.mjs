@@ -138,6 +138,37 @@ const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert
   assert.equal((await call(u1, 'admin_put_questions', { p_list: [{ rank: 1, text: 'x', options: ['a'], correct: 0 }] })).error, 'pergunta_invalida');
   ok('editor so da conta fiuphis, historico preservado');
 }
+
+// ---- etapa 1 do painel de adm: nomes reservados/disponibilidade e tabela de admins ----
+{ const a = u1, [b, c] = U(2);   // u1 ja e a conta fiuphis (inserida no teste do editor)
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${b}', false, 'maria@cronicas-do-saber.app'), ('${c}', true, null) on conflict do nothing`);
+  await db.exec(`insert into public.profiles (user_id, username, recovery_hash) values ('${b}', 'maria', 'x')`);
+  const st = async n => call(c, 'username_status', { p_username: n });
+  assert.equal(await st('joao_77'), 'disponivel');
+  assert.equal(await st('Maria'), 'em_uso', 'maiusculas contam como o mesmo nome');
+  assert.equal(await st('ab'), 'invalido'); assert.equal(await st('com espaco'), 'invalido');
+  for (const n of ['admin', 'adm', 'admin2', 'adm_01', '99adm', 'adm1n', 'ADM1N', 'f1uphis', 'fiuph1s', 'fiuphis', 'fiuphis_fan', 'the_fiuphis', 'moderador', 'm0d3rad0r', 'suporte1', 'root'])
+    assert.equal(await st(n), 'reservado', n + ' deveria ser reservado');
+  for (const n of ['adrian', 'admir', 'madmax', 'modelo', 'professor', 'root_beer_fan', 'sistemas_bd', 'lucas_x']) assert.notEqual(await st(n), 'reservado', n + ' nao deveria ser reservado');
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${randomUUID()}', false, 'pedro@cronicas-do-saber.app')`);
+  assert.equal(await st('pedro'), 'em_uso', 'nome preso so no cadastro de acesso tambem conta');
+  const d = randomUUID(); await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${d}', false, 'adm1n@cronicas-do-saber.app')`);
+  await fails(call(d, 'register_profile', { p_username: 'adm1n' }), 'nome_reservado');
+  await fails(call(d, 'register_profile', { p_username: 'f1uphis' }), 'nome_reservado');
+  ok('nomes: disponibilidade ao vivo, reservados e variacoes, em uso por perfil ou acesso');
+  // admins
+  assert.equal(await call(a, 'is_admin', {}), true, 'a conta principal e sempre adm');
+  assert.equal(await call(b, 'is_admin', {}), false);
+  await fails(call(b, 'admin_list', {}), 'sem_permissao'); await fails(call(b, 'admin_set', { p_username: 'maria', p_on: true }), 'sem_permissao');
+  await call(a, 'admin_set', { p_username: 'Maria', p_on: true });
+  assert.equal(await call(b, 'is_admin', {}), true);
+  await fails(call(b, 'admin_set', { p_username: 'maria', p_on: false }), 'sem_permissao');   // adm comum nao edita a lista
+  const ls = await db.transaction(async tx => { await tx.query(`select set_config('request.jwt.claims', $1, true)`, [JSON.stringify({ sub: a, role: 'authenticated', is_anonymous: true })]); await tx.exec('set local role authenticated'); return (await tx.query('select * from public.admin_list()')).rows; });
+  assert.deepEqual(ls.map(x => x.username), ['fiuphis', 'maria']);
+  await fails(call(a, 'admin_set', { p_username: 'ninguem', p_on: true }), 'usuario_nao_encontrado');
+  await fails(call(a, 'admin_set', { p_username: 'fiuphis', p_on: false }), 'conta_principal');
+  await call(a, 'admin_set', { p_username: 'maria', p_on: false }); assert.equal(await call(b, 'is_admin', {}), false);
+  ok('admins: so a conta principal edita a lista; adm comum nao; principal nao se remove'); }
 console.log('TODOS OS TESTES SQL PASSARAM');
 
 // teto de 4 por sala e classe exclusiva

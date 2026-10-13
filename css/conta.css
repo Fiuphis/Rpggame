@@ -16,3 +16,6 @@
 .ov .bigcode.sm{font-size:21px;letter-spacing:2px;text-indent:2px;padding:14px 0 12px;white-space:nowrap}
 .ov .dlg .hint{margin-bottom:10px}
 .ov .bigcode.sm{font-size:min(21px,5.3vw);letter-spacing:min(2px,.5vw);text-indent:min(2px,.5vw)}
+
+.panel .nst{font-size:2.8cqw;line-height:1.25;min-height:3.6cqw;margin:-1.4cqw 0 2.4cqw;padding:0 1cqw;letter-spacing:.1cqw;color:#9a90b8}
+.panel .nst.ok{color:#5dff9a}.panel .nst.bad{color:#ff7a8a}

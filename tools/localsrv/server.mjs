@@ -17,11 +17,13 @@ export async function startServer(port = 0) {
   const rows = (await db.query(`select p.proname, p.proretset, t.typname from pg_proc p join pg_type t on t.oid = p.prorettype where p.pronamespace = 'public'::regnamespace`)).rows;
   for (const r of rows) meta[r.proname] = { retset: r.proretset, isVoid: r.typname === 'void' };
 
-  const session = uid => {
+  const session = async uid => {
+    const u = (await db.query(`select email, is_anonymous from auth.users where id = $1`, [uid])).rows[0] || {}, anon = u.is_anonymous !== false, email = u.email || undefined;
     const exp = Math.floor(Date.now() / 1000) + 86400 * 30;
-    const tok = `${b64({ alg: 'none' })}.${b64({ sub: uid, role: 'authenticated', is_anonymous: true, aud: 'authenticated', exp })}.x`;
-    return { access_token: tok, token_type: 'bearer', expires_in: 86400 * 30, expires_at: exp, refresh_token: 'r.' + uid, user: { id: uid, aud: 'authenticated', role: 'authenticated', is_anonymous: true, app_metadata: {}, user_metadata: {} } };
+    const tok = `${b64({ alg: 'none' })}.${b64({ sub: uid, role: 'authenticated', is_anonymous: anon, email, aud: 'authenticated', exp })}.x`;
+    return { access_token: tok, token_type: 'bearer', expires_in: 86400 * 30, expires_at: exp, refresh_token: 'r.' + uid, user: { id: uid, aud: 'authenticated', role: 'authenticated', is_anonymous: anon, email, app_metadata: {}, user_metadata: {} } };
   };
+  const PW = new Map();   // senhas das contas de teste (id -> senha)
   const uidOf = req => { const m = (req.headers.authorization || '').match(/Bearer [^.]+\.([^.]+)\./); if (!m) return null; try { return JSON.parse(Buffer.from(m[1], 'base64url').toString()).sub; } catch { return null; } };
   const newUser = async () => { const id = randomUUID(); await db.query(`insert into auth.users (id, is_anonymous) values ($1, true)`, [id]); return id; };
 
@@ -36,13 +38,25 @@ export async function startServer(port = 0) {
       const url = new URL(req.url, 'http://x');
       if (req.method === 'OPTIONS') return send(res, 204, '');
       const p = url.pathname;
-      if (p === '/auth/v1/signup') { const id = await newUser(); return send(res, 200, session(id)); }
+      if (p === '/auth/v1/signup') {
+        const b = JSON.parse((await readBody(req)) || '{}');
+        if (b.email) { const em = String(b.email).toLowerCase(); if ((await db.query(`select 1 from auth.users where lower(email) = $1`, [em])).rows.length) return send(res, 422, { code: 'user_already_exists', msg: 'User already registered' });
+          const id = randomUUID(); await db.query(`insert into auth.users (id, email, is_anonymous) values ($1, $2, false)`, [id, em]); PW.set(id, b.password); return send(res, 200, await session(id)); }
+        const id = await newUser(); return send(res, 200, await session(id)); }
       if (p === '/auth/v1/token') {
         const b = JSON.parse((await readBody(req)) || '{}'), rt = String(b.refresh_token || '');
+        if (url.searchParams.get('grant_type') === 'password') {
+          const em = String(b.email || '').toLowerCase(), u = (await db.query(`select id from auth.users where lower(email) = $1`, [em])).rows[0];
+          if (!u || PW.get(u.id) !== b.password) return send(res, 400, { code: 'invalid_credentials', error_description: 'Invalid login credentials', msg: 'Invalid login credentials' });
+          return send(res, 200, await session(u.id)); }
         const id = rt.startsWith('r.') ? rt.slice(2) : await newUser();
-        return send(res, 200, session(id));
+        return send(res, 200, await session(id));
       }
-      if (p === '/auth/v1/user') { const id = uidOf(req); return id ? send(res, 200, session(id).user) : send(res, 401, { message: 'sem sessao' }); }
+      if (p === '/auth/v1/user') { const id = uidOf(req); if (!id) return send(res, 401, { message: 'sem sessao' });
+        if (req.method === 'PUT') { const b = JSON.parse((await readBody(req)) || '{}'); if (b.email) { const em = String(b.email).toLowerCase();
+            if ((await db.query(`select 1 from auth.users where lower(email) = $1 and id <> $2`, [em, id])).rows.length) return send(res, 422, { code: 'email_exists', msg: 'A user with this email address has already been registered' });
+            await db.query(`update auth.users set email = $1, is_anonymous = false where id = $2`, [em, id]); if (b.password) PW.set(id, b.password); } }
+        return send(res, 200, (await session(id)).user); }
       if (p === '/auth/v1/logout') return send(res, 204, '');
       if (p === '/__admin/sql' && req.method === 'POST') {
         const b = JSON.parse(await readBody(req)); const r = await db.query(b.sql, b.params || []); return send(res, 200, r.rows);
@@ -57,7 +71,7 @@ export async function startServer(port = 0) {
           const vals = names.map(n => (args[n] !== null && typeof args[n] === 'object') ? JSON.stringify(args[n]) : args[n]);
           const ph = names.map((n, i) => `${n} => $${i + 1}${(args[n] !== null && typeof args[n] === 'object') ? '::jsonb' : ''}`).join(', ');
           const out = await db.transaction(async tx => {
-            await tx.query(`select set_config('request.jwt.claims', $1, true)`, [JSON.stringify({ sub: uid, role: 'authenticated', is_anonymous: true })]);
+            { const uu = (await tx.query(`select email, is_anonymous from auth.users where id = $1`, [uid])).rows[0] || {}; await tx.query(`select set_config('request.jwt.claims', $1, true)`, [JSON.stringify({ sub: uid, role: 'authenticated', is_anonymous: uu.is_anonymous !== false, email: uu.email || undefined })]); }
             await tx.exec('set local role authenticated');
             if (m.isVoid) { await tx.query(`select public.${fn}(${ph})`, vals); return null; }
             if (m.retset) return (await tx.query(`select coalesce(jsonb_agg(to_jsonb(t)), '[]'::jsonb) as r from public.${fn}(${ph}) t`, vals)).rows[0].r;

@@ -23,10 +23,25 @@ function setMode(m) {
   $('#rp-w').hidden = m !== 'up'; $('#go').textContent = m === 'up' ? 'CRIAR CONTA' : 'ENTRAR';
   $('#pw').autocomplete = m === 'up' ? 'new-password' : 'current-password';
   $('#hn').textContent = m === 'up' ? 'Use de 3 a 16 letras, números ou _. A senha precisa de 6 ou mais caracteres.' : 'Use o mesmo nome e senha em qualquer aparelho.';
-  $('#fg').hidden = m === 'up';
+  $('#fg').hidden = m === 'up'; nameCheck();
 }
 document.querySelectorAll('#mode .chip').forEach(b => b.onclick = () => setMode(b.dataset.m));
 $('#us').addEventListener('input', e => { const v = clean(e.target.value); if (v !== e.target.value) e.target.value = v; });
+// criar conta: mostra ao vivo se o nome esta disponivel (o servidor confere de novo ao criar)
+let nameT = 0, nameSeq = 0, nameOk = null;
+const NS = { disponivel: ['Nome disponível.', 'ok'], em_uso: ['Esse nome já está em uso.', 'bad'], reservado: ['Esse nome é reservado. Escolha outro.', 'bad'], invalido: ['Use de 3 a 16 letras, números ou _.', ''] };
+function nameCheck() {
+  const e = $('#us-s'); clearTimeout(nameT); nameOk = null;
+  if (mode !== 'up') { e.hidden = true; return; }
+  const v = clean($('#us').value); e.hidden = false; e.className = 'nst';
+  if (v.length < 3) { e.textContent = v ? NS.invalido[0] : ''; return; }
+  e.textContent = 'Verificando...'; const my = ++nameSeq;
+  nameT = setTimeout(async () => {
+    let st = 'invalido'; try { st = await NET.userStatus(v); } catch (x) { if (my === nameSeq) { e.textContent = 'Não foi possível verificar o nome agora.'; } return; }
+    if (my !== nameSeq) return; nameOk = st === 'disponivel'; e.textContent = (NS[st] || NS.invalido)[0]; e.className = 'nst ' + (NS[st] || NS.invalido)[1];
+  }, 350);
+}
+$('#us').addEventListener('input', nameCheck);
 $('#ru').addEventListener('input', e => { const v = clean(e.target.value); if (v !== e.target.value) e.target.value = v; });
 
 function showCode(code, then) {
@@ -40,6 +55,7 @@ $('#fm').addEventListener('submit', async e => {
   const u = clean($('#us').value), p = $('#pw').value, er = $('#er'); er.textContent = '';
   if (u.length < 3) { er.textContent = 'O usuário precisa de 3 a 16 letras, números ou _.'; return; }
   if (p.length < 6) { er.textContent = 'A senha precisa de pelo menos 6 caracteres.'; return; }
+  if (mode === 'up' && nameOk === false) { er.textContent = $('#us-s').textContent; return; }
   if (mode === 'up' && p !== $('#pw2').value) { er.textContent = 'As senhas não são iguais.'; return; }
   busy = true; const b = $('#go'); b.disabled = true;
   try {
