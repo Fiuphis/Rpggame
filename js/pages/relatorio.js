@@ -37,9 +37,9 @@ function groups() {
   const rows = ORDER.map(k => { let r = 0, n = 0, sim = 0; rs.forEach(x => { const g = x.groups && x.groups[k]; if (!g) return; n++; if (g.correct) r++; if (g.sim) sim++; });
     return { k, r, n, sim }; });
   const tot = rows.reduce((a, x) => [a[0] + x.r, a[1] + x.n], [0, 0]);
-  el.innerHTML = `<h2 class="rt">AS CLASSES<small>acerto por grupo · sala ${pct(tot[0], tot[1])}%</small></h2><div class="bars">` +
+  el.innerHTML = `<h2 class="rt">AS CLASSES<small>acerto por classe · sala ${pct(tot[0], tot[1])}%</small></h2><div class="bars">` +
     rows.map(x => `<div class="br" style="--c:${G[x.k][1]}"><em>${G[x.k][0]}</em><i><s style="width:${pct(x.r, x.n)}%"></s></i><span>${x.r}/${x.n}${x.sim ? ' *' : ''}</span></div>`).join('') +
-    `</div>${rows.some(x => x.sim) ? '<div class="empty" style="padding:0">* inclui rodadas em que o grupo estava vazio e foi simulado pelo servidor</div>' : ''}`;
+    `</div>${rows.some(x => x.sim) ? '<div class="empty" style="padding:0">* inclui rodadas em que a classe estava sem jogador e foi simulada pelo servidor</div>' : ''}`;
 }
 function players() {
   const el = $('#pl'), ps = rep ? rep.players : [];

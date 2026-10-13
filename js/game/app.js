@@ -89,8 +89,8 @@ const ITEMS = {
   // raros
   phoenix:{name:'Pena de Fênix', ask:'Comprar Pena de Fênix?', price:24, kind:'fx', fx:'phoenix', rare:true, icon:'assets/items/item_phoenix.png', info:'RARO: revive seu herói caído com 100 de HP e cura 20 de HP dos aliados (só vale se algum aliado ainda estiver de pé).'},
   dice:{name:'Dado do Destino', ask:'Comprar Dado do Destino?', price:20, kind:'fx', fx:'dice', rare:true, icon:'assets/items/item_dice.png', info:'RARO: seus próximos 4 ataques causam de 1x a 3x de dano, sorteado.'},
-  watch_s:{name:'Relógio de Bolso', ask:'Comprar Relógio de Bolso?', price:30, kind:'fx', fx:'clock', secs:5, rare:true, legend:true, icon:'assets/items/item_watch_s.png', info:'LENDÁRIO: só vale durante a pergunta: soma +5s ao tempo de resposta do seu grupo. Não pode ser dado a aliados.'},
-  watch_l:{name:'Relógio Grande', ask:'Comprar Relógio Grande?', price:50, kind:'fx', fx:'clock', secs:10, rare:true, legend:true, icon:'assets/items/item_watch_l.png', info:'LENDÁRIO: só vale durante a pergunta: soma +10s ao tempo de resposta do seu grupo. Não pode ser dado a aliados.'},
+  watch_s:{name:'Relógio de Bolso', ask:'Comprar Relógio de Bolso?', price:30, kind:'fx', fx:'clock', secs:5, rare:true, legend:true, icon:'assets/items/item_watch_s.png', info:'LENDÁRIO: só vale durante a pergunta: soma +5s ao tempo de resposta do seu herói. Não pode ser dado a aliados.'},
+  watch_l:{name:'Relógio Grande', ask:'Comprar Relógio Grande?', price:50, kind:'fx', fx:'clock', secs:10, rare:true, legend:true, icon:'assets/items/item_watch_l.png', info:'LENDÁRIO: só vale durante a pergunta: soma +10s ao tempo de resposta do seu herói. Não pode ser dado a aliados.'},
   scroll:{name:'Pergaminho Arcano', ask:'Comprar Pergaminho Arcano?', price:22, kind:'fx', fx:'scroll', rare:true, icon:'assets/items/item_scroll.png', info:'RARO: carrega na hora o ULTIMATE do seu herói e recupera 60 de HP e 80 de mana, e dá +25% de dano por 3 rodadas.'}
 };
 const itemInfo = t => { const it = ITEMS[t]; return it.info || (it.kind === 'hp' ? `Restaura ${it.amount} de HP do seu herói (ou de um aliado).` : `Restaura ${it.amount} de mana do seu herói (ou de um aliado).`); };
@@ -1178,7 +1178,7 @@ async function chooseSkill(k, sh = {}){
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta rank S/SS
     opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:'<span class="tag">SÓ RANK S/SS</span>', disabled:!ult || (ONL.on && !!sh.ult), block:ONL.on && sh.ult ? 'ATIVADO' : ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 S/SS' : 'ACERTE RANK S/SS')});
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
-    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolham a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts,
+    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolha a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts,
       net: ONL.on ? onlActNet(ONL.round(), i => onlCountBy(a => i === 0 ? a.ult : a.skill === (list[i - 1] || {}).id)) : null});
     if (r.idx === null) return null;
     if (r.idx === 0 && ONL.on) {   // online: o especial entra na proposta do grupo e e ativado na resolucao
@@ -2226,7 +2226,7 @@ $('#bag-toggle').addEventListener('click', () => { const op = $('#bag-panel').hi
 $('#bag-back').addEventListener('click', () => { setBag(false); mBubble(''); });
 // voltar do aparelho na partida: fecha a mochila se estiver aberta; senão avisa (sair é só pelo botão GRUPOS, para não abandonar sem querer)
 try { history.pushState({ game: 1 }, ''); } catch (e) {}
-addEventListener('popstate', () => { try { history.pushState({ game: 1 }, ''); } catch (e) {} if (!$('#bag-panel').hidden) { setBag(false); mBubble(''); return; } toast('Use o botão GRUPOS para sair da partida.'); });
+addEventListener('popstate', () => { try { history.pushState({ game: 1 }, ''); } catch (e) {} if (!$('#bag-panel').hidden) { setBag(false); mBubble(''); return; } toast('Use o botão SAIR para sair da partida.'); });
 // Loja: tocar no ícone do item mostra a descrição; tocar nas moedas (parte de baixo) tenta comprar.
 function closeItemTip(){ const t = $('#item-tip'); if (t) t.remove(); }
 function showItemTip(slot){

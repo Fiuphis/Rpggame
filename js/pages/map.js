@@ -95,7 +95,7 @@ function select(id){
   $('#panel').hidden = false; $('#p-title').textContent = B.name; placePanel();
   const go = $('#p-go'); const n = voters(), need = Math.floor(n / 2) + 1;
   if ((st === 'next' || st === 'done') && B.play) {
-    const again = st === 'done'; $('#p-sub').textContent = (again ? 'Concluído · jogar de novo com outro grupo ou o mesmo' : B.sub) + ' · o grupo vota para entrar'; go.disabled = false; go.className = 'p-go'; go.innerHTML = `${again ? 'REJOGAR' : 'ENTRAR'} <b>0/${need}</b>`;
+    const again = st === 'done'; $('#p-sub').textContent = (again ? 'Concluído · jogar de novo, com outra classe ou a mesma' : B.sub); go.disabled = false; go.className = 'p-go'; go.innerHTML = `${again ? 'REJOGAR' : 'ENTRAR'} <b>0/${need}</b>`;
     go.onclick = () => { mine = !mine; yes += mine ? 1 : -1; upd(need); if (yes >= need) enter(); };
     if (TEST && !ROOM) for (let i = 0; i < n - 1; i++) bots.push(setTimeout(() => { if (selected !== id) return; if (Math.random() < .6) { yes++; upd(need); if (yes >= need) enter(); } }, 1200 + i * 800));
     if (ROOM) {

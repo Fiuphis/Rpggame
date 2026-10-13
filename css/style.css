@@ -869,3 +869,5 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 
 /* um jogador por classe: sem contagem de votos no Mercador */
 .vote-choice b{display:none}
+.dq-answer .cnt,.act-card .cnt,.pp-card .cnt,.cv-btn .cnt{display:none}   /* um jogador por classe: sem contagem de votos */
+.sk-cnt{display:none}
