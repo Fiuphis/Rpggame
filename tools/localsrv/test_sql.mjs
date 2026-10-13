@@ -440,3 +440,33 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   const n3 = await call(a, 'advance_round', { p_room: r.id, p_rank: 1, p_kind: 'q' }); assert.equal(n3.round.kind, 'chest'); assert.equal(n3.round.force, 'trap');
   assert.equal((await call(a, 'match_state', { p_room: r.id })).round.force, 'trap');
   ok('pausar segura os relogios e o avanco, retomar devolve o tempo; forcar rank e arca (armadilha/rara) valem uma vez'); }
+
+// dificuldade da sala (migracao 32)
+{ const [a, b, adm] = U(3);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'dif@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'DIF' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  assert.equal((await call(a, 'room_lobby', { p_room: r.id })).difficulty, 'hard', 'padrao dificil');
+  await fails(call(b, 'set_room_difficulty', { p_room: r.id, p_diff: 'easy' }), 'so_o_criador'); await fails(call(a, 'set_room_difficulty', { p_room: r.id, p_diff: 'x' }), 'dificuldade_invalida');
+  await call(a, 'set_room_difficulty', { p_room: r.id, p_diff: 'easy' });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  const m = await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  const act = (u, ac, arg) => call(u, 'admin_act', { p_room: r.id, p_action: ac, p_arg: arg || {} });
+  const nextRank = async (want) => { await db.exec(`update public.rounds set status = 'played', played_at = now() - interval '61 seconds' where match_id = '${m.id}'`);
+    const n = await call(a, 'advance_round', { p_room: r.id, p_rank: want, p_kind: 'q' }); assert.equal(n.ok, true);
+    return { dif: n.round.dif, rank: (await db.query("select q.rank from public.rounds r join public.questions q on q.id = r.question_id where r.id = $1", [n.round.id])).rows[0].rank }; };
+  assert.equal((await call(a, 'match_state', { p_room: r.id })).room.difficulty, 'easy');
+  assert.equal((await call(a, 'match_state', { p_room: r.id })).round.dif, 'easy');
+  let x = await nextRank(5); assert.equal(x.dif, 'easy'); assert.equal(x.rank, 3, 'facil limita em A');
+  x = await nextRank(4); assert.equal(x.rank, 3);
+  await fails(call(a, 'owner_power', { p_room: r.id, p_action: 'difficulty', p_arg: { mode: 'hard' } }), 'partida_em_andamento');
+  await fails(act(b, 'difficulty', { mode: 'hard' }), 'sem_permissao'); await fails(act(adm, 'difficulty', { mode: 'x' }), 'dificuldade_invalida');
+  await act(adm, 'difficulty', { mode: 'medium' });
+  x = await nextRank(5); assert.equal(x.dif, 'medium'); assert.equal(x.rank, 4, 'medio limita em S');
+  assert.equal((await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'mage' })).room.difficulty, 'medium');
+  await act(adm, 'difficulty', { mode: 'hard' }); x = await nextRank(5); assert.equal(x.dif, 'hard'); assert.equal(x.rank, 5);
+  await act(adm, 'difficulty', { mode: 'easy' }); await act(adm, 'force', { rank: 5 }); x = await nextRank(1); assert.equal(x.rank, 5, 'rank forcado pelo adm nao e limitado');
+  await act(adm, 'end');
+  await call(a, 'owner_power', { p_room: r.id, p_action: 'difficulty', p_arg: { mode: 'medium' } }); assert.equal((await call(a, 'owner_room_info', { p_room: r.id })).difficulty, 'medium');
+  ok('dificuldade: padrao dificil, so o criador define; teto de rank 3/4/5 por rodada; adm muda ao vivo (vale na proxima); rank forcado nao e limitado'); }

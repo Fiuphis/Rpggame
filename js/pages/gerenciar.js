@@ -21,7 +21,10 @@ function paint() {
     <div class="row"><button type="button" class="chip wide${info.public ? ' on' : ''}" data-a="public" style="flex:1">${info.public ? 'PÚBLICA: TOQUE PARA TORNAR PRIVADA' : 'PRIVADA: TOQUE PARA TORNAR PÚBLICA'}</button></div>
     <h2>TEMPO PARA RESPONDER</h2>
     <div class="seg3">${['fast', 'normal', 'long'].map(k => `<button type="button" class="chip${info.time_mode === k ? ' on' : ''}" data-a="time" data-m="${k}"${info.playing ? ' disabled' : ''}>${TM[k]}</button>`).join('')}</div>
-    ${info.playing ? '<p class="hint">Só dá para mudar o tempo entre partidas.</p>' : ''}</div>` : '')
+    ${info.playing ? '<p class="hint">Só dá para mudar o tempo entre partidas.</p>' : ''}
+    <h2>DIFICULDADE</h2>
+    <div class="seg3">${[['easy', 'FÁCIL'], ['medium', 'MÉDIO'], ['hard', 'DIFÍCIL']].map(([k, t]) => `<button type="button" class="chip${(info.difficulty || 'hard') === k ? ' on' : ''}" data-a="difficulty" data-m="${k}"${info.playing ? ' disabled' : ''}>${t}</button>`).join('')}</div>
+    <p class="hint">Fácil: ranks C, B e A. Médio: até o S. Difícil: até o SS. ${info.playing ? 'Só dá para mudar entre partidas.' : ''}</p></div>` : '')
     + `<div class="bx"><h2>JOGADORES</h2>${pls || '<div class="empty">Só você na sala.</div>'}</div>`
     + `<div class="bx"><h2>EXPULSOS</h2>${bans || '<div class="empty">Ninguém foi expulso.</div>'}<p class="hint">Quem é expulso não volta a esta sala até ser perdoado.</p></div>`;
   const nm = $('#nm'); if (nm) { nm.onfocus = () => { typing = true; }; nm.onblur = () => { typing = false; }; }
@@ -37,7 +40,7 @@ $('#gm').addEventListener('click', async e => {
   if (a === 'rename') arg = { name: ($('#nm').value || '').trim() };
   else if (a === 'lock') arg = { on: !info.locked };
   else if (a === 'public') arg = { on: !info.public };
-  else if (a === 'time') arg = { mode: b.dataset.m };
+  else if (a === 'time' || a === 'difficulty') arg = { mode: b.dataset.m };
   b.disabled = true;
   try {
     if (!info.owner && (a === 'kick' || a === 'forgive')) await NET.rpc('admin_act', { p_room: room, p_action: a, p_arg: arg });

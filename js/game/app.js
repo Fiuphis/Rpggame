@@ -19,7 +19,11 @@ function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t
 function seedRound(matchSeed, n){ let h = 2166136261 ^ (matchSeed | 0); h = Math.imul(h ^ (n | 0), 16777619); h = Math.imul(h ^ h >>> 13, 0x5bd1e995); RNG = mulberry32(h >>> 0); }
 function shuffleR(a){ a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const HARD_MIN = 4;   // rank S e SS contam como "difíceis" (carregam o especial, fúria etc.)
-const isHardQ = q => q && q.difficulty >= HARD_MIN;
+let HARD_NOW = HARD_MIN;   // limite de rank "dificil" da rodada atual (sala facil: A; medio e dificil: S); vem de round.dif
+const DIF_INFO = {easy:{min:3, lbl:'A'}, medium:{min:4, lbl:'S'}, hard:{min:4, lbl:'S/SS'}};
+let HL = 'S/SS';   // texto do rank dificil na tela
+const setDif = d => { const i = DIF_INFO[d] || DIF_INFO.hard; HARD_NOW = i.min; HL = i.lbl; };
+const isHardQ = q => q && q.difficulty >= HARD_NOW;
 const RANK_W = [0, .30, .30, .25, .10, .05];   // sorteio normal por rank (índice = dificuldade)
 function rollDiff(){ let r = R(), d = 1; for (; d < 5; d++) { r -= RANK_W[d]; if (r < 0) break; } return d; }
 const QUESTIONS = [
@@ -124,7 +128,7 @@ const RAGE_MAX = 5, RAGE_DODGE = 1, RAGE_WASTED = 5;   // fúria: esquivar após
 const QUESTION_SECONDS = {1:25, 2:30, 3:35, 4:40, 5:45}, ACTION_SECONDS = 25;   // tempo para responder: C 25s, B 30s, A 35s, S 40s, SS 45s
 const ULT_NAME = {mage:'Buraco Negro', guerreiro:'Berserk', tank:'Provocação', cleriga:'Luz Sagrada'};
 const ULT_ICON = {mage:'orb', guerreiro:'sword2', tank:'hammer2', cleriga:'cross'};
-const ULT_INFO = {mage:'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta rank S/SS, só na seguinte (se acertarem)', guerreiro:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da '+ST.aoe+' dos aliados), com defesa dobrada, por 2 perguntas', cleriga:'revive ou cura um herói'};
+const ULT_INFO = {get mage(){return 'dano direto de 4x o dano base no boss; recarga: não volta na próxima pergunta rank ' + HL + ', só na seguinte (se acertarem)'}, guerreiro:'ataca mesmo errando, com 1,5x de dano, e leva menos dano por 2 perguntas', tank:'todo o dano do boss vai nele (inclusive metade da '+ST.aoe+' dos aliados), com defesa dobrada, por 2 perguntas', cleriga:'revive ou cura um herói'};
 // ===== Habilidades especiais do boss (cada uma tem aviso na tela e uma resposta dos heróis) =====
 const PREP_CHANCE = .2, PREP_MULT = 1.5;                // Preparando Habilidade: sorteada (1 em 5 rodadas); a rodada seguinte tem golpes +50% (defender corta pela metade)
 const TELE_CHANCE = 1 / 6, TELE_FROM = 4, TELE_DMG = 20, STUN_MULT = 1.25;   // Teleporte: depois da rodada 4; ESQUIVA anula e atordoa o boss (+25% de dano nele na rodada)
@@ -1044,7 +1048,7 @@ async function runChestRound(SR){
 async function bossIntro(ev = {}){
   const game = $('#game');
   if (state.hardNext) {
-    showBanner('O BOSS ENFURECEU!', `pergunta rank S/SS a caminho · ${ST.aoe} +${ENRAGE_AOE}`);
+    showBanner('O BOSS ENFURECEU!', `pergunta rank ${HL} a caminho · ${ST.aoe} +${ENRAGE_AOE}`);
     flashHit(); A.play('boss', 'enrage'); A.sayRandom('boss', 'enrage', 1); state.enraged = true; await wait(2300); hideBanner();
     state.rage = 0; state.hardNext = false; renderHud(); return;
   }
@@ -1177,7 +1181,7 @@ async function chooseSkill(k, sh = {}){
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta rank S/SS
-    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:'<span class="tag">SÓ RANK S/SS</span>', disabled:!ult || (ONL.on && !!sh.ult), block:ONL.on && sh.ult ? 'ATIVADO' : ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 S/SS' : 'ACERTE RANK S/SS')});
+    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:`<span class="tag">SÓ RANK ${HL}</span>`, disabled:!ult || (ONL.on && !!sh.ult), block:ONL.on && sh.ult ? 'ATIVADO' : ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 ' + HL : 'ACERTE RANK ' + HL)});
     list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
     const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolha a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts,
       net: ONL.on ? onlActNet(ONL.round(), i => onlCountBy(a => i === 0 ? a.ult : a.skill === (list[i - 1] || {}).id)) : null});
@@ -1306,7 +1310,7 @@ async function iceIntro(ev){
   I.mark = I.markNext; I.markNext = null;
   if (I.mark && state.heroes[I.mark].hp > 0) { showBanner('MARCA DO DUELISTA', `quase todos os golpes vão em ${GROUPS[I.mark]} nesta rodada (Provocação, Proteção ou Esquiva)`); showRing(I.mark); A.fx('boss', 'mark', {x:HERO_WX(I.mark), y:1085}); await wait(1900); A.fx('boss', 'unmark'); hideBanner(); hideRing(); }
   else I.mark = null;
-  if (state.hardNext) { showBanner('FRENESI!', `o Ímpeto encheu: +1 golpe em cada herói e +15% de crítico nesta rodada · pergunta rank S/SS a caminho`); flashHit(); A.play('boss', 'enrage'); A.sayRandom('boss', 'enrage', 1); I.frenzy = true; state.enraged = true; await wait(2400); hideBanner(); state.rage = 0; state.hardNext = false; renderHud(); return; }
+  if (state.hardNext) { showBanner('FRENESI!', `o Ímpeto encheu: +1 golpe em cada herói e +15% de crítico nesta rodada · pergunta rank ${HL} a caminho`); flashHit(); A.play('boss', 'enrage'); A.sayRandom('boss', 'enrage', 1); I.frenzy = true; state.enraged = true; await wait(2400); hideBanner(); state.rage = 0; state.hardNext = false; renderHud(); return; }
   if (ev === 'tempest') { showBanner('TEMPESTADE DE QUATRO LÂMINAS!', 'quatro golpes em cada herói · ESQUIVA anula e atordoa, Defesa do Tanque corta 75%, Provocação divide'); flashHit(); A.play('boss', 'enrage'); await wait(2400); hideBanner(); return; }
   if (ev === 'tempestWarn') { showBanner('TEMPESTADE DE QUATRO LÂMINAS', 'o Rei Gelado prepara o golpe final: ele vem na PRÓXIMA rodada. Preparem-se!'); flashHit(); A.play('boss', 'prep'); await wait(2400); hideBanner(); return; }
   if (ev === 'step') { showBanner('PASSO GÉLIDO', 'o Rei Gelado desliza: Guerreiro e Tanque erram muito. Ataques mágicos e cajados sempre acertam.'); A.play('boss', 'laugh'); await wait(2200); hideBanner(); return; }
@@ -1520,6 +1524,7 @@ async function onlBegin(){
     s = ONL.s; if (!s || !s.round || s.round.n !== ONL.cur + 1) { s = await ONL.waitNext(() => state.over); if (!s) return null; }
   }
   const rd = s.round; ONL.cur = rd.n - 1;
+  setDif(rd.dif);
   await onlGifts(s.gifts, rd.n);
   return rd;
 }
