@@ -465,6 +465,8 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await act(adm, 'difficulty', { mode: 'medium' });
   x = await nextRank(5); assert.equal(x.dif, 'medium'); assert.equal(x.rank, 4, 'medio limita em S');
   assert.equal((await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'mage' })).room.difficulty, 'medium');
+  { let cnt = [0, 0, 0, 0, 0, 0]; for (let i = 0; i < 80; i++) { cnt[(await nextRank(null)).rank]++; }   // migracao 35: sorteio refeito, nao cortado
+    assert.equal(cnt[5], 0, 'medio nunca passa de S'); assert.ok(cnt[4] < 80 * .25, 'S nao acumula o que era SS: ' + cnt.join(',')); assert.ok(cnt[1] > 0 && cnt[2] > 0 && cnt[3] > 0, 'C, B e A aparecem: ' + cnt.join(',')); }
   await act(adm, 'difficulty', { mode: 'hard' }); x = await nextRank(5); assert.equal(x.dif, 'hard'); assert.equal(x.rank, 5);
   await act(adm, 'difficulty', { mode: 'easy' }); await act(adm, 'force', { rank: 5 }); x = await nextRank(1); assert.equal(x.rank, 5, 'rank forcado pelo adm nao e limitado');
   await act(adm, 'end');
