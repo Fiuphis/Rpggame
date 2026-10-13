@@ -63,9 +63,12 @@ const tell = m => { try { if (parent !== window) parent.postMessage(m, location.
 function hold(c) { let img = ''; try { img = c.toDataURL('image/png'); } catch (e) {} tell({ bd1gate: 'hold', img, w: c.width, h: c.height }); }
 let pre = null;
 try { if (sessionStorage.getItem('bd1_gate') && !reduce()) { pre = layer(); pre.draw(1, 0, 0, 0); const mine = pre; requestAnimationFrame(() => requestAnimationFrame(() => tell({ bd1gate: 'ready' }))); setTimeout(() => { if (pre === mine) { mine.remove(); pre = null; de.classList.remove('gt'); } }, 9000); } } catch (e) {}
+// durante qualquer transicao (portoes ou nuvens) o botao de chat e o de tela cheia somem; antes ficavam por cima das portas e das nuvens
+{ const st = document.createElement('style'); st.textContent = 'html.gtx #cht-btn,html.gtx #fs-float,html.gt #cht-btn,html.gt #fs-float,html.fogin #cht-btn,html.fogin #fs-float,html.rb #cht-btn,html.rb #fs-float{opacity:0!important;pointer-events:none!important;transition:opacity .12s}'; (document.head || document.documentElement).appendChild(st); }
 window.Gate = {
   close(ms = 950) {
     if (reduce()) return Promise.resolve();
+    de.classList.add('gtx');
     const L = layer(); L.draw(0, 0, 1, 0);
     return run(ms, t => L.draw(ease(t), 0, 1 - t, 0)).then(() => run(260, t => L.draw(1, Math.round(Math.sin(t * 24) * (1 - t) * 2), 0, 0))).then(() => { L.draw(1, 0, 0, 0); hold(L.c); });
   },
@@ -74,7 +77,7 @@ window.Gate = {
     if (!on) { de.classList.remove('gt'); return Promise.resolve(); }
     if (reduce()) { de.classList.remove('gt'); return Promise.resolve(); }
     const L = pre || layer(); pre = null; L.draw(1, 0, 0, 0); de.classList.remove('gt');
-    return new Promise(r => setTimeout(r, 380)).then(() => run(ms, t => L.draw(1 - ease(t), t < .15 ? Math.round(Math.sin(t * 90) * 2) : 0, Math.sin(Math.min(1, t * 1.6) * Math.PI) * .9 + .1, t < .9 ? 1 : (1 - t) * 10))).then(() => L.remove());
+    de.classList.add('gtx'); return new Promise(r => setTimeout(r, 380)).then(() => run(ms, t => L.draw(1 - ease(t), t < .15 ? Math.round(Math.sin(t * 90) * 2) : 0, Math.sin(Math.min(1, t * 1.6) * Math.PI) * .9 + .1, t < .9 ? 1 : (1 - t) * 10))).then(() => { L.remove(); de.classList.remove('gtx'); });
   }
 };
 })();

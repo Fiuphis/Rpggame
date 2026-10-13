@@ -65,7 +65,7 @@ const TM = { fast: ['RÁPIDO', 'Tempo rápido: 70% do normal (17 s no rank C, 32
 function setTm(v) { tmode = v; document.querySelectorAll('#seg-tm .chip').forEach(b => b.classList.toggle('on', b.dataset.tm === v)); $('#tm-h').textContent = TM[v][1]; }
 $('#seg-tm').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) setTm(b.dataset.tm); });
 let dfy = 'hard';
-const DF = { easy: ['FÁCIL', 'Fácil: ranks C, B e A. Acertar o rank A recarrega os especiais.'], medium: ['MÉDIO', 'Médio: ranks C, B, A e S. Acertar o rank S recarrega os especiais.'], hard: ['DIFÍCIL', 'Difícil: ranks C, B, A, S e SS. Acertar S ou SS recarrega os especiais.'] };
+const DF = { easy: ['FÁCIL', 'Fácil: ranks C, B e A. O A recarrega os especiais.'], medium: ['MÉDIO', 'Médio: ranks C a S. O S recarrega os especiais.'], hard: ['DIFÍCIL', 'Difícil: ranks C a SS. S e SS recarregam.'] };
 function setDf(v) { dfy = v; document.querySelectorAll('#seg-df .chip').forEach(b => b.classList.toggle('on', b.dataset.df === v)); $('#df-h').textContent = DF[v][1]; }
 $('#seg-df').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) setDf(b.dataset.df); });
 let testOn = false;

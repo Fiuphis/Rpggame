@@ -1726,7 +1726,8 @@ function onlFinish(win){
     if (seen === null) { seen = a.length ? a[a.length - 1].id : 0; if (a.length) ONL.lastNotice = a[a.length - 1]; return; }
     a.filter(n => n.id > seen).forEach(n => { seen = n.id; ONL.lastNotice = n; q.push(n); }); pump(); }; }
 { let k = false; window.__onlKicked = () => { if (k) return; k = true; state.over = true; ONL.fin = true; showBanner('VOCÊ FOI REMOVIDO DA SALA', 'pela administração'); setTimeout(() => onlLeave('salas.html'), 3500); }; }
-function onlLeave(page){ if (MATCH.spec && MATCH.spec.mini) return; if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (page === 'relatorio.html') { sessionStorage.setItem('bd1_gate', '1'); gate = true; } if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
+// v335: sair do jogo para relatorio, mapa ou salas fecha os portoes e a tela nova os abre (antes: corte seco na saida e portoes/nuvens so na chegada)
+function onlLeave(page){ if (MATCH.spec && MATCH.spec.mini) return; if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (/^(relatorio|map|salas)\.html$/.test(page)) { sessionStorage.setItem('bd1_gate', '1'); gate = true; } } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
@@ -2117,7 +2118,7 @@ function beginBattle(delay){
   clearTimeout(turnTimer); HERO_ORDER.forEach(k => A.enterPrep(k));   // heróis entram em cena quando a batalha começa
   const go = () => { HERO_ORDER.forEach((k, i) => A.enter(k, i * 200)); turnTimer = setTimeout(playRound, delay + 900); };
   const intro = document.getElementById('intro');
-  if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; return go(); }
+  if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; requestAnimationFrame(() => { try { window.bd1Ready && bd1Ready(); } catch (e) {} }); return go(); }
   const IP = ST.ice && window.IntroIce ? window.IntroIce : (window.IntroMalg || Intro), NEW = IP !== Intro;   // abertura cinematográfica do Malgorath (v253); js/game/intro.js fica como reserva
   const show = (opts, after) => {
     const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça
@@ -2321,7 +2322,7 @@ $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote
 state.shop = newShop(); renderShop();
 buildHud();renderHud();renderGold();renderInventoryHits();updateVoteUI();
 $('#restart').addEventListener('click',() => { if (ONL.on) { onlLeave('map.html'); return; } restartRun(); });
-$('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;if(ONL.on){onlLeave('map.html');return}location.href='map.html'+location.search});
+$('#to-map').addEventListener('click',()=>{LOBBY.leave&&0;if(ONL.on){onlLeave('map.html');return}try{sessionStorage.setItem('bd1_gate','1')}catch(e){}const go=()=>{location.href='map.html'+location.search};if(window.Gate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)Gate.close().then(go);else go()});
 if (ONL.on) setInterval(() => { if (!state.over && ONL.matchId && Date.now() - ONL.lastOk > 8000) toast('Sem conexão com a sala. Tentando reconectar...'); }, 4000);
 if (ONL.on) {   // online: entra na partida do servidor (ou volta ao ponto do grupo se caiu)
   ONL.init().then(() => {

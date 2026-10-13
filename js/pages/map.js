@@ -32,6 +32,11 @@ const boot = ROOM ? NET.ready().then(() => MATCH.state(ROOM.id)).then(s => {
 boot.then(() => { if (!ROOM || isOwner) return; const w = MATCH.watch(ROOM.id, st => { if (leaving || !(st.match && st.match.status === 'playing' && st.me)) return; leaving = true; w.stop();
   try { sessionStorage.setItem('bd1_boss', String(st.match.boss || 0)); } catch (e) {}
   const go = () => { location.href = 'game.html' + location.search; }; document.body.classList.add('mleaving'); Fog.close($('#map'), 1000).then(go); }); });
+// aquece o cache com o que a batalha precisa (scripts, estilos e imagens das aberturas) enquanto o jogador olha o mapa: a troca para o jogo fica bem mais curta
+setTimeout(async () => { try { const t = await (await fetch('game.html')).text(), u = new Set(); t.replace(/(?:src|href)="((?:js|css)\/[^"?#]+\.(?:js|css))"/g, (m, p) => u.add(p));
+  for (const f of ['js/game/intro_malg.js', 'js/game/intro_ice.js']) { try { (await (await fetch(f)).text()).replace(/assets\/[A-Za-z0-9_\/.-]+\.(?:png|webp|jpg)/g, p => u.add(p)); } catch (e) {} }
+  u.add('assets/backgrounds/game_nohud.png');
+  for (const p of u) { try { await fetch(p); } catch (e) {} } } catch (e) {} }, 2500);
 boot.then(() => fetch('assets/map/meta.json')).then(r => r.json()).then(m => { meta = m; build(); });
 function build(){
   const W = meta.w, H = meta.h, g = $('#grays'), n = $('#nodes');
@@ -117,6 +122,6 @@ addEventListener('resize', placePanel);
 function enter(){
   try { sessionStorage.setItem('bd1_boss', String(selected)); } catch {}
   bots.forEach(clearTimeout); const v = $('#veil'); v.classList.remove('out'); $('#map').style.transition = 'transform 1.2s ease-in'; $('#map').style.transform = 'scale(1.5)';
-  enterT = setTimeout(() => { location.href = 'game.html' + location.search; }, 1300);
+  enterT = setTimeout(() => { try { if (parent !== window) parent.postMessage({ bd1gate: 'hold', kind: 'dark' }, location.origin); } catch (e) {} location.href = 'game.html' + location.search; }, 1300);   // a moldura segura o escuro com aviso de carregando ate a abertura pintar (antes: ~3 s de tela preta muda)
 }
 })();

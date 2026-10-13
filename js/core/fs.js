@@ -4,7 +4,11 @@
 'use strict';
 if (window !== window.top && /[?&]spec=/.test(location.search)) return;   // quadros do mosaico de adm: a tela cheia e da pagina-mae
 // Avisa a pagina-mae (shell.html) que esta pagina ja pintou: ela solta a copia dos portoes/nuvens que segurava durante a troca de pagina.
-if (window !== window.top) { const say = () => requestAnimationFrame(() => requestAnimationFrame(() => { try { parent.postMessage({ bd1gate: 'ready' }, location.origin); } catch (e) {} })); if (document.readyState === 'loading') addEventListener('DOMContentLoaded', say); else say(); }
+// Paginas pesadas (game.html) marcam window.__bd1Hold e chamam bd1Ready() quando a abertura ja pintou; sem isso a nevoa sumia ao carregar e a tela ficava preta por alguns segundos. Limite de seguranca: 6 s.
+if (window !== window.top) { let sent = false; const say = () => { if (sent) return; sent = true; requestAnimationFrame(() => requestAnimationFrame(() => { try { parent.postMessage({ bd1gate: 'ready' }, location.origin); } catch (e) {} })); };
+  window.bd1Ready = say;
+  const start = () => { if (window.__bd1Hold) setTimeout(say, 6000); else say(); };
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', start); else start(); }
 // O navegador sai da tela cheia quando a página navega. Por isso o jogo roda dentro de shell.html, que nunca navega: as telas (cover, index, map, game) trocam dentro do quadro e a tela cheia é do shell.
 if (window === window.top && !/[?&]noshell/.test(location.search)) {
   const f = location.pathname.split('/').pop() || 'index.html';
@@ -65,7 +69,8 @@ function floatBtn(){
 #fs-float.on{border-image-source:url(assets/ui/ui_chip_blue.png)}
 #fs-float i{position:absolute;inset:0;display:block;background:url(assets/ui/fs_icon.png) center/62% 62% no-repeat;image-rendering:pixelated;pointer-events:none}
 #fs-float.on i{background-image:url(assets/ui/fs_icon_in.png)}
-#fs-float:active{filter:brightness(1.25)}`;
+#fs-float:active{filter:brightness(1.25)}
+html.gtx #fs-float,html.rb #fs-float,html.gt #fs-float,html.fogin #fs-float{opacity:0!important;pointer-events:none!important}`;
   document.head.appendChild(st);
   const b = document.createElement('button'); b.id = 'fs-float'; b.type = 'button'; b.setAttribute('aria-label', 'Tela cheia'); b.innerHTML = '<i></i>';
   document.body.appendChild(b);
