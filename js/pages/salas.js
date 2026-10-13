@@ -2,7 +2,7 @@
 (() => {
 'use strict';
 const $ = s => document.querySelector(s), esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const G = [['mage', 'MAGO', '#4da3ff'], ['guerreiro', 'GUERREIRO', '#ff5a4d'], ['tank', 'TANQUE', '#cfd8ff'], ['cleriga', 'CLÉRIGA', '#ffd24d']], MAXG = 7;
+const G = [['mage', 'MAGO', '#4da3ff'], ['guerreiro', 'GUERREIRO', '#ff5a4d'], ['tank', 'TANQUE', '#cfd8ff'], ['cleriga', 'CLÉRIGA', '#ffd24d']], MAXG = 1, MAXP = 4;   // um jogador por classe, no maximo 4 por sala
 const reduce = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 let leaving = false, rooms = [], loading = false, timer = 0, toastT = 0, made = null;
 
@@ -11,7 +11,7 @@ function netState(s, t) { const e = $('#net'); e.dataset.s = s; e.querySelector(
 
 // ---------- lista ----------
 function card(r) {
-  const c = r.counts || {}, tot = r.players || 0, full = G.every(([k]) => (c[k] || 0) >= MAXG);
+  const c = r.counts || {}, tot = r.players || 0, full = tot >= MAXP;
   const nm = r.name ? esc(r.name) : 'SALA ' + esc(String(r.id).replace(/-/g, '').slice(0, 4).toUpperCase());
   const rows = G.map(([k, , col]) => { const n = Math.min(MAXG, c[k] || 0);
     return `<div class="gr${n >= MAXG ? ' full' : ''}" style="--c:${col}"><img class="gi" src="assets/salas/ic_${k}.png" alt=""><span class="pips">${Array.from({ length: MAXG }, (_, i) => `<i${i < n ? ' class="on"' : ''}></i>`).join('')}</span><span class="n">${n}/${MAXG}</span></div>`; }).join('');

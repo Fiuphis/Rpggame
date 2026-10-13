@@ -11,7 +11,7 @@ const [u1, u2, u3, u4] = U(4);
 
 const room = await call(u1, 'create_room', { p_public: true, p_name: 'T' });
 await call(u1, 'pick_group', { p_room: room.id, p_grp: 'mage' });
-for (const [u, g] of [[u2, 'guerreiro'], [u3, 'tank'], [u4, 'tank']]) { await call(u, 'join_room', { p_room: room.id, p_code: room.code }); await call(u, 'pick_group', { p_room: room.id, p_grp: g }); }
+for (const [u, g] of [[u2, 'guerreiro'], [u3, 'tank'], [u4, 'cleriga']]) { await call(u, 'join_room', { p_room: room.id, p_code: room.code }); await call(u, 'pick_group', { p_room: room.id, p_grp: g }); }
 
 // etapas da sala
 let lb = await call(u2, 'room_lobby', { p_room: room.id }); assert.equal(lb.stage, 'gather'); assert.equal(lb.total, 4); assert.equal(lb.owner, false);
@@ -56,7 +56,7 @@ assert.equal((await call(u1, 'start_match', { p_room: room.id, p_boss: 0 })).id,
   ok('abertura: libera quando todos terminam de assistir'); }
 st = await call(u1, 'match_state', { p_room: room.id });
 let rd = st.round; assert.equal(rd.n, 1); assert.equal(rd.status, 'open'); assert.equal(rd.correct, null);
-assert.equal(rd.groups.cleriga.sim, true); assert.equal(rd.groups.mage.sim, false);
+assert.equal(rd.groups.cleriga.sim, false); assert.equal(rd.groups.mage.sim, false);
 assert.equal(rd.groups.cleriga.correct, undefined, 'correct de outro grupo oculto antes da revelacao');
 assert.ok(rd.question.options.length === 4); assert.equal(rd.question.correct, undefined); ok('rodada 1 aberta, gabarito oculto');
 await fails(call(u1, 'pick_group', { p_room: room.id, p_grp: 'cleriga' }), 'partida_em_andamento'); ok('classe travada na partida');
@@ -78,10 +78,10 @@ await call(u1, 'cast_action', { p_round: rd.id, p_skill: 'elem_atk', p_element: 
 await call(u2, 'cast_action', { p_round: rd.id, p_skill: 'none' });
 await call(u3, 'cast_action', { p_round: rd.id, p_skill: 'guard', p_target: 'mage' }); await call(u3, 'cast_action', { p_round: rd.id, p_skill: 'guard', p_target: 'mage' });
 st = await call(u4, 'match_state', { p_room: room.id }); assert.equal(st.round.status, 'acting');
-assert.equal(st.round.acts.length, 1); assert.equal(st.round.acts[0].skill, 'guard'); ok('tally de acoes so do proprio grupo');
-await call(u4, 'cast_action', { p_round: rd.id, p_skill: 'guard', p_target: 'mage' }); await call(u4, 'cast_action', { p_round: rd.id, p_skill: 'guard', p_target: 'mage' });
+assert.equal(st.round.acts.length, 0); ok('acoes de outras classes nao aparecem antes de jogar');
+await call(u4, 'cast_action', { p_round: rd.id, p_skill: 'atk' }); await call(u4, 'cast_action', { p_round: rd.id, p_skill: 'atk' });
 st = await call(u1, 'match_state', { p_room: room.id }); assert.equal(st.round.status, 'played');
-assert.equal(st.round.groups.mage.act.ult, true); assert.equal(st.round.groups.tank.act.target, 'mage'); assert.equal(st.round.groups.guerreiro.act, null); assert.equal(st.round.groups.cleriga.act_sim, true); ok('rodada jogada, acoes de todos visiveis');
+assert.equal(st.round.groups.mage.act.ult, true); assert.equal(st.round.groups.tank.act.target, 'mage'); assert.equal(st.round.groups.guerreiro.act, null); assert.equal(st.round.groups.cleriga.act_sim, false); ok('rodada jogada, acoes de todos visiveis');
 
 // itens: no 'played' todos veem os itens de todos
 await fails(call(u1, 'round_use_item', { p_round: rd.id, p_item: 'hp', p_target: 'mage', p_extra: 0 }), 'fase_encerrada'); ok('item fora de fase');
@@ -140,13 +140,31 @@ const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert
 }
 console.log('TODOS OS TESTES SQL PASSARAM');
 
-// teto de 28 por sala
-{ const [own, ...ps] = U(31); const r = await call(own, 'create_room', { p_public: true, p_name: 'CAP' });
-  for (let i = 0; i < 27; i++) await call(ps[i], 'join_room', { p_room: r.id, p_code: r.code });
-  await fails(call(ps[27], 'join_room', { p_room: r.id, p_code: r.code }), 'sala_cheia');
-  await call(ps[0], 'join_room', { p_room: r.id, p_code: r.code });   // quem ja esta volta
-  await call(ps[0], 'leave_room', { p_room: r.id }).catch(() => {});
-  ok('sala limitada a 28 jogadores; membro existente volta'); }
+// teto de 4 por sala e classe exclusiva
+{ const [own, a, b, c, d] = U(5); const r = await call(own, 'create_room', { p_public: true, p_name: 'CAP' });
+  for (const u of [a, b, c]) await call(u, 'join_room', { p_room: r.id, p_code: r.code });
+  await fails(call(d, 'join_room', { p_room: r.id, p_code: r.code }), 'sala_cheia');
+  await call(a, 'join_room', { p_room: r.id, p_code: r.code });   // quem ja esta volta
+  await call(own, 'pick_group', { p_room: r.id, p_grp: 'mage' });
+  await fails(call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }), 'grupo_cheio');
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(own, 'pick_group', { p_room: r.id, p_grp: null }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'mage' });   // classe liberada pode ser tomada
+  await call(c, 'leave_room', { p_room: r.id });   // na espera sair libera a vaga
+  await call(d, 'join_room', { p_room: r.id, p_code: r.code });
+  ok('sala limitada a 4 jogadores; classe exclusiva; membro existente volta'); }
+
+// teto global de 10 salas e limpeza de salas vazias
+{ await db.exec(`update public.rooms set status = 'ended'`);
+  const cs = U(4), made = [];
+  for (let i = 0; i < 10; i++) made.push(await call(cs[Math.floor(i / 3)], 'create_room', { p_public: true, p_name: 'G' + i }));
+  await fails(call(cs[3], 'create_room', { p_public: true, p_name: 'G10' }), 'limite_global_de_salas');
+  await db.exec(`update public.rooms set last_active_at = now() - interval '11 minutes', created_at = now() - interval '11 minutes' where id = '${made[0].id}'`);
+  await db.exec(`update public.player_presence set last_seen = now() - interval '11 minutes' where room_id = '${made[0].id}'`);
+  const again = await call(cs[3], 'create_room', { p_public: true, p_name: 'G10' });   // a sala vazia ha 11 min foi encerrada e liberou a vaga
+  assert.ok(again.id);
+  const ended = (await db.query(`select status from public.rooms where id = '${made[0].id}'`)).rows[0].status; assert.equal(ended, 'ended');
+  await db.exec(`update public.rooms set status = 'ended'`);
+  ok('maximo de 10 salas ativas; sala vazia ha mais de 10 min e encerrada'); }
 
 // voltar para a sala no mesmo ponto (migracao 21)
 { const [a, b, c, x] = U(4); const r = await call(a, 'create_room', { p_public: true, p_name: 'VOLTA' });

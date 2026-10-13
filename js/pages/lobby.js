@@ -1,5 +1,5 @@
 /* Lobby de grupos — Banco de Dados I RPG
-   Cada classe = 1 grupo de até 7 jogadores. Moedas, inventário e votos são do grupo.
+   Cada classe = 1 jogador (até 4 por sala). Moedas e inventário são do jogador.
    LOBBY é um adaptador: esta versão guarda tudo em localStorage (só um aparelho enxerga).
    Para contar jogadores de verdade entre celulares, troque as funções por Supabase/Firebase (próxima etapa).
 */
@@ -9,7 +9,7 @@ const LOBBY_GROUPS = {
   tank:{name:'TANQUE', color:'#cfd8ff'},
   cleriga:{name:'CLÉRIGA', color:'#ffd24d'}
 };
-const LOBBY_MAX = 7;
+const LOBBY_MAX = 1;
 
 const LOBBY = (() => {
   const KEY = 'bd1_lobby', ME = 'bd1_player_id', SEED = 'bd1_lobby_seeded';
@@ -25,7 +25,7 @@ const LOBBY = (() => {
   function write(d){ localStorage.setItem(KEY, JSON.stringify(d)); }
   // ?teste=1 → finge que outros jogadores já entraram (o guerreiro aparece lotado).
   if (TEST && !localStorage.getItem(SEED)) {
-    const d = read(); const fill = {mage:4, guerreiro:7, tank:5, cleriga:2};
+    const d = read(); const fill = {guerreiro:1};
     for (const g in fill) for (let i = d[g].filter(x => x !== myId).length; i < fill[g]; i++) d[g].push(`bot-${g}-${i}`);
     write(d); localStorage.setItem(SEED, '1');
   }

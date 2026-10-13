@@ -12,7 +12,7 @@ const MOCK = ss.get('bd1_mock') === '1';
 
 const MSG = {
   nao_autenticado: 'Entre novamente no jogo.', sala_nao_encontrada: 'Sala não encontrada. Confira o código.', muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos.',
-  limite_de_salas: 'Você já tem 3 salas abertas.', so_o_criador: 'Só o criador da sala pode fazer isso.', acao_invalida: 'Ação inválida.', grupo_cheio: 'Essa classe está cheia.', sala_cheia: 'Sala cheia (limite de 28 jogadores).', sala_fechada: 'Essa sala já começou e não aceita mais jogadores.', fora_da_sala: 'Você não está nessa sala.', grupo_invalido: 'Classe inválida.',
+  limite_de_salas: 'Você já tem 3 salas abertas.', so_o_criador: 'Só o criador da sala pode fazer isso.', acao_invalida: 'Ação inválida.', grupo_cheio: 'Essa classe já tem dono.', sala_cheia: 'Sala cheia (limite de 4 jogadores).', limite_global_de_salas: 'O servidor já tem 10 salas abertas. Tente de novo em instantes ou entre numa sala existente.', sala_fechada: 'Essa sala já começou e não aceita mais jogadores.', fora_da_sala: 'Você não está nessa sala.', grupo_invalido: 'Classe inválida.',
   offline: 'Sem conexão com o servidor.', usuario_existe: 'Esse nome de usuário já existe.', email_exists: 'Esse nome de usuário já existe.', user_already_exists: 'Esse nome de usuário já existe.', usuario_invalido: 'Use de 3 a 16 letras minúsculas, números ou _.', 'Invalid login credentials': 'Usuário ou senha incorretos.', credenciais: 'Usuário ou senha incorretos.', codigo_invalido: 'Código de recuperação incorreto.', senha_curta: 'A senha precisa de pelo menos 6 caracteres.', weak_password: 'Senha fraca. Use pelo menos 6 caracteres.', limite_de_saves: 'Limite de 4 saves nesta classe.', precisa_de_conta: 'Entre na sua conta para usar saves.', save_desatualizado: 'Este save foi alterado em outro aparelho.', save_nao_encontrado: 'Save não encontrado.', nome_invalido: 'Dê um nome de 1 a 20 letras.', over_request_rate_limit: 'Muitas tentativas. Aguarde um pouco.', auth: 'Não foi possível entrar no servidor. Tente de novo.'
 };
 const msg = e => { const m = String((e && (e.message || e.code)) || e || ''); const k = Object.keys(MSG).find(x => m.includes(x)); return k ? MSG[k] : 'Algo deu errado. Tente de novo.'; };
@@ -36,8 +36,8 @@ const rpc = async (fn, args) => { await real(); const r = await sb.rpc(fn, args 
 // ---------- simulado (testes) ----------
 const M = (() => {
   const rooms = [
-    { id: 'm1', code: 'AB12CD', name: 'TURMA A', is_public: true, status: 'lobby', boss_idx: 0, counts: { mage: 3, guerreiro: 5, tank: 2, cleriga: 1 } },
-    { id: 'm2', code: 'ZK9Q4T', name: 'NOITE DE ESTUDO', is_public: true, status: 'battle', boss_idx: 1, counts: { mage: 7, guerreiro: 7, tank: 6, cleriga: 7 } },
+    { id: 'm1', code: 'AB12CD', name: 'TURMA A', is_public: true, status: 'lobby', boss_idx: 0, counts: { mage: 1, guerreiro: 1, tank: 0, cleriga: 0 } },
+    { id: 'm2', code: 'ZK9Q4T', name: 'NOITE DE ESTUDO', is_public: true, status: 'battle', boss_idx: 1, counts: { mage: 1, guerreiro: 1, tank: 1, cleriga: 1 } },
     { id: 'm3', code: 'HX3M7P', name: null, is_public: true, status: 'lobby', boss_idx: 0, counts: { mage: 0, guerreiro: 1, tank: 0, cleriga: 0 } },
     { id: 'm4', code: 'PR1V4D', name: 'SO OS AMIGOS', is_public: false, status: 'lobby', boss_idx: 0, counts: { mage: 1, guerreiro: 0, tank: 1, cleriga: 0 } },
   ];
@@ -47,7 +47,7 @@ const M = (() => {
     async create(pub, name) { await wait(250); const r = { id: 'm' + (rooms.length + 1), code: Array.from({ length: 6 }, () => 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.random() * 32 | 0]).join(''), name: name || null, is_public: !!pub, status: 'lobby', boss_idx: 0, counts: { mage: 0, guerreiro: 0, tank: 0, cleriga: 0 } }; rooms.push(r); return r; },
     async join(id, code) { await wait(250); const c = norm(code); const r = c ? rooms.find(x => x.code === c) : rooms.find(x => x.id === id && x.is_public); if (!r) throw new Error('sala_nao_encontrada'); return r; },
     async counts(id) { const r = rooms.find(x => x.id === id); return GROUPS.map(g => ({ grp: g, n: r ? r.counts[g] : 0 })); },
-    async pick(id, g) { const r = rooms.find(x => x.id === id); if (g && r && r.counts[g] >= 7) throw new Error('grupo_cheio'); }
+    async pick(id, g) { const r = rooms.find(x => x.id === id); if (g && r && r.counts[g] >= 1) throw new Error('grupo_cheio'); }
   };
 // Cópia automática do progresso para o save da conta (a cada 20 s se mudou, ao esconder a aba e ao sair).
 if (!/(salas|conta|saves)\.html$/.test(location.pathname)) {

@@ -318,7 +318,7 @@ function goldGain(n){ const g = $('#game'), p = document.createElement('div'); p
   setTimeout(() => { p.remove(); $('#gold-hud').classList.remove('bump'); }, 1400); }
 
 // Quantas pessoas estão no grupo agora (mínimo 1) e quantos votos formam maioria.
-function groupMembers(){ return Math.max(1, LOBBY.counts()[activeGroup] || 0); }
+function groupMembers(){ return 1; }   // um jogador por classe: sem votacao de grupo
 function majorityOf(n){ return Math.floor(n / 2) + 1; }
 
 function updateVoteUI(){
@@ -509,7 +509,7 @@ function requestBuy(slot){
   if (state.shop.closed > 0) { toast('A loja está fechada.'); mBubble(msay('shut')); return; }
   const type = state.shop.slots[slot]; if (!type) { toast('Prateleira vazia.'); return; }
   const item = ITEMS[type];
-  if (state.pendingAction || state.voteLocked) { toast('Já existe uma votação aberta.'); return; }
+  if (state.pendingAction || state.voteLocked) { toast('Já existe uma compra aberta.'); return; }
   if (state.gold < priceOf(type)) { toast('Moedas insuficientes.'); return; }
   if (!canAdd(type)) { toast('Mochila cheia.'); return; }
   if (item.info) toast(item.name + ': ' + item.info + (hasAff(type) ? ' AFINIDADE: +50% de efeito para o seu herói.' : ''));
@@ -798,7 +798,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       list.appendChild(b); return b;
     });
     const total = () => sv.reduce((a, c) => a + c, 0);
-    const paint = (final) => btns.forEach((b, i) => { if (options[i].disabled) return; b.querySelector('.cnt').textContent = sv[i]; b.classList.toggle('selected', my === i && !final); });
+    const paint = (final) => btns.forEach((b, i) => { if (options[i].disabled) return; b.querySelector('.cnt').textContent = ''; b.classList.toggle('selected', my === i && !final); });   // sem contagem de votos: um jogador por classe
     const top = () => { const m = Math.max(...sv); return {m, c: sv.map((v, i) => v === m ? i : -1).filter(i => i >= 0)}; };
     let cf = false;   // online: voto da pergunta ja confirmado (segundo toque na mesma alternativa)
     function pick(i){
@@ -810,12 +810,9 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         if (my === i) { if (net.vote) { cf = true; net.vote(i); btns[i].classList.add('chosen'); btns.forEach((b, j) => { if (j !== i) b.disabled = true; }); paint(); } else finish(i, false); return; }
         my = i; if (net.vote) net.vote(i); paint(); return;
       }
-      if (locked || my === i) return; if (my !== null) sv[my]--; sv[i]++; my = i; paint(); check();
-    }
-    function check(){
-      if (locked) return;
-      const idx = sv.findIndex(v => v >= need); if (idx >= 0) return finish(idx, false);
-      if (total() >= voters) { const {c} = top(); finish(c[Math.floor(Math.random() * c.length)], c.length > 1); }
+      if (locked) return; if (chest) { my = i; finish(i, false); return; }   // arca: um toque decide
+      if (my === i) { finish(i, false); return; }   // 1o toque marca, 2o toque na mesma confirma
+      if (my !== null) sv[my]--; sv[i]++; my = i; paint();
     }
     async function finish(idx, tie){
       if (locked) return; locked = true; clearInterval(timer); bots.forEach(clearTimeout);
@@ -850,10 +847,6 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       if (L) { const f = document.createElement('div'); f.className = 'tm-bonus'; f.style.cssText = pc(tb, .3); f.innerHTML = `<img src="${secs >= 10 ? 'assets/items/item_watch_l.png' : 'assets/items/item_watch_s.png'}" alt=""><b>+${secs}s</b>`; L.appendChild(f); setTimeout(() => f.remove(), 1300); }
       return true;
     };
-    // modo teste: os outros membros do grupo votam sozinhos
-    if (TEST_MODE && !net) for (let i = 0; i < voters - 1; i++) bots.push(setTimeout(() => {
-      if (locked) return; sv[enabled[Math.floor(Math.random() * enabled.length)]]++; paint(); check();
-    }, 900 + i * 800 + Math.random() * 400));
   });
 }
 
@@ -1002,7 +995,7 @@ async function runChestRound(SR){
   img.className = 'chest'; img.src = CHEST_FRAMES[0]; img.alt = ''; g.appendChild(img);
   setBag(false); mBubble('');   // a arca nao abre o mercador nem a mochila
   timeStop(img);
-  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Votem em ABRIR ou NÃO ABRIR (sem pergunta nesta rodada)');
+  showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Escolha ABRIR ou NÃO ABRIR (sem pergunta nesta rodada)');
   let open, mine, opens = null, rolls = null;
   if (ONL.on) {   // cada grupo decide pelo seu voto; o sorteio (item ou armadilha) e o mesmo em todos os aparelhos
     const res = await runVote({chest:true, text:'Abrir a arca do tesouro?', seconds:25, options:[{label:'ABRIR', kind:'yes'}, {label:'NÃO ABRIR', kind:'no'}], net:onlNet(SR)});
@@ -1033,7 +1026,7 @@ async function runChestRound(SR){
   await chestPlay(img, [1, 2, 3]); chestDust(img, 10); await wait(250);
   const itemRoll = ONL.on ? rolls[activeGroup] : Math.random() < CHEST_ITEM_P;
   const trapNow = ONL.on ? !itemRoll : (mine && !itemRoll);   // online: a armadilha vale para o heroi do grupo que abriu, mesmo para quem votou em ignorar
-  if (!mine && !trapNow) { showBanner('A ARCA ABRIU', 'você votou em ignorar: nada para você'); await wait(1900); hideBanner(); }
+  if (!mine && !trapNow) { showBanner('A ARCA ABRIU', 'você escolheu não abrir: nada para você'); await wait(1900); hideBanner(); }
   else if (!trapNow) {   // item aleatório da loja (raro com pouca chance)
     const t = Math.random() < CHEST_LEGEND_P ? LEGEND_POOL[Math.floor(Math.random() * LEGEND_POOL.length)] : Math.random() < CHEST_RARE_P ? RARE_POOL[Math.floor(Math.random() * RARE_POOL.length)] : SHOP_POOL[Math.floor(Math.random() * SHOP_POOL.length)];
     if (canAdd(t)) { state.inventory.push(t); persist(); renderInventoryHits(); await flyItemToBag(t, img); }   // sem aviso no papiro: o item voa para a mochila (segure o item para ler os detalhes)
@@ -1074,7 +1067,7 @@ async function pickAlly(k, sk, sh){
     ? {hero:h, desc:`Vida ${state.heroes[h].hp}/${HERO_MAX_HP}`, chips:sk.id === 'pass' ? '<span class="tag mult">1,5x</span>' : ''} : {hero:h, desc:'Caído', block:'CAÍDO'});
   const first = list.find(x => !x.block).hero;
   const t = await chooseTarget(sk.name.toUpperCase(), sk.id === 'pass' ? 'Quem ganha o ataque extra?' : 'Quem será protegido?', list, first,
-    {text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem voto no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem voto no tempo: o primeiro aliado de pé.'}, sh && sh.endsAt);
+    {text:sk.id === 'pass' ? 'O aliado escolhido ganha um ataque extra (1,5x) se acertar. Sem escolha no tempo: o primeiro aliado de pé.' : 'O aliado escolhido recebe a proteção nesta rodada. Sem escolha no tempo: o primeiro aliado de pé.'}, sh && sh.endsAt);
   if (t === 'BACK') return 'BACK';
   return list.find(x => x.hero === t && !x.block) ? t : first;
 }
@@ -1104,7 +1097,7 @@ async function activateUlt(k, sh, forced){
     const list = healTargets(), valid = list.filter(t => !t.block);
     if (forced !== undefined) cleTarget = (forced && valid.some(v => v.hero === forced)) ? forced : valid.slice().sort((x, y) => state.heroes[x.hero].hp - state.heroes[y.hero].hp)[0].hero;
     else if (k === activeGroup && state.heroes[k].hp > 0) {
-      let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem voto no tempo: a Luz Sagrada não é usada.'}, sh && sh.endsAt); await closePanel();
+      let r = await chooseTarget('LUZ SAGRADA', 'Quem recebe a luz?', list, null, {text:'Cura +' + HEAL_AMOUNT + ' de vida ou revive com ' + REVIVE_HP + '. Sem escolha no tempo: a Luz Sagrada não é usada.'}, sh && sh.endsAt); await closePanel();
       if (r === 'BACK') return 'BACK';
       if (!r || !valid.some(v => v.hero === r)) { toast('Tempo esgotado: a Luz Sagrada não foi usada e continua disponível.'); return false; }
       cleTarget = r;
@@ -1621,7 +1614,7 @@ async function onlActions(SR){
         }
       }
     }
-    showBanner('AGUARDANDO OS OUTROS GRUPOS', 'as ações são reveladas juntas');
+    showBanner('AGUARDANDO OS OUTROS JOGADORES', 'as ações são reveladas juntas');
     ONL.refresh();
     const s3 = await onlWaitIn(SR, r => r.status === 'played');
     hideBanner(); if (!s3) return null; if (s3.behind) return onlSkip(s3);
@@ -1753,21 +1746,21 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
   const correct = {};
   let SRs = null;
   if (ONL.on) {   // acertos de todos os grupos vem do servidor (grupos vazios sao sorteados la)
-    showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros');
+    showBanner('AGUARDANDO OS OUTROS JOGADORES', 'ninguém vê a escolha dos outros');
     const s2 = await onlWaitIn(SR, r => r.status !== 'open'); hideBanner();
     if (!s2) return; if (s2.behind) return onlSkip(s2); SRs = s2.round; q.correct = SRs.correct;
     HERO_ORDER.forEach(k => correct[k] = !!(SRs.groups[k] && SRs.groups[k].correct));
     if (res.idx === null && SRs.groups[activeGroup] && SRs.groups[activeGroup].chosen != null) res.idx = SRs.groups[activeGroup].chosen;
     await onlItems('open', SRs);
   } else HERO_ORDER.forEach(k => correct[k] = k === activeGroup ? res.idx === q.correct : (AUTO || R() < 0.6));
-  if (!ONL.on) { showBanner('AGUARDANDO OS OUTROS GRUPOS', 'ninguém vê a escolha dos outros'); await wait(1400); hideBanner(); }
+  if (!ONL.on) { showBanner('AGUARDANDO OS OUTROS JOGADORES', 'ninguém vê a escolha dos outros'); await wait(1400); hideBanner(); }
   // revela
   res.btns.forEach((b, i) => { b.classList.remove('chosen'); if (i === q.correct) b.classList.add('correct'); else if (i === res.idx) b.classList.add('wrong'); });
   A.sfx(correct[activeGroup] ? 'right' : 'wrong');
   state.streak = state.streak || {}; HERO_ORDER.forEach(k => { state.streak[k] = correct[k] ? (state.streak[k] || 0) + 1 : 0; if (state.heroes[k].hp > 0) A.react(k, correct[k] ? 'right' : 'wrong'); });   // reação de cada herói à resposta do seu grupo + sequência de acertos
   state.stats.rank[q.difficulty][correct[activeGroup] ? 0 : 1]++;
   if (correct[activeGroup]) { let g = meta.reward; const lb = state.ib[activeGroup]; if (lb.lucky > 0) { g += lb.luckyAmt; lb.lucky--; } state.gold += g; state.stats.gained += g; persist(); goldGain(g); }
-  else toast(res.idx === null ? 'Seu grupo não respondeu a tempo.' : 'Seu grupo errou.');
+  else toast(res.idx === null ? 'Você não respondeu a tempo.' : 'Você errou.');
   if (AUTO && !ONL.on) { autoEarn(meta); autoShop(); }
   state.missN = HERO_ORDER.filter(k => state.heroes[k].hp > 0 && !correct[k]).length;   // quem errou alimenta o vampirismo
   if (state.curAttack.leech && state.missN > 0) toast(`Ataque ${state.curAttack.tipo.toLowerCase()} ${ST.famAdj}: o boss suga ${Math.round(leechRate() * 100)}% da vida que tirar.`);
@@ -2157,7 +2150,7 @@ function applyItem(index, tgt){
   if(item.kind==='fx'){
     if(item.fx==='phoenix'){ if(hero.hp>0){toast(tgt===activeGroup?'A Pena de Fênix só serve para herói caído.':`${GROUPS[tgt]} não está caído.`);return} if(aliveHeroes().length===0){toast('Sem aliados de pé, a Fênix não responde.');return} }
     else if(hero.hp<=0){toast(tgt===activeGroup?'O herói caiu e não pode usar itens.':`${GROUPS[tgt]} caiu e não pode receber itens.`);return}
-    if(item.fx==='clock'&&(tgt!==activeGroup||(ONL.on?!(ONL.round()&&ONL.round().status==='open'):(!qExtend||!qExtend(0))))){toast('O relógio só vale durante a pergunta, no seu próprio grupo.');return}
+    if(item.fx==='clock'&&(tgt!==activeGroup||(ONL.on?!(ONL.round()&&ONL.round().status==='open'):(!qExtend||!qExtend(0))))){toast('O relógio só vale durante a pergunta, e só para o seu herói.');return}
     if(item.fx==='elixir'&&hero.hp>=HERO_MAX_HP&&hero.mp>=100){toast('HP e mana já estão cheios.');return}
     if(item.fx==='scroll'&&state.ultReady[tgt]){toast('O Ultimate já está carregado.');return}
     if(ONL.on){onlUseItem(type,tgt);return}
