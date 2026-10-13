@@ -244,7 +244,7 @@ const PARAMS = new URLSearchParams(location.search);
 const TEST_MODE = LOBBY.testMode; // simula os outros 6 jogadores votando
 // Modo teste automatico (botao na tela inicial, chave bd1_auto): os outros herois acertam tudo, jogam perfeito e usam itens; as respostas certas aparecem marcadas.
 const AUTO = (() => { try { return localStorage.getItem('bd1_auto') === '1'; } catch { return false; } })();
-const GROUP_KEY = (TEST_MODE && GROUPS[PARAMS.get('grupo')]) ? PARAMS.get('grupo') : LOBBY.myGroup();
+const GROUP_KEY = MATCH.spec ? MATCH.spec.grp : (TEST_MODE && GROUPS[PARAMS.get('grupo')]) ? PARAMS.get('grupo') : LOBBY.myGroup();
 if (!GROUP_KEY) { location.replace('index.html'); }
 const activeGroup = GROUP_KEY || 'mage';
 
@@ -1666,7 +1666,7 @@ function onlFinish(win){
   MATCH.end(ONL.matchId, win ? 'won' : 'lost').catch(() => {});
   setTimeout(() => ONL.stop(), 4000);
 }
-function onlLeave(page){ let gate = false; try { if (page === 'relatorio.html') { sessionStorage.setItem('bd1_gate', '1'); gate = true; } if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
+function onlLeave(page){ if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (page === 'relatorio.html') { sessionStorage.setItem('bd1_gate', '1'); gate = true; } if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
@@ -2028,6 +2028,7 @@ function endGame(win){
   state.over = true; onlFinish(win); if (state.tsOv) timeResume(); clearTimeout(turnTimer); A.sfx(win ? 'win' : 'lose');
   if (win) { A.play('boss', 'die'); A.sayRandom('boss', 'die', 1); HERO_ORDER.forEach(k => { A.play(k, 'victory'); }); A.sayRandom(pickAlive(), 'win', 1); }
   else { A.play('boss', 'laugh'); A.sayRandom('boss', 'win', 1); }
+  if (ONL.on && MATCH.spec) { showBanner(win ? 'VITÓRIA!' : 'DERROTA', 'fim da partida'); setTimeout(() => onlLeave('espectar.html'), 4000); return; }
   if (ONL.on) {   // online: o resultado fica no jogo por alguns segundos e o relatorio completo abre em tela separada
     try { if (win) sessionStorage.setItem('bd1_justwon', String(ST.id)); } catch (e) {}
     showBanner(win ? 'VITÓRIA!' : 'DERROTA', 'preparando o relatório da partida'); setTimeout(() => onlLeave('relatorio.html'), 5000); return;

@@ -5,13 +5,18 @@
   const N = () => window.NET;
   const call = (fn, args) => N().rpc(fn, args);
   let offset = 0;   // relogio do servidor menos o relogio local (ms)
+  /* modo espectador (so adm): le o estado da classe escolhida e nao grava nada */
+  let SP = null; try { SP = JSON.parse(sessionStorage.getItem('bd1_spec') || 'null'); } catch (e) {}
+  if (SP && !(SP.room && SP.grp)) SP = null;
+  const nop = () => Promise.resolve(null);
 
   const M = {
     get offset() { return offset; },
+    spec: SP,
     srvNow: () => Date.now() + offset,
     /* estado da sala/partida; ajusta o relogio com o horario do servidor */
     async state(room, snap) {
-      const t0 = Date.now(), s = await call('match_state', { p_room: room, p_snapshot: !!snap }), t1 = Date.now();
+      const t0 = Date.now(), s = await (SP ? call('spectate_state', { p_room: SP.room, p_grp: SP.grp, p_snapshot: !!snap }) : call('match_state', { p_room: room, p_snapshot: !!snap })), t1 = Date.now();
       if (s && s.now) offset = s.now - (t0 + t1) / 2;
       return s;
     },
@@ -52,5 +57,9 @@
       return { refresh: tick, stop() { stop = true; clearTimeout(timer); document.removeEventListener('visibilitychange', vis); } };
     }
   };
+  if (SP) {   // espectador: nenhuma escrita chega ao servidor
+    ['stage', 'start', 'vote', 'act', 'item', 'ack', 'advance', 'snapshot', 'end', 'stats', 'introVote', 'introDone'].forEach(k => { M[k] = nop; });
+    M.introState = () => Promise.resolve({ on: false, skip: 0, voters: 0, need: 0, mine: false });
+  }
   window.MATCH = M;
 })();

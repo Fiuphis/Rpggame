@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v323', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v324', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -143,7 +143,12 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   // login automatico: se este aparelho ainda guarda a sessao da ultima conta (logout apaga), usa o nome dela sem precisar abrir o perfil
   try { if (!sessionStorage.getItem('bd1_acc')) { const a = JSON.parse(localStorage.getItem('bd1_auth') || 'null'), jw = a && String(a.access_token || '').split('.')[1], us = jw && JSON.parse(decodeURIComponent(escape(atob(jw.replace(/-/g, '+').replace(/_/g, '/'))))), m = us && !us.is_anonymous && /^([a-z0-9_]{3,16})@cronicas-do-saber\.app$/.exec(String(us.email || '').toLowerCase()); if (m) sessionStorage.setItem('bd1_acc', m[1]); } } catch (e) {}
   const paintSv = () => { const c = cur(); let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} act.textContent = c && c.name ? c.name : (u ? u.toUpperCase() : 'ENTRAR'); $('#sv-btn').classList.toggle('chosen', !!c); };
-  const edl = () => { let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} const l = $('#ed-link'); if (l) l.hidden = u !== 'fiuphis'; };
+  const edl = () => { let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} const l = $('#ed-link'); if (l) l.hidden = u !== 'fiuphis'; eyeChk(u); };
+  // icone de olho (espectar): so para contas de adm; o servidor confere de novo em toda chamada
+  const eyeChk = u => { const e = $('#eye-link'); if (!e) return; if (!u) { e.hidden = true; return; } let c = null; try { c = sessionStorage.getItem('bd1_adm'); } catch (x) {}
+    if (u === 'fiuphis' || c === u) { e.hidden = false; return; } e.hidden = true; if (c === '-' + u || window.__eyeBusy) return; window.__eyeBusy = true;
+    const ld = src => new Promise((ok, no) => { const t = document.createElement('script'); t.src = src; t.onload = ok; t.onerror = no; document.head.appendChild(t); });
+    (window.NET ? Promise.resolve() : ld('js/vendor/supabase.js').then(() => ld('js/online/net.js'))).then(() => NET.isAdmin()).then(a => { try { sessionStorage.setItem('bd1_adm', a ? u : '-' + u); } catch (x) {} e.hidden = !a; }).catch(() => {}).then(() => { window.__eyeBusy = false; }); };
   const paintSv0 = paintSv; window.__paintSv = () => { paintSv0(); edl(); }; paintSv(); edl();
   // a escolha de save abre dentro do próprio menu (painel sobre a tela inicial), sem trocar de página nem animar
   const svp = $('#svp'); let svf = $('#svf');

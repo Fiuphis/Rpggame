@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,interactive-widget=resizes-content">
+<meta name="theme-color" content="#050711">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="css/salas.css">
+<link rel="stylesheet" href="css/espectar.css">
+<title>Espectar</title>
+</head>
+<body data-pxt>
+<div class="bgblur"></div><div class="torch l"></div><div class="torch r"></div>
+<main class="pg" id="pg">
+  <header class="top">
+    <button id="home" class="chip" type="button">&#9666; INÍCIO</button>
+    <span id="net" class="chip net" data-s="con"><i class="dot"></i><b>CONECTANDO</b></span>
+  </header>
+  <section class="plaque"><h1>ESPECTAR</h1><p>Escolha uma sala e um jogador para acompanhar</p></section>
+  <section class="list">
+    <div class="lh"><b>SALAS ABERTAS</b><button id="rf" class="chip sm" type="button">ATUALIZAR</button></div>
+    <div class="ls" id="ls" role="list"></div>
+  </section>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</main>
+<script src="js/vendor/supabase.js"></script>
+<script src="js/online/net.js"></script>
+<script src="js/pages/espectar.js"></script>
+<script src="js/core/rebuild.js"></script>
+<script src="js/core/fs.js"></script>
+</body>
+</html>

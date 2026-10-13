@@ -3,10 +3,10 @@
    roda o mesmo combate com o mesmo sorteio. Este arquivo cuida da conexao, do relogio, do estado compartilhado e do snapshot;
    js/game/app.js chama estas funcoes quando ONL.on. Sem sala online, ONL.on = false e o jogo roda como antes (offline). */
 (() => {
-  const ok = !!(window.NET && !NET.MOCK && window.MATCH && NET.room());
+  const ok = !!(window.NET && !NET.MOCK && window.MATCH && (NET.room() || MATCH.spec));
   const ONL = window.ONL = { on: ok };
   if (!ok) return;
-  const room = NET.room();
+  const room = MATCH.spec ? { id: MATCH.spec.room } : NET.room();
   const SHARED = ['ib', 'phase2', 'chestAt', 'heroes', 'bossHp', 'rage', 'hardNext', 'ice', 'cd', 'marks', 'burn', 'buff', 'ultCd', 'ultReady', 'round', 'dazedNext', 'thrustCd', 'teleCd', 'prepNext', 'stun', 'enraged', 'sinceHard', 'forceHard', 'streak', 'gag'];
   const clone = o => JSON.parse(JSON.stringify(o === undefined ? null : o));
   let watcher = null, waiters = [], stopped = false;

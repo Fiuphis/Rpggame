@@ -242,3 +242,31 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   assert.ok(!(await lstr(a)).some(x => x.id === r.id), 'sala excluida some da lista');
   await fails(call(c, 'join_room', { p_room: r.id }), 'sala_nao_encontrada');
   ok('criador encerra, reinicia e exclui a sala (mesmo depois de sair); outros nao'); }
+
+// etapa 2 do painel de adm (migracao 26): admin_rooms e spectate_state, so leitura e invisivel
+{ const [a, b, adm, plain] = U(4);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'olheiro@cronicas-do-saber.app'), ('${plain}', false, 'comum@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: false, p_name: 'PRIVADA' });
+  await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  await fails(call(plain, 'admin_rooms', {}), 'sem_permissao');
+  await fails(call(plain, 'spectate_state', { p_room: r.id, p_grp: 'mage' }), 'sem_permissao');
+  const lst = await call(adm, 'admin_rooms', {}); const it = (Array.isArray(lst) ? lst : []).find(x => x.id === r.id);
+  assert.ok(it && it.public === false && it.playing === true && it.players.length === 2, 'adm ve a sala privada com os jogadores');
+  await fails(call(adm, 'spectate_state', { p_room: r.id, p_grp: 'xx' }), 'grupo_invalido');
+  const before = (await db.query('select count(*)::int n from public.room_players where room_id = $1', [r.id])).rows[0].n;
+  const pres = (await db.query('select count(*)::int n from public.player_presence where room_id = $1', [r.id])).rows[0].n;
+  const s = await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'mage' });
+  assert.equal(s.me, 'mage'); assert.ok(s.round && s.round.question && s.round.key != null && s.round.correct == null, 'tem pergunta e gabarito (sem revelar antes da hora)');
+  assert.equal(s.members.length, 2, 'adm nao aparece na lista de membros');
+  assert.equal((await db.query('select count(*)::int n from public.room_players where room_id = $1', [r.id])).rows[0].n, before);
+  assert.equal((await db.query('select count(*)::int n from public.player_presence where room_id = $1', [r.id])).rows[0].n, pres, 'nao grava presenca');
+  // o voto do jogador dessa classe aparece como my_vote
+  const q = s.round; await call(a, 'cast_vote', { p_round: q.id, p_option: 2 });
+  const s2 = await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'mage' });
+  assert.equal(s2.round.my_vote && s2.round.my_vote.option, 2, 've a alternativa marcada pelo jogador');
+  const sT = await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'tank' }); assert.equal(sT.round.my_vote, null, 'cada classe mostra o voto do proprio jogador');
+  ok('espectar: so adm, invisivel, gabarito e voto do jogador visiveis'); }
