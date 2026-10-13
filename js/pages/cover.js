@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v322', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v323', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -140,6 +140,8 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) run =
   });
   // o save é escolhido aqui no início (saves genéricos da conta); o painel antigo de compartimentos locais não é mais aberto
   const cur = () => { try { return JSON.parse(sessionStorage.getItem('bd1_save')); } catch (e) { return null; } };
+  // login automatico: se este aparelho ainda guarda a sessao da ultima conta (logout apaga), usa o nome dela sem precisar abrir o perfil
+  try { if (!sessionStorage.getItem('bd1_acc')) { const a = JSON.parse(localStorage.getItem('bd1_auth') || 'null'), jw = a && String(a.access_token || '').split('.')[1], us = jw && JSON.parse(decodeURIComponent(escape(atob(jw.replace(/-/g, '+').replace(/_/g, '/'))))), m = us && !us.is_anonymous && /^([a-z0-9_]{3,16})@cronicas-do-saber\.app$/.exec(String(us.email || '').toLowerCase()); if (m) sessionStorage.setItem('bd1_acc', m[1]); } } catch (e) {}
   const paintSv = () => { const c = cur(); let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} act.textContent = c && c.name ? c.name : (u ? u.toUpperCase() : 'ENTRAR'); $('#sv-btn').classList.toggle('chosen', !!c); };
   const edl = () => { let u = null; try { u = sessionStorage.getItem('bd1_acc'); } catch (e) {} const l = $('#ed-link'); if (l) l.hidden = u !== 'fiuphis'; };
   const paintSv0 = paintSv; window.__paintSv = () => { paintSv0(); edl(); }; paintSv(); edl();
