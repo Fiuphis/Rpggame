@@ -42,7 +42,8 @@ if (!document.getElementById('stage') && !document.body.hasAttribute('data-pxt')
 let on = false; try { on = !!sessionStorage.getItem('bd1_rebuild'); sessionStorage.removeItem('bd1_rebuild'); } catch (e) {}
 if (on) { if (!document.body.hasAttribute('data-pxt')) try { history.pushState({sel:1}, ''); } catch (e) {}
   if (reduce()) de.classList.remove('rb');
-  else { const go = () => setTimeout(() => PxT.reveal(.5, .78), 120); if (document.readyState === 'complete') go(); else addEventListener('load', go); } }
+  else { let started = false; const go = () => { if (started) return; started = true; setTimeout(() => PxT.reveal(.5, .78), 120); };   // v335: comeca no 'load' ou, no maximo, 500 ms depois do DOMContentLoaded (nao espera imagem lenta)
+    if (document.readyState === 'complete') go(); else { addEventListener('load', go); const dcl = () => setTimeout(go, 500); if (document.readyState === 'loading') addEventListener('DOMContentLoaded', dcl); else dcl(); } } }
 else de.classList.remove('rb');
 // botão voltar do celular: os blocos de brasa cobrem a seleção e a capa se reconstrói (sem zoom)
 if (history.state && history.state.sel && !document.body.hasAttribute('data-pxt')) { let leaving = false;

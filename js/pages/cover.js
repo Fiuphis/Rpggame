@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v335', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v336', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
       if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
@@ -252,6 +252,10 @@ addEventListener('keydown', e => { if (e.key === 'Escape') how.hidden = true; })
 // ---------- JOGAR: zoom nos heróis -> clarão -> a cena vira cinzas de pixels -> seleção reconstrói ----------
 let busy = false;
 const BS = 14;   // tamanho do "pixel" da dissolução (px da tela)
+// v335: com a capa aberta (ociosa), aquece o cache com os arquivos da tela de salas; a troca de pagina fica bem mais curta
+setTimeout(async () => { try { const h = await (await fetch('salas.html')).text(); const u = new Set(['css/salas.css']);
+  h.replace(/(?:src|href)="((?:js|css)\/[A-Za-z0-9_\/.-]+\.(?:js|css))"/g, (m, a) => u.add(a));
+  for (const f of u) { try { await fetch(f); } catch (e) {} } } catch (e) {} }, 1800);
 async function startPlay() {
   if (busy) return; busy = true; document.documentElement.classList.add('gtx'); try { sessionStorage.setItem('bd1_cover', '1'); } catch (e) {}
   const leave = () => { try { sessionStorage.setItem('bd1_rebuild', '1'); } catch (e) {} location.href = 'salas.html'; };
