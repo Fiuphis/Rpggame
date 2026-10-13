@@ -269,7 +269,7 @@ const state = {
   inventory:[], pendingAction:null, myVote:null, voteLocked:false,
   // todos começam com vida e mana cheias
   heroes:Object.fromEntries(['mage','guerreiro','tank','cleriga'].map(k => [k, {hp:100, mp:100}])),
-  bossHp:BOSS_MAX_HP, rage:0, hardNext:false, over:false, ice:newIce(), lastEl:null, curActions:null,
+  giftsDone:[], bossHp:BOSS_MAX_HP, rage:0, hardNext:false, over:false, ice:newIce(), lastEl:null, curActions:null,
   cd:{mage:{},guerreiro:{},tank:{},cleriga:{}}, marks:[], burn:0, buff:{bh:0, bers:0, tired:0, taunt:0}, guardFor:null,         // recarga das habilidades (perguntas restantes)
   curAttack:BOSS_ATTACK,
   ultCd:{mage:0,guerreiro:0,tank:0,cleriga:0},
@@ -1519,7 +1519,35 @@ async function onlBegin(){
     s = ONL.s; if (!s || !s.round || s.round.n !== ONL.cur + 1) { s = await ONL.waitNext(() => state.over); if (!s) return null; }
   }
   const rd = s.round; ONL.cur = rd.n - 1;
+  await onlGifts(s.gifts, rd.n);
   return rd;
+}
+// ajuda do adm (v329): presentes registrados no servidor entram no comeco da rodada indicada, iguais em todos os aparelhos.
+// cura, reviver e mana mexem no combate da sala (todos aplicam); moedas e item so no aparelho do jogador alvo (e uma vez so por presente).
+async function onlGifts(list, n){
+  if (!Array.isArray(list) || !list.length) return;
+  state.giftsDone = state.giftsDone || [];
+  const loc = (() => { try { return JSON.parse(sessionStorage.getItem('bd1_gl_' + ONL.matchId)) || []; } catch (e) { return []; } })();
+  let any = false;
+  for (const g of list.filter(x => x.rnd <= n && !state.giftsDone.includes(x.id)).sort((a, b) => a.id - b.id)) {
+    state.giftsDone.push(g.id);
+    const h = state.heroes[g.grp]; if (!h) continue;
+    if (g.kind === 'heal' || g.kind === 'revive' || g.kind === 'mana') {
+      if (g.kind === 'heal' && h.hp > 0) { const d = Math.min(HERO_MAX_HP, h.hp + g.amount) - h.hp; h.hp += d; if (d > 0) floatText(HERO_X[g.grp], 58, `+${d} VIDA`, '#6dff8a'); any = true; }
+      else if (g.kind === 'revive' && h.hp <= 0) { h.hp = Math.max(1, Math.min(HERO_MAX_HP, g.amount)); floatText(HERO_X[g.grp], 58, 'REVIVIDO', '#ffe08a'); any = true; }
+      else if (g.kind === 'mana' && h.hp > 0) { const d = Math.min(100, h.mp + g.amount) - h.mp; h.mp += d; if (d > 0) floatText(HERO_X[g.grp], 58, `+${d} MANA`, '#6db8ff'); any = true; }
+    } else if (g.grp === activeGroup && !loc.includes(g.id) && !(window.MATCH && MATCH.spec)) {
+      loc.push(g.id);
+      if (g.kind === 'gold') { state.gold += g.amount; state.stats.gained += g.amount; persist(); goldGain(g.amount); toast(`Presente da administração: ${g.amount} moedas.`); any = true; }
+      else if (g.kind === 'item' && ITEMS[g.item]) {
+        if (canAdd(g.item)) { state.inventory.push(g.item); persist(); renderInventoryHits(); toast(`Presente da administração: ${ITEMS[g.item].name}.`); }
+        else { const v = ITEMS[g.item].price; state.gold += v; state.stats.gained += v; persist(); goldGain(v); toast(`Mochila cheia: o presente virou ${v} moedas.`); }
+        any = true;
+      }
+    }
+  }
+  try { sessionStorage.setItem('bd1_gl_' + ONL.matchId, JSON.stringify(loc.slice(-60))); } catch (e) {}
+  if (any) { renderHud(); onlRefreshHeroes(); await wait(600); }
 }
 // sorteia o tipo/rank da proxima rodada (mesma conta em todos os aparelhos: a semente da rodada atual continua)
 function onlPlan(){

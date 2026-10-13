@@ -7,7 +7,7 @@
   const ONL = window.ONL = { on: ok };
   if (!ok) return;
   const room = MATCH.spec ? { id: MATCH.spec.room } : NET.room();
-  const SHARED = ['ib', 'phase2', 'chestAt', 'heroes', 'bossHp', 'rage', 'hardNext', 'ice', 'cd', 'marks', 'burn', 'buff', 'ultCd', 'ultReady', 'round', 'dazedNext', 'thrustCd', 'teleCd', 'prepNext', 'stun', 'enraged', 'sinceHard', 'forceHard', 'streak', 'gag'];
+  const SHARED = ['ib', 'phase2', 'chestAt', 'heroes', 'bossHp', 'rage', 'hardNext', 'ice', 'cd', 'marks', 'burn', 'buff', 'ultCd', 'ultReady', 'round', 'dazedNext', 'thrustCd', 'teleCd', 'prepNext', 'stun', 'enraged', 'sinceHard', 'forceHard', 'streak', 'gag', 'giftsDone'];
   const clone = o => JSON.parse(JSON.stringify(o === undefined ? null : o));
   let watcher = null, waiters = [], stopped = false;
 

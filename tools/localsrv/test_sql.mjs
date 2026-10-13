@@ -380,3 +380,21 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await new Promise(x => setTimeout(x, 2100));
   await fails(send(b, 'na luta'), 'chat_na_batalha'); assert.equal((await list(b)).can_send, false); await send(adm, 'adm na luta');
   ok('chat da sala: so membros, limites, selo de adm, apagar so criador/adm, 100 ultimas, fechado na luta (adm fala)'); }
+
+// ajuda do adm (migracao 29): presente entra na proxima rodada
+{ const [a, b, adm, plain] = U(4);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'ajuda@cronicas-do-saber.app'), ('${plain}', false, 'comum2@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'AJUDA' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  const g = (u, arg) => call(u, 'admin_act', { p_room: r.id, p_action: 'gift', p_arg: arg });
+  await fails(g(adm, { grp: 'mage', kind: 'heal' }), 'sem_partida');
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  await fails(g(plain, { grp: 'mage', kind: 'heal' }), 'sem_permissao'); await fails(g(adm, { grp: 'xx', kind: 'heal' }), 'grupo_invalido');
+  await fails(g(adm, { grp: 'mage', kind: 'raio' }), 'presente_invalido'); await fails(g(adm, { grp: 'mage', kind: 'item' }), 'presente_invalido');
+  await g(adm, { grp: 'mage', kind: 'gold', amount: 80 }); await g(adm, { grp: 'tank', kind: 'item', item: 'hp' }); await g(adm, { grp: 'mage', kind: 'revive', amount: 9999 });
+  const s = await call(a, 'match_state', { p_room: r.id }); assert.equal(s.gifts.length, 3); assert.equal(s.gifts[0].rnd, s.round.n + 1); assert.equal(s.gifts[0].amount, 80); assert.equal(s.gifts[2].amount, 1000);
+  assert.equal((await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'mage' })).gifts.length, 3);
+  assert.equal((await call(adm, 'admin_log_list', { p_limit: 5 })).filter(x => x.action === 'gift').length >= 3, true);
+  ok('adm ajuda: presente vale na proxima rodada, so adm, valida tipo/classe, limita valor, aparece no estado e no espectar'); }
