@@ -13,7 +13,7 @@ function card(r) {
   return `<div class="rm" role="listitem" data-id="${esc(r.id)}">
     <div class="r1"><img class="ico" src="assets/salas/ic_${r.public ? 'unlock' : 'lock'}.png" alt=""><span class="nm">${nm}</span><span class="bd${bt ? ' bt' : ''}">${bt ? 'EM BATALHA' : 'AGUARDANDO'}</span></div>
     <div class="meta">${r.public ? 'PÚBLICA' : 'PRIVADA'} · CÓDIGO <b>${esc(r.code || '-')}</b> · GUARDIÃO <b>${(r.boss_idx || 0) + 1}/6</b></div>
-    <div class="pl">${pl}</div>${bt ? '' : '<div class="meta">Só dá para espectar quando a batalha começar.</div>'}
+    <div class="pl">${pl}</div>${bt && ps.length > 1 ? '<button type="button" class="chip blue mos" style="height:9cqw;margin-top:1cqw">MOSAICO</button>' : ''}${bt ? '' : '<div class="meta">Só dá para espectar quando a batalha começar.</div>'}
   </div>`;
 }
 function paint() {
@@ -28,6 +28,7 @@ async function load(manual) {
 }
 $('#rf').onclick = () => load(true);
 $('#ls').addEventListener('click', e => {
+  const mo = e.target.closest('.mos'); if (mo && !leaving) { leaving = true; clearInterval(timer); location.href = 'mosaico.html?room=' + mo.closest('.rm').dataset.id + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); return; }
   const b = e.target.closest('.pb'); if (!b || b.disabled || leaving) return;
   leaving = true; clearInterval(timer);
   try { sessionStorage.setItem('bd1_spec', JSON.stringify({ room: b.closest('.rm').dataset.id, grp: b.dataset.g })); } catch (x) {}

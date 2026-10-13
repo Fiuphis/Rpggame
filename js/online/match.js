@@ -6,7 +6,7 @@
   const call = (fn, args) => N().rpc(fn, args);
   let offset = 0;   // relogio do servidor menos o relogio local (ms)
   /* modo espectador (so adm): le o estado da classe escolhida e nao grava nada */
-  let SP = null; try { SP = JSON.parse(sessionStorage.getItem('bd1_spec') || 'null'); } catch (e) {}
+  let SP = null; try { const q = /[?&]spec=([0-9a-f-]{36}):(mage|guerreiro|tank|cleriga)/.exec(location.search); SP = q ? { room: q[1], grp: q[2], mini: /[?&]mini=1/.test(location.search) } : JSON.parse(sessionStorage.getItem('bd1_spec') || 'null'); } catch (e) {}
   if (SP && !(SP.room && SP.grp)) SP = null;
   const nop = () => Promise.resolve(null);
 

@@ -10,6 +10,8 @@
     + '#spec-bar button{font:inherit;color:#e8c46a;background:#1d1636;border:1px solid #c9a24a;padding:5px 8px;cursor:pointer}'
     + '#spec-bar .d{margin-top:5px;display:grid;gap:3px;font-weight:400;font-size:11px;word-break:break-word}#spec-bar .d b{color:#e8c46a}#spec-bar .ok{color:#5dff9a}#spec-bar .no{color:#ff7a8a}';
   document.head.appendChild(st);
+  const MINI = !!SP.mini;
+  if (MINI) st.textContent += '#spec-bar{font-size:22px;padding:8px 10px}#spec-bar .d{font-size:21px;gap:2px}#spec-bar button{display:none}';
   const blk = document.createElement('div'); blk.id = 'spec-block';
   const bar = document.createElement('div'); bar.id = 'spec-bar';
   bar.innerHTML = '<div class="r"><span class="t"></span><button type="button" id="spec-k">GABARITO</button><button type="button" id="spec-x">SAIR</button></div><div class="d" hidden></div>';
@@ -23,6 +25,7 @@
     const s = ONL.s, r = s && s.round, q = r && r.question, mem = (s && s.members || []).find(m => m.grp === SP.grp);
     t.textContent = 'ESPECTANDO: ' + (NM[SP.grp] || SP.grp) + (mem && mem.name ? ' · ' + mem.name.toUpperCase() : '') + (r ? ' · RODADA ' + r.n : '');
     d.hidden = !open; if (!open) return;
+    if (MINI) { const v0 = r && r.my_vote, a0 = r && r.my_act, ky = r && r.key; d.innerHTML = !r ? '' : r.kind === 'chest' ? '<div><b>ARCA</b></div>' : '<div><b>GAB</b> <span class="ok">' + (ky == null ? '-' : L[ky]) + '</span> · <b>MARCOU</b> <span class="' + (v0 && v0.option != null && ky === v0.option ? 'ok' : 'no') + '">' + (v0 && v0.option != null ? L[v0.option] : '-') + '</span> · <b>ATQ</b> ' + (a0 && a0.skill && a0.skill !== 'none' ? esc(String(a0.skill).toUpperCase()) : '-') + '</div>'; return; }
     if (!r) { d.innerHTML = 'Sem rodada no momento.'; return; }
     const v = r.my_vote, a = r.my_act, g = r.groups && r.groups[SP.grp] || {}, rows = [];
     if (r.kind === 'chest') rows.push('<div><b>ARCA</b> · jogador: ' + (g.chosen == null ? 'ainda sem escolha' : g.chosen === 0 ? 'ABRIR' : 'IGNORAR') + '</div>');

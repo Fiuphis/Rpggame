@@ -1666,7 +1666,7 @@ function onlFinish(win){
   MATCH.end(ONL.matchId, win ? 'won' : 'lost').catch(() => {});
   setTimeout(() => ONL.stop(), 4000);
 }
-function onlLeave(page){ if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (page === 'relatorio.html') { sessionStorage.setItem('bd1_gate', '1'); gate = true; } if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
+function onlLeave(page){ if (MATCH.spec && MATCH.spec.mini) return; if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (page === 'relatorio.html') { sessionStorage.setItem('bd1_gate', '1'); gate = true; } if (page === 'map.html') sessionStorage.setItem('bd1_fog', '1'); } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
