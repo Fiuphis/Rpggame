@@ -491,3 +491,21 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   const after = await call(adm, 'admin_question_list', {}); assert.equal(after.counts['3'].on, Math.max(3, n3 - off)); assert.ok(after.counts['3'].on >= 3, 'minimo 3');
   await call(adm, 'admin_question_set', { p_id: id3, p_active: true }); assert.ok((await call(adm, 'admin_question_list', {})).counts['3'].on >= after.counts['3'].on);
   ok('saude das salas (rodada, parada ha, pausa, tranca, dificuldade); painel de perguntas: so adm, filtro, busca, liga/desliga com minimo de 3 ativas por rank'); }
+
+// modo manutencao (migracao 34)
+{ const [a, adm, b] = U(3);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'mant@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  await db.exec("update public.rooms set status = 'ended'");
+  assert.equal((await call(a, 'maintenance_status', {})).on, false);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'ANTES' });
+  await fails(call(a, 'admin_set_maintenance', { p_on: true, p_msg: 'x' }), 'sem_permissao');
+  const o = await call(adm, 'admin_set_maintenance', { p_on: true, p_msg: 'Volto em 10 min' }); assert.equal(o.on, true); assert.ok(o.rooms >= 1, 'aviso nas salas abertas');
+  const st = await call(a, 'maintenance_status', {}); assert.equal(st.on, true); assert.equal(st.msg, 'Volto em 10 min');
+  await fails(call(b, 'create_room', { p_public: true, p_name: 'DEPOIS' }), 'manutencao');
+  const ok1 = await call(adm, 'create_room', { p_public: false, p_name: 'ADMSALA' }); assert.ok(ok1.id, 'adm ainda cria sala');
+  const ms = await call(a, 'match_state', { p_room: r.id }); assert.ok(ms.notices.some(n => n.kind === 'maint' && n.text === 'Volto em 10 min'), 'aviso chega na sala aberta');
+  await call(a, 'join_room', { p_room: ok1.id, p_code: ok1.code }).catch(() => {});
+  await call(adm, 'admin_set_maintenance', { p_on: false });
+  assert.equal((await call(a, 'maintenance_status', {})).on, false); const c = await call(b, 'create_room', { p_public: true, p_name: 'VOLTOU' }); assert.ok(c.id);
+  ok('manutencao: so adm liga/desliga; bloqueia criar sala (adm ainda cria); aviso nas salas abertas; desligar libera'); }

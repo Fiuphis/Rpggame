@@ -43,6 +43,18 @@ async function load(manual) {
   loading = false; rf.disabled = false;
 }
 $('#rf').onclick = () => load(true);
+// modo manutencao: ligado, so adm cria sala; as salas abertas recebem o aviso
+let mtOn = false;
+async function mtLoad() { try { const m = await NET.rpc('maintenance_status'); mtOn = !!(m && m.on); $('#mtn').textContent = 'MANUTENÇÃO: ' + (mtOn ? 'LIGADA' : 'DESLIGADA'); $('#mtn').classList.toggle('red', mtOn); } catch (e) {} }
+$('#mtn').onclick = async () => {
+  const b = $('#mtn'); if (b.disabled) return; let msg = null;
+  if (!mtOn) { msg = prompt('Ligar manutenção: ninguém mais cria sala e as salas abertas recebem o aviso.\nMensagem (até 120 letras, vazio usa a padrão):', ''); if (msg === null) return; }
+  else if (!confirm('Desligar a manutenção?')) return;
+  b.disabled = true;
+  try { const r = await NET.rpc('admin_set_maintenance', { p_on: !mtOn, p_msg: msg }); toast(!mtOn ? 'Manutenção ligada. Aviso enviado a ' + (r.rooms || 0) + ' sala(s).' : 'Manutenção desligada.'); await mtLoad(); }
+  catch (e) { toast(NET.msg(e)); }
+  b.disabled = false;
+};
 $('#qp').onclick = () => { if (leaving) return; leaving = true; clearInterval(timer); location.href = 'perguntas.html' + location.search; };
 $('#ls').addEventListener('click', e => {
   const ct = e.target.closest('.cht'); if (ct && !leaving) { const id = ct.closest('.rm').dataset.id; if (window.CHAT) { if (CHAT.room() !== id) CHAT.mount({ room: id }); CHAT.open(); } return; }
@@ -59,7 +71,7 @@ addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
   try { sessionStorage.removeItem('bd1_spec'); } catch (e) {}
   let adm = false; try { adm = await NET.isAdmin(); } catch (e) {}
   if (!adm) { location.replace('cover.html' + location.search); return; }
-  load(); timer = setInterval(() => { if (!document.hidden) load(); }, 4000);
+  mtLoad(); load(); timer = setInterval(() => { if (!document.hidden) load(); }, 4000);
 })();
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));
 })();

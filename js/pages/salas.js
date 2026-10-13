@@ -30,7 +30,8 @@ function paint() {
 }
 async function load(manual) {
   if (loading) return; loading = true; const rf = $('#rf'); if (manual) rf.disabled = true;
-  try { await NET.ready(); rooms = await NET.listRooms(); netState(NET.MOCK ? 'mock' : 'on', NET.MOCK ? 'SIMULADO' : 'ONLINE'); paint(); }
+  try { await NET.ready(); rooms = await NET.listRooms(); netState(NET.MOCK ? 'mock' : 'on', NET.MOCK ? 'SIMULADO' : 'ONLINE'); paint();
+    if (!NET.MOCK) { try { const mt = await NET.rpc('maintenance_status'); const e = $('#mt'); e.hidden = !(mt && mt.on); if (mt && mt.on) e.textContent = 'MANUTENÇÃO: não dá para criar salas agora. ' + (mt.msg || ''); } catch (x) {} } }
   catch (e) { netState('off', 'SEM SERVIDOR'); if (!rooms.length) $('#ls').innerHTML = `<div class="empty"><b>SEM CONEXÃO</b>${esc(NET.msg(e))}<br>Você ainda pode jogar sem sala.<button id="retry" class="chip blue" type="button">TENTAR DE NOVO</button></div>`; if (manual) toast(NET.msg(e)); }
   finally { loading = false; rf.disabled = false; }
 }
