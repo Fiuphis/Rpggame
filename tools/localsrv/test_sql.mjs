@@ -398,3 +398,15 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   assert.equal((await call(adm, 'spectate_state', { p_room: r.id, p_grp: 'mage' })).gifts.length, 3);
   assert.equal((await call(adm, 'admin_log_list', { p_limit: 5 })).filter(x => x.action === 'gift').length >= 3, true);
   ok('adm ajuda: presente vale na proxima rodada, so adm, valida tipo/classe, limita valor, aparece no estado e no espectar'); }
+
+// controle do chefe (migracao 30)
+{ const [a, b, adm] = U(3);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'chefe@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'CHEFE' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' }); await call(a, 'start_match', { p_room: r.id, p_boss: 0 });
+  const g = arg => call(adm, 'admin_act', { p_room: r.id, p_action: 'gift', p_arg: { grp: 'mage', ...arg } });
+  await g({ kind: 'boss_hp', amount: 50 }); await g({ kind: 'boss_hp', amount: 5000 }); await g({ kind: 'rage_full' }); await g({ kind: 'rage_zero' }); await fails(g({ kind: 'boss_xx' }), 'presente_invalido');
+  const s = await call(a, 'match_state', { p_room: r.id }); assert.deepEqual(s.gifts.map(x => x.kind), ['boss_hp', 'boss_hp', 'rage_full', 'rage_zero']); assert.equal(s.gifts[1].amount, 100);
+  ok('adm controla o chefe: vida em %, furia cheia/zerada; valor limitado a 100'); }
