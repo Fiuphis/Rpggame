@@ -470,3 +470,24 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await act(adm, 'end');
   await call(a, 'owner_power', { p_room: r.id, p_action: 'difficulty', p_arg: { mode: 'medium' } }); assert.equal((await call(a, 'owner_room_info', { p_room: r.id })).difficulty, 'medium');
   ok('dificuldade: padrao dificil, so o criador define; teto de rank 3/4/5 por rodada; adm muda ao vivo (vale na proxima); rank forcado nao e limitado'); }
+
+// saude das salas e painel de perguntas (migracao 33)
+{ const [a, adm] = U(2);
+  await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${adm}', false, 'saude@cronicas-do-saber.app') on conflict do nothing`);
+  await db.exec(`insert into public.admins (user_id) values ('${adm}') on conflict do nothing`);
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'SAUDE' });
+  await fails(call(a, 'admin_rooms', {}), 'sem_permissao');
+  const rooms = await call(adm, 'admin_rooms', {}); const x = rooms.find(z => z.id === r.id);
+  assert.ok(x, 'sala listada'); assert.equal(x.difficulty, 'hard'); assert.equal(x.time_mode, 'normal'); assert.equal(x.paused, false); assert.equal(x.locked, false); assert.ok(x.idle >= 0 && x.idle < 60, 'idle ' + x.idle);
+  assert.equal(x.round, null);
+  await fails(call(a, 'admin_question_list', {}), 'sem_permissao'); await fails(call(a, 'admin_question_set', { p_id: randomUUID(), p_active: false }), 'sem_permissao');
+  const l = await call(adm, 'admin_question_list', {}); assert.ok(l.list.length > 0 && l.list.length <= 150); assert.ok(l.counts['1'].on > 0);
+  const f = await call(adm, 'admin_question_list', { p_rank: 3 }); assert.ok(f.list.every(q => q.rank === 3)); assert.ok(f.list[0].correct >= 0 && f.list[0].options.length === 4);
+  const b = await call(adm, 'admin_question_list', { p_q: f.list[0].text.slice(0, 12) }); assert.ok(b.list.some(q => q.id === f.list[0].id), 'busca por texto');
+  await fails(call(adm, 'admin_question_set', { p_id: randomUUID(), p_active: false }), 'pergunta_nao_encontrada');
+  const n3 = l.counts['3'].on; const id3 = f.list[0].id;
+  // com 4 ativas por rank (banco de teste) desativar 1 e ok; chegar ao minimo de 3 e recusado
+  let off = 0; for (const q of f.list.filter(z => z.active)) { try { await call(adm, 'admin_question_set', { p_id: q.id, p_active: false }); off++; } catch (e) { assert.match(String(e.message), /minimo_de_perguntas/); break; } }
+  const after = await call(adm, 'admin_question_list', {}); assert.equal(after.counts['3'].on, Math.max(3, n3 - off)); assert.ok(after.counts['3'].on >= 3, 'minimo 3');
+  await call(adm, 'admin_question_set', { p_id: id3, p_active: true }); assert.ok((await call(adm, 'admin_question_list', {})).counts['3'].on >= after.counts['3'].on);
+  ok('saude das salas (rodada, parada ha, pausa, tranca, dificuldade); painel de perguntas: so adm, filtro, busca, liga/desliga com minimo de 3 ativas por rank'); }

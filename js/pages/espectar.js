@@ -6,6 +6,21 @@ const NM = { mage: 'MAGA', guerreiro: 'GUERREIRO', tank: 'TANQUE', cleriga: 'CL�
 let rooms = [], loading = false, leaving = false, timer = 0, toastT = 0;
 function toast(t) { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), 2600); }
 function net(s, t) { const e = $('#net'); e.dataset.s = s; e.querySelector('b').textContent = t; }
+const DFN = { easy: 'FÁCIL', medium: 'MÉDIO', hard: 'DIFÍCIL' }, TMN = { fast: 'RÁPIDO', normal: 'NORMAL', long: 'LONGO' };
+function dur(s) { s = Math.max(0, s | 0); return s < 60 ? s + ' s' : s < 3600 ? Math.floor(s / 60) + ' min' : Math.floor(s / 3600) + ' h ' + Math.floor(s % 3600 / 60) + ' min'; }
+// saude da sala: rodada, tempo parada, ausentes, pausa, tranca, dificuldade e tempo; parada ha mais de 2 min em batalha fica em alerta
+function health(r) {
+  const ps = r.players || [], away = ps.filter(p => !p.active).length, stuck = r.playing && !r.paused && (r.idle || 0) > 120;
+  const parts = [];
+  if (r.playing) parts.push('RODADA <b>' + (r.round || 1) + '</b>');
+  parts.push('ATIVIDADE HÁ <b' + (stuck ? ' style="color:#ff8a8a"' : '') + '>' + dur(r.idle || 0) + '</b>');
+  if (ps.length) parts.push('AUSENTES <b' + (away ? ' style="color:#ffd34d"' : '') + '>' + away + '/' + ps.length + '</b>');
+  if (r.paused) parts.push('<b style="color:#ffd34d">PAUSADA</b>');
+  if (r.locked) parts.push('<b>TRANCADA</b>');
+  parts.push((DFN[r.difficulty] || 'DIFÍCIL') + ' · TEMPO ' + (TMN[r.time_mode] || 'NORMAL'));
+  if (r.owner) parts.push('CRIADOR <b>' + esc(String(r.owner).toUpperCase()) + '</b>');
+  return '<div class="meta">' + parts.join(' · ') + (stuck ? ' · <b style="color:#ff8a8a">POSSÍVEL TRAVA</b>' : '') + '</div>';
+}
 function card(r) {
   const nm = r.name ? esc(r.name) : 'SALA ' + esc(String(r.id).replace(/-/g, '').slice(0, 4).toUpperCase());
   const bt = !!r.playing, ps = r.players || [];
@@ -13,6 +28,7 @@ function card(r) {
   return `<div class="rm" role="listitem" data-id="${esc(r.id)}">
     <div class="r1"><img class="ico" src="assets/salas/ic_${r.public ? 'unlock' : 'lock'}.png" alt=""><span class="nm">${nm}</span><span class="bd${bt ? ' bt' : ''}">${bt ? 'EM BATALHA' : 'AGUARDANDO'}</span></div>
     <div class="meta">${r.public ? 'PÚBLICA' : 'PRIVADA'} · CÓDIGO <b>${esc(r.code || '-')}</b> · GUARDIÃO <b>${(r.boss_idx || 0) + 1}/6</b></div>
+    ${health(r)}
     <div class="pl">${pl}</div><div class="pl" style="margin-top:1cqw">${bt && ps.length > 1 ? '<button type="button" class="chip blue mos" style="height:9cqw">MOSAICO</button>' : ''}<button type="button" class="chip blue cht" style="height:9cqw">CHAT</button><button type="button" class="chip gold gmn" style="height:9cqw">GERENCIAR</button></div>${bt ? '' : '<div class="meta">Só dá para espectar quando a batalha começar.</div>'}
   </div>`;
 }
@@ -27,6 +43,7 @@ async function load(manual) {
   loading = false; rf.disabled = false;
 }
 $('#rf').onclick = () => load(true);
+$('#qp').onclick = () => { if (leaving) return; leaving = true; clearInterval(timer); location.href = 'perguntas.html' + location.search; };
 $('#ls').addEventListener('click', e => {
   const ct = e.target.closest('.cht'); if (ct && !leaving) { const id = ct.closest('.rm').dataset.id; if (window.CHAT) { if (CHAT.room() !== id) CHAT.mount({ room: id }); CHAT.open(); } return; }
   const gn = e.target.closest('.gmn'); if (gn && !leaving) { leaving = true; clearInterval(timer); location.href = 'gerenciar.html?room=' + gn.closest('.rm').dataset.id + '&from=espectar' + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); return; }

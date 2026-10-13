@@ -12,7 +12,7 @@ const MOCK = ss.get('bd1_mock') === '1';
 
 const MSG = {
   expulso: 'Você foi removido desta sala e não pode voltar.', sala_trancada: 'Esta sala está trancada pelo criador.', nome_invalido: 'Nome inválido (até 24 letras).', tempo_invalido: 'Tempo inválido.', partida_em_andamento: 'Só dá para mudar entre partidas.', so_o_criador: 'Só o criador da sala pode fazer isso.', nao_pode_em_si_mesmo: 'Não dá para fazer isso com você mesmo.',
-  sem_partida: 'Não há partida em andamento.',
+  sem_partida: 'Não há partida em andamento.', dificuldade_invalida: 'Dificuldade inválida.', pergunta_nao_encontrada: 'Pergunta não encontrada.', minimo_de_perguntas: 'Este rank já está no mínimo de 3 perguntas ativas.',
   sem_permissao: 'Sem permissão.', mensagem_invalida: 'Mensagem inválida (1 a 120 letras).', rodada_sem_tempo: 'Esta fase não tem relógio agora.', jogador_nao_encontrado: 'Não há jogador nessa classe.', acao_invalida: 'Ação inválida.',
   nao_autenticado: 'Entre novamente no jogo.', sala_nao_encontrada: 'Sala não encontrada. Confira o código.', muitas_tentativas: 'Muitas tentativas. Aguarde alguns minutos.',
   limite_de_salas: 'Você já tem 3 salas abertas.', so_o_criador: 'Só o criador da sala pode fazer isso.', acao_invalida: 'Ação inválida.', grupo_cheio: 'Essa classe já tem dono.', sala_cheia: 'Sala cheia (limite de 4 jogadores).', limite_global_de_salas: 'O servidor já tem 10 salas abertas. Tente de novo em instantes ou entre numa sala existente.', sala_fechada: 'Essa sala já começou e não aceita mais jogadores.', fora_da_sala: 'Você não está nessa sala.', grupo_invalido: 'Classe inválida.',
