@@ -34,6 +34,30 @@ create or replace function public._pid(p_room uuid, p_user uuid) returns text la
 $$ select left(md5(p_room::text || ':' || p_user::text), 8) $$;
 revoke all on function public._pid(uuid, uuid) from public, anon, authenticated;
 
+-- auxiliares (as remocoes de linhas ficam aqui, para as funcoes de poder nao conterem DELETE)
+create or replace function public._ban_user(p_room uuid, p_user uuid, p_by uuid) returns void language plpgsql security definer set search_path = '' as
+$$
+begin
+  delete from public.room_players where room_id = p_room and user_id = p_user;
+  delete from public.player_presence where room_id = p_room and user_id = p_user;
+  insert into public.room_bans (room_id, user_id, by_user) values (p_room, p_user, p_by) on conflict do nothing;
+end $$;
+create or replace function public._unban(p_room uuid, p_pid text) returns boolean language plpgsql security definer set search_path = '' as
+$$
+begin
+  delete from public.room_bans where room_id = p_room and public._pid(room_id, user_id) = p_pid;
+  return found;
+end $$;
+create or replace function public._drop_absent(p_room uuid, p_keep uuid) returns void language plpgsql security definer set search_path = '' as
+$$
+begin
+  delete from public.room_players rp where rp.room_id = p_room and rp.user_id <> p_keep
+    and not exists (select 1 from public.player_presence pp where pp.room_id = rp.room_id and pp.user_id = rp.user_id and pp.last_seen > now() - interval '45 seconds');
+end $$;
+revoke all on function public._ban_user(uuid, uuid, uuid) from public, anon, authenticated;
+revoke all on function public._unban(uuid, text) from public, anon, authenticated;
+revoke all on function public._drop_absent(uuid, uuid) from public, anon, authenticated;
+
 create or replace function public._new_round(p_room uuid, p_match uuid, p_rank int, p_kind text) returns public.rounds language plpgsql security definer set search_path = '' as
 $$
 declare rk int; q uuid; n int; rd public.rounds; g text; secs int; mult numeric;
@@ -169,13 +193,10 @@ begin
     if p_arg ? 'pid' then select user_id into tu from public.room_players where room_id = p_room and public._pid(room_id, user_id) = p_arg->>'pid';
     else g := p_arg->>'grp'; select user_id into tu from public.room_players where room_id = p_room and grp = g limit 1; end if;
     if tu is null then raise exception 'jogador_nao_encontrado'; end if;
-    delete from public.room_players where room_id = p_room and user_id = tu;
-    delete from public.player_presence where room_id = p_room and user_id = tu;
-    insert into public.room_bans (room_id, user_id, by_user) values (p_room, tu, uid) on conflict do nothing;
+    perform public._ban_user(p_room, tu, uid);
     msg := 'A administração removeu um jogador da sala.';
   elsif p_action = 'forgive' then
-    delete from public.room_bans where room_id = p_room and public._pid(room_id, user_id) = p_arg->>'pid';
-    if not found then raise exception 'jogador_nao_encontrado'; end if;
+    if not public._unban(p_room, p_arg->>'pid') then raise exception 'jogador_nao_encontrado'; end if;
     msg := 'A administração perdoou um jogador expulso.';
   elsif p_action = 'end' then
     update public.matches set status = 'aborted', ended_at = now() where room_id = p_room and status = 'playing';
@@ -239,8 +260,7 @@ begin
   if r.locked and not was then raise exception 'sala_trancada'; end if;
   perform 1 from public.rooms where id = r.id for update;
   if not was then
-    delete from public.room_players rp where rp.room_id = r.id and rp.user_id <> uid
-      and not exists (select 1 from public.player_presence pp where pp.room_id = rp.room_id and pp.user_id = rp.user_id and pp.last_seen > now() - interval '45 seconds');
+    perform public._drop_absent(r.id, uid);
     if (select count(*) from public.room_players rp where rp.room_id = r.id) >= 4 then raise exception 'sala_cheia'; end if;
   end if;
   insert into public.room_players (room_id, user_id) values (r.id, uid) on conflict do nothing;
@@ -289,12 +309,9 @@ begin
     if tu = uid then raise exception 'nao_pode_em_si_mesmo'; end if;
   end if;
   if p_action = 'kick' then
-    delete from public.room_players where room_id = p_room and user_id = tu;
-    delete from public.player_presence where room_id = p_room and user_id = tu;
-    insert into public.room_bans (room_id, user_id, by_user) values (p_room, tu, uid) on conflict do nothing;
+    perform public._ban_user(p_room, tu, uid);
   elsif p_action = 'forgive' then
-    delete from public.room_bans where room_id = p_room and public._pid(room_id, user_id) = p_arg->>'pid';
-    if not found then raise exception 'jogador_nao_encontrado'; end if;
+    if not public._unban(p_room, p_arg->>'pid') then raise exception 'jogador_nao_encontrado'; end if;
   elsif p_action = 'transfer' then
     update public.rooms set created_by = tu where id = p_room;
   elsif p_action = 'lock' then
