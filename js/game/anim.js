@@ -13,28 +13,53 @@ const H = {};   // estado por personagem
 const loadImg = src => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
 const list = v => v == null ? [] : Array.isArray(v) ? v : [v];
 
+const pad = () => CFG.pad == null ? 60 : CFG.pad;
+const cellW = w => { const s = (CFG.heroes || {})[w]; return (s && s._cell) ? s._cell[0] : META[w].w + 2 * pad(); };
+const cellH = w => { const s = (CFG.heroes || {})[w]; return (s && s._cell) ? s._cell[1] : META[w].h + 2 * pad(); };
+
 async function loadSheets(w){
   const spec = (CFG.heroes || {})[w] || {}, out = {};
   for (const [name, v] of Object.entries(spec)) {
+    if (name.startsWith('_')) continue;
     const arr = [];
-    for (const s of list(v)) { const img = await loadImg(s.src); if (img) arr.push({...s, img, frames:s.frames || Math.max(1, Math.round(img.naturalWidth / cellW(w)))}); }
+    for (const s of list(v)) {
+      const img = await loadImg(s.src);
+      if (img) {
+        const cw = (spec._cell && spec._cell[0]) || (s.cell && s.cell[0]) || cellW(w);
+        arr.push({...s, img, frames:s.frames || Math.max(1, Math.round(img.naturalWidth / cw))});
+      }
+    }
     if (arr.length) out[name] = arr;
   }
   return out;
 }
-const pad = () => CFG.pad == null ? 60 : CFG.pad;
-const cellW = w => META[w].w + 2 * pad(), cellH = w => META[w].h + 2 * pad();
+
+function applyCanvasLayout(w){
+  const h = H[w]; if (!h || h.rig) return;
+  const m = META[w], spec = (CFG.heroes || {})[w] || {};
+  if (spec._cell && spec._feet) {
+    const [cw, ch] = spec._cell, [fx, fy] = spec._feet;
+    const targetFeetX = m.x + m.w / 2 + (FEET_FB[w] ? FEET_FB[w][0] : 0);
+    const targetFeetY = m.y + (FEET_FB[w] ? FEET_FB[w][1] : m.h);
+    const left = targetFeetX - fx, top = targetFeetY - fy;
+    h.cv.width = cw; h.cv.height = ch;
+    h.cv.style.cssText = `left:${left / 1024 * 100}%;top:${top / 1536 * 100}%;width:${cw / 1024 * 100}%;height:${ch / 1536 * 100}%`;
+  } else {
+    const P = pad(), cw = cellW(w), ch = cellH(w);
+    h.cv.width = cw; h.cv.height = ch;
+    h.cv.style.cssText = `left:${(m.x - P) / 1024 * 100}%;top:${(m.y - P) / 1536 * 100}%;width:${cw / 1024 * 100}%;height:${ch / 1536 * 100}%`;
+  }
+}
 
 function build(){
   const game = $('#game'), ref = $('#reference'); if (!game || !ref || built) return; built = true;
   WHO.forEach(w => {
-    const m = META[w], P = pad(), cv = document.createElement('canvas'); cv.className = 'hero ' + w; cv.width = cellW(w); cv.height = cellH(w);
-    cv.style.cssText = `left:${(m.x - P) / 1024 * 100}%;top:${(m.y - P) / 1536 * 100}%;width:${cellW(w) / 1024 * 100}%;height:${cellH(w) / 1536 * 100}%`;
+    const m = META[w], P = pad(), cv = document.createElement('canvas'); cv.className = 'hero ' + w;
     ref.after(cv);
     const still = new Image(); still.src = `assets/sprites/spr_${w}.webp`;
     H[w] = {who:w, cv, c:cv.getContext('2d'), still, sheets:{}, cur:null, dead:false, idleT:null, token:0, hold:null};
+    applyCanvasLayout(w);
     drawStill(w); still.onload = () => { if (!H[w].cur) drawStill(w); };
-    if (w === 'mage' && window.MageRig) buildMage(H[w], m, P, window.MageRig, {PX:130, PXR:340, PT:170, PB:40, orb:{x:m.x + 190, y:m.y + 45}});
     if (w === 'tank' && window.TankRig) buildMage(H[w], m, P, window.TankRig, {PX:200, PXR:200, PT:280, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'guerreiro' && window.GuerreiroRig) buildMage(H[w], m, P, window.GuerreiroRig, {PX:230, PXR:250, PT:230, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'boss' && (window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig)) buildMage(H[w], m, P, window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
@@ -45,7 +70,7 @@ function build(){
   if (window.PXFX) PXFX.init($('#game'), bodyFeet);
   fetch('data/anim_manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
-    if (cfg && cfg.pad != null) WHO.forEach(w => { if (H[w].rig) return; H[w].cv.width = cellW(w); H[w].cv.height = cellH(w); });
+    WHO.forEach(w => applyCanvasLayout(w));
     for (const w of WHO) { H[w].sheets = await loadSheets(w); drawStill(w); scheduleIdle(w, w === 'cleriga' ? rnd(6000, 12000) : rnd(800, 2500)); }
   });
 }
@@ -62,7 +87,14 @@ function buildMage(h, m, P, Rig, cfg){
 const FEET_FB = {mage:[0, 258], guerreiro:[0, 262], tank:[-18, 262], cleriga:[-46, 292], boss:[0, 560]};
 const feetOf = w => { const h = H[w], m = META[w]; if (h && h.rig && h.rig.feet) return h.rig.feet(); const o = FEET_FB[w] || [0, m.h]; return {x:m.x + m.w / 2 + o[0], y:m.y + o[1]}; };
 function drawStill(w){
-  const h = H[w]; if (h && h.rig) return; if (!h || !h.still.complete || !h.still.naturalWidth) return; const P = pad();
+  const h = H[w]; if (!h || h.rig) return;
+  const spec = (CFG.heroes || {})[w] || {};
+  if (spec._cell && h.sheets && h.sheets.idle && h.sheets.idle.length) {
+    drawFrame(w, h.sheets.idle[0], 0);
+    return;
+  }
+  if (!h.still.complete || !h.still.naturalWidth) return;
+  const P = pad();
   h.c.clearRect(0, 0, h.cv.width, h.cv.height); shadow(h.c, w); h.c.drawImage(h.still, P, P);
 }
 function shadow(c, w){
@@ -71,8 +103,10 @@ function shadow(c, w){
   c.save(); c.translate(0, P + m.h - 4); c.scale(1, w === 'boss' ? .12 : .16); c.translate(0, -(P + m.h - 4)); c.fillStyle = g; c.fillRect(P - 20, P + m.h - 4 - m.w * .5, m.w + 40, m.w); c.restore();
 }
 function drawFrame(w, s, f){
-  const h = H[w], cw = cellW(w), ch = cellH(w), cols = s.cols || s.frames, col = f % cols, row = Math.floor(f / cols);
-  h.c.clearRect(0, 0, h.cv.width, h.cv.height); h.c.drawImage(s.img, col * cw, row * ch, cw, ch, 0, 0, cw, ch);
+  const h = H[w], cw = (s.cell && s.cell[0]) || cellW(w), ch = (s.cell && s.cell[1]) || cellH(w);
+  const cols = s.cols || s.frames, col = f % cols, row = Math.floor(f / cols);
+  h.c.clearRect(0, 0, h.cv.width, h.cv.height);
+  h.c.drawImage(s.img, col * cw, row * ch, cw, ch, 0, 0, cw, ch);
 }
 function resolve(w, name){
   const h = H[w]; if (!h) return null;
@@ -80,16 +114,43 @@ function resolve(w, name){
   return null;
 }
 function playSheet(w, s, {loop = false, hold = false} = {}){
-  const h = H[w], tok = ++h.token, fps = s.fps || 12, dur = 1000 / fps;
+  const h = H[w], tok = ++h.token;
+  const durs = s.durs && s.durs.length ? s.durs : null;
+  const totalDur = durs ? durs.reduce((a, b) => a + b, 0) : s.frames * (1000 / (s.fps || 12));
   return new Promise(res => {
-    let f = 0, start = performance.now();
+    let lastF = -1, start = performance.now();
     const tick = now => {
       if (h.token !== tok) return res(false);
-      const nf = Math.floor((now - start) / dur);
-      if (nf >= s.frames) { if (loop) { start = now; f = 0; } else { if (hold) drawFrame(w, s, s.frames - 1); else drawStill(w); return res(true); } }
-      else f = nf;
-      drawFrame(w, s, f); requestAnimationFrame(tick);
+      let elapsed = now - start;
+      if (elapsed >= totalDur) {
+        if (loop) {
+          start = now;
+          elapsed = 0;
+        } else {
+          if (hold) drawFrame(w, s, s.frames - 1);
+          else drawStill(w);
+          return res(true);
+        }
+      }
+      let f = 0;
+      if (durs) {
+        let acc = 0;
+        for (let i = 0; i < durs.length; i++) {
+          acc += durs[i];
+          if (elapsed < acc) { f = i; break; }
+        }
+      } else {
+        const fps = s.fps || 12;
+        f = Math.min(s.frames - 1, Math.floor(elapsed / (1000 / fps)));
+      }
+      if (f !== lastF) {
+        lastF = f;
+        drawFrame(w, s, f);
+      }
+      requestAnimationFrame(tick);
     };
+    drawFrame(w, s, 0);
+    lastF = 0;
     requestAnimationFrame(tick);
   });
 }
@@ -108,15 +169,40 @@ function scheduleIdle(w, delay){
   h.idleT = setTimeout(async () => {
     if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, w === 'cleriga' ? rnd(11000, 22000) : rnd(4500, 10000)); }
     if (h.cur || h.dead || document.hidden || !h.sheets.idle) return scheduleIdle(w, rnd(1500, 3500));
-    h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, rnd(1500, 4000));
+    h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, w === 'mage' ? rnd(300, 1200) : rnd(1500, 4000));
   }, delay);
 }
 const DEATH_MS = {mage:800, guerreiro:1100, tank:900, cleriga:1300};   // duracao da queda: o cinza so entra quando ela termina
 function grayLater(h, dead){ clearTimeout(h.grayT); if (!dead) { h.cv.classList.remove('dead'); return; } h.grayT = setTimeout(() => { if (h.dead) h.cv.classList.add('dead'); }, DEATH_MS[h.who] || 900); }
 function setDead(w, dead){
-  const h = H[w]; if (!h || h.dead === dead) return; h.dead = dead; if (h.rig) { grayLater(h, dead); h.rig.setDead(dead); h.token++; h.cur = null; if (!dead) { scheduleIdle(w, 1500); if (window.Extras) Extras.fx(w, 'revive'); } else if (window.Extras) Extras.low(w, false); return; } h.cv.classList.toggle('dead', dead);
-  if (dead) { const r = resolve(w, 'death'); if (r) playSheet(w, r.s, {hold:true}); }
-  else { h.token++; h.cur = null; const r = resolve(w, 'revive'); if (r) playSheet(w, r.s).then(() => scheduleIdle(w, 1500)); else { drawStill(w); scheduleIdle(w, 1500); } }
+  const h = H[w]; if (!h || h.dead === dead) return;
+  h.dead = dead;
+  if (h.rig) {
+    grayLater(h, dead);
+    h.rig.setDead(dead);
+    h.token++;
+    h.cur = null;
+    if (!dead) {
+      scheduleIdle(w, 1500);
+      if (window.Extras) Extras.fx(w, 'revive');
+    } else if (window.Extras) Extras.low(w, false);
+    return;
+  }
+  grayLater(h, dead);
+  if (dead) {
+    h.token++;
+    h.cur = 'death';
+    const r = resolve(w, 'death');
+    if (r) playSheet(w, r.s, {hold:true});
+    else h.cv.classList.add('dead');
+  } else {
+    h.token++;
+    h.cur = 'revive';
+    h.cv.classList.remove('dead');
+    const r = resolve(w, 'revive');
+    if (r) playSheet(w, r.s).then(() => { h.cur = null; scheduleIdle(w, 200); });
+    else { h.cur = null; drawStill(w); scheduleIdle(w, 1500); }
+  }
 }
 function setAura(w, kind){
   const h = H[w]; if (!h) return; if (h.rig && h.rig.setMode) { h.rig.setMode(kind === 'red' && w !== 'boss' ? 'bers' : kind); return; }   // Guerreiro: o modo troca as poses (aura já desenhada)

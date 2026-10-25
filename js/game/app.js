@@ -1113,10 +1113,11 @@ async function activateUlt(k, sh, forced){
   const ft = cleTarget && A.feet ? A.feet(cleTarget) : null;
   const tx = cleTarget ? (ft ? ft.x : HERO_X[cleTarget] / 100 * 1024) : null;
   const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:ft ? ft.y : 1098, tget:A.body ? () => A.body(cleTarget) : null, bx:ULT_BX[cleTarget] || 0, by:ULT_BY[cleTarget] || 0} : {}); A.sayRandom(k, 'ult', 1);
-  if (k === 'mage') {   // cada dano entra junto do seu estouro do buraco negro (1,5x no 1º, 2,5x no 2º = 4x)
-    const onHit = () => Promise.race([A.hit('mage'), sleep(6500)]);
-    await onHit(); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', true, true);
-    await onHit(); await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', true, true);
+  if (k === 'mage') {   // cada dano entra sincronizado com a animação suprema (1,5x no 1º, 2,5x no 2º = 4x)
+    await sleep(1200);
+    await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', false, true);
+    await sleep(1000);
+    await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', false, true);
     state.ultCd.mage = 1;
   }
   else if (k === 'guerreiro') { b.bers = 2; b.tired = 0; }
@@ -2042,11 +2043,17 @@ function shoot(fromX, fromY, toX, toY, color, ms){
     {left:toX+'%', top:toY+'%', opacity:1, transform:'translate(-50%,-50%) scale(1.3)'}
   ], {duration:ms || 620, easing:'ease-in', fill:'forwards'}).finished.then(() => p.remove());
 }
-const RIG_HERO = k => k === 'mage' || k === 'cleriga' || k === 'tank' || k === 'guerreiro';   // têm animação própria com projétil/efeito: o dano só entra no impacto
+const RIG_HERO = k => k === 'cleriga' || k === 'tank' || k === 'guerreiro';   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
   const cmb = (state.streak && state.streak[k]) || 0; if (cmb >= 3) floatText(HERO_X[k], 50, `COMBO x${cmb}`, '#ffd34d');
   const pl = A.play(k, an, {color:col, combo:cmb}); if (say) A.sayRandom(k, say, .5);
-  if (!RIG_HERO(k)) { await wait(an === 'heavy' ? 480 : 300); return heroAttack(k, dmg, col); }
+  if (!RIG_HERO(k)) {
+    const delay = k === 'mage' ? 700 : (an === 'heavy' ? 480 : 300);
+    await wait(delay);
+    await heroAttack(k, dmg, col);
+    await Promise.race([pl, wait(3000)]);
+    return;
+  }
   await Promise.race([A.hit(k), wait(4500)]);
   await heroAttack(k, dmg, col, true);
   await Promise.race([pl, wait(3500)]);
