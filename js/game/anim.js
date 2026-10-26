@@ -63,7 +63,6 @@ function build(){
     if (w === 'tank' && window.TankRig) buildMage(H[w], m, P, window.TankRig, {PX:200, PXR:200, PT:280, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'guerreiro' && window.GuerreiroRig) buildMage(H[w], m, P, window.GuerreiroRig, {PX:230, PXR:250, PT:230, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'boss' && (window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig)) buildMage(H[w], m, P, window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
-    if (w === 'cleriga' && window.ClericRig) buildMage(H[w], m, P, window.ClericRig, {PX:170, PXR:110, PT:230, PB:40, orb:{x:m.x + 150, y:m.y + 40}});
   });
   const bodyFeet = w => { const f = feetOf(w); return f ? {x:bodyX(w), y:f.y} : f; };   // efeitos sobre aliados (cura, proteção, pouca vida) centrados no corpo, não nos pés
   if (window.Extras) Extras.init($('#game'), bodyFeet);
@@ -71,7 +70,7 @@ function build(){
   fetch('data/anim_manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
     WHO.forEach(w => applyCanvasLayout(w));
-    for (const w of WHO) { H[w].sheets = await loadSheets(w); drawStill(w); scheduleIdle(w, w === 'cleriga' ? rnd(6000, 12000) : rnd(800, 2500)); }
+    for (const w of WHO) { H[w].sheets = await loadSheets(w); drawStill(w); scheduleIdle(w, rnd(800, 2500)); }
   });
 }
 function buildMage(h, m, P, Rig, cfg){
@@ -158,7 +157,7 @@ async function play(w, name, opts = {}){
   const h = H[w]; if (!h) return false;
   if (h.dead && name !== 'revive') return false;
   if (opts.combo >= 3 && window.Extras) Extras.fx(w, 'combo', {n:opts.combo});   // sequência de acertos: aura extra no ataque
-  if (h.rig) { const n = h.rig.has(name) ? name : h.rig.has('melee') && name !== 'idle' ? 'melee' : null; if (!n) return false; clearTimeout(h.idleT); h.cur = n; await h.rig.play(n, opts); h.cur = null; scheduleIdle(w, w === 'cleriga' ? rnd(9000, 16000) : rnd(1200, 3200)); return true; }
+  if (h.rig) { const n = h.rig.has(name) ? name : h.rig.has('melee') && name !== 'idle' ? 'melee' : null; if (!n) return false; clearTimeout(h.idleT); h.cur = n; await h.rig.play(n, opts); h.cur = null; scheduleIdle(w, rnd(1200, 3200)); return true; }
   const r = resolve(w, name); if (!r) return false;
   clearTimeout(h.idleT); h.cur = name;
   await playSheet(w, r.s);
@@ -167,12 +166,12 @@ async function play(w, name, opts = {}){
 function scheduleIdle(w, delay){
   const h = H[w]; if (!h) return; clearTimeout(h.idleT);
   h.idleT = setTimeout(async () => {
-    if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, w === 'cleriga' ? rnd(11000, 22000) : rnd(4500, 10000)); }
+    if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, rnd(4500, 10000)); }
     if (h.cur || h.dead || document.hidden || !h.sheets.idle) return scheduleIdle(w, rnd(1500, 3500));
-    h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, w === 'mage' ? rnd(300, 1200) : rnd(1500, 4000));
+    h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, (w === 'mage' || w === 'cleriga') ? rnd(300, 1200) : rnd(1500, 4000));
   }, delay);
 }
-const DEATH_MS = {mage:800, guerreiro:1100, tank:900, cleriga:1300};   // duracao da queda: o cinza so entra quando ela termina
+const DEATH_MS = {mage:800, guerreiro:1100, tank:900, cleriga:940};   // duracao da queda: o cinza so entra quando ela termina
 function grayLater(h, dead){ clearTimeout(h.grayT); if (!dead) { h.cv.classList.remove('dead'); return; } h.grayT = setTimeout(() => { if (h.dead) h.cv.classList.add('dead'); }, DEATH_MS[h.who] || 900); }
 function setDead(w, dead){
   const h = H[w]; if (!h || h.dead === dead) return;
