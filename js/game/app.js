@@ -2043,12 +2043,12 @@ function shoot(fromX, fromY, toX, toY, color, ms){
     {left:toX+'%', top:toY+'%', opacity:1, transform:'translate(-50%,-50%) scale(1.3)'}
   ], {duration:ms || 620, easing:'ease-in', fill:'forwards'}).finished.then(() => p.remove());
 }
-const RIG_HERO = k => k === 'tank' || k === 'guerreiro';   // têm animação própria com projétil/efeito: o dano só entra no impacto
+const RIG_HERO = k => k === 'guerreiro';   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
   const cmb = (state.streak && state.streak[k]) || 0; if (cmb >= 3) floatText(HERO_X[k], 50, `COMBO x${cmb}`, '#ffd34d');
   const pl = A.play(k, an, {color:col, combo:cmb}); if (say) A.sayRandom(k, say, .5);
   if (!RIG_HERO(k)) {
-    const delay = k === 'mage' ? 700 : k === 'cleriga' ? 450 : (an === 'heavy' ? 480 : 300);
+    const delay = k === 'mage' ? 700 : k === 'cleriga' ? 450 : k === 'tank' ? (an === 'heavy' ? 2210 : 440) : (an === 'heavy' ? 480 : 300);
     await wait(delay);
     await heroAttack(k, dmg, col);
     await Promise.race([pl, wait(3000)]);

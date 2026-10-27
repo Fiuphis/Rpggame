@@ -60,7 +60,6 @@ function build(){
     H[w] = {who:w, cv, c:cv.getContext('2d'), still, sheets:{}, cur:null, dead:false, idleT:null, token:0, hold:null};
     applyCanvasLayout(w);
     drawStill(w); still.onload = () => { if (!H[w].cur) drawStill(w); };
-    if (w === 'tank' && window.TankRig) buildMage(H[w], m, P, window.TankRig, {PX:200, PXR:200, PT:280, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'guerreiro' && window.GuerreiroRig) buildMage(H[w], m, P, window.GuerreiroRig, {PX:230, PXR:250, PT:230, PB:50, orb:{x:m.x + 200, y:m.y + 60}});
     if (w === 'boss' && (window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig)) buildMage(H[w], m, P, window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
   });
@@ -168,10 +167,10 @@ function scheduleIdle(w, delay){
   h.idleT = setTimeout(async () => {
     if (h.rig && !h.cur && !h.dead && !document.hidden) { h.cur = 'idle'; await h.rig.idle(); h.cur = null; return scheduleIdle(w, rnd(4500, 10000)); }
     if (h.cur || h.dead || document.hidden || !h.sheets.idle) return scheduleIdle(w, rnd(1500, 3500));
-    h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, (w === 'mage' || w === 'cleriga') ? rnd(300, 1200) : rnd(1500, 4000));
+    h.cur = 'idle'; await playSheet(w, pick(h.sheets.idle)); h.cur = null; scheduleIdle(w, (w === 'mage' || w === 'cleriga' || w === 'tank') ? rnd(300, 1200) : rnd(1500, 4000));
   }, delay);
 }
-const DEATH_MS = {mage:800, guerreiro:1100, tank:900, cleriga:940};   // duracao da queda: o cinza so entra quando ela termina
+const DEATH_MS = {mage:800, guerreiro:1100, tank:2400, cleriga:940};   // duracao da queda: o cinza so entra quando ela termina
 function grayLater(h, dead){ clearTimeout(h.grayT); if (!dead) { h.cv.classList.remove('dead'); return; } h.grayT = setTimeout(() => { if (h.dead) h.cv.classList.add('dead'); }, DEATH_MS[h.who] || 900); }
 function setDead(w, dead){
   const h = H[w]; if (!h || h.dead === dead) return;
