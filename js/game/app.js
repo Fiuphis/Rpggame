@@ -1114,10 +1114,14 @@ async function activateUlt(k, sh, forced){
   const tx = cleTarget ? (ft ? ft.x : HERO_X[cleTarget] / 100 * 1024) : null;
   const ultPl = A.play(k, 'ult', cleTarget ? {tx, ty:ft ? ft.y : 1098, tget:A.body ? () => A.body(cleTarget) : null, bx:ULT_BX[cleTarget] || 0, by:ULT_BY[cleTarget] || 0} : {}); A.sayRandom(k, 'ult', 1);
   if (k === 'mage') {   // cada dano entra sincronizado com a animação suprema (1,5x no 1º, 2,5x no 2º = 4x)
+    const vb = VFXON();   // Buraco Negro sobre o boss: cresce, puxa (1º dano) e implode (2º dano)
+    if (vb) VFX.play('maga-buraco-negro', {x:BOSS_HIT.x, y:BOSS_HIT.y - 10, scale:2.6, speed:.85, delay:700, glow:{col:'150,80,255', r:420, a:.45}});
     await sleep(1200);
-    await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', false, true);
+    if (vb) VFX.shake(5, 300);
+    await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[0]), '#b36bff', vb, true);
     await sleep(1000);
-    await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', false, true);
+    if (vb) { VFX.flash('210,170,255', 320, .45); VFX.shake(10, 420); }
+    await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', vb, true);
     state.ultCd.mage = 1;
   }
   else if (k === 'guerreiro') { b.bers = 2; b.tired = 0; }
@@ -1285,7 +1289,7 @@ async function iceStrike(to0, o = {}){
   const a = actOf(t), sk = a ? a.skill : null, el = a ? a.element : null;
   if (!o.noAnim) { const an = o.anim || 'jab'; if (A.has('boss', an)) { A.play('boss', an, {tx:HERO_WX(t), ty:1010}); await Promise.race([A.hit('boss'), wait(2200)]); } else await shoot(50, 26, HERO_X[t], 60, ICE_COL[type], 420); }
   if (sk && sk.kind === 'dodge') { A.play(t, 'dodge'); floatText(HERO_X[t], 56, 'ESQUIVOU!', '#9fe3a8'); if (o.tempest) state.stun = true; return 0; }
-  if (o.fireNegates && sk && sk.id === 'elem_def' && el === 'fire') { A.play(t, 'guard', {color:ELEMENTS.fire.color}); floatText(HERO_X[t], 56, 'ESCUDO DE FOGO!', '#ff9d3d'); return 0; }
+  if (o.fireNegates && sk && sk.id === 'elem_def' && el === 'fire') { A.play(t, 'guard', {color:ELEMENTS.fire.color}); heroFx(t, 'guard', sk, el); floatText(HERO_X[t], 56, 'ESCUDO DE FOGO!', '#ff9d3d'); return 0; }
   let d = rt.dmg, note = rt.note;
   if (sk && sk.kind === 'def') { const red = (sk.holy ? BOSS.weak.includes('holy') : sk.elem && BOSS.weak.includes(el)) && sk.bonus ? sk.bonus : sk.reduce; d = Math.round(d * (1 - red)); note += ' (defesa)'; if (sk.id === 'holy_def') iceCure(t, {bleed:true}); }
   if (I.frozen[t] > 0) { d = Math.round(d * FROZEN_MULT); note += ' (congelado)'; }
@@ -1955,9 +1959,9 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
         if (k === 'mage' && el === 'fire') { iceThawAll(); showBanner('FOGO DA MAGA', 'os aliados descongelam e perdem 1 de Frio'); await wait(900); }
         if (state.ice.counter && (k === 'guerreiro' || k === 'tank') && sk.kind === 'atk') { showBanner('CONTRA-ATAQUE!', `${GROUPS[k]} atacou com físico e leva um golpe de volta`); await iceStrike(k, {type:'cut', rank:q.difficulty, anim:'jab'}); hideBanner(); }
       } }   // elemental no boss imune: faz o ataque (efeito visível), dano 0
-    else if (hurt > 0) { if (defended) { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .5); await wait(250); } await bossCounter(k, hurt, defended); }
-    else if (sk && sk.kind === 'dodge') { A.play(k, 'dodge'); A.sayRandom(k, 'dodge', .55); if (!ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8'); }
-    else if (sk && sk.kind === 'def') { A.play(k, 'guard', {color:guardColor(sk, el)}); A.sayRandom(k, 'defend', .4); }
+    else if (hurt > 0) { if (defended) { A.play(k, 'guard', {color:guardColor(sk, el)}); heroFx(k, 'guard', sk, el); A.sayRandom(k, 'defend', .5); await wait(250); } await bossCounter(k, hurt, defended); }
+    else if (sk && sk.kind === 'dodge') { A.play(k, 'dodge'); heroFx(k, 'dodge', sk, el); A.sayRandom(k, 'dodge', .55); if (!ok) floatText(HERO_X[k], 58, 'ESQUIVOU!', '#9fe3a8'); }
+    else if (sk && sk.kind === 'def') { A.play(k, 'guard', {color:guardColor(sk, el)}); heroFx(k, 'guard', sk, el); A.sayRandom(k, 'defend', .4); }
     renderHud(); await wait(700);
     hideBanner(); hideRing();
     if (state.bossHp <= 0) return endGame(true);
@@ -2043,10 +2047,35 @@ function shoot(fromX, fromY, toX, toY, color, ms){
     {left:toX+'%', top:toY+'%', opacity:1, transform:'translate(-50%,-50%) scale(1.3)'}
   ], {duration:ms || 620, easing:'ease-in', fill:'forwards'}).finished.then(() => p.remove());
 }
+// Efeitos em pixel art da Maga (js/game/vfx.js): lançamento na ponta do cajado, projétil, impacto no boss, escudos, esquiva, Buraco Negro
+const MAGE_EL = {fire:'fogo', water:'agua', air:'ar', earth:'terra'};
+const MAGE_GLOW = {mana:'170,110,255', fogo:'255,140,40', agua:'90,170,255', ar:'150,240,210', terra:'214,166,96'};
+const BOSS_HIT = {x:512, y:390};   // centro do corpo do boss (grid 1024x1536)
+const magePt = (sx, sy) => { const f = A.feet ? A.feet('mage') : {x:109.5, y:1097}; return {x:f.x + 2 * sx - 175, y:f.y + 2 * sy - 292}; };   // pixel do quadro 172 da Maga -> grid
+const VFXON = () => window.VFX && VFX.has('maga-mana-projetil');
+function heroFx(k, kind, sk, el){
+  if (k !== 'mage' || !VFXON()) return;
+  if (kind === 'guard') {   // escudo do elemento escolhido (ou de mana) em volta dela enquanto segura a defesa
+    const e = sk && sk.id === 'elem_def' && MAGE_EL[el] ? MAGE_EL[el] : 'mana', c = magePt(88, 88);
+    VFX.play(`maga-${e}-escudo`, {x:c.x, y:c.y, loop:true, delay:230, dur:1250, fade:180, pop:200, glow:{col:MAGE_GLOW[e], r:200, a:.4}});
+  } else if (kind === 'dodge') { const c = magePt(88, 100); VFX.play('maga-esquiva-velocidade', {x:c.x, y:c.y, loop:true, delay:40, dur:560, fade:120}); }
+}
+async function mageCast(k, col, dmg, pl){   // conjura na ponta do cajado (quadro em que ela o ergue), dispara e explode no boss; o dano entra no impacto
+  const e = MAGE_EL[state.lastEl] || 'mana', gc = MAGE_GLOW[e], tip = magePt(88, 41.5), b = BOSS_HIT;
+  VFX.play(`maga-${e}-conjuracao`, {x:tip.x, y:tip.y, delay:400, speed:2, glow:{col:gc, r:80, a:.55}});
+  await sleep(760);
+  VFX.flash(gc, 160, .12);
+  await VFX.play(`maga-${e}-projetil`, {x:tip.x, y:tip.y, loop:true, glow:{col:gc, r:110, a:.65}, to:{x:b.x, y:b.y, ms:420, ease:'in'}});
+  VFX.play(`maga-${e}-impacto`, {x:b.x, y:b.y, scale:3, speed:.7, glow:{col:gc, r:240, a:.75}});
+  VFX.flash(gc, 280, .28); VFX.shake(e === 'terra' || e === 'fogo' ? 9 : 6, 340);
+  await heroAttack(k, dmg, col, true);
+  await Promise.race([pl, wait(3000)]);
+}
 const RIG_HERO = k => false;   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
   const cmb = (state.streak && state.streak[k]) || 0; if (cmb >= 3) floatText(HERO_X[k], 50, `COMBO x${cmb}`, '#ffd34d');
   const pl = A.play(k, an, {color:col, combo:cmb}); if (say) A.sayRandom(k, say, .5);
+  if (k === 'mage' && VFXON()) return mageCast(k, col, dmg, pl);
   if (!RIG_HERO(k)) {
     const delay = k === 'mage' ? 700 : k === 'cleriga' ? 450 : k === 'tank' ? (an === 'heavy' ? 2210 : 440) : k === 'guerreiro' ? (an === 'heavy' ? 950 : 600) : (an === 'heavy' ? 480 : 300);
     await wait(delay);

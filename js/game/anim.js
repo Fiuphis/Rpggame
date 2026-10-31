@@ -65,6 +65,7 @@ function build(){
   const bodyFeet = w => { const f = feetOf(w); return f ? {x:bodyX(w), y:f.y} : f; };   // efeitos sobre aliados (cura, proteção, pouca vida) centrados no corpo, não nos pés
   if (window.Extras) Extras.init($('#game'), bodyFeet);
   if (window.PXFX) PXFX.init($('#game'), bodyFeet);
+  if (window.VFX) VFX.init($('#game'));
   fetch('data/anim_manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : null).catch(() => null).then(async cfg => {
     if (cfg) CFG = cfg;
     WHO.forEach(w => applyCanvasLayout(w));
@@ -210,7 +211,7 @@ function low(w, on){ const h = H[w]; if (!h || !h.rig || !h.rig.setLow) return; 
 function enterPrep(w){ const h = H[w]; if (h) { h.cv.style.opacity = 0; clearTimeout(h.enT); h.enT = setTimeout(() => { h.cv.style.opacity = ''; }, 6000); } }
 function enter(w, delay = 0){ const h = H[w]; if (!h || !h.cv.animate) { if (h) h.cv.style.opacity = ''; return; }
   setTimeout(() => { clearTimeout(h.enT); h.cv.style.opacity = ''; h.cv.animate([{transform:'translateY(46px)', opacity:0}, {transform:'translateY(0)', opacity:1}], {duration:650, easing:'cubic-bezier(.2,.8,.3,1)'}); if (window.Extras) Extras.fx(w, 'enter'); }, delay); }
-function reset(){ if (window.Extras) Extras.clear(); if (window.PXFX) PXFX.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
+function reset(){ if (window.Extras) Extras.clear(); if (window.VFX) VFX.clear(); if (window.PXFX) PXFX.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
 // centro do corpo do herói na pose atual (centro de massa horizontal dos pixels opacos do canvas, em coordenadas do mundo)
 var bodyCache = {};

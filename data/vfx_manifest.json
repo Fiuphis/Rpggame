@@ -1,0 +1,389 @@
+{
+ "maga-agua-conjuracao": {
+  "src": "assets/fx/maga-agua-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-agua-escudo": {
+  "src": "assets/fx/maga-agua-escudo.png",
+  "w": 172,
+  "h": 172,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-agua-impacto": {
+  "src": "assets/fx/maga-agua-impacto.png",
+  "w": 74,
+  "h": 94,
+  "frames": 8,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-agua-projetil": {
+  "src": "assets/fx/maga-agua-projetil.png",
+  "w": 48,
+  "h": 48,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-ar-conjuracao": {
+  "src": "assets/fx/maga-ar-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-ar-escudo": {
+  "src": "assets/fx/maga-ar-escudo.png",
+  "w": 172,
+  "h": 172,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-ar-impacto": {
+  "src": "assets/fx/maga-ar-impacto.png",
+  "w": 74,
+  "h": 83,
+  "frames": 6,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-ar-projetil": {
+  "src": "assets/fx/maga-ar-projetil.png",
+  "w": 48,
+  "h": 48,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-buraco-negro": {
+  "src": "assets/fx/maga-buraco-negro.png",
+  "w": 192,
+  "h": 192,
+  "frames": 23,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-esquiva-velocidade": {
+  "src": "assets/fx/maga-esquiva-velocidade.png",
+  "w": 162,
+  "h": 72,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-fogo-conjuracao": {
+  "src": "assets/fx/maga-fogo-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-fogo-escudo": {
+  "src": "assets/fx/maga-fogo-escudo.png",
+  "w": 172,
+  "h": 172,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-fogo-impacto": {
+  "src": "assets/fx/maga-fogo-impacto.png",
+  "w": 96,
+  "h": 96,
+  "frames": 10,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "maga-fogo-projetil": {
+  "src": "assets/fx/maga-fogo-projetil.png",
+  "w": 48,
+  "h": 48,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-mana-conjuracao": {
+  "src": "assets/fx/maga-mana-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-mana-escudo": {
+  "src": "assets/fx/maga-mana-escudo.png",
+  "w": 172,
+  "h": 172,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-mana-impacto": {
+  "src": "assets/fx/maga-mana-impacto.png",
+  "w": 80,
+  "h": 79,
+  "frames": 7,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-mana-projetil": {
+  "src": "assets/fx/maga-mana-projetil.png",
+  "w": 48,
+  "h": 48,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-terra-conjuracao": {
+  "src": "assets/fx/maga-terra-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-terra-escudo": {
+  "src": "assets/fx/maga-terra-escudo.png",
+  "w": 172,
+  "h": 172,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-terra-impacto": {
+  "src": "assets/fx/maga-terra-impacto.png",
+  "w": 92,
+  "h": 117,
+  "frames": 9,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-terra-projetil": {
+  "src": "assets/fx/maga-terra-projetil.png",
+  "w": 48,
+  "h": 48,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ }
+}
