@@ -621,7 +621,7 @@ function renderHud(){
   });
   HERO_ORDER.forEach(k => A.setDead(k, state.heroes[k].hp <= 0));
   HERO_ORDER.forEach(k => A.low(k, state.heroes[k].hp > 0 && state.heroes[k].hp / HERO_MAX_HP <= .3));   // pouca vida: pose cansada e pulso vermelho
-  A.setAura('mage', b.bh > 0 ? 'blue' : null); A.setAura('guerreiro', b.bers > 0 ? 'red' : b.tired > 0 ? 'tired' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
+  A.setAura('mage', b.bh > 0 ? 'blue' : null); const bOn = b.bers > 0 && state.heroes.guerreiro.hp > 0; bersAura(bOn); A.setAura('guerreiro', bOn && bersFx ? null : b.bers > 0 ? 'red' : b.tired > 0 ? 'tired' : null); A.setAura('tank', b.taunt > 0 ? 'orange' : null);
   HERO_ORDER.forEach(k => bars['ult_' + k].classList.toggle('ready', !!state.ultReady[k]));
   bars.rage.querySelectorAll('.rage-seg b').forEach((el, i) => el.classList.toggle('on', i < state.rage));
   bars.rage.classList.toggle('full', state.rage >= RAGE_MAX);
@@ -1124,7 +1124,10 @@ async function activateUlt(k, sh, forced){
     await heroAttack(k, Math.round(HERO_BASE.mage * BH_PARTS[1]), '#d9a8ff', vb, true);
     state.ultCd.mage = 1;
   }
-  else if (k === 'guerreiro') { b.bers = 2; b.tired = 0; }
+  else if (k === 'guerreiro') {   // Berserk: no rugido a fúria explode e a aura acende atrás dele
+    b.bers = 2; b.tired = 0;
+    if (VFXON()) { bersAura(true, 800); setTimeout(() => { VFX.flash('255,70,40', 300, .25); VFX.shake(9, 420); }, 800); }
+  }
   else if (k === 'tank') {   // Provocação: crava o martelo e ruge, anéis de provocação saem dele
     b.taunt = 2;
     if (VFXON()) { const c = bodyPt('tank'), f = A.feet('tank');
@@ -1923,7 +1926,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
       if (sk.id === 'pass') {
         const t = act.target; sub = `passou a vez para ${GROUPS[t]}`;
         showBanner(`${nm}: ${sk.name}`, sub); await wait(1100);
-        A.play(k, 'pass'); A.sayRandom(k, 'pass', .6);
+        A.play(k, 'pass'); heroFx(k, 'pass', t); A.sayRandom(k, 'pass', .6);
         if (correct[t] && state.heroes[t].hp > 0) { showRing(t); await doAttack(t, 'melee', null, Math.round(HERO_BASE[t] * 1.5)); } else floatText(HERO_X[t], 56, 'ERROU!', '#ff6b81');
         renderHud(); await wait(700); hideBanner(); hideRing();
         if (state.bossHp <= 0) return endGame(true);
@@ -2074,6 +2077,12 @@ function heroFx(k, kind, sk, el){
     else if (kind === 'dodge') VFX.play('maga-esquiva-velocidade', {x:c.x, y:c.y + 20, loop:true, delay:40, dur:560, fade:120});
     return;
   }
+  if (k === 'guerreiro') {
+    if (kind === 'guard') { const o = ovalAt('guerreiro'); VFX.play('tank-defesa', {...o, y:o.y - 16, scale:3.8, loop:true, delay:200, dur:1300, fade:180, pop:200, glow:{col:STEEL, r:200, a:.25}}); }
+    else if (kind === 'dodge') { const c = bodyPt('guerreiro'); VFX.play('maga-esquiva-velocidade', {x:c.x, y:c.y + 20, loop:true, delay:40, dur:560, fade:120}); }
+    else if (kind === 'pass') { const f = A.feet(sk); VFX.play('guerreiro-passar', {x:f.x, y:f.y + 4, scale:4.2, loop:true, delay:550, dur:1500, fade:200, glow:{col:'255,210,110', r:160, a:.4}}); }
+    return;
+  }
   if (k === 'tank') {
     const c = bodyPt('tank');
     if (kind === 'guard') VFX.play('tank-defesa', {...ovalAt('tank'), loop:true, delay:200, dur:1300, fade:180, pop:200, glow:{col:STEEL, r:200, a:.25}});
@@ -2116,6 +2125,32 @@ async function clericCast(k, an, col, dmg, pl){   // sagrado: luz junta na cabe�
   await heroAttack(k, dmg, col, true);
   await Promise.race([pl, wait(3000)]);
 }
+let bersFx = null;   // aura do Berserk (atrás do Guerreiro) enquanto durar
+function bersAura(on, delay = 0){   // anel de chamas: metade de trás atrás dele, metade da frente na frente
+  if (!window.VFX || !VFX.has('guerreiro-berserk-tras')) return;
+  if (on && !bersFx) {
+    const f = A.feet('guerreiro'), o = {x:f.x, y:f.y + 6, scale:4.2, loop:true, delay, pop:250}, me = [];
+    VFX.play('guerreiro-berserk-tras', {...o, back:true, glow:{col:'255,70,40', r:220, a:.35}, handle:e => me.push(e)});
+    VFX.play('guerreiro-berserk-frente', {...o, handle:e => me.push(e)}).then(() => { if (bersFx === me) bersFx = null; });
+    bersFx = me;
+  } else if (!on && bersFx) { bersFx.forEach(e => VFX.stop(e)); bersFx = null; }
+}
+async function warriorCast(k, an, col, dmg, pl){   // espada: corte no boss quando a lâmina desce; pesado: talho vertical depois do salto
+  const b = BOSS_HIT;
+  if (an === 'heavy') {
+    await sleep(950);
+    VFX.play('guerreiro-corte-pesado', {x:b.x - 150, y:b.y - 10, scale:4.4, speed:.85, glow:{col:STEEL, r:200, a:.5}});
+    VFX.play('fisico-impacto', {x:b.x, y:b.y, scale:4, speed:.8, glow:{col:STEEL, r:220, a:.55}});
+    VFX.flash('235,240,255', 240, .28); VFX.shake(11, 420);
+  } else {
+    await sleep(600);
+    VFX.play('guerreiro-corte', {x:b.x - 90, y:b.y - 70, scale:4.6, glow:{col:STEEL, r:180, a:.45}});
+    VFX.play('fisico-impacto', {x:b.x, y:b.y, scale:3, delay:60, glow:{col:STEEL, r:160, a:.4}});
+    VFX.flash(STEEL, 160, .15); VFX.shake(6, 280);
+  }
+  await heroAttack(k, dmg, col, true);
+  await Promise.race([pl, wait(3000)]);
+}
 async function tankCast(k, an, col, dmg, pl){   // martelo: faíscas no boss; super pesado: o golpe racha o chão aos pés dele
   const b = BOSS_HIT;
   if (an === 'heavy') {
@@ -2138,6 +2173,7 @@ async function doAttack(k, an, col, dmg, say){
   if (k === 'mage' && VFXON()) return mageCast(k, col, dmg, pl);
   if (k === 'cleriga' && VFXON()) return clericCast(k, an, col, dmg, pl);
   if (k === 'tank' && VFXON()) return tankCast(k, an, col, dmg, pl);
+  if (k === 'guerreiro' && VFXON()) return warriorCast(k, an, col, dmg, pl);
   if (!RIG_HERO(k)) {
     const delay = k === 'mage' ? 700 : k === 'cleriga' ? 450 : k === 'tank' ? (an === 'heavy' ? 2210 : 440) : k === 'guerreiro' ? (an === 'heavy' ? 950 : 600) : (an === 'heavy' ? 480 : 300);
     await wait(delay);

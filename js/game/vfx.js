@@ -1,10 +1,10 @@
 /* Banco de Dados I — RPG · efeitos em pixel art (sprite sheets do PixelLab vfx_workbench)
    Tiras horizontais em assets/fx/, descritas em data/vfx_manifest.json ({src, w, h, ax, ay, frames, durs}; ax/ay = origem do efeito).
    Desenha numa camada própria (coordenadas do grid 1024x1536, ampliado x2 como os heróis), com brilho aditivo por baixo.
-   API: VFX.play(nome, {x, y, scale, speed, loop, dur, glow, to:{x, y, ms, ease}}) -> promessa (fim), VFX.flash(cor, ms, a), VFX.shake(px, ms), VFX.clear(). */
+   API: VFX.play(nome, {x, y, scale, speed, loop, dur, glow, back, to:{x, y, ms, ease}}) (back = atrás dos heróis) -> promessa (fim), VFX.flash(cor, ms, a), VFX.shake(px, ms), VFX.clear(). */
 (() => {
 'use strict';
-let cv = null, g = null, el = null, MAN = {}, list = [], running = false;
+let cv = null, g = null, gf = null, gb = null, cvb = null, el = null, MAN = {}, list = [], running = false;
 const IMG = {};
 const clk = () => performance.now() * (window.__ts == null ? 1 : window.__ts);
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -27,6 +27,7 @@ function frameAt(m, t, loop){
 }
 function draw(e, now){
   const t = (now - e.t0) * e.speed; if (t < 0) return true;
+  g = e.back ? gb : gf;
   const m = MAN[e.n], im = img(e.n); if (!m) return false;
   if (e.dur != null && now - e.t0 >= e.dur) return false;
   const f = frameAt(m, t, e.loop); if (f < 0) return false;
@@ -40,7 +41,7 @@ function draw(e, now){
 }
 function frame(){
   if (!running) return; const now = clk();
-  g.clearRect(0, 0, cv.width, cv.height);
+  gf.clearRect(0, 0, cv.width, cv.height); gb.clearRect(0, 0, cv.width, cv.height);
   list = list.filter(e => { const ok = draw(e, now); if (!ok && e.done) e.done(); return ok; });
   if (!list.length) { running = false; return; }
   requestAnimationFrame(frame);
@@ -49,7 +50,8 @@ function start(){ if (!running && cv) { running = true; requestAnimationFrame(fr
 
 window.VFX = {
   init(root){
-    if (cv) return; el = root; cv = document.createElement('canvas'); cv.className = 'fxl front vfx'; cv.width = 1024; cv.height = 1536; root.append(cv); g = cv.getContext('2d');
+    if (cv) return; el = root; cv = document.createElement('canvas'); cv.className = 'fxl front vfx'; cv.width = 1024; cv.height = 1536; root.append(cv); gf = g = cv.getContext('2d');
+    cvb = document.createElement('canvas'); cvb.className = 'fxl back vfx'; cvb.width = 1024; cvb.height = 1536; root.append(cvb); gb = cvb.getContext('2d');
     fetch('data/vfx_manifest.json', {cache:'no-cache'}).then(r => r.ok ? r.json() : {}).catch(() => ({})).then(m => { MAN = m || {}; Object.keys(MAN).forEach(img); });
   },
   has: n => !!MAN[n],
@@ -57,7 +59,7 @@ window.VFX = {
   play(n, o = {}){
     if (!cv || !MAN[n]) return Promise.resolve(false);
     return new Promise(res => {
-      const e = {n, x:o.x || 0, y:o.y || 0, scale:o.scale || 2, speed:o.speed || 1, loop:!!o.loop, dur:o.dur, fade:o.fade || 0, pop:o.pop || 0, glow:o.glow || null, to:o.to || null, t0:clk() + (o.delay || 0), done:() => res(true)};
+      const e = {n, x:o.x || 0, y:o.y || 0, scale:o.scale || 2, speed:o.speed || 1, loop:!!o.loop, dur:o.dur, fade:o.fade || 0, pop:o.pop || 0, glow:o.glow || null, back:!!o.back, to:o.to || null, t0:clk() + (o.delay || 0), done:() => res(true)};
       list.push(e); start(); if (o.handle) o.handle(e);
     });
   },
@@ -70,6 +72,6 @@ window.VFX = {
     if (!el) return; const k = [], n = 8; for (let i = 0; i <= n; i++) { const f = 1 - i / n; k.push({transform:`translate(${((i % 2 ? 1 : -1) * px * f).toFixed(1)}px,${((i % 3 ? -1 : 1) * px * .5 * f).toFixed(1)}px)`}); }
     el.animate(k, {duration:ms, easing:'linear'});
   },
-  clear(){ list.forEach(e => e.done && e.done()); list = []; if (g) g.clearRect(0, 0, cv.width, cv.height); },
+  clear(){ list.forEach(e => e.done && e.done()); list = []; if (gf) { gf.clearRect(0, 0, cv.width, cv.height); gb.clearRect(0, 0, cv.width, cv.height); } },
 };
 })();
