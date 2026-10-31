@@ -1127,7 +1127,9 @@ async function activateUlt(k, sh, forced){
   else if (k === 'guerreiro') { b.bers = 2; b.tired = 0; }
   else if (k === 'tank') b.taunt = 2;
   else {
-    const t = cleTarget; await sleep(900);   // a luz desce sobre o alvo e só então a vida muda
+    const t = cleTarget;
+    if (VFXON()) { const f = A.feet(t); VFX.play('cleriga-sagrado-raio', {x:f.x, y:f.y - 6, scale:2.6, delay:350, glow:{col:HOLY, r:220, a:.6}}); setTimeout(() => VFX.flash(HOLY, 260, .22), 600); }
+    await sleep(900);   // a luz desce sobre o alvo e só então a vida muda
     const h = state.heroes[t];
     if (h.hp <= 0) { h.hp = REVIVE_HP; floatText(HERO_X[t], 56, 'REVIVEU!', '#ffe08a'); }
     else { h.hp = Math.min(HERO_MAX_HP, h.hp + HEAL_AMOUNT); floatText(HERO_X[t], 56, `+${HEAL_AMOUNT}`, '#9fe3a8'); A.extra(t, 'heal'); A.react(t, 'right'); }
@@ -2050,11 +2052,20 @@ function shoot(fromX, fromY, toX, toY, color, ms){
 // Efeitos em pixel art da Maga (js/game/vfx.js): lançamento na ponta do cajado, projétil, impacto no boss, escudos, esquiva, Buraco Negro
 const MAGE_EL = {fire:'fogo', water:'agua', air:'ar', earth:'terra'};
 const MAGE_GLOW = {mana:'170,110,255', fogo:'255,140,40', agua:'90,170,255', ar:'150,240,210', terra:'214,166,96'};
-const BOSS_HIT = {x:512, y:390};   // centro do corpo do boss (grid 1024x1536)
+const BOSS_HIT = {x:512, y:390}, BOSS_FEET_Y = 690;   // centro do corpo do boss e linha do chão sob ele (grid 1024x1536)
 const magePt = (sx, sy) => { const f = A.feet ? A.feet('mage') : {x:109.5, y:1097}; return {x:f.x + 2 * sx - 175, y:f.y + 2 * sy - 292}; };   // pixel do quadro 172 da Maga -> grid
 const VFXON = () => window.VFX && VFX.has('maga-mana-projetil');
+const heroPt = (w, cx, cy) => { const f = A.feet(w); return {x:f.x + cx - 175, y:f.y + cy - 292}; };   // pixel da célula 344 do herói -> grid
+const HOLY = '255,226,140', STEEL = '220,228,240';
 function heroFx(k, kind, sk, el){
-  if (k !== 'mage' || !VFXON()) return;
+  if (!VFXON()) return;
+  if (k === 'cleriga') {
+    const c = heroPt('cleriga', 172, 172);
+    if (kind === 'guard') { const h = sk && sk.holy; VFX.play(h ? 'cleriga-sagrado-escudo' : 'cleriga-defesa-escudo', {x:c.x, y:c.y, loop:true, delay:200, dur:1300, fade:180, pop:200, glow:{col:h ? HOLY : STEEL, r:200, a:h ? .45 : .25}}); }
+    else if (kind === 'dodge') VFX.play('maga-esquiva-velocidade', {x:c.x, y:c.y + 20, loop:true, delay:40, dur:560, fade:120});
+    return;
+  }
+  if (k !== 'mage') return;
   if (kind === 'guard') {   // escudo do elemento escolhido (ou de mana) em volta dela enquanto segura a defesa
     const e = sk && sk.id === 'elem_def' && MAGE_EL[el] ? MAGE_EL[el] : 'mana', c = magePt(88, 88);
     VFX.play(`maga-${e}-escudo`, {x:c.x, y:c.y, loop:true, delay:230, dur:1250, fade:180, pop:200, glow:{col:MAGE_GLOW[e], r:200, a:.4}});
@@ -2062,12 +2073,30 @@ function heroFx(k, kind, sk, el){
 }
 async function mageCast(k, col, dmg, pl){   // conjura na ponta do cajado (quadro em que ela o ergue), dispara e explode no boss; o dano entra no impacto
   const e = MAGE_EL[state.lastEl] || 'mana', gc = MAGE_GLOW[e], tip = magePt(88, 41.5), b = BOSS_HIT;
-  VFX.play(`maga-${e}-conjuracao`, {x:tip.x, y:tip.y, delay:400, speed:2, glow:{col:gc, r:80, a:.55}});
-  await sleep(760);
+  VFX.play(`maga-${e}-conjuracao`, {x:tip.x, y:tip.y, delay:470, speed:2, glow:{col:gc, r:80, a:.55}});
+  await sleep(830);   // o cajado já parou apontado (quadros 4-12): a energia junta e sai da ponta
   VFX.flash(gc, 160, .12);
   await VFX.play(`maga-${e}-projetil`, {x:tip.x, y:tip.y, loop:true, glow:{col:gc, r:110, a:.65}, to:{x:b.x, y:b.y, ms:420, ease:'in'}});
   VFX.play(`maga-${e}-impacto`, {x:b.x, y:b.y, scale:3, speed:.7, glow:{col:gc, r:240, a:.75}});
   VFX.flash(gc, 280, .28); VFX.shake(e === 'terra' || e === 'fogo' ? 9 : 6, 340);
+  await heroAttack(k, dmg, col, true);
+  await Promise.race([pl, wait(3000)]);
+}
+async function clericCast(k, an, col, dmg, pl){   // sagrado: luz junta na cabeça do cajado, raio desce no boss e explode; golpe: impacto no boss quando o cajado estica
+  const b = BOSS_HIT;
+  if (an === 'holy') {
+    const tip = heroPt('cleriga', 224, 71);
+    VFX.play('cleriga-sagrado-conjuracao', {x:tip.x, y:tip.y, delay:490, speed:2, glow:{col:HOLY, r:80, a:.55}});
+    await sleep(850); VFX.flash(HOLY, 160, .12);   // cajado parado apontado (quadros 4-10)
+    VFX.play('cleriga-sagrado-raio', {x:b.x, y:BOSS_FEET_Y, scale:4.6, glow:{col:HOLY, r:200, a:.6}});
+    await sleep(110);
+    VFX.play('cleriga-sagrado-impacto', {x:b.x, y:b.y, scale:3, speed:.7, glow:{col:HOLY, r:240, a:.75}});
+    VFX.flash(HOLY, 280, .3); VFX.shake(6, 340);
+  } else {
+    await sleep(470);
+    VFX.play('fisico-impacto', {x:b.x, y:b.y, scale:3, glow:{col:STEEL, r:180, a:.5}});
+    VFX.flash(STEEL, 160, .15); VFX.shake(5, 260);
+  }
   await heroAttack(k, dmg, col, true);
   await Promise.race([pl, wait(3000)]);
 }
@@ -2076,6 +2105,7 @@ async function doAttack(k, an, col, dmg, say){
   const cmb = (state.streak && state.streak[k]) || 0; if (cmb >= 3) floatText(HERO_X[k], 50, `COMBO x${cmb}`, '#ffd34d');
   const pl = A.play(k, an, {color:col, combo:cmb}); if (say) A.sayRandom(k, say, .5);
   if (k === 'mage' && VFXON()) return mageCast(k, col, dmg, pl);
+  if (k === 'cleriga' && VFXON()) return clericCast(k, an, col, dmg, pl);
   if (!RIG_HERO(k)) {
     const delay = k === 'mage' ? 700 : k === 'cleriga' ? 450 : k === 'tank' ? (an === 'heavy' ? 2210 : 440) : k === 'guerreiro' ? (an === 'heavy' ? 950 : 600) : (an === 'heavy' ? 480 : 300);
     await wait(delay);

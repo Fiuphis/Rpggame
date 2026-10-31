@@ -1,5 +1,5 @@
 /* Banco de Dados I — RPG · efeitos em pixel art (sprite sheets do PixelLab vfx_workbench)
-   Tiras horizontais em assets/fx/, descritas em data/vfx_manifest.json ({src, w, h, frames, durs}).
+   Tiras horizontais em assets/fx/, descritas em data/vfx_manifest.json ({src, w, h, ax, ay, frames, durs}; ax/ay = origem do efeito).
    Desenha numa camada própria (coordenadas do grid 1024x1536, ampliado x2 como os heróis), com brilho aditivo por baixo.
    API: VFX.play(nome, {x, y, scale, speed, loop, dur, glow, to:{x, y, ms, ease}}) -> promessa (fim), VFX.flash(cor, ms, a), VFX.shake(px, ms), VFX.clear(). */
 (() => {
@@ -35,7 +35,7 @@ function draw(e, now){
   let a = 1; if (e.dur != null && e.fade) a = clamp((e.dur - (now - e.t0)) / e.fade) * clamp((now - e.t0) / e.fade);   // entra e sai suave
   const s = e.scale * (e.pop ? .6 + .4 * clamp((now - e.t0) / e.pop) : 1);
   if (e.glow) { const p = .85 + .15 * Math.sin(now / 90); glow(x, y, e.glow.r * s / 2 * p, e.glow.col, (e.glow.a || .5) * a); }
-  if (im) { g.save(); g.globalAlpha = a; g.imageSmoothingEnabled = false; const w = m.w * s, h = m.h * s; g.drawImage(im, f * m.w, 0, m.w, m.h, Math.round(x - w / 2), Math.round(y - h / 2), w, h); g.restore(); }
+  if (im) { g.save(); g.globalAlpha = a; g.imageSmoothingEnabled = false; const w = m.w * s, h = m.h * s; const ax = (m.ax != null ? m.ax : m.w / 2) * s, ay = (m.ay != null ? m.ay : m.h / 2) * s; g.drawImage(im, f * m.w, 0, m.w, m.h, Math.round(x - ax), Math.round(y - ay), w, h); g.restore(); }
   return true;
 }
 function frame(){

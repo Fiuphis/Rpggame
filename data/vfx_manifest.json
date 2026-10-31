@@ -3,6 +3,8 @@
   "src": "assets/fx/maga-agua-conjuracao.png",
   "w": 67,
   "h": 67,
+  "ax": 33,
+  "ay": 33,
   "frames": 12,
   "durs": [
    83,
@@ -23,6 +25,8 @@
   "src": "assets/fx/maga-agua-escudo.png",
   "w": 172,
   "h": 172,
+  "ax": 86,
+  "ay": 86,
   "frames": 8,
   "durs": [
    100,
@@ -39,6 +43,8 @@
   "src": "assets/fx/maga-agua-impacto.png",
   "w": 74,
   "h": 94,
+  "ax": 37,
+  "ay": 37,
   "frames": 8,
   "durs": [
    48,
@@ -55,6 +61,8 @@
   "src": "assets/fx/maga-agua-projetil.png",
   "w": 48,
   "h": 48,
+  "ax": 24,
+  "ay": 24,
   "frames": 8,
   "durs": [
    83,
@@ -71,6 +79,8 @@
   "src": "assets/fx/maga-ar-conjuracao.png",
   "w": 67,
   "h": 67,
+  "ax": 33,
+  "ay": 33,
   "frames": 12,
   "durs": [
    83,
@@ -91,6 +101,8 @@
   "src": "assets/fx/maga-ar-escudo.png",
   "w": 172,
   "h": 172,
+  "ax": 86,
+  "ay": 86,
   "frames": 8,
   "durs": [
    100,
@@ -107,6 +119,8 @@
   "src": "assets/fx/maga-ar-impacto.png",
   "w": 74,
   "h": 83,
+  "ax": 37,
+  "ay": 40,
   "frames": 6,
   "durs": [
    48,
@@ -121,6 +135,8 @@
   "src": "assets/fx/maga-ar-projetil.png",
   "w": 48,
   "h": 48,
+  "ax": 24,
+  "ay": 24,
   "frames": 8,
   "durs": [
    83,
@@ -137,6 +153,8 @@
   "src": "assets/fx/maga-buraco-negro.png",
   "w": 192,
   "h": 192,
+  "ax": 96,
+  "ay": 96,
   "frames": 23,
   "durs": [
    83,
@@ -168,6 +186,8 @@
   "src": "assets/fx/maga-esquiva-velocidade.png",
   "w": 162,
   "h": 72,
+  "ax": 117,
+  "ay": 37,
   "frames": 8,
   "durs": [
    83,
@@ -184,6 +204,8 @@
   "src": "assets/fx/maga-fogo-conjuracao.png",
   "w": 67,
   "h": 67,
+  "ax": 33,
+  "ay": 33,
   "frames": 12,
   "durs": [
    83,
@@ -204,6 +226,8 @@
   "src": "assets/fx/maga-fogo-escudo.png",
   "w": 172,
   "h": 172,
+  "ax": 86,
+  "ay": 86,
   "frames": 8,
   "durs": [
    100,
@@ -220,6 +244,8 @@
   "src": "assets/fx/maga-fogo-impacto.png",
   "w": 96,
   "h": 96,
+  "ax": 48,
+  "ay": 48,
   "frames": 10,
   "durs": [
    71,
@@ -238,6 +264,8 @@
   "src": "assets/fx/maga-fogo-projetil.png",
   "w": 48,
   "h": 48,
+  "ax": 24,
+  "ay": 24,
   "frames": 8,
   "durs": [
    83,
@@ -254,6 +282,8 @@
   "src": "assets/fx/maga-mana-conjuracao.png",
   "w": 67,
   "h": 67,
+  "ax": 33,
+  "ay": 33,
   "frames": 12,
   "durs": [
    83,
@@ -274,6 +304,8 @@
   "src": "assets/fx/maga-mana-escudo.png",
   "w": 172,
   "h": 172,
+  "ax": 86,
+  "ay": 86,
   "frames": 8,
   "durs": [
    100,
@@ -290,6 +322,8 @@
   "src": "assets/fx/maga-mana-impacto.png",
   "w": 80,
   "h": 79,
+  "ax": 38,
+  "ay": 42,
   "frames": 7,
   "durs": [
    48,
@@ -305,6 +339,8 @@
   "src": "assets/fx/maga-mana-projetil.png",
   "w": 48,
   "h": 48,
+  "ax": 24,
+  "ay": 24,
   "frames": 8,
   "durs": [
    83,
@@ -321,6 +357,8 @@
   "src": "assets/fx/maga-terra-conjuracao.png",
   "w": 67,
   "h": 67,
+  "ax": 33,
+  "ay": 33,
   "frames": 12,
   "durs": [
    83,
@@ -341,6 +379,8 @@
   "src": "assets/fx/maga-terra-escudo.png",
   "w": 172,
   "h": 172,
+  "ax": 86,
+  "ay": 86,
   "frames": 8,
   "durs": [
    100,
@@ -357,6 +397,8 @@
   "src": "assets/fx/maga-terra-impacto.png",
   "w": 92,
   "h": 117,
+  "ax": 46,
+  "ay": 37,
   "frames": 9,
   "durs": [
    48,
@@ -374,6 +416,8 @@
   "src": "assets/fx/maga-terra-projetil.png",
   "w": 48,
   "h": 48,
+  "ax": 24,
+  "ay": 24,
   "frames": 8,
   "durs": [
    83,
@@ -384,6 +428,116 @@
    83,
    83,
    83
+  ]
+ },
+ "cleriga-defesa-escudo": {
+  "src": "assets/fx/cleriga-defesa-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "cleriga-sagrado-conjuracao": {
+  "src": "assets/fx/cleriga-sagrado-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "ax": 33,
+  "ay": 33,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "cleriga-sagrado-escudo": {
+  "src": "assets/fx/cleriga-sagrado-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "cleriga-sagrado-impacto": {
+  "src": "assets/fx/cleriga-sagrado-impacto.png",
+  "w": 80,
+  "h": 79,
+  "ax": 38,
+  "ay": 42,
+  "frames": 7,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "cleriga-sagrado-raio": {
+  "src": "assets/fx/cleriga-sagrado-raio.png",
+  "w": 72,
+  "h": 122,
+  "ax": 36,
+  "ay": 106,
+  "frames": 10,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "fisico-impacto": {
+  "src": "assets/fx/fisico-impacto.png",
+  "w": 93,
+  "h": 87,
+  "ax": 45,
+  "ay": 45,
+  "frames": 5,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63
   ]
  }
 }
