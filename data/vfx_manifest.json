@@ -539,5 +539,92 @@
    63,
    63
   ]
+ },
+ "tank-martelo-impacto": {
+  "src": "assets/fx/tank-martelo-impacto.png",
+  "w": 67,
+  "h": 79,
+  "ax": 33,
+  "ay": 25,
+  "frames": 5,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "tank-onda-choque": {
+  "src": "assets/fx/tank-onda-choque.png",
+  "w": 116,
+  "h": 91,
+  "ax": 58,
+  "ay": 32,
+  "frames": 7,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "tank-protecao": {
+  "src": "assets/fx/tank-protecao.png",
+  "w": 77,
+  "h": 101,
+  "ax": 38,
+  "ay": 50,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "tank-provocacao": {
+  "src": "assets/fx/tank-provocacao.png",
+  "w": 110,
+  "h": 110,
+  "ax": 55,
+  "ay": 55,
+  "frames": 9,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "tank-defesa": {
+  "src": "assets/fx/tank-defesa.png",
+  "w": 77,
+  "h": 101,
+  "ax": 38,
+  "ay": 50,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
  }
 }

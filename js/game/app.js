@@ -1125,7 +1125,13 @@ async function activateUlt(k, sh, forced){
     state.ultCd.mage = 1;
   }
   else if (k === 'guerreiro') { b.bers = 2; b.tired = 0; }
-  else if (k === 'tank') b.taunt = 2;
+  else if (k === 'tank') {   // Provocação: crava o martelo e ruge, anéis de provocação saem dele
+    b.taunt = 2;
+    if (VFXON()) { const c = bodyPt('tank'), f = A.feet('tank');
+      VFX.play('tank-onda-choque', {x:f.x + 60, y:f.y, scale:2, delay:540, glow:{col:EARTH, r:140, a:.3}}); setTimeout(() => VFX.shake(5, 260), 540);
+      [1100, 1700, 2380].forEach((d, i) => VFX.play('tank-provocacao', {x:c.x, y:c.y, scale:2.4 + i * .3, delay:d, glow:{col:TAUNT, r:200, a:.4}}));
+      setTimeout(() => { VFX.flash(TAUNT, 300, .2); VFX.shake(8, 380); }, 2380); }
+  }
   else {
     const t = cleTarget;
     if (VFXON()) { const f = A.feet(t); VFX.play('cleriga-sagrado-raio', {x:f.x, y:f.y - 6, scale:2.6, delay:350, glow:{col:HOLY, r:220, a:.6}}); setTimeout(() => VFX.flash(HOLY, 260, .22), 600); }
@@ -1954,7 +1960,7 @@ async function playRound(){ if (TEST_MODE && PARAMS.get('pause')) return;
     if (ST.ice) hurt = 0;   // Hrimgar: o dano vem dos golpes depois das ações
     const col = el ? ELEMENTS[el].color : null;
     showBanner(`${nm}: ${sk ? sk.name : 'sem ação'}${el ? ' · ' + ELEMENTS[el].name : ''}`, sub); await wait(1100);
-    if (sk && sk.id === 'guard') { A.play(k, 'guard', {color:'#ff9d3d'}); A.sayRandom(k, 'guard', .6); }
+    if (sk && sk.id === 'guard') { A.play(k, 'guard', {color:'#ff9d3d'}); heroFx(k, 'protect', act.target, 300); A.sayRandom(k, 'guard', .6); }
     if (dmg !== 0 || (sk && sk.kind === 'atk' && sk.elem && el && BOSS.immune.includes(el) && (ok || (k === 'guerreiro' && state.buff.bers > 0)))) {
       state.lastEl = el; await doAttack(k, skAnim(k, sk), col, dmg, skSay(k, sk)); state.lastEl = null;
       if (ST.ice && dmg > 0 && state.heroes[k].hp > 0) {
@@ -2056,13 +2062,23 @@ const BOSS_HIT = {x:512, y:390}, BOSS_FEET_Y = 690;   // centro do corpo do boss
 const magePt = (sx, sy) => { const f = A.feet ? A.feet('mage') : {x:109.5, y:1097}; return {x:f.x + 2 * sx - 175, y:f.y + 2 * sy - 292}; };   // pixel do quadro 172 da Maga -> grid
 const VFXON = () => window.VFX && VFX.has('maga-mana-projetil');
 const heroPt = (w, cx, cy) => { const f = A.feet(w); return {x:f.x + cx - 175, y:f.y + cy - 292}; };   // pixel da célula 344 do herói -> grid
-const HOLY = '255,226,140', STEEL = '220,228,240';
+const HOLY = '255,226,140', STEEL = '220,228,240', EARTH = '214,176,128', GUARD = '140,190,240', TAUNT = '255,110,40';
+const bodyPt = w => { const f = A.feet(w); return {x:f.x, y:f.y - 125}; };   // centro do corpo do herói (grid)
+const OVAL_FIT = {mage:[-8, -122, 3.3], guerreiro:[2, -134, 3.5], tank:[-24, -140, 3.6], cleriga:[-6, -126, 3.3]};   // oval de escudo em volta de cada herói: deslocamento dos pés e escala (medido no idle)
+const ovalAt = w => { const f = A.feet(w), o = OVAL_FIT[w]; return {x:f.x + o[0], y:f.y + o[1], scale:o[2]}; };
 function heroFx(k, kind, sk, el){
   if (!VFXON()) return;
   if (k === 'cleriga') {
     const c = heroPt('cleriga', 172, 172);
     if (kind === 'guard') { const h = sk && sk.holy; VFX.play(h ? 'cleriga-sagrado-escudo' : 'cleriga-defesa-escudo', {x:c.x, y:c.y, loop:true, delay:200, dur:1300, fade:180, pop:200, glow:{col:h ? HOLY : STEEL, r:200, a:h ? .45 : .25}}); }
     else if (kind === 'dodge') VFX.play('maga-esquiva-velocidade', {x:c.x, y:c.y + 20, loop:true, delay:40, dur:560, fade:120});
+    return;
+  }
+  if (k === 'tank') {
+    const c = bodyPt('tank');
+    if (kind === 'guard') VFX.play('tank-defesa', {...ovalAt('tank'), loop:true, delay:200, dur:1300, fade:180, pop:200, glow:{col:STEEL, r:200, a:.25}});
+    else if (kind === 'dodge') VFX.play('maga-esquiva-velocidade', {x:c.x, y:c.y + 20, loop:true, delay:40, dur:560, fade:120});
+    else if (kind === 'protect') { VFX.play('tank-protecao', {...ovalAt(sk), loop:true, delay:el || 0, dur:1500, fade:200, pop:220, glow:{col:GUARD, r:200, a:.35}}); }
     return;
   }
   if (k !== 'mage') return;
@@ -2100,12 +2116,28 @@ async function clericCast(k, an, col, dmg, pl){   // sagrado: luz junta na cabe�
   await heroAttack(k, dmg, col, true);
   await Promise.race([pl, wait(3000)]);
 }
+async function tankCast(k, an, col, dmg, pl){   // martelo: faíscas no boss; super pesado: o golpe racha o chão aos pés dele
+  const b = BOSS_HIT;
+  if (an === 'heavy') {
+    await sleep(2210);   // quadro em que o martelo desce
+    VFX.play('tank-onda-choque', {x:b.x, y:BOSS_FEET_Y, scale:5.2, speed:.8, glow:{col:EARTH, r:260, a:.35}});
+    VFX.play('tank-martelo-impacto', {x:b.x, y:b.y, scale:5, speed:.8, glow:{col:'255,190,110', r:220, a:.6}});
+    VFX.flash('255,235,200', 260, .3); VFX.shake(13, 480);
+  } else {
+    await sleep(440);
+    VFX.play('tank-martelo-impacto', {x:b.x, y:b.y, scale:4, glow:{col:'255,190,110', r:180, a:.5}});
+    VFX.flash(STEEL, 160, .15); VFX.shake(7, 300);
+  }
+  await heroAttack(k, dmg, col, true);
+  await Promise.race([pl, wait(3000)]);
+}
 const RIG_HERO = k => false;   // têm animação própria com projétil/efeito: o dano só entra no impacto
 async function doAttack(k, an, col, dmg, say){
   const cmb = (state.streak && state.streak[k]) || 0; if (cmb >= 3) floatText(HERO_X[k], 50, `COMBO x${cmb}`, '#ffd34d');
   const pl = A.play(k, an, {color:col, combo:cmb}); if (say) A.sayRandom(k, say, .5);
   if (k === 'mage' && VFXON()) return mageCast(k, col, dmg, pl);
   if (k === 'cleriga' && VFXON()) return clericCast(k, an, col, dmg, pl);
+  if (k === 'tank' && VFXON()) return tankCast(k, an, col, dmg, pl);
   if (!RIG_HERO(k)) {
     const delay = k === 'mage' ? 700 : k === 'cleriga' ? 450 : k === 'tank' ? (an === 'heavy' ? 2210 : 440) : k === 'guerreiro' ? (an === 'heavy' ? 950 : 600) : (an === 'heavy' ? 480 : 300);
     await wait(delay);
@@ -2137,7 +2169,7 @@ async function heroAttack(hero, dmg = ATTACK_DAMAGE, colOverride = null, landed 
 }
 async function bossCounter(hero, dmg, defended){
   const r = routeHit(hero, dmg), t = r.to;
-  if (t !== hero && t === 'tank' && state.heroes.tank.hp > 0) { A.play('tank', 'cover'); A.extra(hero, 'guard'); }   // o Tanque cobre o aliado
+  if (t !== hero && t === 'tank' && state.heroes.tank.hp > 0) { A.play('tank', 'cover'); A.extra(hero, 'guard'); heroFx('tank', 'protect', hero, 0); }   // o Tanque cobre o aliado
   const anim = {1:'slashH', 2:'slashV', 3:'slashH', 4:'summon', 5:'summon'}[state.curQ ? state.curQ.difficulty : 1] || 'slashH';
   if (A.has('boss', anim)) { A.play('boss', anim, {tx:HERO_WX(t), ty:1010}); await Promise.race([A.hit('boss'), wait(3500)]); }
   else await shoot(50, 26, HERO_X[t], 60, '#ff2d4d', 560);
