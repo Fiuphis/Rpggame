@@ -20,7 +20,7 @@ raiz/                 páginas (.html) e arquivos que precisam ficar na raiz
   conta.html            entrar / criar conta / trocar senha
   editor.html           editor de perguntas (só a conta fiuphis)
   intro_malg.html, intro_ice.html   pré-visualização das aberturas dos chefes
-  sw.js                 service worker (cache offline); precisa ficar na raiz
+  sw.js                 service worker (cache: código por versão, mídia persistente); precisa ficar na raiz
   manifest.webmanifest  dados do PWA
 js/
   core/                 peças comuns: tela cheia, transições, efeitos, frases
@@ -40,7 +40,7 @@ assets/
   hud/ items/ sprites/ ui/        molduras do HUD, itens/poções/baú, sprites parados, botões e painéis
   fonts/                fontes
 supabase/               banco de dados (migrations/, local/) e seu README
-tools/                  scripts para gerar/recortar a arte (Python) e o servidor local de teste (localsrv/)
+tools/                  scripts para gerar/recortar a arte (Python), o servidor local de teste (localsrv/) e swrev.mjs (impressões digitais da mídia em sw.js)
 docs/                   CHANGELOG.md, ANIMACOES.md
 ```
 
@@ -102,10 +102,11 @@ Parâmetros úteis na URL: `?mock=1` (rede simulada), `?sb=<url local>` (aponta 
 ## Ao publicar uma versão
 1. Aumentar `CACHE` em `sw.js` (ex.: `bd1-rpg-v313`) e `V` em `js/pages/cover.js`.
 2. Se criou arquivo que deve funcionar offline, incluí-lo na lista `ASSETS` de `sw.js`.
-3. Registrar a mudança em `docs/CHANGELOG.md`.
-4. Commit direto na `main` (o GitHub Pages publica sozinho).
+3. Rodar `node tools/swrev.mjs`: grava em `sw.js` a impressão digital de cada imagem e fonte. O service worker guarda a mídia num cache que não é apagado a cada versão e só baixa de novo o que mudou; sem esse passo, uma imagem alterada com o mesmo nome não chega aos aparelhos que já têm o jogo.
+4. Registrar a mudança em `docs/CHANGELOG.md`.
+5. Commit direto na `main` (o GitHub Pages publica sozinho).
 
 ## Convenções
 - Textos do jogo em português, sem emojis.
 - Pastas de arte por assunto; um `.js` por tela em `js/pages/`. Caminhos de arte sempre a partir da raiz (`assets/...`), porque o código roda dentro das páginas da raiz; só os `.css` usam `../assets/...`.
-- Scripts em `tools/` geram a arte a partir de folhas-fonte e escrevem direto em `assets/`; não são necessários para rodar o jogo.
+- Scripts em `tools/` geram a arte a partir de folhas-fonte e escrevem direto em `assets/`; não são necessários para rodar o jogo (exceto `swrev.mjs`, que entra no passo de publicar).

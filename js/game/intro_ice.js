@@ -48,7 +48,7 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
       cap = $('.in-cap'), capTxt = cap.querySelector('span'), btn = $('.in-skip'), cnt = btn.querySelector('b');
     const imgs = await Promise.all([load(IMG.close), load(IMG.crack), load(IMG.far)]);
     [iClose.src, iCrack.src, iFar.src] = [IMG.close, IMG.crack, IMG.far];
-    requestAnimationFrame(() => { try { window.bd1Ready && bd1Ready(); } catch (e) {} });   // solta a nevoa da troca de tela
+    setTimeout(() => { try { window.bd1Ready && bd1Ready(); } catch (e) {} }, 650);   // v339: solta as nuvens do shell quando a cena comeca a clarear (T.fadeIn), nao no preto inicial
     const ctx = fx.getContext('2d'), cc = crc.getContext('2d'), CR = genCracks();
     let yes = 0, mine = false, skipped = false, revealed = false, done = false, t0 = performance.now(), lastNow = t0, W = 0, H = 0, snow = [], shards = [], mist = [], shk = [], evs = [], shake = {a:0, t:0, d:1};
     const paintBtn = () => { cnt.textContent = `${yes}/${need}`; btn.classList.toggle('selected', mine); };

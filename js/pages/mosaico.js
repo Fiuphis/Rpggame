@@ -28,7 +28,7 @@ addEventListener('resize', layout);
     const c = document.createElement('div'); c.className = 'c';
     const f = document.createElement('iframe'); f.title = NM[p.grp] || p.grp; f.src = 'game.html?' + (rest ? rest + '&' : '') + 'spec=' + room + ':' + p.grp + '&mini=1';
     const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-label', 'Abrir tela de ' + (NM[p.grp] || p.grp));
-    b.onclick = () => { try { sessionStorage.setItem('bd1_spec', JSON.stringify({ room, grp: p.grp })); } catch (e) {} location.href = 'game.html' + (rest ? '?' + rest : ''); };
+    b.onclick = () => { if (window.__mgo) return; window.__mgo = 1; try { sessionStorage.setItem('bd1_spec', JSON.stringify({ room, grp: p.grp })); sessionStorage.setItem('bd1_gate', '1'); } catch (e) {} const go = () => { location.href = 'game.html' + (rest ? '?' + rest : ''); }; if (window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(go); else go(); };   // v339: portoes (a volta da batalha espectada tambem usa portoes)
     c.append(f, b); gr.appendChild(c); cells.push(c);
   });
   layout();

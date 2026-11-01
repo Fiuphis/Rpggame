@@ -117,8 +117,8 @@ function make(host){
   const {c, cv, Px, Py, W, Hh, world, layers} = host, front = layers.front, fc = front.getContext('2d');
   const cw = cv.width, ch = cv.height, OX = world.x - Px, OY = world.y - Py;      // canvas da Maga → coordenadas do design
   let M = null; const img = {}, fxm = {};
-  const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
-  fetch('assets/characters/mage/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `assets/characters/mage/${n}.png`)); FXS.forEach(n => load('fx_' + n, `assets/characters/mage/fx_${n}.png`)); }).catch(() => {});
+  const load = (k, src) => img[k] || (img[k] = bd1Img(src));
+  bd1Json('assets/characters/mage/meta.json').then(j => { M = j; POSES.forEach(n => load(n, `assets/characters/mage/${n}.png`)); FXS.forEach(n => load('fx_' + n, `assets/characters/mage/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let low = 0, hist = [], dead = 0, deadTarget = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 60};
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;

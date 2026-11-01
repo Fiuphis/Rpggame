@@ -10,7 +10,7 @@ const $ = s => document.querySelector(s), rnd = (a, b) => a + Math.random() * (b
 let CFG = {pad:60, heroes:{}}, built = false;
 const H = {};   // estado por personagem
 
-const loadImg = src => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+const loadImg = src => new Promise(res => { let n = 0; const i = new Image(); i.onload = () => res(i); i.onerror = () => { if (n++ < 3) setTimeout(() => { i.src = src + (src.includes('?') ? '&' : '?') + 'r=' + n; }, 700 * n); else res(null); }; i.src = src; });   // v339: tenta de novo se a rede falhar
 const list = v => v == null ? [] : Array.isArray(v) ? v : [v];
 
 async function loadSheets(w){

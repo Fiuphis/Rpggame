@@ -62,8 +62,9 @@ $('#ls').addEventListener('click', e => {
   const mo = e.target.closest('.mos'); if (mo && !leaving) { leaving = true; clearInterval(timer); location.href = 'mosaico.html?room=' + mo.closest('.rm').dataset.id + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); return; }
   const b = e.target.closest('.pb'); if (!b || b.disabled || leaving) return;
   leaving = true; clearInterval(timer);
-  try { sessionStorage.setItem('bd1_spec', JSON.stringify({ room: b.closest('.rm').dataset.id, grp: b.dataset.g })); } catch (x) {}
-  location.href = 'game.html' + location.search;
+  try { sessionStorage.setItem('bd1_spec', JSON.stringify({ room: b.closest('.rm').dataset.id, grp: b.dataset.g })); sessionStorage.setItem('bd1_gate', '1'); } catch (x) {}
+  // v339: portoes na ida e na volta da batalha espectada (antes: ~1 s de tela preta enquanto a batalha carregava)
+  const go = () => { location.href = 'game.html' + location.search; }; if (window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(go); else go();
 });
 $('#home').onclick = () => { if (leaving) return; leaving = true; try { sessionStorage.removeItem('bd1_spec'); } catch (e) {} location.href = 'cover.html' + location.search; };   // v338: sem transicao ao sair do espectador para a tela inicial
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
@@ -73,5 +74,6 @@ addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
   if (!adm) { location.replace('cover.html' + location.search); return; }
   mtLoad(); load(); timer = setInterval(() => { if (!document.hidden) load(); }, 4000);
 })();
+if (window.Gate) Gate.arrive();   // voltou da batalha espectada pelos portoes
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }));
 })();

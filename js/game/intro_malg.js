@@ -46,7 +46,7 @@ function play({voters = 1, need = 1, bots = false, net = null, onReveal = () => 
       cap = $('.in-cap'), capTxt = cap.querySelector('span'), btn = $('.in-skip'), cnt = btn.querySelector('b');
     const imgs = await Promise.all([load(IMG.hand), load(IMG.face), load(IMG.far), load(IMG.stand)]);
     [iHand.src, iFace.src, iFar.src, iStand.src] = [IMG.hand, IMG.face, IMG.far, IMG.stand];
-    requestAnimationFrame(() => { try { window.bd1Ready && bd1Ready(); } catch (e) {} });   // a abertura ja tem imagens: solta a nevoa da troca de tela
+    setTimeout(() => { try { window.bd1Ready && bd1Ready(); } catch (e) {} }, 380);   // v339: solta as nuvens do shell quando a mao comeca a aparecer (T.handIn), nao no preto inicial da abertura
     const ctx = fx.getContext('2d'), dc = dk.getContext('2d');
     let yes = 0, mine = false, skipped = false, revealed = false, done = false, t0 = performance.now(), lastNow = t0, W = 0, H = 0, sparks = [], evs = [], shake = {a:0, t:0, d:1}, flashA = 0, lit = TORCHES.map(() => -1), tsim = [];
     const paintBtn = () => { cnt.textContent = `${yes}/${need}`; btn.classList.toggle('selected', mine); };

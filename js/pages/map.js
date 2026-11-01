@@ -120,8 +120,10 @@ let enterT = 0;
 function placePanel(){ const p = $('#panel'); if (p.hidden) return; const r = $('#map').getBoundingClientRect(), h = p.offsetHeight; p.style.bottom = 'auto'; p.style.top = Math.max(8, Math.min(r.bottom + 8, innerHeight - h - 8)) + 'px'; }
 addEventListener('resize', placePanel);
 function enter(){
+  if (leaving) return; leaving = true;
   try { sessionStorage.setItem('bd1_boss', String(selected)); } catch {}
-  bots.forEach(clearTimeout); const v = $('#veil'); v.classList.remove('out'); $('#map').style.transition = 'transform 1.2s ease-in'; $('#map').style.transform = 'scale(1.5)';
-  enterT = setTimeout(() => { try { if (parent !== window) parent.postMessage({ bd1gate: 'hold', kind: 'dark' }, location.origin); } catch (e) {} location.href = 'game.html' + location.search; }, 1300);   // a moldura segura o escuro com aviso de carregando ate a abertura pintar (antes: ~3 s de tela preta muda)
+  bots.forEach(clearTimeout); $('#panel').hidden = true; document.body.classList.add('mleaving'); window.HUD && HUD.hide();
+  // v339: as nuvens fecham e a moldura do shell segura as nuvens ate a abertura da batalha pintar (antes: corte seco para "CARREGANDO" preto); igual para dono, quem espera e jogo sem sala
+  enterT = 1; Fog.close($('#map'), 1000).then(() => { location.href = 'game.html' + location.search; });
 }
 })();

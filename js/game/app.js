@@ -1727,7 +1727,7 @@ function onlFinish(win){
     a.filter(n => n.id > seen).forEach(n => { seen = n.id; ONL.lastNotice = n; q.push(n); }); pump(); }; }
 { let k = false; window.__onlKicked = () => { if (k) return; k = true; state.over = true; ONL.fin = true; showBanner('VOCÊ FOI REMOVIDO DA SALA', 'pela administração'); setTimeout(() => onlLeave('salas.html'), 3500); }; }
 // v335: sair do jogo para relatorio, mapa ou salas fecha os portoes e a tela nova os abre (antes: corte seco na saida e portoes/nuvens so na chegada)
-function onlLeave(page){ if (MATCH.spec && MATCH.spec.mini) return; if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (/^(relatorio|map|salas)\.html$/.test(page)) { sessionStorage.setItem('bd1_gate', '1'); gate = true; } } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
+function onlLeave(page){ if (MATCH.spec && MATCH.spec.mini) return; if (MATCH.spec) page = 'espectar.html'; let gate = false; try { if (/^(relatorio|map|salas|espectar)\.html$/.test(page)) { sessionStorage.setItem('bd1_gate', '1'); gate = true; } } catch (e) {} ONL.stop(); const nav = () => { location.href = page + location.search; }; if (gate && window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(nav); else nav(); }
 function onlRefreshHeroes(){ try { HERO_ORDER.forEach(k => { if (state.heroes[k].hp <= 0 && A.dead) A.dead(k); }); } catch (e) {} }
 function onlMatchOver(s){
   if (state.over) return; const m = s && s.match;
@@ -2118,7 +2118,12 @@ function beginBattle(delay){
   clearTimeout(turnTimer); HERO_ORDER.forEach(k => A.enterPrep(k));   // heróis entram em cena quando a batalha começa
   const go = () => { HERO_ORDER.forEach((k, i) => A.enter(k, i * 200)); turnTimer = setTimeout(playRound, delay + 900); };
   const intro = document.getElementById('intro');
-  if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; requestAnimationFrame(() => { try { window.bd1Ready && bd1Ready(); } catch (e) {} }); return go(); }
+  // solta a cobertura da troca de tela (nuvens/portoes) quando o cenario e os personagens ja carregaram (no maximo 2 s): antes os portoes abriam com o boss ainda invisivel
+  const ready = async () => { const t0 = Date.now(), ref = document.getElementById('reference');
+    try { if (ref && ref.decode) await Promise.race([ref.decode(), new Promise(ok => setTimeout(ok, 1500))]); } catch (e) {}
+    while (window.__bd1W && __bd1W.size && Date.now() - t0 < 2000) await Promise.race([Promise.all([...__bd1W]).catch(() => {}), new Promise(ok => setTimeout(ok, 200))]);
+    requestAnimationFrame(() => { try { window.bd1Ready && bd1Ready(); } catch (e) {} }); };
+  if (!INTRO_ON || !window.Intro) { if (intro) intro.hidden = true; ready(); return go(); }
   const IP = ST.ice && window.IntroIce ? window.IntroIce : (window.IntroMalg || Intro), NEW = IP !== Intro;   // abertura cinematográfica do Malgorath (v253); js/game/intro.js fica como reserva
   const show = (opts, after) => {
     const bc = bossCanvas(); if (bc) bc.style.opacity = 0;   // o boss só aparece na fumaça
@@ -2126,10 +2131,10 @@ function beginBattle(delay){
     if (NEW && intro) intro.hidden = true;   // a nova cria a própria camada preta (já está no DOM)
   };
   if (ONL.on) {   // online: so no comeco da partida; quem volta no meio nao revê. O voto de pular conta a sala inteira (servidor).
-    if (ONL.snap || ONL.cur > 0 || ONL.introSeen) { if (intro) intro.hidden = true; return go(); }
+    if (ONL.snap || ONL.cur > 0 || ONL.introSeen) { if (intro) intro.hidden = true; ready(); return go(); }
     ONL.introSeen = true;
     MATCH.introState(ONL.room).then(s => {
-      if (!s || !s.on) { if (intro) intro.hidden = true; return go(); }
+      if (!s || !s.on) { if (intro) intro.hidden = true; ready(); return go(); }
       const net = {state:() => MATCH.introState(ONL.room), vote:y => MATCH.introVote(ONL.room, y)};
       show({voters:s.voters, need:s.need, net}, () => {
         MATCH.introDone(ONL.room).catch(() => {});
@@ -2141,7 +2146,7 @@ function beginBattle(delay){
         });
         wait();
       });
-    }).catch(() => { if (intro) intro.hidden = true; go(); });
+    }).catch(() => { if (intro) intro.hidden = true; ready(); go(); });
     return;
   }
   const n = groupMembers();
@@ -2278,7 +2283,7 @@ window.BancoDadosGame={
   addInventoryItem:k=>{if(canAdd(k)){state.inventory.push(k);persist();renderInventoryHits()}}
 };
 
-$('#back-lobby').addEventListener('click',()=>{if(ONL.on){onlLeave('salas.html');return}LOBBY.leave();location.href='index.html'});
+$('#back-lobby').addEventListener('click',()=>{if(ONL.on){onlLeave('salas.html');return}if(window.__bl)return;window.__bl=1;LOBBY.leave();try{sessionStorage.setItem('bd1_gate','1')}catch(e){}const go=()=>{location.href='index.html'+location.search};if(window.Gate&&!matchMedia('(prefers-reduced-motion: reduce)').matches)Gate.close().then(go);else go()});   // v339: sair sem sala fecha os portoes (antes: corte seco)
 $('#hitmap').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   const action=b.dataset.action;
@@ -2330,7 +2335,8 @@ if (ONL.on) {   // online: entra na partida do servidor (ou volta ao ponto do gr
     beginBattle(800);
   }).catch(() => { location.replace('salas.html' + location.search); });
 } else beginBattle(1500);   // abertura (votável) → boss se materializa → primeira pergunta
-if (window.Gate) Gate.arrive();   // veio da sala pelos portões: abrem aqui
+// v339: os portoes de quem chega (sala, espectar, mosaico) so abrem quando a batalha ja pintou (bd1Ready), nao no fim dos scripts com a cena ainda escura
+{ const r0 = window.bd1Ready; let done = false; window.bd1Ready = () => { if (done) return; done = true; try { r0 && r0(); } catch (e) {} if (window.Gate && !(window.MATCH && MATCH.spec && MATCH.spec.mini)) Gate.arrive(); };   /* telas do mosaico nao mexem nos portoes da pagina principal */ setTimeout(() => window.bd1Ready(), 6000); }
 // v132: o aviso de nova versão saiu do jogo; a atualização manual fica no menu de seleção de grupo (botão ↻ ATUALIZAR)
 if('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js', {updateViaCache:'none'}));
 

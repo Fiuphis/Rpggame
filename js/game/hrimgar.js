@@ -110,7 +110,7 @@ function make(host){
   let backUsed = false, phase = 1;
   const cw = cv.width, ch = cv.height;
   let M = null; const img = {}, fimg = {};
-  fetch('assets/bosses/hrimgar/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => { img[n] = Object.assign(new Image(), {src:`assets/bosses/hrimgar/${n}.png`}); }); FXN.forEach(n => { fimg[n] = Object.assign(new Image(), {src:`assets/bosses/hrimgar/fx_${n}.png`}); }); }).catch(() => {});
+  bd1Json('assets/bosses/hrimgar/meta.json').then(j => { M = j; POSES.forEach(n => { img[n] = bd1Img(`assets/bosses/hrimgar/${n}.png`); }); FXN.forEach(n => { fimg[n] = bd1Img(`assets/bosses/hrimgar/fx_${n}.png`); }); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); };
   let fxl = [], cur = null, shakeT = 0, last = 0, t0 = clk(), running = false, mode = null, held = null, tgt = {x:512, y:1000}, mark = null;
   let prev = null, curPose = null, lastT = {dx:0, dy:0, rot:0, sc:1, al:1}, cur_t = 0, fade = 240;

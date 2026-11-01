@@ -123,7 +123,7 @@ function lobby(r, owner) {
   const tick = async () => {
     if (leaving) return;
     try { const l = await MATCH.lobby(r.id); if (leaving) return;
-      if (lbOwner !== !!l.owner) { lbOwner = !!l.owner; $('#lb-go').hidden = !lbOwner; } $('#lb-mg').hidden = !lbOwner;
+      if (lbOwner !== !!l.owner) { lbOwner = !!l.owner; $('#lb-go').hidden = !lbOwner; $('#lb-m').textContent = lbOwner ? 'Quando todos entrarem, toque em continuar. Depois disso ninguém mais entra.' : 'Aguardando o criador continuar.'; } $('#lb-mg').hidden = !lbOwner;
       $('#lb-n').textContent = String(l.total);
       { const box = $('#lb-l'), h = (l.members || []).map((m, i) => `<div class="lbp${m.me ? ' me' : ''}"><i></i><span>${m.name ? esc(m.name) : 'JOGADOR ' + (i + 1)}</span>${m.owner ? '<u>CRIADOR</u>' : ''}${m.me ? '<u class="vc">VOCÊ</u>' : ''}</div>`).join(''); if (box.dataset.h !== h) { const y = box.scrollTop; box.innerHTML = h; box.dataset.h = h; box.scrollTop = y; } }   // nao reinicia a rolagem a cada consulta
       if (l.stage !== 'gather') { proceed(l); return; } } catch (e) { if (/fora_da_sala/.test(String(e && e.message || e))) { if (window.CHAT) CHAT.unmount(); clearInterval(lbT); lbRoom = null; $('#ov-lb').hidden = true; toast('Você foi removido da sala.'); load(); poll(); return; } $('#lb-m').textContent = NET.msg(e); }
@@ -140,7 +140,7 @@ function proceed(l) {
 }
 $('#lb-go').onclick = async () => { const b = $('#lb-go'); b.disabled = true; try { await MATCH.stage(lbRoom.id, 'pick'); proceed({ stage: 'pick', me: null }); } catch (e) { b.disabled = false; $('#lb-m').textContent = NET.msg(e); } };
 $('#lb-cp').onclick = async () => { const c = lbRoom && lbRoom.code; if (!c) return; try { await navigator.clipboard.writeText(c); toast('Código copiado.'); } catch { toast('Anote o código: ' + c); } };
-$('#lb-mg').onclick = () => { if (!lbRoom) return; clearInterval(lbT); location.href = 'gerenciar.html?room=' + lbRoom.id + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); };
+$('#lb-mg').onclick = () => { if (!lbRoom) return; clearInterval(lbT); try { sessionStorage.setItem('bd1_mg_back', lbRoom.id); } catch (e) {} location.href = 'gerenciar.html?room=' + lbRoom.id + (location.search ? '&' + location.search.replace(/^\?/, '') : ''); };   // v339: ao voltar do gerenciar, o lobby reabre (antes a tela de salas saia da sala)
 $('#lb-out').onclick = () => { if (window.CHAT) CHAT.unmount(); clearInterval(lbT); const id = lbRoom && lbRoom.id; lbRoom = null; if (id) NET.leave(id); $('#ov-lb').hidden = true; load(); poll(); };
 async function enter(r) {
   if (leaving || !r) return;
@@ -160,8 +160,9 @@ $('#home').onclick = () => {
   if (window.PxT && !reduce()) PxT.conceal(.5, .2).then(go); else go();
 };
 addEventListener('pageshow', e => { if (e.persisted) location.reload(); });
-try { const lr = sessionStorage.getItem('bd1_leave_room'); sessionStorage.removeItem('bd1_leave_room'); const cur = NET.room();
-  if (lr || cur) { const id = lr || cur.id; NET.leave(id); } } catch (e) {}
+try { const lr = sessionStorage.getItem('bd1_leave_room'); sessionStorage.removeItem('bd1_leave_room'); const cur = NET.room(), mg = sessionStorage.getItem('bd1_mg_back'); sessionStorage.removeItem('bd1_mg_back');
+  if (!lr && cur && mg === cur.id && window.MATCH && !NET.MOCK) lobby(cur, false);   // voltou do gerenciar: continua na sala (o lobby confere no servidor quem e o criador)
+  else if (lr || cur) { const id = lr || cur.id; NET.leave(id); } } catch (e) {}
 // botão voltar do aparelho = botão do canto (INÍCIO)
 try { history.pushState({ sl: 1 }, ''); } catch (e) {}
 function backOv(map) { const ovs = [...document.querySelectorAll('.ov')].filter(o => !o.hidden); if (!ovs.length) return false; const o = ovs[ovs.length - 1]; const b = map[o.id]; if (typeof b === 'function') b(); else if (b) { const el = document.querySelector(b); if (el && !el.hidden) el.click(); else o.hidden = true; } return true; }

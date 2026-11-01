@@ -62,9 +62,9 @@ function run(ms, fn) { return new Promise(res => { const T0 = performance.now();
 const tell = m => { try { if (parent !== window) parent.postMessage(m, location.origin); } catch (e) {} };
 function hold(c) { let img = ''; try { img = c.toDataURL('image/png'); } catch (e) {} tell({ bd1gate: 'hold', img, w: c.width, h: c.height }); }
 let pre = null;
-try { if (sessionStorage.getItem('bd1_gate') && !reduce()) { pre = layer(); pre.draw(1, 0, 0, 0); const mine = pre; requestAnimationFrame(() => requestAnimationFrame(() => tell({ bd1gate: 'ready' }))); setTimeout(() => { if (pre === mine) { mine.remove(); pre = null; de.classList.remove('gt'); } }, 9000); } } catch (e) {}
+try { if (sessionStorage.getItem('bd1_gate') && !reduce()) { de.classList.add('gt'); pre = layer(); pre.draw(1, 0, 0, 0); const mine = pre; requestAnimationFrame(() => requestAnimationFrame(() => tell({ bd1gate: 'ready' }))); setTimeout(() => { if (pre === mine) { mine.remove(); pre = null; de.classList.remove('gt'); } }, 9000); } } catch (e) {}
 // durante qualquer transicao (portoes ou nuvens) o botao de chat e o de tela cheia somem; antes ficavam por cima das portas e das nuvens
-{ const st = document.createElement('style'); st.textContent = 'html.gtx #cht-btn,html.gtx #fs-float,html.gt #cht-btn,html.gt #fs-float,html.fogin #cht-btn,html.fogin #fs-float,html.rb #cht-btn,html.rb #fs-float{opacity:0!important;pointer-events:none!important;transition:opacity .12s}'; (document.head || document.documentElement).appendChild(st); }
+{ const st = document.createElement('style'); st.textContent = ['gtx', 'gt', 'fogin', 'rb'].map(c => ['#cht-btn', '#cht-pn', '#fs-float', '#spec-bar', '#spec-block', '#pause-ov'].map(e => `html.${c} ${e}`).join(',')).join(',') + '{opacity:0!important;pointer-events:none!important;transition:opacity .12s}';   /* v339: tambem a barra do espectador, o painel de chat e o aviso de pausa (ficavam por cima das portas) */ (document.head || document.documentElement).appendChild(st); }
 window.Gate = {
   close(ms = 950) {
     if (reduce()) return Promise.resolve();

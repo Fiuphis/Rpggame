@@ -93,13 +93,12 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v338', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v339', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+  // v339: pede ao service worker a versao nova e espera ela assumir (so baixa o que mudou; antes apagava tudo e baixava os 85 MB de novo)
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
-    try { if ('serviceWorker' in navigator) { const rs = await navigator.serviceWorker.getRegistrations(); await Promise.all(rs.map(r => r.unregister())); }
-      if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k => caches.delete(k))); }
-      const t = await (await fetch('sw.js', {cache:'reload'})).text(), m = t.match(/const CACHE='([^']+)'/);
-      const fs = [...new Set((t.match(/'\.\/[^']+\.(?:html|js|css|json|webmanifest)'/g) || []).map(s => s.slice(1, -1)))].concat(['./', './sw.js']);
-      await Promise.all(fs.map(f => fetch(f, {cache:'reload'}).catch(() => 0)));
+    try { const r = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
+      if (r) { await r.update(); const w = r.installing || r.waiting; if (w) await new Promise(ok => { const t = setTimeout(ok, 90000), ck = () => { if (w.state === 'activated' || w.state === 'redundant') { clearTimeout(t); ok(); } }; w.addEventListener('statechange', ck); ck(); }); }
+      const t = await (await fetch('sw.js', {cache:'no-store'})).text(), m = t.match(/const CACHE='([^']+)'/);
       b.textContent = 'OK · ' + (m ? m[1].replace('bd1-rpg-', '') : ''); } catch (e) { b.textContent = 'ERRO · TENTE DE NOVO'; }
     setTimeout(() => location.replace(location.pathname + location.search), 500); }; }
 
@@ -247,7 +246,9 @@ addEventListener('keydown', e => { if (e.key === 'Escape') how.hidden = true; })
 
 // voltou da seleção de classe (botão voltar): a capa se reconstrói em blocos de brasa, sem zoom
 { let back = false; try { back = !!sessionStorage.getItem('bd1_cover_back'); sessionStorage.removeItem('bd1_cover_back'); } catch (e) {}
-  if (back && window.PxT && !RM) PxT.reveal(.5, .78); else document.documentElement.classList.remove('rb'); }
+  // v339: a reconstrucao espera a arte da capa estar decodificada (no maximo 400 ms), para os blocos revelarem a capa e nao um fundo escuro
+  if (back && window.PxT && !RM) { let go = false; const run = () => { if (go) return; go = true; PxT.reveal(.5, .78); }; const a = $('#art'); setTimeout(run, 400); if (a && a.decode) a.decode().then(run, run); else run(); }
+  else document.documentElement.classList.remove('rb'); }
 
 // ---------- JOGAR: zoom nos heróis -> clarão -> a cena vira cinzas de pixels -> seleção reconstrói ----------
 let busy = false;
@@ -284,6 +285,8 @@ async function startPlay() {
   for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) { const bx = i * BS, by = j * BS, d = Math.hypot(bx + BS / 2 - cx, by + BS / 2 - cy) / maxd;
     blocks.push({bx, by, del:d * 1250 + rnd(0, 380), dur:rnd(700, 1150), up:rnd(60, 230), sx:rnd(-120, -20), rot:rnd(-2.4, 2.4), col:pick(['#ffe08a', '#ffb347', '#ff7a1a', '#ff5a2a'])}); }
   const total = Math.max(...blocks.map(b => b.del + b.dur)), T0 = performance.now(); let navigated = false;
+  // v339: troca de tela assim que quase nada da capa ainda aparece (antes esperava o ultimo bloco, ~0,7 s de tela ja escura)
+  let navT = total - 380; for (let t = 0; t < total; t += 16) { let v = 0; for (const b of blocks) { const p = (t - b.del) / b.dur; v += p <= 0 ? 1 : p >= 1 ? 0 : Math.pow(1 - p, 1.4) * Math.pow(1 - p * p * .6, 2); } if (v / blocks.length < .04) { navT = t; break; } }
   await new Promise(done => { const step = now => { const t = now - T0; pc.clearRect(0, 0, cw, ch);
     blocks.forEach(b => { const p = (t - b.del) / b.dur; if (p >= 1) return; if (p <= 0) { pc.drawImage(snap, b.bx, b.by, BS, BS, b.bx, b.by, BS, BS); return; }
       const e = p * p, s = 1 - e * .6, x = b.bx + b.sx * e + Math.sin(p * 7 + b.bx) * 4 * p, y = b.by - b.up * e;
@@ -291,7 +294,7 @@ async function startPlay() {
       pc.drawImage(snap, b.bx, b.by, BS, BS, -BS * s / 2, -BS * s / 2, BS * s, BS * s);
       if (p < .5) { pc.globalAlpha = (.5 - p) * 1.6; pc.fillStyle = p < .18 ? '#fff0b8' : b.col; pc.fillRect(-BS * s / 2, -BS * s / 2, BS * s, BS * s); } pc.restore(); });
     pc.globalAlpha = 1;
-    if (!navigated && t > total - 380) { navigated = true; leave(); }
+    if (!navigated && t > navT) { navigated = true; leave(); }
     if (t < total) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
 }
 // sem save escolhido: aviso perguntando se a pessoa quer escolher um save antes de jogar
@@ -317,7 +320,7 @@ if ('serviceWorker' in navigator) addEventListener('load', () => navigator.servi
 (() => {
   const ask = document.getElementById('fs-ask'); if (!ask || !window.FS || !FS.ok()) return;
   // aparece uma vez por visita à tela inicial; não aparece se a pessoa já escolheu tela cheia nesta sessão (ela continua até clicar em sair)
-  if (!FS.wanted() && !FS.on()) setTimeout(() => { if (!FS.wanted() && !FS.on()) ask.hidden = false; }, 1400);
+  if (!FS.wanted() && !FS.on()) setTimeout(() => { if (!FS.wanted() && !FS.on() && !document.documentElement.classList.contains('gtx')) ask.hidden = false; }, 1400);   // v339: nao aparece por cima da transicao do JOGAR
   document.getElementById('fs-yes').onclick = () => { ask.hidden = true; FS.enter(); };
   document.getElementById('fs-no').onclick = () => { ask.hidden = true; };
   ask.addEventListener('click', e => { if (e.target === ask) ask.hidden = true; });

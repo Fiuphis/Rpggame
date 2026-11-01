@@ -17,7 +17,8 @@
   bar.innerHTML = '<div class="r"><span class="t"></span><button type="button" id="spec-p">PODERES</button><button type="button" id="spec-k">GABARITO</button><button type="button" id="spec-x">SAIR</button></div><div class="pw" hidden></div><div class="d" hidden></div>';
   document.body.append(blk, bar);
   const t = bar.querySelector('.t'), d = bar.querySelector('.d'); let open = true;
-  bar.querySelector('#spec-x').onclick = () => { ONL.stop(); location.href = 'espectar.html' + location.search; };
+  const back = () => { if (window.__spx) return; window.__spx = 1; ONL.stop(); try { sessionStorage.setItem('bd1_gate', '1'); } catch (e) {} const go = () => { location.href = 'espectar.html' + location.search; }; if (window.Gate && !matchMedia('(prefers-reduced-motion: reduce)').matches) Gate.close().then(go); else go(); };   // v339: portoes, como na ida
+  bar.querySelector('#spec-x').onclick = back;
   bar.querySelector('#spec-k').onclick = () => { open = !open; draw(); };
   const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const opt = (q, i) => i == null || !q || !q.options || q.options[i] == null ? '-' : L[i] + ') ' + esc(q.options[i]);
@@ -55,7 +56,7 @@
       if (a.indexOf('gift:') === 0) { act = 'gift'; if (arg.kind === 'item') { const ks = typeof ITEMS === 'object' ? Object.keys(ITEMS) : [], n = prompt('Qual item? Digite o número:\n' + ks.map((k, i) => (i + 1) + ' ' + ITEMS[k].name).join('\n')); const it = ks[Number(n) - 1]; if (!it) return; arg = { ...arg, item: it }; } }
       if (a === 'msg') { const t = prompt('Mensagem para a sala (até 120 letras):'); if (!t || !t.trim()) return; arg = { text: t.trim().slice(0, 120) }; }
       b.disabled = true;
-      try { await NET.rpc('admin_act', { p_room: SP.room, p_action: act, p_arg: arg }); say('Feito: ' + b.textContent.toLowerCase()); if (a === 'delete') { setTimeout(() => { ONL.stop(); location.href = 'espectar.html' + location.search; }, 800); } ONL.refresh(); }
+      try { await NET.rpc('admin_act', { p_room: SP.room, p_action: act, p_arg: arg }); say('Feito: ' + b.textContent.toLowerCase()); if (a === 'delete') { setTimeout(back, 800); } ONL.refresh(); }
       catch (x) { say(NET.msg(x)); }
       b.disabled = false; };
     bar.querySelector('#spec-p').onclick = () => { pw.hidden = !pw.hidden; };

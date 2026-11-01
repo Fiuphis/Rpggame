@@ -123,8 +123,8 @@ function make(host){
   let backUsed = false;
   const cw = cv.width, ch = cv.height, OX = world.x - Px, OY = world.y - Py;
   let M = null; const img = {};
-  const load = (k, src) => img[k] || (img[k] = Object.assign(new Image(), {src}));
-  fetch('assets/characters/cleriga/meta.json').then(r => r.json()).then(j => { M = j; POSES.forEach(n => load(n, `assets/characters/cleriga/${n}.png`)); FXS.forEach(n => load('fx_' + n, `assets/characters/cleriga/fx_${n}.png`)); }).catch(() => {});
+  const load = (k, src) => img[k] || (img[k] = bd1Img(src));
+  bd1Json('assets/characters/cleriga/meta.json').then(j => { M = j; POSES.forEach(n => load(n, `assets/characters/cleriga/${n}.png`)); FXS.forEach(n => load('fx_' + n, `assets/characters/cleriga/fx_${n}.png`)); }).catch(() => {});
   let hitW = []; const fireHit = () => { hitW.splice(0).forEach(f => f()); }; let chargeT = -9999, orbVis = 0, fxl = [], cur = null, shakeT = 0, flashT = 0, last = 0, t0 = clk(), running = false;
   let low = 0, hist = [], reviveT = 0, dead = 0, deadTarget = 0, deadT = 0, prev = null, curPose = null, orbW = {x:world.x + 150, y:world.y + 40}, lastT = {dx:0, dy:0, rot:0, sc:1}, cur_t = 0, fade = 240;
   const ready = n => img[n] && img[n].complete && img[n].naturalWidth;

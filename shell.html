@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no,interactive-widget=resizes-content">
 <meta name="theme-color" content="#050711">
 <meta name="mobile-web-app-capable" content="yes">
@@ -11,8 +12,8 @@
 <style>html,body{margin:0;height:100%;background:#050711;overflow:hidden}html{--t:0px}iframe{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));border:0;display:block;background:#050711}
 /* em tela cheia o jogo desce um pouco, para a câmera frontal e a barra de status não taparem nada */
 html.fs{--t:max(env(safe-area-inset-top),28px)}
-#gh{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#050308;image-rendering:pixelated;display:block;opacity:0;pointer-events:none;transition:opacity .28s ease}#gh.on{opacity:1;pointer-events:auto;transition:none}
-#gf{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#c9d3ea;overflow:hidden;display:block;opacity:0;pointer-events:none;transition:opacity .28s ease}#gf.on{opacity:1;pointer-events:auto;transition:none}#gf i{position:absolute;left:-10%;width:120%;height:60%;overflow:hidden}#gf i::before{content:"";position:absolute;top:0;bottom:0;left:-60vw;width:calc(100% + 60vw);background-repeat:repeat-x;background-size:60vw 100%}#gf .t{top:0}#gf .b{bottom:0}#gf .t::before{background-image:url(assets/fog/top.webp)}#gf .b::before{background-image:url(assets/fog/bot.webp)}#gd{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#050711;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s ease;color:#9c8fb4;font:700 13px/1 monospace;letter-spacing:.35em}#gd.on{opacity:1;pointer-events:auto;transition:none}#gd span{animation:gdp 1.2s ease-in-out infinite alternate}@keyframes gdp{from{opacity:.35}to{opacity:1}}
+#gh{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#050308;image-rendering:pixelated;display:block;opacity:0;pointer-events:none;transition:opacity .45s ease}#gh.on{opacity:1;pointer-events:auto;transition:none}
+#gf{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#c9d3ea;overflow:hidden;display:block;opacity:0;pointer-events:none;transition:opacity .45s ease}#gf.on{opacity:1;pointer-events:auto;transition:none}#gf i{position:absolute;left:-10%;width:120%;height:60%;overflow:hidden}#gf i::before{content:"";position:absolute;top:0;bottom:0;left:-60vw;width:calc(100% + 60vw);background-repeat:repeat-x;background-size:60vw 100%}#gf .t{top:0}#gf .b{bottom:0}#gf .t::before{background-image:url(assets/fog/top.webp)}#gf .b::before{background-image:url(assets/fog/bot.webp)}#gd{position:fixed;left:0;top:var(--t);width:100%;height:calc(100% - var(--t));z-index:5;background:#050711;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .45s ease;color:#9c8fb4;font:700 13px/1 monospace;letter-spacing:.35em}#gd.on{opacity:1;pointer-events:auto;transition:none}#gd span{animation:gdp 1.2s ease-in-out infinite alternate}@keyframes gdp{from{opacity:.35}to{opacity:1}}
 </style>
 </head>
 <body>
@@ -29,7 +30,7 @@ html.fs{--t:max(env(safe-area-inset-top),28px)}
   /* portoes: a pagina que fecha as portas manda uma copia delas; some quando a proxima ja pintou as dela (ou, no maximo, 8 s) */
   var gh = document.getElementById('gh'), ght = 0;
   var gf = document.getElementById('gf'), gd = document.getElementById('gd');
-  var ghOff = function(){ clearTimeout(ght); gh.classList.remove('on'); gf.classList.remove('on'); gd.classList.remove('on'); setTimeout(function(){ if (!gh.classList.contains('on')) gh.removeAttribute('src'); }, 400); };   /* some em fade (antes cortava seco) */
+  var ghOff = function(){ clearTimeout(ght); gh.classList.remove('on'); gf.classList.remove('on'); gd.classList.remove('on'); setTimeout(function(){ if (!gh.classList.contains('on')) gh.removeAttribute('src'); }, 520); };   /* some em fade (antes cortava seco) */
   addEventListener('message', function(e){
     var d = e.data; if (e.origin !== location.origin || e.source !== f.contentWindow || !d || !d.bd1gate) return;
     if (d.bd1gate === 'hold' && d.kind === 'dark') { gd.classList.add('on'); clearTimeout(ght); ght = setTimeout(ghOff, 8000); }

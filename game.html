@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
+<link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="theme-color" content="#050711">
 <meta name="mobile-web-app-capable" content="yes">
@@ -10,7 +11,12 @@
 <link rel="stylesheet" href="css/style.css">
 <title>Banco de Dados I — RPG</title>
 <script src="js/core/gate.js"></script>
-<script>window.__bd1Hold = 1;</script>
+<script>window.__bd1Hold = 1;
+/* v339: imagens e dados dos personagens tentam de novo se a rede falhar (antes uma falha deixava o boss ou um heroi invisivel a batalha inteira) */
+window.__bd1W = new Set();   /* o que os personagens ainda estao carregando (a batalha espera isso, com limite, antes de abrir a cobertura da troca de tela) */
+window.bd1Img = function (src) { var i = new Image(), n = 0, fin, p = new Promise(function (r) { fin = r; }); __bd1W.add(p); p.then(function () { __bd1W.delete(p); });
+  i.onload = function () { fin(); }; i.onerror = function () { if (n++ < 5) setTimeout(function () { i.src = src + (src.indexOf('?') < 0 ? '?' : '&') + 'r=' + n; }, 700 * n); else fin(); }; i.src = src; return i; };
+window.bd1Json = function (u) { var p = new Promise(function (ok, no) { var n = 0; (function go() { fetch(u).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(ok, function () { if (n++ < 6) setTimeout(go, 800 * n); else no(); }); })(); }); __bd1W.add(p); p.then(function () { setTimeout(function () { __bd1W.delete(p); }, 0); }, function () { __bd1W.delete(p); }); return p; };</script>
 </head>
 <body>
 <div id="intro" class="intro" aria-hidden="false">

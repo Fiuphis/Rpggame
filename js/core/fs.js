@@ -14,6 +14,8 @@ if (window === window.top && !/[?&]noshell/.test(location.search)) {
   const f = location.pathname.split('/').pop() || 'index.html';
   if (/^[\w-]+\.html$/.test(f) && f !== 'shell.html') { location.replace('shell.html#' + f + location.search); return; }
 }
+// v339: confere se ha versao nova (o service worker baixa em segundo plano e ela vale a partir da proxima troca de tela); no maximo a cada 5 min
+if ('serviceWorker' in navigator && navigator.serviceWorker.controller) addEventListener('load', () => { try { const k = 'bd1_swchk', t = +sessionStorage.getItem(k) || 0; if (Date.now() - t < 300000) return; sessionStorage.setItem(k, String(Date.now())); navigator.serviceWorker.getRegistration().then(r => r && r.update()).catch(() => {}); } catch (e) {} });
 // Teclado virtual: tocar fora do campo, apertar Enter/Ir, usar o voltar ou recolher o teclado pela setinha tiram o foco do campo (o teclado some e um novo toque no campo o reabre).
 { const isField = t => t && t.closest && t.closest('input,textarea,select,[contenteditable="true"]');
   const isClick = t => t && t.closest && t.closest('button,a,[role=button],.chip,.card,.node,.tab,.sv,label');
