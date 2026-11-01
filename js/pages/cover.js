@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v339', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v340', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   // v339: pede ao service worker a versao nova e espera ela assumir (so baixa o que mudou; antes apagava tudo e baixava os 85 MB de novo)
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { const r = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;
@@ -286,7 +286,8 @@ async function startPlay() {
     blocks.push({bx, by, del:d * 1250 + rnd(0, 380), dur:rnd(700, 1150), up:rnd(60, 230), sx:rnd(-120, -20), rot:rnd(-2.4, 2.4), col:pick(['#ffe08a', '#ffb347', '#ff7a1a', '#ff5a2a'])}); }
   const total = Math.max(...blocks.map(b => b.del + b.dur)), T0 = performance.now(); let navigated = false;
   // v339: troca de tela assim que quase nada da capa ainda aparece (antes esperava o ultimo bloco, ~0,7 s de tela ja escura)
-  let navT = total - 380; for (let t = 0; t < total; t += 16) { let v = 0; for (const b of blocks) { const p = (t - b.del) / b.dur; v += p <= 0 ? 1 : p >= 1 ? 0 : Math.pow(1 - p, 1.4) * Math.pow(1 - p * p * .6, 2); } if (v / blocks.length < .04) { navT = t; break; } }
+  //   (momento em que 95% dos blocos ja passaram da metade do voo: equivale a menos de 4% da capa visivel, e custa menos de 1 ms)
+  const navT = (() => { const e = blocks.map(b => b.del + b.dur * .5).sort((a, b) => a - b); return Math.min(total - 380, e[Math.floor(e.length * .95)]); })();
   await new Promise(done => { const step = now => { const t = now - T0; pc.clearRect(0, 0, cw, ch);
     blocks.forEach(b => { const p = (t - b.del) / b.dur; if (p >= 1) return; if (p <= 0) { pc.drawImage(snap, b.bx, b.by, BS, BS, b.bx, b.by, BS, BS); return; }
       const e = p * p, s = 1 - e * .6, x = b.bx + b.sx * e + Math.sin(p * 7 + b.bx) * 4 * p, y = b.by - b.up * e;

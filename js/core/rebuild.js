@@ -34,7 +34,8 @@ window.PxT = {
           const s = .5 + p * .5; x.globalAlpha = Math.min(1, p * 2); x.fillStyle = p < .6 ? b.col : VEIL; x.fillRect(b.bx + BS * (1 - s) / 2, b.by + BS * (1 - s) / 2, BS * s, BS * s); });
         x.globalAlpha = 1; if (t < total && t < full) requestAnimationFrame(draw); else done(); };
       // v339: segue para a proxima tela quando a pagina ja esta praticamente coberta (antes esperava o ultimo bloco do canto)
-      let full = total; for (let t = 0; t < total; t += 16) { let v = 0; for (const b of blocks) { const p = (t - b.del) / b.dur; v += p >= 1 ? 1 : p <= 0 ? 0 : Math.min(1, p * 2) * Math.pow(.5 + p * .5, 2); } if (v / blocks.length > .985) { full = t; break; } }
+      //   (momento em que 98% dos blocos ja cresceram 80%: pagina praticamente coberta; custa menos de 1 ms)
+      const full = (() => { const e = blocks.map(b => b.del + b.dur * .8).sort((a, b) => a - b); return e[Math.floor(e.length * .98)]; })();
       requestAnimationFrame(now => { T0 = now; draw(now); });
       setTimeout(done, 5000); });
   }
