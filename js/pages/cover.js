@@ -93,7 +93,7 @@ requestAnimationFrame(frame);
 document.addEventListener('visibilitychange', () => { if (document.hidden) run = false; else if (!run) { run = true; last = performance.now(); requestAnimationFrame(frame); } });
 
 // ---------- atualizar (versão do jogo) ----------
-{ const V='v340', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
+{ const V='v341', b = $('#upd'); b.textContent = '↻ ATUALIZAR · ' + V;
   // v339: pede ao service worker a versao nova e espera ela assumir (so baixa o que mudou; antes apagava tudo e baixava os 85 MB de novo)
   b.onclick = async () => { b.disabled = true; b.textContent = 'ATUALIZANDO…';
     try { const r = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : null;

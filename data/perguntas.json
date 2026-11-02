@@ -1,242 +1,2402 @@
 [
  {
   "difficulty": 1,
-  "tema": "Banco de Dados",
-  "text": "Qual das alternativas abaixo representa uma chave primária em um banco de dados?",
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "Formalmente, uma restrição de integridade é uma expressão de que tipo?",
   "answers": [
-   "Uma tabela de relacionamento",
-   "Um campo que identifica unicamente um registro",
-   "Um índice não clusterizado",
-   "Um comando de seleção"
+   "De texto (uma frase)",
+   "Booleana (TRUE ou FALSE)",
+   "Aritmética (um número)",
+   "De data (um instante)"
   ],
   "correct": 1
  },
  {
   "difficulty": 1,
-  "tema": "Banco de Dados",
-  "text": "Qual comando SQL é utilizado para consultar dados de uma tabela?",
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "Durante quanto tempo uma restrição de integridade precisa ser avaliada como TRUE?",
   "answers": [
-   "INSERT",
-   "UPDATE",
-   "SELECT",
-   "DROP"
-  ],
-  "correct": 2
- },
- {
-  "difficulty": 1,
-  "tema": "Banco de Dados",
-  "text": "O que significa a sigla SGBD?",
-  "answers": [
-   "Sistema Geral de Banco Digital",
-   "Sistema Gerenciador de Banco de Dados",
-   "Servidor Gráfico de Base de Dados",
-   "Sistema Global de Backup de Dados"
-  ],
-  "correct": 1
- },
- {
-  "difficulty": 1,
-  "tema": "Banco de Dados",
-  "text": "Qual comando SQL remove registros de uma tabela?",
-  "answers": [
-   "REMOVE",
-   "CUT",
-   "ERASE",
-   "DELETE"
+   "Só quando o usuário pedir",
+   "Só no fim do dia",
+   "Só no primeiro acesso",
+   "O tempo todo"
   ],
   "correct": 3
  },
  {
-  "difficulty": 2,
-  "tema": "Banco de Dados",
-  "text": "Qual propriedade garante que uma chave primária não se repita?",
+  "difficulty": 1,
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "Quem é responsável por impor e monitorar as restrições de integridade?",
   "answers": [
-   "Unicidade",
-   "Ordenação",
-   "Criptografia",
-   "Compactação"
-  ],
-  "correct": 0
- },
- {
-  "difficulty": 2,
-  "tema": "Banco de Dados",
-  "text": "Qual cláusula SQL filtra as linhas antes de agrupar os resultados?",
-  "answers": [
-   "HAVING",
-   "WHERE",
-   "ORDER BY",
-   "LIMIT"
-  ],
-  "correct": 1
- },
- {
-  "difficulty": 2,
-  "tema": "Banco de Dados",
-  "text": "Qual JOIN retorna apenas os registros com correspondência nas duas tabelas?",
-  "answers": [
-   "LEFT JOIN",
-   "RIGHT JOIN",
-   "INNER JOIN",
-   "CROSS JOIN"
+   "O usuário final",
+   "O navegador",
+   "O SGBD",
+   "O sistema operacional"
   ],
   "correct": 2
  },
  {
-  "difficulty": 2,
-  "tema": "Banco de Dados",
-  "text": "O que é uma chave estrangeira?",
+  "difficulty": 1,
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "O que o SGBD faz com uma atualização que viola uma restrição de integridade?",
   "answers": [
-   "Campo que referencia a chave primária de outra tabela",
-   "Chave usada para criptografar dados",
-   "Índice que ordena a tabela",
-   "Campo que aceita apenas números"
+   "Apaga a tabela inteira",
+   "Ignora a restrição",
+   "Aceita e avisa depois",
+   "Rejeita a atualização"
   ],
-  "correct": 0
+  "correct": 3
  },
  {
-  "difficulty": 3,
-  "tema": "Banco de Dados",
-  "text": "Qual forma normal elimina dependências parciais em chaves primárias compostas?",
+  "difficulty": 1,
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "Uma restrição de integridade também pode ser chamada de quê?",
   "answers": [
-   "1FN",
-   "2FN",
-   "3FN",
-   "FNBC"
+   "Cópia de segurança",
+   "Regra de negócio",
+   "Consulta salva",
+   "Índice de busca"
   ],
   "correct": 1
  },
  {
-  "difficulty": 3,
-  "tema": "Banco de Dados",
-  "text": "No ACID, qual propriedade garante que dados confirmados sobrevivam a falhas?",
+  "difficulty": 1,
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "No início, a integridade no modelo relacional focava principalmente em quê?",
   "answers": [
-   "Atomicidade",
+   "Visões e consultas complexas",
+   "Triggers e procedimentos armazenados",
+   "Índices e ordenação de linhas",
+   "Chaves primárias e estrangeiras"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "As restrições de integridade ditam o quê para uma variável?",
+  "answers": [
+   "Os valores permitidos",
+   "A cor da tabela",
+   "O nome da variável",
+   "O dono do banco"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Qual linguagem formal o capítulo usa para expressar as restrições?",
+  "answers": [
+   "Python",
+   "COBOL",
+   "Tutorial D",
+   "HTML"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Quais quantificadores são usados para escrever restrições na lógica?",
+  "answers": [
+   "OPEN e CLOSE",
+   "BEGIN e END",
+   "SELECT e FROM",
+   "FORALL e EXISTS"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Como se chama uma expressão booleana que contém variáveis?",
+  "answers": [
+   "Tupla",
+   "Domínio",
+   "Predicado",
+   "Proposição"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Quando as variáveis de um predicado recebem valores reais, ele vira o quê?",
+  "answers": [
+   "Chave",
+   "Visão",
+   "Relação",
+   "Proposição"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Como uma proposição pode ser avaliada?",
+  "answers": [
+   "Nunca pode ser avaliada",
+   "Só como verdadeira",
+   "Como verdadeira ou falsa",
+   "Só como desconhecida"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Qual o nome da regra que proíbe deixar o predicado de banco de dados FALSE?",
+  "answers": [
+   "Regra de Codd",
+   "Regra do Menor Custo",
+   "Regra de Atomicidade",
+   "Regra Áurea"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "O predicado de RelVar junta as restrições usando qual operador lógico?",
+  "answers": [
+   "AND (E lógico)",
+   "NOT (negação)",
+   "OR (OU lógico)",
+   "XOR (OU exclusivo)"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Pela Regra Áurea, uma atualização nunca pode deixar o predicado do banco como:",
+  "answers": [
+   "FALSE",
+   "Com menos tuplas",
+   "TRUE",
+   "Com mais tuplas"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Segundo a Regra Áurea, quando as restrições devem ser verificadas?",
+  "answers": [
+   "Só quando o banco reinicia",
+   "Logo após cada atualização",
+   "Uma vez por semana",
+   "Só no backup"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "Quem entende e impõe os predicados internos?",
+  "answers": [
+   "O SGBD",
+   "O hardware",
+   "Só o usuário",
+   "Ninguém"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "O predicado externo representa o quê?",
+  "answers": [
+   "O significado real dos dados",
+   "O espaço ocupado no disco",
+   "O código-fonte interno do SGBD",
+   "As senhas de acesso ao banco"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "O SGBD consegue entender o predicado externo?",
+  "answers": [
+   "Sim, se houver índice",
+   "Só em visões",
+   "Não, só o interno",
+   "Sim, sempre"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "O que o SGBD consegue garantir sobre os dados?",
+  "answers": [
    "Consistência",
-   "Isolamento",
-   "Durabilidade"
+   "Que não há erros de digitação",
+   "Correção absoluta",
+   "Verdade no mundo real"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "No capítulo, consistência significa:",
+  "answers": [
+   "Nenhuma regra declarada é violada",
+   "O banco está sempre vazio",
+   "Os dados são verdade no mundo real",
+   "Todas as tabelas têm o mesmo tamanho"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "A integridade se aplica também às visões?",
+  "answers": [
+   "Não, só a tabelas",
+   "Só a índices",
+   "Só a backups",
+   "Sim, também às visões"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "Uma visão também é chamada de:",
+  "answers": [
+   "Chave estrangeira",
+   "RelVar virtual",
+   "RelVar básica",
+   "Trigger"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "As tabelas reais do banco são chamadas de:",
+  "answers": [
+   "Gatilhos",
+   "Proposições",
+   "RelVars virtuais",
+   "RelVars básicas"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Em quantas categorias principais o capítulo divide as restrições?",
+  "answers": [
+   "Três",
+   "Quatro",
+   "Sete",
+   "Duas"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual categoria de restrição envolve duas ou mais RelVars ao mesmo tempo?",
+  "answers": [
+   "Restrição de atributo",
+   "Restrição de tipo",
+   "Restrição de banco de dados",
+   "Restrição de RelVar"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "As restrições de tipo especificam o quê?",
+  "answers": [
+   "Os usuários que usam o banco",
+   "Os valores válidos de um tipo",
+   "A ordem das linhas na tabela",
+   "O nome de cada tabela"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual categoria declara que um atributo deve ser de um tipo específico?",
+  "answers": [
+   "Trigger",
+   "Restrição de banco de dados",
+   "Restrição de atributo",
+   "Assertiva"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Quais duas propriedades uma chave candidata deve ter?",
+  "answers": [
+   "Ordenação e compactação",
+   "Atomicidade e durabilidade",
+   "Unicidade e irredutibilidade",
+   "Integridade e normalização"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "A integridade referencial proíbe o quê?",
+  "answers": [
+   "Tabelas com milhares de linhas",
+   "Consultas que usam a cláusula WHERE",
+   "Chave estrangeira sem correspondente",
+   "Colunas com nomes muito compridos"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Qual ação referencial propaga a mudança do pai para os filhos?",
+  "answers": [
+   "COMMIT",
+   "RESTRICT",
+   "CASCADE",
+   "NO ACTION"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Qual ação referencial impede mudar o pai se houver filhos?",
+  "answers": [
+   "RESTRICT",
+   "DROP",
+   "CASCADE",
+   "GRANT"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "No modelo relacional, as chaves são o mecanismo básico de quê?",
+  "answers": [
+   "Impressão",
+   "Criptografia",
+   "Endereçamento",
+   "Compressão"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Qual é o nome de trigger em português?",
+  "answers": [
+   "Visão",
+   "Gatilho",
+   "Cursor",
+   "Índice"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Os triggers seguem regras do tipo:",
+  "answers": [
+   "DML (Manipulação de Dados)",
+   "ECA (Evento-Condição-Ação)",
+   "DDL (Definição de Dados)",
+   "CRUD (Criar-Ler-Alterar-Apagar)"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Como o capítulo classifica os triggers?",
+  "answers": [
+   "Como um desvio problemático",
+   "Como obrigatórios em toda tabela",
+   "Como um tipo de chave",
+   "Como a melhor forma de integridade"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Qual abordagem o capítulo recomenda no lugar dos triggers?",
+  "answers": [
+   "Declarativa",
+   "Aleatória",
+   "Manual",
+   "Procedimental"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual comando SQL define a chave primária de uma tabela?",
+  "answers": [
+   "MAIN KEY",
+   "PRIMARY KEY",
+   "TOP KEY",
+   "FIRST KEY"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual restrição SQL faz uma verificação local de condição numa tabela?",
+  "answers": [
+   "CHECK",
+   "ORDER BY",
+   "GROUP BY",
+   "SELECT"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual comando SQL cria regras que envolvem várias tabelas?",
+  "answers": [
+   "CREATE INDEX",
+   "CREATE USER",
+   "CREATE DATABASE",
+   "CREATE ASSERTION"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual palavra-chave do SQL permite adiar a verificação de uma restrição?",
+  "answers": [
+   "DEFERRABLE",
+   "DEFAULT",
+   "DESC",
+   "DISTINCT"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Com a verificação postergada do SQL, a regra é avaliada em que momento?",
+  "answers": [
+   "No login",
+   "No COMMIT da transação",
+   "Na criação da tabela",
+   "No SELECT"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual restrição SQL impede repetir valores numa coluna que não é a chave primária?",
+  "answers": [
+   "DEFAULT",
+   "ORDER BY",
+   "GROUP BY",
+   "UNIQUE"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual cláusula SQL declara uma chave estrangeira?",
+  "answers": [
+   "OUTER KEY",
+   "LINK KEY",
+   "OTHER KEY",
+   "FOREIGN KEY"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 1,
+  "tema": "Integridade - 9.13 Resumo",
+  "text": "Qual é o problema central tratado no capítulo de integridade?",
+  "answers": [
+   "Reduzir o espaço ocupado no disco",
+   "Garantir que os dados sejam corretos",
+   "Deixar as consultas mais rápidas",
+   "Criar telas e interfaces gráficas"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Por que usar lógica formal, como a Tutorial D, para escrever restrições?",
+  "answers": [
+   "Para deixar o banco mais rápido",
+   "Para expressá-las sem ambiguidade",
+   "Para esconder as regras do usuário",
+   "Para dispensar o SGBD"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Na escrita de restrições, a construção IF ... THEN representa:",
+  "answers": [
+   "Uma junção de tabelas",
+   "Um laço de repetição",
+   "Uma implicação lógica",
+   "Uma ordenação"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "O quantificador FORALL expressa a ideia de:",
+  "answers": [
+   "Apenas o primeiro",
+   "Nenhum elemento",
+   "Existe ao menos um",
+   "Para todo elemento"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "O quantificador EXISTS expressa a ideia de:",
+  "answers": [
+   "Exatamente dois",
+   "Para todo elemento",
+   "Existe pelo menos um",
+   "Nenhum elemento existe"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "Na visão atual do capítulo, as restrições de integridade em geral são:",
+  "answers": [
+   "Opcionais e raras",
+   "Apenas sobre chaves",
+   "Assunto do sistema operacional",
+   "De importância crucial"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Uma restrição de integridade pode tratar de:",
+  "answers": [
+   "Apenas o nome dado à tabela",
+   "Uma só coluna, nunca mais que isso",
+   "Apenas o usuário que está logado",
+   "Uma variável ou uma combinação delas"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Por que não dá para avaliar um predicado imediatamente?",
+  "answers": [
+   "Porque ele contém variáveis",
+   "Porque ele é sempre falso",
+   "Porque ele não tem operadores",
+   "Porque só existe em visões"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Trocar as variáveis de um predicado por valores reais se chama:",
+  "answers": [
+   "Normalização",
+   "Indexação",
+   "Compilação",
+   "Instanciação"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "\"O fornecedor S1 fica em Londres\" é um exemplo de:",
+  "answers": [
+   "Assertiva",
+   "Predicado",
+   "Proposição",
+   "Trigger"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "\"O fornecedor x fica na cidade y\" é um exemplo de:",
+  "answers": [
+   "Visão",
+   "Predicado",
+   "Chave primária",
+   "Proposição"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "O predicado de banco de dados é formado por:",
+  "answers": [
+   "Apenas a chave primária",
+   "AND de todos os predicados de RelVar",
+   "OR de todos os predicados de RelVar",
+   "Apenas os triggers"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "O predicado de uma RelVar reúne:",
+  "answers": [
+   "Todas as restrições daquela RelVar",
+   "Os nomes das colunas",
+   "Os usuários com acesso",
+   "Todas as linhas daquela RelVar"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Se uma única restrição de uma RelVar for FALSE, o predicado dessa RelVar será:",
+  "answers": [
+   "Metade verdadeiro",
+   "Indefinido para sempre",
+   "TRUE",
+   "FALSE"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Pela Regra Áurea, o erro de uma atualização inválida deve ser pego quando?",
+  "answers": [
+   "Antes de a alteração ser efetivada",
+   "No próximo backup do banco",
+   "Só quando um usuário reclamar",
+   "Depois que a alteração já foi gravada"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Qual a diferença entre a Regra Áurea e a verificação postergada do SQL?",
+  "answers": [
+   "Nenhuma das duas verifica as regras",
+   "Áurea verifica na hora; SQL pode adiar",
+   "As duas verificam só no fim do dia",
+   "Áurea adia; SQL verifica sempre na hora"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "Qual a diferença entre predicado interno e externo?",
+  "answers": [
+   "Interno é formal; externo é informal",
+   "Interno é informal; externo é formal",
+   "O externo é o código do SGBD",
+   "Os dois são a mesma coisa"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "O predicado interno de uma RelVar corresponde a quê?",
+  "answers": [
+   "Ao nome dado ao banco de dados",
+   "Às regras formais que o SGBD impõe",
+   "Ao layout da tela do sistema",
+   "À intenção do usuário ao gravar"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "Por que o SGBD não garante que o banco esteja \"correto\"?",
+  "answers": [
+   "Não tem memória para guardar tudo",
+   "Correção só vale para as visões",
+   "Não sabe o que é verdade no mundo",
+   "Ele não aceita chaves primárias"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "Um dado falso no mundo real, mas que respeita todas as regras, será:",
+  "answers": [
+   "Rejeitado pelo sistema",
+   "Aceito pelo sistema",
+   "Corrigido automaticamente",
+   "Transformado em NULL"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "De onde vêm os predicados de uma visão?",
+  "answers": [
+   "De um arquivo externo ao banco",
+   "Do usuário que criou a visão",
+   "De nenhuma: visão não tem predicado",
+   "Das RelVars básicas que a compõem"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "Atualizações feitas por meio de uma visão devem respeitar:",
+  "answers": [
+   "Apenas o formato dos campos de data",
+   "Nenhuma restrição, visão é livre",
+   "Só as permissões de quem a criou",
+   "As restrições das RelVars básicas"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Quando uma restrição de tipo é verificada?",
+  "answers": [
+   "No COMMIT da transação",
+   "Só no backup noturno",
+   "Ao apagar a tabela",
+   "Na invocação do seletor"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Quando uma restrição de RelVar é verificada?",
+  "answers": [
+   "Quando a RelVar é atualizada",
+   "Só quando o banco é criado",
+   "Só quando alguém lê os dados",
+   "Só uma vez por dia, em lote"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "\"O status de um fornecedor não pode diminuir\" é uma restrição de:",
+  "answers": [
+   "Atributo",
+   "Tipo",
+   "Transição",
+   "Chave candidata"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Para checar uma restrição de transição, o sistema compara:",
+  "answers": [
+   "Duas tabelas de bancos diferentes",
+   "O valor antigo com o valor novo",
+   "Dois usuários conectados",
+   "O índice com a chave"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "\"Um peso deve ser decimal e positivo\" é exemplo de restrição de:",
+  "answers": [
+   "Transição",
+   "Tipo",
+   "Referencial",
+   "Banco de dados"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual o papel de uma restrição de atributo, como \"CIDADE é do tipo CHAR\"?",
+  "answers": [
+   "Ligar o atributo a um tipo",
+   "Criar um índice na coluna",
+   "Ligar duas tabelas do banco",
+   "Disparar um trigger na carga"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "O que significa a unicidade de uma chave candidata?",
+  "answers": [
+   "O valor da chave nunca pode mudar",
+   "Duas tuplas nunca repetem o valor dela",
+   "Só existe uma tabela com essa chave",
+   "A chave tem um só atributo, sempre"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "O que significa a irredutibilidade de uma chave candidata?",
+  "answers": [
+   "Nenhum subconjunto dela já é único",
+   "Ela não pode ser apagada nunca",
+   "Ela tem sempre um único atributo",
+   "Ela não aceita valores numéricos"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "O valor de uma chave estrangeira deve corresponder a um valor de:",
+  "answers": [
+   "Uma visão vazia do banco",
+   "Qualquer coluna do tipo texto",
+   "Uma chave candidata existente",
+   "Um índice qualquer da tabela"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Qual ação referencial rejeita a mudança depois, com efeito prático igual ao RESTRICT?",
+  "answers": [
+   "COMMIT",
+   "CASCADE",
+   "NO ACTION",
+   "SET NULL"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Ao apagar um fornecedor que tem fornecimentos, com RESTRICT:",
+  "answers": [
+   "Os fornecimentos viram NULL",
+   "Os fornecimentos são apagados",
+   "A exclusão é recusada",
+   "O fornecedor é duplicado"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "A chave primária é escolhida entre:",
+  "answers": [
+   "As visões",
+   "As chaves estrangeiras",
+   "As chaves candidatas",
+   "Os índices"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Em qual RelVar fica a chave estrangeira?",
+  "answers": [
+   "Na RelVar que referencia (filha)",
+   "Só nas visões",
+   "Só na RelVar referenciada (pai)",
+   "Em nenhuma RelVar"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "O que significam as letras da regra ECA de um trigger?",
+  "answers": [
+   "Evento, Condição e Ação",
+   "Erro, Chave e Atributo",
+   "Exclusão, Commit e Assertiva",
+   "Entrada, Cálculo e Arquivo"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Por serem procedimentais, os triggers são, segundo o capítulo:",
+  "answers": [
+   "Imunes a erros de lógica",
+   "Obrigatórios em toda tabela SQL",
+   "Mais fáceis de entender e otimizar",
+   "Mais difíceis de entender e otimizar"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Por que a abordagem declarativa é considerada mais segura que os triggers?",
+  "answers": [
+   "Exige escrever mais código",
+   "Roda mais devagar que um trigger",
+   "Só funciona dentro de visões",
+   "Diz o que vale, sem passo a passo"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Quando um trigger é disparado?",
+  "answers": [
+   "Sozinho, quando há uma atualização",
+   "Uma vez por mês, em lote",
+   "Só quando o usuário manda executar",
+   "Só na criação do banco de dados"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Para que serve o CREATE ASSERTION?",
+  "answers": [
+   "Criar uma nova tabela no banco",
+   "Regras complexas com várias tabelas",
+   "Apagar dados antigos de uma vez",
+   "Dar permissões a novos usuários"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual a diferença entre o CHECK de tabela e o CREATE ASSERTION?",
+  "answers": [
+   "ASSERTION só serve para chaves",
+   "CHECK abrange o banco; ASSERTION é local",
+   "CHECK é local; ASSERTION abrange o banco",
+   "São idênticos"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "A verificação postergada (DEFERRABLE) existe:",
+  "answers": [
+   "Nos dois, do mesmo jeito",
+   "Em nenhum dos dois",
+   "No SQL, mas não na Regra Áurea",
+   "Na Regra Áurea, mas não no SQL"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "PRIMARY KEY, UNIQUE, FOREIGN KEY e CHECK são restrições de:",
+  "answers": [
+   "Usuários",
+   "Tabelas básicas",
+   "Backups",
+   "Visões apenas"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual destes NÃO é uma restrição declarativa do SQL?",
+  "answers": [
+   "CHECK",
+   "UNIQUE",
+   "PRIMARY KEY",
+   "Trigger"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Complete o SQL: FOREIGN KEY (S#) ____ S (S#)",
+  "answers": [
+   "REFERENCES",
+   "DEPENDS ON",
+   "LINKED TO",
+   "POINTS TO"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 2,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "No SQL, quantas PRIMARY KEY uma tabela pode declarar?",
+  "answers": [
+   "No máximo uma",
+   "Quantas quiser",
+   "Exatamente duas",
+   "Uma por coluna"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Leia: FORALL SX (SX.STATUS > 0). O que a restrição exige?",
+  "answers": [
+   "Todo fornecedor tem status positivo",
+   "Só o primeiro tem status positivo",
+   "Nenhum fornecedor tem status",
+   "Algum fornecedor tem status positivo"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Leia: EXISTS PX (PX.COR = 'Vermelho'). Ela é verdadeira quando:",
+  "answers": [
+   "Todas as peças são vermelhas",
+   "Há exatamente uma cor",
+   "Nenhuma peça é vermelha",
+   "Há ao menos uma peça vermelha"
   ],
   "correct": 3
  },
  {
   "difficulty": 3,
-  "tema": "Banco de Dados",
-  "text": "Qual cláusula filtra os grupos formados por um GROUP BY?",
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Leia: FORALL SX (IF SX.CIDADE = 'Paris' THEN SX.STATUS = 30). Ela exige:",
   "answers": [
-   "WHERE",
-   "HAVING",
-   "DISTINCT",
-   "UNION"
+   "Status 30 só para quem é de fora",
+   "Todos os fornecedores ficam em Paris",
+   "Todo fornecedor de Paris tem status 30",
+   "Algum fornecedor fica em Paris"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Escrever \"o salário deve ser alto\" como restrição é um problema porque:",
+  "answers": [
+   "Restrições não podem usar números",
+   "É vago: \"alto\" não tem valor definido",
+   "Salário não tem um tipo de dado",
+   "O SGBD não aceita regras em texto"
   ],
   "correct": 1
  },
  {
   "difficulty": 3,
-  "tema": "Banco de Dados",
-  "text": "Qual nível de isolamento evita leituras sujas, mas permite leituras não repetíveis?",
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "No predicado \"x leciona a disciplina y\", trocar x por Ana e y por BD gera:",
   "answers": [
-   "READ UNCOMMITTED",
-   "READ COMMITTED",
-   "REPEATABLE READ",
-   "SERIALIZABLE"
+   "Um novo predicado com variáveis",
+   "Uma chave estrangeira",
+   "Uma proposição avaliável",
+   "Um trigger"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Qual destas frases é uma proposição?",
+  "answers": [
+   "\"x tem idade z\"",
+   "\"x mora em Jataí\"",
+   "\"x mora em y\"",
+   "\"Ana mora em Jataí\""
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Por que dizemos que uma restrição de integridade é um predicado?",
+  "answers": [
+   "Porque é escrita como um trigger",
+   "Porque não usa lógica formal",
+   "Porque seu valor depende dos dados",
+   "Porque seu valor nunca muda"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Uma RelVar tem as restrições R1, R2 e R3. Seu predicado de RelVar é:",
+  "answers": [
+   "R1 OR R2 OR R3",
+   "NOT R1",
+   "Apenas R1",
+   "R1 AND R2 AND R3"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "S tem predicado TRUE e SP tem predicado FALSE. O predicado do banco é:",
+  "answers": [
+   "FALSE",
+   "Depende do usuário",
+   "Metade TRUE",
+   "TRUE"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Acrescentar uma nova restrição a uma RelVar muda o quê?",
+  "answers": [
+   "O predicado da RelVar e o do banco",
+   "Nada, o predicado é fixo",
+   "Só a chave primária da RelVar",
+   "Só os dados que já estão guardados"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Um predicado de banco de dados FALSE significa que:",
+  "answers": [
+   "O banco está vazio",
+   "O banco está correto",
+   "Todas as restrições estão violadas",
+   "Alguma restrição está violada"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "A Regra Áurea vale para:",
+  "answers": [
+   "Só para visões",
+   "Só para criar tabelas",
+   "Só para consultas SELECT",
+   "Toda operação de atualização"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Por que a Regra Áurea exige verificação imediata?",
+  "answers": [
+   "Para economizar espaço em disco",
+   "Para acelerar as consultas",
+   "Para o banco nunca guardar estado inválido",
+   "Para aceitar dados inválidos por um tempo"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "Na RelVar S, a frase \"o fornecedor S# se chama SNOME e fica em CIDADE\" é o predicado:",
+  "answers": [
+   "Interno",
+   "De transição",
+   "Externo",
+   "De tipo"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "A regra formal STATUS >= 1 AND STATUS <= 100, imposta pelo SGBD, faz parte do predicado:",
+  "answers": [
+   "Externo",
+   "Interno",
+   "De trigger",
+   "De visão apenas"
   ],
   "correct": 1
  },
  {
-  "difficulty": 4,
-  "tema": "Banco de Dados",
-  "text": "Qual anomalia ocorre quando uma transação relê um conjunto de linhas e aparecem novas linhas inseridas por outra transação?",
+  "difficulty": 3,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "O SGBD aceita um aluno com nome \"XYZ123\" se ele respeitar as regras. Por quê?",
   "answers": [
-   "Leitura suja",
-   "Leitura não repetível",
-   "Leitura fantasma",
-   "Atualização perdida"
+   "Nomes não têm tipo definido",
+   "As visões ignoram os nomes",
+   "Ele confere se o nome existe",
+   "Só entende o predicado interno"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "A idade deve estar entre 0 e 120. Alguém digita 30 para quem tem 25. O banco fica:",
+  "answers": [
+   "Consistente, mas incorreto",
+   "Correto, mas inconsistente",
+   "Correto e consistente",
+   "Inconsistente e incorreto"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "Um caixa digita R$ 100 em vez de R$ 10, valor dentro das regras. Quem detecta o erro?",
+  "answers": [
+   "Quem conhece o valor real",
+   "O SGBD, pela Regra Áurea",
+   "A chave primária da tabela",
+   "Um CHECK de valor máximo"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "Visão LONDRES: fornecedores com CIDADE = 'Londres'. Seu predicado inclui:",
+  "answers": [
+   "Só CIDADE = 'Londres'",
+   "O predicado de S AND CIDADE = 'Londres'",
+   "O predicado de S OR CIDADE = 'Londres'",
+   "Nenhuma restrição"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "Inserir, pela visão LONDRES, um fornecedor de Paris deveria ser:",
+  "answers": [
+   "Rejeitado: fere o predicado de V",
+   "Aceito, pois S aceita Paris",
+   "Aceito, com a cidade em NULL",
+   "Aceito e movido para Londres"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "Uma visão que faz a junção de S e SP herda as restrições:",
+  "answers": [
+   "De nenhuma das duas",
+   "De S e de SP",
+   "Só de SP",
+   "Só de S"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Uma restrição de tipo é verificada na invocação do seletor. Isso quer dizer que:",
+  "answers": [
+   "O seletor funciona como um trigger",
+   "O valor inválido é aceito até o COMMIT",
+   "A checagem só ocorre dentro de visões",
+   "Valores inválidos nem chegam a existir"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "O tipo PESO só aceita decimais positivos. Ao tentar criar PESO(-5):",
+  "answers": [
+   "Dispara um CASCADE",
+   "O valor é aceito e corrigido",
+   "Vira uma restrição de RelVar",
+   "O seletor rejeita o valor"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "\"O status de todo fornecedor fica entre 1 e 100\", só na RelVar S. Categoria:",
+  "answers": [
+   "Restrição de tipo",
+   "Restrição de atributo",
+   "Restrição de RelVar",
+   "Restrição de banco de dados"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual exemplo é uma restrição de atributo?",
+  "answers": [
+   "O status nunca pode diminuir",
+   "Todo peso deve ser positivo",
+   "O atributo PESO é do tipo PESO",
+   "Todo SP tem um S existente"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual exemplo é uma restrição de banco de dados?",
+  "answers": [
+   "O atributo CIDADE é do tipo CHAR",
+   "O status de todo fornecedor fica entre 1 e 100",
+   "Todo peso de peça deve ser positivo",
+   "Fornecedor de status < 20 não fornece P6"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual exemplo é uma restrição de tipo?",
+  "answers": [
+   "Todo SP referencia um S existente",
+   "O status de um fornecedor nunca diminui",
+   "S# é chave candidata da RelVar S",
+   "Uma quantidade deve ser inteira e >= 0"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "A restrição \"fornecedor de Londres tem status 20\" é violada quando:",
+  "answers": [
+   "Não há fornecedor em Londres",
+   "Um fornecedor de Londres tem status 10",
+   "Um fornecedor de Paris tem status 10",
+   "Um de Londres tem status 20"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual item NÃO é uma das quatro categorias de restrição do capítulo?",
+  "answers": [
+   "Restrição de atributo",
+   "Restrição de tipo",
+   "Restrição de banco de dados",
+   "Restrição de trigger"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Em ALUNO(MATRICULA, CPF, NOME), MATRICULA e CPF são únicos. Quantas chaves candidatas?",
+  "answers": [
+   "Uma",
+   "Nenhuma",
+   "Três",
+   "Duas"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Em ALUNO, MATRICULA já é única. O conjunto {MATRICULA, NOME} é:",
+  "answers": [
+   "Chave candidata, pois é único",
+   "Chave estrangeira para ALUNO",
+   "Único, mas não é chave candidata",
+   "Não é único, por causa do NOME"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Em ALUNO, escolhemos MATRICULA como chave primária. O CPF passa a ser:",
+  "answers": [
+   "Chave alternativa (candidata)",
+   "Uma segunda chave primária",
+   "Atributo comum, sem unicidade",
+   "Chave estrangeira de ALUNO"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "NOTA tem MATRICULA como FK para ALUNO. Inserir nota com matrícula inexistente:",
+  "answers": [
+   "É aceito por causa do CASCADE",
+   "É rejeitado: o aluno não existe",
+   "É aceito e a nota fica sem aluno",
+   "O aluno é criado automaticamente"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Mudar a matrícula de um aluno que tem notas, com ON UPDATE CASCADE:",
+  "answers": [
+   "A mudança é recusada pelo SGBD",
+   "As notas do aluno são apagadas",
+   "As notas recebem a nova matrícula",
+   "As notas ficam com a antiga"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Qual a diferença prática entre RESTRICT e NO ACTION?",
+  "answers": [
+   "NO ACTION aceita órfãos",
+   "NO ACTION propaga aos filhos",
+   "Quase nenhuma: as duas rejeitam",
+   "RESTRICT apaga os filhos"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "A RelVar SP(S#, P#, QTD) tem chave {S#, P#}. Isso significa que:",
+  "answers": [
+   "Cada S# aparece uma só vez",
+   "Cada P# aparece uma só vez",
+   "Cada par S#, P# aparece uma vez",
+   "Cada QTD aparece uma só vez"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Em CIDADE(NOME, UF), só NOME+UF juntos são únicos. A chave candidata é:",
+  "answers": [
+   "{UF}",
+   "{NOME}",
+   "{NOME, UF}",
+   "Não há chave candidata"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Com CASCADE na exclusão, apagar 1 pai que tem 3 filhos remove quantas tuplas?",
+  "answers": [
+   "4",
+   "0",
+   "1",
+   "3"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Com RESTRICT na exclusão, apagar 1 pai que tem 3 filhos remove quantas tuplas?",
+  "answers": [
+   "0: a exclusão é recusada",
+   "4: pai e filhos somem",
+   "1: só o pai é apagado",
+   "3: só os filhos somem"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "S tem os fornecedores S1, S2 e S3. Qual valor de S# pode entrar em SP?",
+  "answers": [
+   "S2",
+   "S9",
+   "S0",
+   "S4"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Antes de apagar um pai, o que a ação RESTRICT verifica?",
+  "answers": [
+   "Se o usuário é o dono do pai",
+   "Se há filhos que o referenciam",
+   "Se a tabela do pai está vazia",
+   "Se o pai tem algum índice criado"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "ALUNO tem COD_CURSO apontando para CURSO(COD). Em ALUNO, COD_CURSO é:",
+  "answers": [
+   "Chave candidata de CURSO",
+   "Chave estrangeira",
+   "Um trigger",
+   "Chave primária de ALUNO"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Trigger: \"após INSERT em VENDA, se valor > 1000, avisar o gerente\". Qual é a condição?",
+  "answers": [
+   "valor > 1000",
+   "Após a operação",
+   "Avisar o gerente",
+   "INSERT em VENDA"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Garantir \"todo SP tem um S\" com trigger, em vez de FOREIGN KEY, segundo o capítulo, é:",
+  "answers": [
+   "Igual: os dois são declarativos",
+   "Pior: procedimental, difícil de otimizar",
+   "Impossível: SQL não tem triggers",
+   "Melhor: o trigger é mais seguro e rápido"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Qual exemplo descreve um trigger?",
+  "answers": [
+   "Ao inserir venda, baixar o estoque",
+   "Declarar PRIMARY KEY (ID) na tabela",
+   "Declarar CHECK (QTD > 0) na tabela",
+   "Declarar UNIQUE (EMAIL) na tabela"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "O que faz CHECK (QTD > 0) numa tabela SP?",
+  "answers": [
+   "Rejeita linhas com QTD <= 0",
+   "Apaga as linhas com QTD 0",
+   "Ordena por QTD",
+   "Cria um índice em QTD"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Regra entre CLIENTE e CONTA: \"dívida não passa do limite\". Recurso SQL ideal:",
+  "answers": [
+   "ORDER BY",
+   "CREATE ASSERTION",
+   "UNIQUE",
+   "PRIMARY KEY"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "FOREIGN KEY (S#) REFERENCES S (S#) ON DELETE CASCADE. Apagar S1 faz o quê?",
+  "answers": [
+   "Recusa a exclusão",
+   "Apaga também os SP de S1",
+   "Deixa os SP de S1 órfãos",
+   "Apaga a tabela SP inteira"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Uma tabela tem PRIMARY KEY (ID) e UNIQUE (EMAIL). Isso indica:",
+  "answers": [
+   "Duas chaves candidatas: ID e EMAIL",
+   "Duas chaves primárias na tabela",
+   "Que só ID é chave da tabela",
+   "Que EMAIL é chave estrangeira"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Com uma restrição DEFERRABLE adiada, um INSERT que viola a regra:",
+  "answers": [
+   "Apaga a regra do banco",
+   "Pode passar até o COMMIT",
+   "Nunca chega a ser checado",
+   "É rejeitado na mesma hora"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Qual restrição SQL substitui melhor um trigger que impede preço negativo?",
+  "answers": [
+   "ORDER BY PRECO",
+   "CHECK (PRECO >= 0)",
+   "UNIQUE (PRECO)",
+   "FOREIGN KEY (PRECO)"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "CHECK (FIM >= INICIO) compara duas colunas da mesma linha. Isso é permitido?",
+  "answers": [
+   "Só se for feito por um trigger",
+   "Sim: é uma verificação local",
+   "Não: CHECK só compara com constantes",
+   "Só dentro de um CREATE ASSERTION"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "UNIQUE (A, B) numa tabela significa que:",
+  "answers": [
+   "B nunca se repete",
+   "A nunca se repete",
+   "O par A+B não se repete",
+   "A e B são sempre iguais"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "Se o SGBD não impusesse as restrições, quem teria de garantir as regras?",
+  "answers": [
+   "Os índices",
+   "O sistema operacional",
+   "Cada programa que usa o banco",
+   "Ninguém, seria automático"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 3,
+  "tema": "Integridade - 9.13 Resumo",
+  "text": "Qual par junta corretamente conceito e definição?",
+  "answers": [
+   "Trigger: restrição declarativa",
+   "Predicado: sempre verdadeiro",
+   "Visão: RelVar básica",
+   "Proposição: predicado com valores"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "Cada tupla presente numa RelVar representa:",
+  "answers": [
+   "Um predicado ainda sem valores",
+   "Uma proposição tida como falsa",
+   "Uma proposição tida como verdadeira",
+   "Uma restrição que já foi violada"
   ],
   "correct": 2
  },
  {
   "difficulty": 4,
-  "tema": "Banco de Dados",
-  "text": "Em um índice B-Tree, qual é a complexidade típica da busca por uma chave?",
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "P(x) = \"x tem status maior que 10\". Se S1 tem status 20, P(S1) é:",
   "answers": [
-   "O(1)",
-   "O(log n)",
-   "O(n)",
-   "O(n log n)"
-  ],
-  "correct": 1
- },
- {
-  "difficulty": 4,
-  "tema": "Banco de Dados",
-  "text": "Qual forma normal exige que todo determinante seja uma chave candidata?",
-  "answers": [
-   "2FN",
-   "3FN",
-   "FNBC",
-   "4FN"
+   "Uma proposição falsa",
+   "Ainda um predicado aberto",
+   "Uma proposição verdadeira",
+   "Um trigger de verificação"
   ],
   "correct": 2
  },
  {
   "difficulty": 4,
-  "tema": "Banco de Dados",
-  "text": "O que o comando EXPLAIN normalmente mostra em um SGBD?",
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Sem tuplas duplicadas, por que toda RelVar tem ao menos uma chave candidata?",
   "answers": [
-   "O plano de execução da consulta",
-   "O esquema completo do banco",
-   "O histórico de transações",
-   "Os usuários conectados"
+   "Cada atributo sozinho é sempre único",
+   "Um trigger impede tuplas repetidas",
+   "O SQL cria uma chave automaticamente",
+   "Todos os atributos juntos já são únicos"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "R(A, B, C): {A} é único, {B, C} é único e {A, B} é único. Quais são as chaves candidatas?",
+  "answers": [
+   "{A}, {B, C} e {A, B}",
+   "Só {A, B}",
+   "{A} e {B, C}",
+   "Só {A}"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Uma chave estrangeira pode referenciar a própria RelVar, como em FUNC(ID, ID_CHEFE)?",
+  "answers": [
+   "Sim: o chefe também é funcionário",
+   "Não: FK só aponta para outra RelVar",
+   "Só por meio de um trigger",
+   "Só se ID_CHEFE for chave primária"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Em SP, S# é FK para S. Qual estado viola a integridade referencial?",
+  "answers": [
+   "SP está vazia",
+   "SP tem S9, mas S não tem S9",
+   "S e SP têm S1",
+   "S tem S9, mas SP não tem S9"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "AULA: chaves {PROF,HORA} e {SALA,HORA}. Há (Bia,10h,S2). Inserir (Ana,10h,S2):",
+  "answers": [
+   "É aceito",
+   "Viola a chave {SALA, HORA}",
+   "Viola as duas chaves",
+   "Viola a chave {PROF, HORA}"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Uma chave estrangeira precisa ser chave candidata da RelVar onde ela está?",
+  "answers": [
+   "Não: só precisa casar com uma chave",
+   "Só quando a FK é composta",
+   "Sim: toda FK é chave da sua RelVar",
+   "Sim, e tem de ser a primária"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "OUTRA tem a FK (S#, P#) para a chave {S#, P#} de SP. O valor (S1, P9) é válido se:",
+  "answers": [
+   "Existir P9 em P, não importa S1",
+   "Existir S1 em S, não importa P9",
+   "Existirem S1 em S e P9 em P",
+   "Existir o par (S1, P9) em SP"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "A mesma chave estrangeira pode ter valor repetido na tabela filha?",
+  "answers": [
+   "Só se a ação for CASCADE",
+   "Só se o pai tiver índice",
+   "Sim: vários filhos têm o mesmo pai",
+   "Não: toda FK também é sempre única"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Em SP, a FK S# usa RESTRICT. Qual operação em SP nunca é bloqueada por ela?",
+  "answers": [
+   "Apagar um fornecimento",
+   "Inserir SP com S# inexistente",
+   "Nenhuma operação",
+   "Mudar S# para um inexistente"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Por que a irredutibilidade importa numa chave candidata?",
+  "answers": [
+   "Evita atributos sobrando na chave",
+   "Liga a chave a outra tabela",
+   "Permite tuplas duplicadas na RelVar",
+   "Deixa a chave com mais atributos"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "O que significa INITIALLY DEFERRED numa restrição DEFERRABLE?",
+  "answers": [
+   "Nunca é checada pelo SGBD",
+   "Começa checada na hora, sem adiar",
+   "Começa adiada e é checada no COMMIT",
+   "Vira um trigger de verificação"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "O que significa DEFERRABLE INITIALLY IMMEDIATE?",
+  "answers": [
+   "Nunca é checada pelo SGBD",
+   "Checada na hora, mas pode ser adiada",
+   "Adiada, mas pode ser checada antes",
+   "Checada só no próximo backup"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Por que a verificação postergada do SQL contraria a Regra Áurea?",
+  "answers": [
+   "Deixa o banco inválido até o COMMIT",
+   "Verifica cedo demais, antes do INSERT",
+   "Impede que qualquer COMMIT aconteça",
+   "Não usa predicados para verificar"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Qual vantagem a restrição declarativa tem sobre o trigger, para o SGBD?",
+  "answers": [
+   "Dispensa qualquer verificação do SGBD",
+   "Roda passo a passo, como um programa",
+   "Aceita dados inválidos por um tempo",
+   "O SGBD entende a regra e pode otimizar"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual par está certo sobre quando cada restrição é checada?",
+  "answers": [
+   "Ambas só no backup",
+   "Tipo: no seletor; RelVar: na atualização",
+   "Tipo: na atualização; RelVar: no seletor",
+   "Tipo: no COMMIT; RelVar: no seletor"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "\"Todo funcionário ganha menos que o seu chefe\", tudo na RelVar FUNC. Categoria:",
+  "answers": [
+   "Atributo, pois cita o salário",
+   "Banco de dados, pois cita o chefe",
+   "RelVar, pois só envolve FUNC",
+   "Tipo, pois limita o salário"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Leia: FORALL PX (EXISTS SPX (SPX.P# = PX.P#)). Ela exige que:",
+  "answers": [
+   "Algum fornecimento não tenha peça",
+   "Toda peça apareça em algum fornecimento",
+   "Toda peça seja fornecida por todos",
+   "Exista ao menos uma peça fornecida"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "O banco tem 5 RelVars: 4 com predicado TRUE e 1 com FALSE. Pela Regra Áurea:",
+  "answers": [
+   "Só a RelVar FALSE é apagada",
+   "É aceito, pois a maioria é TRUE",
+   "É aceito até o COMMIT",
+   "Esse estado nunca deveria existir"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.6 Predicados internos e externos",
+  "text": "Qual relação entre predicado interno e externo é a desejada?",
+  "answers": [
+   "O interno reflete o externo ao máximo",
+   "O externo é imposto pelo próprio SGBD",
+   "Os dois devem se contradizer",
+   "O interno pode ignorar o externo"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "Uma visão V projeta S sem o atributo STATUS. A regra \"status entre 1 e 100\":",
+  "answers": [
+   "Vira uma restrição de tipo",
+   "Deixa de existir no banco todo",
+   "Continua valendo na RelVar S",
+   "Passa a valer apenas na visão V"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Numa regra ECA, qual parte pode impedir que a ação seja executada?",
+  "answers": [
+   "O COMMIT",
+   "A ação",
+   "O evento",
+   "A condição"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Uma CREATE ASSERTION se encaixa em qual categoria do capítulo?",
+  "answers": [
+   "Restrição de transição",
+   "Restrição de atributo",
+   "Restrição de tipo",
+   "Restrição de banco de dados"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "Um CHECK local consegue garantir \"todo SP tem um S\"?",
+  "answers": [
+   "Só se a tabela S for uma visão",
+   "Não: envolve outra tabela; use FK",
+   "Sim: CHECK vale para todo o banco",
+   "Só se for junto com UNIQUE"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Uma nova restrição é criada, mas os dados atuais a violam. O que isso indica?",
+  "answers": [
+   "Os dados que violam viram NULL",
+   "Os dados errados são apagados sozinhos",
+   "Os dados atuais não importam para a regra",
+   "Fica FALSE: a regra não pode ser aceita"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Qual exemplo é uma restrição de transição?",
+  "answers": [
+   "Todo fornecimento tem fornecedor existente",
+   "O atributo CPF tem o tipo de dado CPF",
+   "Estado civil não volta de casado a solteiro",
+   "Idade deve ser sempre maior ou igual a 0"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.1 Introdução",
+  "text": "Por que a integridade deixou de tratar só de chaves?",
+  "answers": [
+   "Toda regra de negócio é uma restrição",
+   "As chaves foram abolidas",
+   "Os triggers substituíram as chaves",
+   "Visões não têm chaves"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Por que o capítulo chama os triggers de \"desvio\"?",
+  "answers": [
+   "Fogem da abordagem declarativa",
+   "Não existem em nenhum SQL",
+   "Estão sempre errados por natureza",
+   "Só servem para atualizar visões"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "Quanto mais regras reais forem declaradas no banco:",
+  "answers": [
+   "Nada muda: o SGBD ignora regras",
+   "Mais perto do correto ele fica",
+   "O banco fica menos consistente",
+   "O banco fica mais incorreto"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Restrições de tipo e de atributo, juntas, garantem que:",
+  "answers": [
+   "Todo valor de atributo é válido no tipo",
+   "Os triggers disparam na hora certa",
+   "Todas as tabelas estão ligadas por FK",
+   "Nunca há tuplas duplicadas no banco"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "Uma restrição de banco de dados pode ser violada atualizando só uma das RelVars?",
+  "answers": [
+   "Não: só atualizando todas de uma vez",
+   "Sim: por isso é checada em cada uma",
+   "Só no COMMIT da transação",
+   "Não: esse tipo nunca é violado"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "PESO é do tipo PESO, que só aceita valores > 0. Quantas restrições e de que tipo?",
+  "answers": [
+   "Duas, ambas de RelVar",
+   "Duas: uma de tipo e uma de transição",
+   "Uma só, de banco de dados",
+   "Duas: uma de atributo e uma de tipo"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "Um trigger e uma FK fazem a mesma regra. Se o trigger tiver um erro de código:",
+  "answers": [
+   "A FK deixa de existir no banco",
+   "O SGBD corrige o trigger sozinho",
+   "A regra pode falhar sem o SGBD ver",
+   "Nada muda, o trigger é declarativo"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 4,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Que garantia a Regra Áurea dá aos programas que usam o banco?",
+  "answers": [
+   "Precisam checar tudo por conta própria",
+   "Nunca leem dados que violem as regras",
+   "Não podem atualizar nenhum dado",
+   "Só podem ler dados por visões"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "Regra: IF CIDADE = 'Londres' THEN STATUS = 20. Um fornecedor de Paris com status 5:",
+  "answers": [
+   "Deixa a regra indefinida",
+   "Viola a regra",
+   "Satisfaz a regra (o IF é falso)",
+   "Só satisfaz se mudar para Londres"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "NOT EXISTS SX (SX.STATUS < 0) é equivalente a:",
+  "answers": [
+   "EXISTS SX (SX.STATUS >= 0)",
+   "FORALL SX (SX.STATUS >= 0)",
+   "NOT FORALL SX (SX.STATUS < 0)",
+   "FORALL SX (SX.STATUS < 0)"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "A restrição FORALL PX (PX.PESO > 0), numa RelVar P sem nenhuma tupla, é:",
+  "answers": [
+   "TRUE: não há contraexemplo",
+   "Erro: FORALL exige tuplas",
+   "FALSE: não há peças com peso",
+   "Indefinida: falta uma tupla"
   ],
   "correct": 0
  },
  {
   "difficulty": 5,
-  "tema": "Banco de Dados",
-  "text": "Qual protocolo garante serializabilidade separando uma fase de aquisição e uma de liberação de bloqueios?",
+  "tema": "Integridade - 9.4 Predicados de RelVar e de BD",
+  "text": "Uma RelVar sem nenhuma restrição declarada tem predicado de RelVar igual a:",
   "answers": [
-   "Two-Phase Locking (2PL)",
-   "Write-Ahead Logging",
-   "Two-Phase Commit",
-   "Ordenação por timestamp simples"
-  ],
-  "correct": 0
- },
- {
-  "difficulty": 5,
-  "tema": "Banco de Dados",
-  "text": "A dependência multivalorada é eliminada ao atingir qual forma normal?",
-  "answers": [
-   "3FN",
-   "FNBC",
-   "4FN",
-   "2FN"
-  ],
-  "correct": 2
- },
- {
-  "difficulty": 5,
-  "tema": "Banco de Dados",
-  "text": "Qual técnica de recuperação exige gravar a alteração no log ANTES de gravá-la nos dados em disco?",
-  "answers": [
-   "Shadow Paging",
-   "Write-Ahead Logging",
-   "Checkpoint fuzzy",
-   "Bloqueio otimista"
+   "NULL (valor desconhecido)",
+   "TRUE (AND vazio é verdadeiro)",
+   "Indefinido até a 1ª regra",
+   "FALSE (não há nada a valer)"
   ],
   "correct": 1
  },
  {
   "difficulty": 5,
-  "tema": "Banco de Dados",
-  "text": "Pelo teorema CAP, havendo partição de rede, um sistema distribuído deve escolher entre quais propriedades?",
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "A->B: CASCADE; B->C: RESTRICT. Apagar pai de A cujos filhos em B têm filhos em C:",
   "answers": [
-   "Atomicidade e Durabilidade",
-   "Isolamento e Consistência",
-   "Consistência e Disponibilidade",
-   "Disponibilidade e Escalabilidade"
+   "Apaga A e B; C fica órfão",
+   "A exclusão inteira é recusada",
+   "Apaga A, B e C",
+   "Apaga só a tupla de A"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.7 Correção e consistência",
+  "text": "Seja C = \"banco correto\" e K = \"banco consistente\". Qual implicação vale?",
+  "answers": [
+   "K implica C, mas C não implica K",
+   "Não há relação entre C e K",
+   "C implica K, mas K não implica C",
+   "C e K são equivalentes"
   ],
   "correct": 2
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "R(A, B, C): {A, B} e {B, C} são únicos; nenhum atributo sozinho é único. Chaves candidatas:",
+  "answers": [
+   "Só {A, B, C}",
+   "{A, B}, {B, C} e {A, B, C}",
+   "{A, B} e {B, C}",
+   "Nenhuma"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "FK DEFERRABLE INITIALLY DEFERRED. Transação: INSERT filho, INSERT pai, COMMIT:",
+  "answers": [
+   "Dá certo: a FK é checada no COMMIT",
+   "O filho é apagado no COMMIT",
+   "Falha já no INSERT do filho",
+   "Falha no COMMIT: o pai veio depois"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Com checagem imediata (Regra Áurea), inserir o filho antes do pai na mesma transação:",
+  "answers": [
+   "O SGBD cria o pai sozinho",
+   "Dá certo, checando no COMMIT",
+   "A FK é ignorada até o fim",
+   "Falha já no INSERT do filho"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.11 Triggers",
+  "text": "T1: após UPDATE em A, altera B. T2: após UPDATE em B, altera A. UPDATE em A causa:",
+  "answers": [
+   "Nenhum disparo, pois são iguais",
+   "Um erro de chave estrangeira",
+   "Disparos em cadeia: T1, T2, T1...",
+   "Só T1 roda, e T2 é ignorado"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.9 Classificação das restrições",
+  "text": "\"Ganha menos que o chefe\" e \"o salário não pode cair\", ambas em FUNC. Categorias:",
+  "answers": [
+   "Atributo (estado) e tipo (transição)",
+   "RelVar (estado) e RelVar (transição)",
+   "Tipo (estado) e banco de dados",
+   "Banco de dados (estado) e tipo"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "SP: ON DELETE CASCADE, ON UPDATE RESTRICT. S1 tem SP. Trocar S1 por S9 em S:",
+  "answers": [
+   "Os SP de S1 são apagados",
+   "Os SP ficam órfãos",
+   "Os SP passam para S9",
+   "É recusado: há fornecimentos"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "\"Existe x tal que x fica em Londres\", com x ligado por EXISTS, é:",
+  "answers": [
+   "Um predicado, pois x continua livre",
+   "Uma chave candidata de S",
+   "Uma tupla da RelVar de fornecedores",
+   "Uma proposição: x está quantificado"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.5 Verificando as restrições",
+  "text": "Uma operação insere 2 tuplas: a 1ª fere a regra e a 2ª conserta. Checando ao fim:",
+  "answers": [
+   "É aceita: o estado final é válido",
+   "É recusada logo na 1ª tupla",
+   "A checagem fica para o COMMIT",
+   "Só a 2ª tupla acaba inserida"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.12 Recursos de SQL",
+  "text": "ASSERTION: \"fornecedor de status < 20 não fornece P6\". Checar ao atualizar:",
+  "answers": [
+   "Só SP",
+   "S ou SP",
+   "Só S",
+   "Só P"
+  ],
+  "correct": 1
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.2 Olhando mais de perto",
+  "text": "FORALL SX FORALL SY (IF SX.S# = SY.S# THEN SX.NOME = SY.NOME) garante que:",
+  "answers": [
+   "Todos os S# são diferentes",
+   "Todos têm o mesmo nome",
+   "Mesmo nome implica mesmo S#",
+   "Mesmo S# implica mesmo nome"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "Um atributo pode fazer parte de uma chave candidata e ser também chave estrangeira?",
+  "answers": [
+   "Não, nunca",
+   "Só se for a chave inteira",
+   "Só em visões",
+   "Sim, como S# em SP"
+  ],
+  "correct": 3
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.3 Predicados e proposições",
+  "text": "No predicado \"x fornece a peça y\", instanciar só x = S1 resulta em:",
+  "answers": [
+   "Uma tupla da RelVar SP",
+   "Uma chave candidata {x, y}",
+   "Um predicado, ainda com y livre",
+   "Uma proposição, pois x tem valor"
+  ],
+  "correct": 2
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.10 Chaves",
+  "text": "A->B->C em CASCADE. O pai tem 2 filhos em B, e cada um 3 em C. Apagar o pai remove:",
+  "answers": [
+   "9 tuplas",
+   "7 tuplas",
+   "1 tupla",
+   "3 tuplas"
+  ],
+  "correct": 0
+ },
+ {
+  "difficulty": 5,
+  "tema": "Integridade - 9.8 Integridade e visões",
+  "text": "V1 = S WHERE STATUS > 10 e V2 = V1 WHERE CIDADE = 'Paris'. O predicado de V2 inclui:",
+  "answers": [
+   "pred(S) AND STATUS > 10 AND CIDADE = 'Paris'",
+   "pred(S) OR STATUS > 10 OR CIDADE = 'Paris'",
+   "pred(S) AND CIDADE = 'Paris', sem o STATUS",
+   "Só CIDADE = 'Paris', pois V2 é nova"
+  ],
+  "correct": 0
  }
 ]

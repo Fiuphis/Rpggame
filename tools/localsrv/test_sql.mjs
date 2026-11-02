@@ -131,10 +131,10 @@ const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert
   await db.exec(`insert into public.profiles (user_id, username, recovery_hash) values ('${u1}', 'fiuphis', 'x'), ('${u2}', 'outro', 'x')`);
   assert.equal((await call(u2, 'admin_get_questions', {})).error, 'sem_permissao');
   assert.equal((await call(u2, 'admin_put_questions', { p_list: [] })).error, 'sem_permissao');
-  const lst = await call(u1, 'admin_get_questions', {}); assert.equal(lst.ok, true); assert.equal(lst.list.length, 20);
+  const lst = await call(u1, 'admin_get_questions', {}); assert.equal(lst.ok, true); const NQ = lst.list.length; assert.ok(NQ >= 20, 'banco de teste: ' + NQ);
   const edit = lst.list.map(q => ({ ...q })); edit[0].text = 'Editada?'; edit.push({ rank: 1, theme: 'T', text: 'Nova?', options: ['a', 'b', 'c', 'd'], correct: 2 }); edit.splice(1, 1);
-  const sv = await call(u1, 'admin_put_questions', { p_list: edit }); assert.equal(sv.ok, true); assert.equal(sv.count, 20);
-  const l2 = await call(u1, 'admin_get_questions', {}); assert.equal(l2.list.length, 20); assert.ok(l2.list.some(q => q.text === 'Nova?' && q.correct === 2));
+  const sv = await call(u1, 'admin_put_questions', { p_list: edit }); assert.equal(sv.ok, true); assert.equal(sv.count, NQ);
+  const l2 = await call(u1, 'admin_get_questions', {}); assert.equal(l2.list.length, NQ); assert.ok(l2.list.some(q => q.text === 'Nova?' && q.correct === 2));
   assert.equal((await call(u1, 'admin_put_questions', { p_list: [{ rank: 1, text: 'x', options: ['a'], correct: 0 }] })).error, 'pergunta_invalida');
   ok('editor so da conta fiuphis, historico preservado');
 }
@@ -488,7 +488,7 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   const b = await call(adm, 'admin_question_list', { p_q: f.list[0].text.slice(0, 12) }); assert.ok(b.list.some(q => q.id === f.list[0].id), 'busca por texto');
   await fails(call(adm, 'admin_question_set', { p_id: randomUUID(), p_active: false }), 'pergunta_nao_encontrada');
   const n3 = l.counts['3'].on; const id3 = f.list[0].id;
-  // com 4 ativas por rank (banco de teste) desativar 1 e ok; chegar ao minimo de 3 e recusado
+  // desativar ate o minimo: a 1a e ok; chegar ao minimo de 3 ativas e recusado
   let off = 0; for (const q of f.list.filter(z => z.active)) { try { await call(adm, 'admin_question_set', { p_id: q.id, p_active: false }); off++; } catch (e) { assert.match(String(e.message), /minimo_de_perguntas/); break; } }
   const after = await call(adm, 'admin_question_list', {}); assert.equal(after.counts['3'].on, Math.max(3, n3 - off)); assert.ok(after.counts['3'].on >= 3, 'minimo 3');
   await call(adm, 'admin_question_set', { p_id: id3, p_active: true }); assert.ok((await call(adm, 'admin_question_list', {})).counts['3'].on >= after.counts['3'].on);
@@ -511,3 +511,21 @@ console.log('TODOS OS TESTES SQL PASSARAM');
   await call(adm, 'admin_set_maintenance', { p_on: false });
   assert.equal((await call(a, 'maintenance_status', {})).on, false); const c = await call(b, 'create_room', { p_public: true, p_name: 'VOLTOU' }); assert.ok(c.id);
   ok('manutencao: so adm liga/desliga; bloqueia criar sala (adm ainda cria); aviso nas salas abertas; desligar libera'); }
+
+// banco de perguntas (v341): na mesma sala, duas partidas seguidas (dois bosses) com 45 perguntas cada nao repetem nenhuma pergunta
+{ const [a, b] = U(2);
+  await db.exec(`update public.questions set active = true; update public.rooms set status = 'ended'`);   // testes anteriores desativam perguntas (painel) e deixam salas abertas
+  console.log('  ativas por rank:', JSON.stringify((await db.query('select rank, count(*)::int n from public.questions where active group by rank order by rank')).rows.map(x => x.n)));
+  const r = await call(a, 'create_room', { p_public: true, p_name: 'REP' }); await call(b, 'join_room', { p_room: r.id, p_code: r.code });
+  await call(a, 'pick_group', { p_room: r.id, p_grp: 'mage' }); await call(b, 'pick_group', { p_room: r.id, p_grp: 'tank' });
+  await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'pick' }); await call(a, 'set_room_stage', { p_room: r.id, p_stage: 'map' });
+  const W = [0, .30, .30, .25, .10, .05], roll = () => { let x = Math.random(), d = 1; for (; d < 5; d++) { x -= W[d]; if (x < 0) break; } return d; };
+  const playMatch = async (boss, n) => { const m = await call(a, 'start_match', { p_room: r.id, p_boss: boss }); let since = 0;
+    for (let i = 0; i < n; i++) { since++; const rk = since >= 5 ? (Math.random() < .7 ? 4 : 5) : roll(); if (rk >= 4) since = 0;
+      await db.exec(`update public.rounds set status = 'played', played_at = now() - interval '61 seconds' where match_id = '${m.id}'`);
+      const nx = await call(a, 'advance_round', { p_room: r.id, p_rank: rk, p_kind: 'q' }); assert.equal(nx.ok, true); }
+    await db.exec(`update public.matches set status = 'won', ended_at = now() where id = '${m.id}'`); };
+  await playMatch(0, 45); await playMatch(1, 45);
+  const q = (await db.query(`select count(*)::int n, count(distinct question_id)::int d from public.rounds where room_id = $1 and question_id is not null`, [r.id])).rows[0];
+  assert.ok(q.n >= 90, 'rodadas com pergunta: ' + q.n); assert.equal(q.d, q.n, 'repetiu pergunta na mesma sala: ' + (q.n - q.d));
+  ok(`perguntas: ${q.n} rodadas em 2 partidas na mesma sala, nenhuma pergunta repetida`); }

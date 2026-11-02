@@ -22,31 +22,32 @@ const HARD_MIN = 4;   // rank S e SS contam como "difíceis" (carregam o especia
 let HARD_NOW = HARD_MIN;   // limite de rank "dificil" da rodada atual (sala facil: A; medio e dificil: S); vem de round.dif
 const DIF_INFO = {easy:{min:3, lbl:'A'}, medium:{min:4, lbl:'S'}, hard:{min:4, lbl:'S/SS'}};
 let HL = 'S/SS';   // texto do rank dificil na tela
-const setDif = d => { const i = DIF_INFO[d] || DIF_INFO.hard; HARD_NOW = i.min; HL = i.lbl; };
+let RANK_CAP = 5;   // maior rank da dificuldade atual (facil 3, medio 4, dificil 5)
+const setDif = d => { const i = DIF_INFO[d] || DIF_INFO.hard; HARD_NOW = i.min; HL = i.lbl; RANK_CAP = d === 'easy' ? 3 : d === 'medium' ? 4 : 5; };
 const isHardQ = q => q && q.difficulty >= HARD_NOW;
 const RANK_W = [0, .30, .30, .25, .10, .05];   // sorteio normal por rank (índice = dificuldade)
 function rollDiff(){ let r = R(), d = 1; for (; d < 5; d++) { r -= RANK_W[d]; if (r < 0) break; } return d; }
-const QUESTIONS = [
-  {difficulty:1, text:'Qual das alternativas abaixo representa uma chave primária em um banco de dados?', answers:['Uma tabela de relacionamento','Um campo que identifica unicamente um registro','Um índice não clusterizado','Um comando de seleção'], correct:1},
-  {difficulty:1, text:'Qual comando SQL é utilizado para consultar dados de uma tabela?', answers:['INSERT','UPDATE','SELECT','DROP'], correct:2},
-  {difficulty:1, text:'O que significa a sigla SGBD?', answers:['Sistema Geral de Banco Digital','Sistema Gerenciador de Banco de Dados','Servidor Gráfico de Base de Dados','Sistema Global de Backup de Dados'], correct:1},
-  {difficulty:1, text:'Qual comando SQL remove registros de uma tabela?', answers:['REMOVE','CUT','ERASE','DELETE'], correct:3},
-  {difficulty:2, text:'Qual propriedade garante que uma chave primária não se repita?', answers:['Unicidade','Ordenação','Criptografia','Compactação'], correct:0},
-  {difficulty:2, text:'Qual cláusula SQL filtra as linhas antes de agrupar os resultados?', answers:['HAVING','WHERE','ORDER BY','LIMIT'], correct:1},
-  {difficulty:2, text:'Qual JOIN retorna apenas os registros com correspondência nas duas tabelas?', answers:['LEFT JOIN','RIGHT JOIN','INNER JOIN','CROSS JOIN'], correct:2},
-  {difficulty:2, text:'O que é uma chave estrangeira?', answers:['Campo que referencia a chave primária de outra tabela','Chave usada para criptografar dados','Índice que ordena a tabela','Campo que aceita apenas números'], correct:0},
-  {difficulty:3, text:'Qual forma normal elimina dependências parciais em chaves primárias compostas?', answers:['1FN','2FN','3FN','FNBC'], correct:1},
-  {difficulty:3, text:'No ACID, qual propriedade garante que dados confirmados sobrevivam a falhas?', answers:['Atomicidade','Consistência','Isolamento','Durabilidade'], correct:3},
-  {difficulty:3, text:'Qual cláusula filtra os grupos formados por um GROUP BY?', answers:['WHERE','HAVING','DISTINCT','UNION'], correct:1},
-  {difficulty:3, text:'Qual nível de isolamento evita leituras sujas, mas permite leituras não repetíveis?', answers:['READ UNCOMMITTED','READ COMMITTED','REPEATABLE READ','SERIALIZABLE'], correct:1},
-  {difficulty:4, text:'Qual anomalia ocorre quando uma transação relê um conjunto de linhas e aparecem novas linhas inseridas por outra transação?', answers:['Leitura suja','Leitura não repetível','Leitura fantasma','Atualização perdida'], correct:2},
-  {difficulty:4, text:'Em um índice B-Tree, qual é a complexidade típica da busca por uma chave?', answers:['O(1)','O(log n)','O(n)','O(n log n)'], correct:1},
-  {difficulty:4, text:'Qual forma normal exige que todo determinante seja uma chave candidata?', answers:['2FN','3FN','FNBC','4FN'], correct:2},
-  {difficulty:4, text:'O que o comando EXPLAIN normalmente mostra em um SGBD?', answers:['O plano de execução da consulta','O esquema completo do banco','O histórico de transações','Os usuários conectados'], correct:0},
-  {difficulty:5, text:'Qual protocolo garante serializabilidade separando uma fase de aquisição e uma de liberação de bloqueios?', answers:['Two-Phase Locking (2PL)','Write-Ahead Logging','Two-Phase Commit','Ordenação por timestamp simples'], correct:0},
-  {difficulty:5, text:'A dependência multivalorada é eliminada ao atingir qual forma normal?', answers:['3FN','FNBC','4FN','2FN'], correct:2},
-  {difficulty:5, text:'Qual técnica de recuperação exige gravar a alteração no log ANTES de gravá-la nos dados em disco?', answers:['Shadow Paging','Write-Ahead Logging','Checkpoint fuzzy','Bloqueio otimista'], correct:1},
-  {difficulty:5, text:'Pelo teorema CAP, havendo partição de rede, um sistema distribuído deve escolher entre quais propriedades?', answers:['Atomicidade e Durabilidade','Isolamento e Consistência','Consistência e Disponibilidade','Disponibilidade e Escalabilidade'], correct:2}
+const QUESTIONS = [   // reserva (Cap. 9, Integridade): o banco completo vem de data/perguntas.json
+  {difficulty:1, text:"Formalmente, uma restrição de integridade é uma expressão de que tipo?", answers:["De texto (uma frase)", "Booleana (TRUE ou FALSE)", "Aritmética (um número)", "De data (um instante)"], correct:1},
+  {difficulty:1, text:"Durante quanto tempo uma restrição de integridade precisa ser avaliada como TRUE?", answers:["Só quando o usuário pedir", "Só no fim do dia", "Só no primeiro acesso", "O tempo todo"], correct:3},
+  {difficulty:1, text:"Quem é responsável por impor e monitorar as restrições de integridade?", answers:["O usuário final", "O navegador", "O SGBD", "O sistema operacional"], correct:2},
+  {difficulty:1, text:"O que o SGBD faz com uma atualização que viola uma restrição de integridade?", answers:["Apaga a tabela inteira", "Ignora a restrição", "Aceita e avisa depois", "Rejeita a atualização"], correct:3},
+  {difficulty:2, text:"Por que usar lógica formal, como a Tutorial D, para escrever restrições?", answers:["Para deixar o banco mais rápido", "Para expressá-las sem ambiguidade", "Para esconder as regras do usuário", "Para dispensar o SGBD"], correct:1},
+  {difficulty:2, text:"Na escrita de restrições, a construção IF ... THEN representa:", answers:["Uma junção de tabelas", "Um laço de repetição", "Uma implicação lógica", "Uma ordenação"], correct:2},
+  {difficulty:2, text:"O quantificador FORALL expressa a ideia de:", answers:["Apenas o primeiro", "Nenhum elemento", "Existe ao menos um", "Para todo elemento"], correct:3},
+  {difficulty:2, text:"O quantificador EXISTS expressa a ideia de:", answers:["Exatamente dois", "Para todo elemento", "Existe pelo menos um", "Nenhum elemento existe"], correct:2},
+  {difficulty:3, text:"Leia: FORALL SX (SX.STATUS > 0). O que a restrição exige?", answers:["Todo fornecedor tem status positivo", "Só o primeiro tem status positivo", "Nenhum fornecedor tem status", "Algum fornecedor tem status positivo"], correct:0},
+  {difficulty:3, text:"Leia: EXISTS PX (PX.COR = 'Vermelho'). Ela é verdadeira quando:", answers:["Todas as peças são vermelhas", "Há exatamente uma cor", "Nenhuma peça é vermelha", "Há ao menos uma peça vermelha"], correct:3},
+  {difficulty:3, text:"Leia: FORALL SX (IF SX.CIDADE = 'Paris' THEN SX.STATUS = 30). Ela exige:", answers:["Status 30 só para quem é de fora", "Todos os fornecedores ficam em Paris", "Todo fornecedor de Paris tem status 30", "Algum fornecedor fica em Paris"], correct:2},
+  {difficulty:3, text:"Escrever \"o salário deve ser alto\" como restrição é um problema porque:", answers:["Restrições não podem usar números", "É vago: \"alto\" não tem valor definido", "Salário não tem um tipo de dado", "O SGBD não aceita regras em texto"], correct:1},
+  {difficulty:4, text:"Cada tupla presente numa RelVar representa:", answers:["Um predicado ainda sem valores", "Uma proposição tida como falsa", "Uma proposição tida como verdadeira", "Uma restrição que já foi violada"], correct:2},
+  {difficulty:4, text:"P(x) = \"x tem status maior que 10\". Se S1 tem status 20, P(S1) é:", answers:["Uma proposição falsa", "Ainda um predicado aberto", "Uma proposição verdadeira", "Um trigger de verificação"], correct:2},
+  {difficulty:4, text:"Sem tuplas duplicadas, por que toda RelVar tem ao menos uma chave candidata?", answers:["Cada atributo sozinho é sempre único", "Um trigger impede tuplas repetidas", "O SQL cria uma chave automaticamente", "Todos os atributos juntos já são únicos"], correct:3},
+  {difficulty:4, text:"R(A, B, C): {A} é único, {B, C} é único e {A, B} é único. Quais são as chaves candidatas?", answers:["{A}, {B, C} e {A, B}", "Só {A, B}", "{A} e {B, C}", "Só {A}"], correct:2},
+  {difficulty:5, text:"Regra: IF CIDADE = 'Londres' THEN STATUS = 20. Um fornecedor de Paris com status 5:", answers:["Deixa a regra indefinida", "Viola a regra", "Satisfaz a regra (o IF é falso)", "Só satisfaz se mudar para Londres"], correct:2},
+  {difficulty:5, text:"NOT EXISTS SX (SX.STATUS < 0) é equivalente a:", answers:["EXISTS SX (SX.STATUS >= 0)", "FORALL SX (SX.STATUS >= 0)", "NOT FORALL SX (SX.STATUS < 0)", "FORALL SX (SX.STATUS < 0)"], correct:1},
+  {difficulty:5, text:"A restrição FORALL PX (PX.PESO > 0), numa RelVar P sem nenhuma tupla, é:", answers:["TRUE: não há contraexemplo", "Erro: FORALL exige tuplas", "FALSE: não há peças com peso", "Indefinida: falta uma tupla"], correct:0},
+  {difficulty:5, text:"Uma RelVar sem nenhuma restrição declarada tem predicado de RelVar igual a:", answers:["NULL (valor desconhecido)", "TRUE (AND vazio é verdadeiro)", "Indefinido até a 1ª regra", "FALSE (não há nada a valer)"], correct:1}
 ];
 // Banco de perguntas editável: prioridade = salvo neste aparelho (editor.html) > data/perguntas.json > as perguntas embutidas acima.
 const QUESTIONS_DEFAULT = QUESTIONS.slice();
@@ -665,8 +666,9 @@ function buildQuestionPanel(text, at, seconds, side){
   return L;
 }
 function fitText(){
-  const fit = (box, inner, minPx) => { if (!box || !inner) return; let fs = parseFloat(getComputedStyle(box).fontSize); box.style.fontSize = fs + 'px';
-    while (inner.offsetHeight > box.clientHeight + 1 && fs > minPx) box.style.fontSize = (fs -= 1) + 'px'; };
+  // v341: o minimo acompanha o tamanho da tela (antes era fixo em px: em celulares de 360 px a letra ja comecava abaixo dele, nao diminuia e o texto saia cortado)
+  const fit = (box, inner, minPx) => { if (!box || !inner) return; box.style.fontSize = ''; let fs = parseFloat(getComputedStyle(box).fontSize); const min = Math.min(minPx, fs * .7); box.style.fontSize = fs + 'px';
+    while (inner.offsetHeight > box.clientHeight + 1 && fs > min) box.style.fontSize = (fs -= .5) + 'px'; };
   const t = $('#dq-text'); if (t && !$('#dynamic-question').hidden) fit(t, t.firstChild, 7);
   document.querySelectorAll('.dq-answer .label').forEach(l => fit(l, l.firstChild, 9));
 }
@@ -855,10 +857,19 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
 }
 
 // ===== Rodada: pergunta → ações dos heróis → resolução =====
+// v341: sem sala, uma pergunta nao se repete (nem entre bosses, nem em outra partida neste aparelho) ate todas daquele rank terem saido
+const QSEEN_KEY = 'bd1_qseen';
+const qHash = t => { let h = 5381; for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
 function pickQuestion(diff){
   let pool = QUESTIONS.map((q, i) => ({q, i})).filter(o => o.q.difficulty === diff);
   for (let k = 1; !pool.length && k < 5; k++) pool = QUESTIONS.map((q, i) => ({q, i})).filter(o => Math.abs(o.q.difficulty - diff) === k);
-  let c; do { c = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && c.i === state.lastQ[diff]);
+  let seen = []; try { seen = JSON.parse(localStorage.getItem(QSEEN_KEY)) || []; } catch (e) {}
+  const used = new Set(Array.isArray(seen) ? seen : []);
+  let fresh = pool.filter(o => !used.has(qHash(o.q.text)));
+  if (!fresh.length) { pool.forEach(o => used.delete(qHash(o.q.text))); fresh = pool; }   // o rank inteiro ja saiu: recomeca o ciclo so dele
+  if (fresh.length > 1) fresh = fresh.filter(o => o.i !== state.lastQ[diff]);
+  const c = fresh[Math.floor(Math.random() * fresh.length)];
+  used.add(qHash(c.q.text)); try { localStorage.setItem(QSEEN_KEY, JSON.stringify([...used].slice(-600))); } catch (e) {}
   state.lastQ[diff] = c.i; return c.q;
 }
 // Tema visual da fase: 'ice' (botao e interface de gelo, so no boss Hrimgar); o boss 1 usa o padrao.
@@ -1577,8 +1588,9 @@ function onlPlan(){
   if (!state.over && nr >= CHEST_FROM && nr - state.chestAt >= CHEST_GAP && (R() < CHEST_CHANCE || (TEST_MODE && window.__force === 'chest')) && !(TEST_MODE && window.__force === 'nochest')) return {kind:'chest', rank:null};
   state.sinceHard = (state.sinceHard || 0) + 1;
   if (state.sinceHard >= HARD_EVERY) state.forceHard = true;
-  const rank = state.forceHard ? (R() < .7 ? 4 : 5) : rollDiff();
+  let rank = state.forceHard ? (R() < .7 ? 4 : 5) : rollDiff();
   if (rank >= HARD_MIN) state.sinceHard = 0;
+  if (!state.forceHard) for (let k = 0; rank > RANK_CAP && k < 30; k++) rank = rollDiff();   // v341: rank acima do teto e sorteado de novo (o forcado continua indo para o teto, no servidor)
   state.forceHard = false;
   return {kind:'q', rank};
 }

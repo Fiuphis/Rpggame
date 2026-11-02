@@ -69,7 +69,10 @@ function paint() {
   $('#list').innerHTML = list.length ? list.map(q => '<div class="q' + (q.active ? '' : ' off') + '" data-id="' + esc(q.id) + '"><div class="top"><span class="rk d' + q.rank + '">' + R[q.rank - 1] + '</span><span class="tema">' + esc(q.theme || '') + (q.active ? '' : ' · DESATIVADA') + '</span></div><p>' + esc(q.text) + '</p><ol type="A">' + (q.options || []).map((o, i) => '<li' + (i === q.correct ? ' class="right"' : '') + '>' + esc(o) + '</li>').join('') + '</ol><div class="act"><button class="' + (q.active ? 'dng' : 'onb') + '" data-a="' + (q.active ? 'off' : 'on') + '">' + (q.active ? 'DESATIVAR' : 'ATIVAR') + '</button></div></div>').join('') : '<p class="sub">Nenhuma pergunta encontrada.</p>';
 }
 async function load() {
-  try { await NET.ready(); const r = await NET.rpc('admin_question_list', { p_rank: filter || null, p_q: $('#search').value.trim() || null }); counts = r.counts || {}; list = r.list || []; $('#net').textContent = 'online'; paint(); }
+  // v341: o servidor devolve no maximo 150 por pedido; em TODAS, pede um rank de cada vez para listar o banco inteiro (200+ perguntas)
+  try { await NET.ready(); const q = $('#search').value.trim() || null;
+    const rs = await Promise.all((filter ? [filter] : [1, 2, 3, 4, 5]).map(rk => NET.rpc('admin_question_list', { p_rank: rk, p_q: q })));
+    counts = rs[0].counts || {}; list = [].concat(...rs.map(r => r.list || [])); $('#net').textContent = 'online'; paint(); }
   catch (e) { $('#net').textContent = 'sem servidor'; say(NET.msg(e)); }
 }
 $('#chips').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; filter = Number(b.dataset.f); load(); });

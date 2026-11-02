@@ -16,7 +16,7 @@ export async function makeDb() {
   await db.exec(`grant usage on schema public to anon, authenticated, service_role; grant all on all tables in schema public to authenticated, service_role; grant all on all sequences in schema public to authenticated, service_role; grant execute on all functions in schema public to authenticated, service_role;`);
   // perguntas
   for (const q of QUESTIONS) {
-    const r = await db.query(`insert into public.questions (rank, text, options) values ($1, $2, $3::jsonb) returning id`, [q.difficulty, q.text, JSON.stringify(q.answers)]);
+    const r = await db.query(`insert into public.questions (rank, theme, text, options) values ($1, $2, $3, $4::jsonb) returning id`, [q.difficulty, q.tema || 'Banco de Dados', q.text, JSON.stringify(q.answers)]);
     await db.query(`insert into public.question_keys (question_id, correct) values ($1, $2)`, [r.rows[0].id, q.correct]);
   }
   return db;
