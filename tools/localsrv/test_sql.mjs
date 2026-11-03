@@ -168,7 +168,29 @@ const m3 = await call(u1, 'start_match', { p_room: room.id, p_boss: 0 }); assert
   await fails(call(a, 'admin_set', { p_username: 'ninguem', p_on: true }), 'usuario_nao_encontrado');
   await fails(call(a, 'admin_set', { p_username: 'fiuphis', p_on: false }), 'conta_principal');
   await call(a, 'admin_set', { p_username: 'maria', p_on: false }); assert.equal(await call(b, 'is_admin', {}), false);
-  ok('admins: so a conta principal edita a lista; adm comum nao; principal nao se remove'); }
+  ok('admins: so a conta principal edita a lista; adm comum nao; principal nao se remove');
+  // segunda conta principal (migracao 36): lucasadm tem o mesmo poder da fiuphis, e ninguem tira nenhuma das duas
+  const lu = randomUUID(); await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${lu}', false, 'lucasadm@cronicas-do-saber.app')`);
+  await db.exec(`insert into public.profiles (user_id, username, recovery_hash) values ('${lu}', 'lucasadm', 'x')`);
+  const lsOf = u => db.transaction(async tx => { await tx.query(`select set_config('request.jwt.claims', $1, true)`, [JSON.stringify({ sub: u, role: 'authenticated', is_anonymous: false })]); await tx.exec('set local role authenticated'); return (await tx.query('select * from public.admin_list()')).rows; });
+  assert.equal(await call(lu, 'is_admin', {}), true, 'lucasadm e adm mesmo fora da tabela de admins');
+  const ql = await call(lu, 'admin_get_questions', {}); assert.equal(ql.ok, true, 'lucasadm abre o editor de perguntas');
+  assert.equal((await call(lu, 'admin_put_questions', { p_list: ql.list })).ok, true, 'lucasadm salva o banco de perguntas');
+  await call(lu, 'admin_set', { p_username: 'maria', p_on: true }); assert.equal(await call(b, 'is_admin', {}), true, 'lucasadm coloca adm');
+  assert.deepEqual((await lsOf(lu)).map(x => [x.username, x.is_super]), [['fiuphis', true], ['lucasadm', true], ['maria', false]]);
+  await fails(call(b, 'admin_set', { p_username: 'lucasadm', p_on: false }), 'sem_permissao');      // adm comum nao tira ninguem
+  await call(lu, 'admin_set', { p_username: 'maria', p_on: false }); assert.equal(await call(b, 'is_admin', {}), false, 'lucasadm tira adm');
+  await fails(call(lu, 'admin_set', { p_username: 'fiuphis', p_on: false }), 'conta_principal');    // lucasadm nao tira a fiuphis
+  await fails(call(a, 'admin_set', { p_username: 'lucasadm', p_on: false }), 'conta_principal');    // fiuphis nao tira a lucasadm
+  await fails(call(lu, 'admin_set', { p_username: 'LucasAdm', p_on: false }), 'conta_principal');   // nem ela mesma
+  await db.exec(`insert into public.admins (user_id) values ('${lu}') on conflict do nothing`);       // como no banco real (ja estava na tabela)
+  await fails(call(a, 'admin_set', { p_username: 'lucasadm', p_on: false }), 'conta_principal');
+  assert.equal(await call(lu, 'is_admin', {}), true); assert.equal(await call(a, 'is_admin', {}), true);
+  for (const n of ['lucasadm', 'lucasadm2', 'lucas_adm', 'luc4sadm', '1ucasadm', 'xlucasadmx']) assert.equal(await st(n), 'reservado', n + ' deveria ser reservado');
+  for (const n of ['lucas', 'lucas_x', 'lucasa', 'lucas_dm']) assert.notEqual(await st(n), 'reservado', n + ' nao deveria ser reservado');
+  const lz = randomUUID(); await db.exec(`insert into auth.users (id, is_anonymous, email) values ('${lz}', false, 'lucasadm2@cronicas-do-saber.app')`);
+  await fails(call(lz, 'register_profile', { p_username: 'lucasadm2' }), 'nome_reservado');
+  ok('segunda principal: lucasadm tem editor, poderes e a lista de adms; ninguem tira fiuphis nem lucasadm; nome reservado'); }
 console.log('TODOS OS TESTES SQL PASSARAM');
 
 // teto de 4 por sala e classe exclusiva
