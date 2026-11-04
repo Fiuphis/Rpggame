@@ -717,5 +717,217 @@
    83,
    83
   ]
+ },
+ "malgorath-cacos": {
+  "src": "assets/fx/malgorath-cacos.png",
+  "w": 101,
+  "h": 75,
+  "ax": 40,
+  "ay": 27,
+  "frames": 11,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "malgorath-carga": {
+  "src": "assets/fx/malgorath-carga.png",
+  "w": 79,
+  "h": 79,
+  "ax": 39,
+  "ay": 39,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-corte": {
+  "src": "assets/fx/malgorath-corte.png",
+  "w": 85,
+  "h": 104,
+  "ax": 37,
+  "ay": 46,
+  "frames": 8,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "malgorath-erupcao": {
+  "src": "assets/fx/malgorath-erupcao.png",
+  "w": 91,
+  "h": 58,
+  "ax": 45,
+  "ay": 39,
+  "frames": 9,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-explosao": {
+  "src": "assets/fx/malgorath-explosao.png",
+  "w": 82,
+  "h": 78,
+  "ax": 41,
+  "ay": 39,
+  "frames": 12,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "malgorath-fumaca": {
+  "src": "assets/fx/malgorath-fumaca.png",
+  "w": 113,
+  "h": 89,
+  "ax": 60,
+  "ay": 54,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-lanca": {
+  "src": "assets/fx/malgorath-lanca.png",
+  "w": 89,
+  "h": 34,
+  "ax": 76,
+  "ay": 18,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-onda-choque": {
+  "src": "assets/fx/malgorath-onda-choque.png",
+  "w": 182,
+  "h": 99,
+  "ax": 91,
+  "ay": 62,
+  "frames": 12,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "malgorath-orbe": {
+  "src": "assets/fx/malgorath-orbe.png",
+  "w": 63,
+  "h": 27,
+  "ax": 49,
+  "ay": 13,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-sigilo": {
+  "src": "assets/fx/malgorath-sigilo.png",
+  "w": 138,
+  "h": 76,
+  "ax": 69,
+  "ay": 47,
+  "frames": 16,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
  }
 }

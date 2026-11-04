@@ -57,9 +57,18 @@ function make(host){
   const bx0 = Px + W / 2;    // X do pé no canvas (constante)
   const by0 = Py + Hh;        // Y do pé no canvas (constante)
 
-  const hand   = () => { const f = feet(); return {x:f.x + 60,  y:f.y - 540}; };
-  const swordH = () => { const f = feet(); return {x:f.x + 280, y:f.y - 320}; };
-  const swordT = () => { const f = feet(); return {x:f.x - 240, y:f.y - 390}; };
+  // pontos medidos nos quadros novos (pe do quadro = 128,250; escala 3): mao erguida da invocacao (q4), ponta da estocada (q5), mascara, peito
+  const hand   = () => { const f = feet(); return {x:f.x + 216, y:f.y - 555}; };
+  const swordH = () => { const f = feet(); return {x:f.x - 150, y:f.y - 300}; };
+  const swordT = () => { const f = feet(); return {x:f.x + 9,   y:f.y - 60}; };
+  const head   = () => { const f = feet(); return {x:f.x,       y:f.y - 405}; };
+  const chest  = () => { const f = feet(); return {x:f.x,       y:f.y - 270}; };
+  // efeitos em pixel art (assets/fx/malgorath-*, js/game/vfx.js). FX(): camada do jogo (na frente ou atras dos herois);
+  // FXU(): efeito de chao (anel, sigilo) na camada de tras do VFX, que fica atras do boss e dos herois
+  const FX = (n, o) => (window.VFX && VFX.has(n)) ? VFX.play(n, Object.assign({scale:3}, o)) : null;
+  const FXM = {};   // so para saber se o efeito existe antes de tocar
+  fetch('data/vfx_manifest.json', {cache:'no-cache'}).then(r => r.json()).then(m => { Object.keys(m).filter(k => k.startsWith('malgorath')).forEach(k => { FXM[k] = 1; }); }).catch(() => {});
+  const FXU = (n, o = {}) => FX(n, Object.assign({back:true}, o));   // no chao, atras do boss e dos herois (css: .fxl.back.vfx z-index 2)
 
   const E = (name, d, f, o = {}) => fxl.push({name, d, f, t0: clk() + (o.delay || 0), bk: !!o.back, un: !!o.under});   // under = no canvas do boss, ATRAS do sprite (a camada back fica na frente do boss)
 
@@ -85,17 +94,26 @@ function make(host){
       E('glow', 1200, u => ({x:f.x, y:f.y - 260, r:lerp(150, 330, eo(u)), c:RED, a:.5 * Math.sin(Math.PI * u)}), {under:true});
       for (let i = 0; i < 10; i++) { const ox = rnd(-260, 260); E('glow', 900, u => ({x:f.x + ox, y:f.y - 30 - 360 * eo(u), r:16, c:HOT, a:.8 * Math.sin(Math.PI * u)}), {delay:i * 60}); } },
     hit(){ fireHit(); },
-    wave(k){ const o = swordH(), b = tgt;
-      if (k === 'v') { const a = {x:b.x + rnd(-30, 30), y:b.y - 700}; fly(a, b, 480, {ang:Math.PI / 2, len:300, th:34, r:70, big:false}); }
-      else fly(o, b, 640, {len:300, th:30, r:60, arc:60, cross:true, ang2:Math.atan2(b.y - o.y, b.x - o.x) + .9}); },
-    orb(){ const h = hand(); E('orb', 1000, u => ({x:h.x, y:h.y, r:lerp(10, 82, eo(u)), a:u < .1 ? u / .1 : 1}));
-      E('ring', 900, u => ({x:h.x, y:h.y + 40, r:lerp(30, 140, eo(u)), c:VIO, a:.6 * (1 - u)})); },
+    wave(k){ const b = tgt;   // corte de fogo no heroi; o dano entra no meio do arco
+      if (!FX('malgorath-corte', {x:b.x + (k === 'v' ? -10 : 10), y:b.y - 30})) { const o = swordH(); fly(o, b, 480, {len:300, th:30, r:60}); return; }
+      setTimeout(fireHit, 190 / tsc()); },
+    orb(){ const h = hand(); if (FX('malgorath-carga', {x:h.x, y:h.y})) return;
+      E('orb', 1000, u => ({x:h.x, y:h.y, r:lerp(10, 82, eo(u)), a:u < .1 ? u / .1 : 1})); },
     orbThrow(){ const h = hand(), b = tgt, d = 620;
+      if (window.VFX && VFX.has('malgorath-orbe')) { FX('malgorath-orbe', {x:h.x, y:h.y, rot:Math.atan2(b.y - h.y, b.x - h.x), loop:true, to:{x:b.x, y:b.y, ms:d, ease:'in'}});
+        setTimeout(() => { FX('malgorath-explosao', {x:b.x, y:b.y}); shakeT = clk(); fireHit(); }, d / tsc()); return; }
       E('orb', d, u => ({x:lerp(h.x, b.x, eo(u) * .5 + u * .5), y:lerp(h.y, b.y, u * u * .4 + u * .6), r:82 * (1 - .25 * u), a:1 - clamp((u - .9) / .1)}));
       E('glow', d, u => ({x:lerp(h.x, b.x, eo(u) * .5 + u * .5), y:lerp(h.y, b.y, u * u * .4 + u * .6), r:130, c:RED, a:.5}));
       setTimeout(() => { hitFx(b.x, b.y, true); E('ring', 900, u => ({x:b.x, y:b.y + 90, r:lerp(60, 220, eo(u)), c:VIO, a:.7 * (1 - u)})); fireHit(); }, d / tsc()); },
-    lance(){ const o = swordT(), b = tgt; fly(o, b, 380, {len:420, th:18, r:44, sc:'255,210,190'}); },
+    lance(){ const o = swordT(), b = tgt, d = 380;
+      if (window.VFX && VFX.has('malgorath-lanca')) { FX('malgorath-lanca', {x:o.x, y:o.y, rot:Math.atan2(b.y - o.y, b.x - o.x), loop:true, to:{x:b.x, y:b.y, ms:d, ease:'in'}});
+        setTimeout(() => { FX('malgorath-explosao', {x:b.x, y:b.y}); fireHit(); }, d / tsc()); return; }
+      fly(o, b, d, {len:420, th:18, r:44, sc:'255,210,190'}); },
     nova(){ const f = feet(), y0 = 1075, d = 520;
+      if (FXM['malgorath-onda-choque'] && window.VFX && VFX.has('malgorath-erupcao')) { FXU('malgorath-onda-choque', {x:f.x, y:f.y, scale:4});
+        const ws = ['mage','guerreiro','tank','cleriga'].map(w => window.Anim && Anim.feet ? Anim.feet(w) : null).filter(Boolean);
+        (ws.length ? ws : [{x:150, y:y0}, {x:390, y:y0}, {x:640, y:y0}, {x:880, y:y0}]).forEach((p, i) => FX('malgorath-erupcao', {x:p.x, y:p.y, scale:3, back:true, delay:200 + i * 70}));
+        shakeT = clk(); setTimeout(fireHit, d / tsc()); return; }
       E('glow', 900, u => ({x:f.x, y:f.y - 250, r:lerp(120, 420, eo(u)), c:RED, a:.8 * (1 - u)}), {under:true});
       for (let k = 0; k < 3; k++) E('ring', 1100, u => ({x:f.x, y:y0, r:lerp(60, 640, eo(u)), c:k === 1 ? HOT : RED, a:.8 * (1 - u)}), {delay:k * 150});
       for (let i = 0; i < 17; i++) { const x = 40 + i * 60, dl = Math.abs(x - f.x) / 640 * 330;
@@ -103,26 +121,28 @@ function make(host){
         E('glow', 700, u => ({x, y:y0 - 30, r:44 * (1 - u * .5), c:HOT, a:.6 * (1 - u)}), {delay:dl}); }
       shakeT = clk(); setTimeout(fireHit, d / tsc()); },
     roar(k){ const f = feet(), n = k === '2' ? 2 : 1;
+      if (FXM['malgorath-onda-choque']) { FXU('malgorath-onda-choque', {x:f.x, y:f.y, scale:3 + n}); shakeT = clk(); if (n === 2) setTimeout(fireHit, 200 / tsc()); return; }
       E('ring', 1100, u => ({x:f.x, y:f.y - 6, r:lerp(60, 200 + 90 * n, eo(u)), c:RED, a:.85 * (1 - u)}));
       E('glow', 1300, u => ({x:f.x, y:f.y - 280, r:lerp(120, 360 + 60 * n, eo(u)), c:RED, a:.6 * Math.sin(Math.PI * u)}), {under:true});   // atras do boss: nao cobre o rosto/mascara
       for (let i = 0; i < 10; i++) { const ox = rnd(-240, 240); E('glow', 1000, u => ({x:f.x + ox, y:f.y - 30 - 400 * eo(u), r:18, c:'255,90,60', a:.8 * Math.sin(Math.PI * u)}), {delay:i * 60}); }
       shakeT = clk(); if (n === 2) setTimeout(fireHit, 200 / tsc()); },
-    sigil(){ const f = feet(); E('sigil', 2400, u => ({x:f.x, y:f.y - 6, r:lerp(120, 300, eo(Math.min(1, u * 2))), rot:u * 2, a:Math.sin(Math.PI * Math.min(1, u * 1.05)) * .85}), {back:true}); },
+    sigil(){ const f = feet(); if (FXM['malgorath-sigilo']) { FXU('malgorath-sigilo', {x:f.x, y:f.y + 6, scale:5, loop:true, dur:2000}); return; } E('sigil', 2400, u => ({x:f.x, y:f.y - 6, r:lerp(120, 300, eo(Math.min(1, u * 2))), rot:u * 2, a:Math.sin(Math.PI * Math.min(1, u * 1.05)) * .85}), {back:true}); },
     ring(){ const h = hand(); E('ring', 900, u => ({x:h.x, y:h.y + 40, r:lerp(30, 150, eo(u)), c:VIO, a:.65 * (1 - u)})); },
     omen(){ const f = feet();
       E('glow', 760, u => ({x:f.x, y:f.y - 300, r:lerp(80, 360, eo(u)), c:RED, a:.55 * u}), {under:true});
       E('streak', 600, u => ({x:f.x, y:f.y - 700 + 600 * (u*u), ang:Math.PI / 2, len:420, th:18, c:HOT, a:.7 * Math.sin(Math.PI * u)}), {delay:120}); },
-    slam(){ const f = feet();
+    slam(){ const f = feet(); FXU('malgorath-onda-choque', {x:f.x, y:f.y, scale:4});
       E('glow', 700, u => ({x:f.x, y:f.y - 40, r:lerp(100, 520, eo(u)), c:'255,236,200', a:.8 * (1 - u)}));
       for (let k = 0; k < 3; k++) E('ring', 1000, u => ({x:f.x, y:f.y - 6, r:lerp(40, 460, eo(u)), c:k === 1 ? HOT : RED, a:.85 * (1 - u)}), {delay:k * 110});
       for (let i = 0; i < 12; i++) { const ox = (i < 6 ? -1 : 1) * (60 + (i % 6) * 55), dl = (i % 6) * 25; E('ash', 1100, u => ({x:f.x + ox * (.5 + u), y:f.y - 20 - 50 * eo(u), r:lerp(30, 85, eo(u)), a:.5 * Math.sin(Math.PI * u)}), {delay:dl, back:false}); }
       shakeT = clk(); },
-    smoke(){ const f = feet(); for (let i = 0; i < 16; i++) { const ox = rnd(-190, 190), oy = rnd(-520, -40), sp = rnd(.6, 1.3); E('smoke', 1300, u => ({x:f.x + ox * (.4 + u * .8), y:f.y + oy - 70 * u * sp, r:lerp(70, 150, eo(u)) * sp, a:.85 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 35}); }
+    smoke(){ const f = feet(); if (FX('malgorath-fumaca', {x:f.x, y:f.y - 230, scale:4})) return; for (let i = 0; i < 16; i++) { const ox = rnd(-190, 190), oy = rnd(-520, -40), sp = rnd(.6, 1.3); E('smoke', 1300, u => ({x:f.x + ox * (.4 + u * .8), y:f.y + oy - 70 * u * sp, r:lerp(70, 150, eo(u)) * sp, a:.85 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 35}); }
       E('glow', 900, u => ({x:f.x, y:f.y - 280, r:lerp(120, 300, eo(u)), c:VIO, a:.45 * Math.sin(Math.PI * u)})); },
-    smokeT(){ const b = tgt; for (let i = 0; i < 12; i++) { const ox = rnd(-90, 90), oy = rnd(-300, 30), sp = rnd(.6, 1.2); E('smoke', 1000, u => ({x:b.x + ox, y:b.y + 90 + oy - 40 * u, r:lerp(40, 90, eo(u)) * sp, a:.8 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 28}); } },
-    strikeT(){ const b = tgt; E('streak', 480, u => ({x:b.x, y:b.y - 20, ang:-.6, len:360 * (.5 + eo(u) * .7), th:30, c:HOT, a:.9 * (1 - u)}));
+    smokeT(){ const b = tgt; if (FX('malgorath-fumaca', {x:b.x, y:b.y - 40, scale:3})) return; for (let i = 0; i < 12; i++) { const ox = rnd(-90, 90), oy = rnd(-300, 30), sp = rnd(.6, 1.2); E('smoke', 1000, u => ({x:b.x + ox, y:b.y + 90 + oy - 40 * u, r:lerp(40, 90, eo(u)) * sp, a:.8 * Math.sin(Math.PI * Math.min(1, u * 1.05))}), {delay:i * 28}); } },
+    strikeT(){ const b = tgt; if (FX('malgorath-corte', {x:b.x, y:b.y - 30})) { setTimeout(fireHit, 190 / tsc()); return; } E('streak', 480, u => ({x:b.x, y:b.y - 20, ang:-.6, len:360 * (.5 + eo(u) * .7), th:30, c:HOT, a:.9 * (1 - u)}));
       E('streak', 480, u => ({x:b.x, y:b.y - 20, ang:.6, len:300 * (.5 + eo(u) * .7), th:26, c:RED, a:.9 * (1 - u)}), {delay:40}); hitFx(b.x, b.y + 20, false); fireHit(); },
-    burst(){ const f = feet(); E('glow', 1000, u => ({x:f.x, y:f.y - 250, r:lerp(100, 420, eo(u)), c:RED, a:.9 * (1 - u)}), {under:true}); E('ring', 1100, u => ({x:f.x, y:f.y - 6, r:lerp(60, 340, eo(u)), c:RED, a:.8 * (1 - u)})); shakeT = clk(); },
+    burst(){ const f = feet(), c0 = chest(); FX('malgorath-explosao', {x:c0.x, y:c0.y, scale:4}); E('glow', 1000, u => ({x:f.x, y:f.y - 250, r:lerp(100, 420, eo(u)), c:RED, a:.9 * (1 - u)}), {under:true}); E('ring', 1100, u => ({x:f.x, y:f.y - 6, r:lerp(60, 340, eo(u)), c:RED, a:.8 * (1 - u)})); shakeT = clk(); },
+    cacos(){ const h = head(); FX('malgorath-cacos', {x:h.x, y:h.y, scale:3}); },
     embers(){ const f = feet(); for (let i = 0; i < 22; i++) { const ox = rnd(-230, 230), oy = rnd(-420, -40); E('glow', 1700, u => ({x:f.x + ox + 30 * Math.sin(u * 6 + i), y:f.y + oy - 300 * eo(u), r:15 * (1 - u * .5), c:HOT, a:.85 * Math.sin(Math.PI * u)}), {delay:i * 70}); } },
   };
   function runEv(e){ const [k, a, b] = e.split(':'); if (EV[k]) EV[k](a, b); }
@@ -427,7 +447,7 @@ function make(host){
         phase2:    {sheet:'phase2',    ev:[[18,'roar'],[24,'roar:2']]},
         prep:      {sheet:'prep',      ev:[[1,'sigil'],[4,'charge']]},
         laugh:     {sheet:'laugh',     ev:[[3,'charge']]},
-        die:       {sheet:'die',       hold:'gone', tint:'low', ev:[[1,'burst'],[7,'burst'],[21,'slam'],[23,'embers'],[27,'embers']]},
+        die:       {sheet:'die',       hold:'gone', tint:'low', ev:[[1,'burst'],[7,'cacos'],[21,'slam'],[23,'embers'],[27,'embers']]},
         tpOut:     {sheet:'tpOut',     hold:'gone', ev:[[10,'smoke']]},
         gagDismiss:{sheet:'gagDismiss',ev:[]},
         awaken:    {sheet:'enrage',    ev:[[1,'omen'],[5,'slam'],[7,'embers']]},

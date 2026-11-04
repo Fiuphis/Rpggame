@@ -1,7 +1,7 @@
 /* Banco de Dados I — RPG · efeitos em pixel art (sprite sheets do PixelLab vfx_workbench)
    Tiras horizontais em assets/fx/, descritas em data/vfx_manifest.json ({src, w, h, ax, ay, frames, durs}; ax/ay = origem do efeito).
    Desenha numa camada própria (coordenadas do grid 1024x1536, ampliado x2 como os heróis), com brilho aditivo por baixo.
-   API: VFX.play(nome, {x, y, scale, speed, loop, dur, glow, back, to:{x, y, ms, ease}}) (back = atrás dos heróis) -> promessa (fim), VFX.flash(cor, ms, a), VFX.shake(px, ms), VFX.clear(). */
+   API: VFX.play(nome, {x, y, scale, speed, loop, dur, glow, back, rot (radianos, gira em volta da origem), to:{x, y, ms, ease}}) (back = atrás dos heróis) -> promessa (fim), VFX.flash(cor, ms, a), VFX.shake(px, ms), VFX.clear(). */
 (() => {
 'use strict';
 let cv = null, g = null, gf = null, gb = null, cvb = null, el = null, MAN = {}, list = [], running = false;
@@ -36,7 +36,7 @@ function draw(e, now){
   let a = 1; if (e.dur != null && e.fade) a = clamp((e.dur - (now - e.t0)) / e.fade) * clamp((now - e.t0) / e.fade);   // entra e sai suave
   const s = e.scale * (e.pop ? .6 + .4 * clamp((now - e.t0) / e.pop) : 1);
   if (e.glow) { const p = .85 + .15 * Math.sin(now / 90); glow(x, y, e.glow.r * s / 2 * p, e.glow.col, (e.glow.a || .5) * a); }
-  if (im) { g.save(); g.globalAlpha = a; g.imageSmoothingEnabled = false; const w = m.w * s, h = m.h * s; const ax = (m.ax != null ? m.ax : m.w / 2) * s, ay = (m.ay != null ? m.ay : m.h / 2) * s; g.drawImage(im, f * m.w, 0, m.w, m.h, Math.round(x - ax), Math.round(y - ay), w, h); g.restore(); }
+  if (im) { g.save(); g.globalAlpha = a; g.imageSmoothingEnabled = false; const w = m.w * s, h = m.h * s; const ax = (m.ax != null ? m.ax : m.w / 2) * s, ay = (m.ay != null ? m.ay : m.h / 2) * s; if (e.rot) { g.translate(Math.round(x), Math.round(y)); g.rotate(e.rot); g.drawImage(im, f * m.w, 0, m.w, m.h, -Math.round(ax), -Math.round(ay), w, h); } else g.drawImage(im, f * m.w, 0, m.w, m.h, Math.round(x - ax), Math.round(y - ay), w, h); g.restore(); }
   return true;
 }
 function frame(){
@@ -59,7 +59,7 @@ window.VFX = {
   play(n, o = {}){
     if (!cv || !MAN[n]) return Promise.resolve(false);
     return new Promise(res => {
-      const e = {n, x:o.x || 0, y:o.y || 0, scale:o.scale || 2, speed:o.speed || 1, loop:!!o.loop, dur:o.dur, fade:o.fade || 0, pop:o.pop || 0, glow:o.glow || null, back:!!o.back, to:o.to || null, t0:clk() + (o.delay || 0), done:() => res(true)};
+      const e = {n, x:o.x || 0, y:o.y || 0, scale:o.scale || 2, speed:o.speed || 1, loop:!!o.loop, dur:o.dur, fade:o.fade || 0, pop:o.pop || 0, glow:o.glow || null, back:!!o.back, rot:o.rot || 0, to:o.to || null, t0:clk() + (o.delay || 0), done:() => res(true)};
       list.push(e); start(); if (o.handle) o.handle(e);
     });
   },
