@@ -874,7 +874,7 @@ async function maybePhase2(){
   if (state.phase2 || state.over || state.bossHp <= 0 || state.bossHp > BOSS_MAX_HP * PHASE2_AT) return;
   state.phase2 = true;
   showBanner(ST.p2Title, ST.p2Txt(PHASE2_AOE));
-  A.play('boss', ST.ice ? 'phase2' : 'enrage');
+  A.play('boss', 'phase2');
   const g = $('#game');
   if (ST.ice) {   // fase 2 do Hrimgar: a armadura racha e explode (a animacao 'phase2' do rig faz o resto); so um clarao gelado no estilhaço
     const fl = document.createElement('div'); fl.style.cssText = 'position:absolute;inset:0;z-index:39;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 40%,#ffffff,#bfe4ff 45%,#3f7cff 100%);mix-blend-mode:screen'; g.appendChild(fl);
@@ -2061,7 +2061,7 @@ function shoot(fromX, fromY, toX, toY, color, ms){
 // Efeitos em pixel art da Maga (js/game/vfx.js): lançamento na ponta do cajado, projétil, impacto no boss, escudos, esquiva, Buraco Negro
 const MAGE_EL = {fire:'fogo', water:'agua', air:'ar', earth:'terra'};
 const MAGE_GLOW = {mana:'170,110,255', fogo:'255,140,40', agua:'90,170,255', ar:'150,240,210', terra:'214,166,96'};
-const BOSS_HIT = {x:512, y:390}, BOSS_FEET_Y = 690;   // centro do corpo do boss e linha do chão sob ele (grid 1024x1536)
+const BOSS_HIT = ST.ice ? {x:512, y:390} : {x:512, y:430}, BOSS_FEET_Y = ST.ice ? 690 : 700;   // centro do corpo do boss e linha do chão sob ele (grid 1024x1536); Malgorath novo: pés y=700, centro = pés - 90*3
 const magePt = (sx, sy) => { const f = A.feet ? A.feet('mage') : {x:109.5, y:1097}; return {x:f.x + 2 * sx - 175, y:f.y + 2 * sy - 292}; };   // pixel do quadro 172 da Maga -> grid
 const VFXON = () => window.VFX && VFX.has('maga-mana-projetil');
 const heroPt = (w, cx, cy) => { const f = A.feet(w); return {x:f.x + cx - 175, y:f.y + cy - 292}; };   // pixel da célula 344 do herói -> grid
