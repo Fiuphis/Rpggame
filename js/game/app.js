@@ -877,12 +877,12 @@ async function maybePhase2(){
   A.play('boss', 'phase2');
   const g = $('#game');
   if (ST.ice) {   // fase 2 do Hrimgar: a armadura racha e explode (a animacao 'phase2' do rig faz o resto); so um clarao gelado no estilhaço
-    const fl = document.createElement('div'); fl.style.cssText = 'position:absolute;inset:0;z-index:39;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 40%,#ffffff,#bfe4ff 45%,#3f7cff 100%);mix-blend-mode:screen'; g.appendChild(fl);
+    const fl = document.createElement('div'); fl.style.cssText = 'position:absolute;inset:0;z-index:7;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 40%,#ffffff,#bfe4ff 45%,#3f7cff 100%);mix-blend-mode:screen'; g.appendChild(fl);
     setTimeout(() => fl.animate([{opacity:0},{opacity:.9,offset:.1},{opacity:.2,offset:.4},{opacity:0}], {duration:900, easing:'ease-out'}).finished.then(() => fl.remove()), 1150 / (window.__ts || 1));
     flashHit(); await wait(ST.p2Wait); hideBanner(); renderHud(); return;
   }
   const fl = document.createElement('div');
-  fl.style.cssText = 'position:absolute;inset:0;z-index:39;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 18%,#ffffff,#b9ccff 45%,#5a3cff 100%);mix-blend-mode:screen';
+  fl.style.cssText = 'position:absolute;inset:0;z-index:7;pointer-events:none;opacity:0;background:radial-gradient(120% 90% at 50% 18%,#ffffff,#b9ccff 45%,#5a3cff 100%);mix-blend-mode:screen';
   g.appendChild(fl);
   fl.animate([{opacity:0},{opacity:.85,offset:.06},{opacity:0,offset:.14},{opacity:.55,offset:.22},{opacity:0,offset:.3},{opacity:.95,offset:.42},{opacity:0,offset:.5},{opacity:.4,offset:.6},{opacity:0,offset:.68},{opacity:1,offset:.8},{opacity:0}], {duration:2600, easing:'linear'}).finished.then(() => fl.remove());
   [0, 260, 620, 980, 1400, 1850].forEach(t => setTimeout(() => { if (window.AMB) AMB.bolt(); }, t));

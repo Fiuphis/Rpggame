@@ -36,7 +36,7 @@
 @keyframes dq-out{from{opacity:1;transform:none}to{opacity:0;transform:translateY(12px) scale(.98)}}
 
 /* Ataque do boss (carga antes da pergunta) e flash de dano */
-.boss-aura{position:absolute;z-index:10;left:22%;top:5%;width:56%;height:27%;pointer-events:none;opacity:0;border-radius:40%;background:radial-gradient(ellipse at 50% 45%,rgba(255,40,70,.55),rgba(255,40,70,0) 70%)}
+.boss-aura{position:absolute;z-index:7;left:22%;top:5%;width:56%;height:27%;pointer-events:none;opacity:0;border-radius:40%;background:radial-gradient(ellipse at 50% 45%,rgba(255,40,70,.55),rgba(255,40,70,0) 70%)}
 .game.boss-attack .boss-aura{animation:boss-charge 1s ease-in-out both}
 .game.boss-attack #reference{animation:boss-rumble 1s linear both}
 .damage-flash{position:absolute;z-index:40;inset:0;background:#ff1f3d;opacity:0;pointer-events:none}
@@ -56,8 +56,8 @@
 .turn-banner small{display:block;margin-top:.45cqw;font-size:1.75cqw;font-weight:normal;letter-spacing:.05cqw;line-height:1.3;color:#d6cdec;text-shadow:0 .2cqw 0 #000}
 .turn-ring{position:absolute;z-index:9;top:68.6%;width:20%;height:3.4%;border:2px solid #ffc54e;border-radius:50%;box-shadow:0 0 12px rgba(255,197,78,.7),inset 0 0 10px rgba(255,197,78,.4);pointer-events:none;animation:ring-pulse 1s ease-in-out infinite}
 .turn-ring[hidden]{display:none}
-.proj{position:absolute;z-index:30;width:6%;aspect-ratio:1;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
-.boss-impact{position:absolute;z-index:31;left:34%;top:9%;width:32%;height:30%;pointer-events:none;opacity:0;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 65%)}
+.proj{position:absolute;z-index:7;width:6%;aspect-ratio:1;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
+.boss-impact{position:absolute;z-index:7;left:34%;top:9%;width:32%;height:30%;pointer-events:none;opacity:0;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.95),rgba(255,255,255,0) 65%)}
 .boss-impact.active{animation:impact .42s ease-out}
 .game.boss-hit #reference{animation:boss-rumble .38s linear}
 .dmg-float{position:absolute;z-index:42;left:50%;top:17%;transform:translateX(-50%);font:bold 6.5cqw OpenC,OpenD,monospace;color:#ffd24d;text-shadow:0 0 0 #000,2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;pointer-events:none;animation:dmg-rise 1s ease-out both}
@@ -164,7 +164,7 @@
 .fxl.back{z-index:3}
 .fxl.front{z-index:7}   /* efeitos na frente do boss (3) e dos herois (4), mas ABAIXO das barras de vida/mana (8) e status (9) */
 .fxl.back.vfx{z-index:2}   /* efeitos 'back' do VFX: atras do boss (z3) e dos herois (z4), sobre o cenario */
-.vfx-flash{position:absolute;inset:0;pointer-events:none;z-index:28;mix-blend-mode:screen;opacity:0}
+.vfx-flash{position:absolute;inset:0;pointer-events:none;z-index:7;mix-blend-mode:screen;opacity:0}
 
 .hud-hero{position:absolute;z-index:8;pointer-events:none;background-size:100% 100%;background-repeat:no-repeat;image-rendering:auto}.hud-hero .hud-bar{background:#0a0c14;box-shadow:none;z-index:auto}
 
