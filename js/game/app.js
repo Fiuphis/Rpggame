@@ -1502,7 +1502,11 @@ function autoPick(k, {iceEv}){
 
 // ===== Modo online (partida compartilhada): o servidor decide as entradas; todos rodam o mesmo combate =====
 const onlRd = id => { const r = ONL.round(); return r && r.id === id ? r : null; };
-function onlQuestion(rd){ const q = rd.question; return {difficulty:q.rank, text:q.text, answers:q.options, correct:-1}; }
+// online o servidor so revela a certa depois da votacao; no MODO TESTE (so quem criou a sala) a dica vem do banco local (data/perguntas.json), pelo texto
+const qNorm = t => String(t || '').trim().toLowerCase().replace(/\s+/g, ' ');
+function onlQuestion(rd){ const q = rd.question; let correct = -1;
+  if (AUTO) { const loc = QUESTIONS.find(x => qNorm(x.text) === qNorm(q.text)); if (loc) correct = q.options.findIndex(o => qNorm(o) === qNorm(loc.answers[loc.correct])); }
+  return {difficulty:q.rank, text:q.text, answers:q.options, correct}; }
 // rede da votacao da pergunta/arca: contagem do proprio grupo, prazo e fim vem do servidor
 function onlNet(SR){
   const me = () => ONL.me, grp = r => r && r.groups && r.groups[me()];
