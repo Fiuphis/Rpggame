@@ -359,7 +359,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .gag-alert i{font-style:normal;font-weight:700;font-size:3.4cqw;letter-spacing:.2cqw}
 .gag-alert.out{animation:none;opacity:0;transition:opacity .35s}
 @keyframes gagpulse{0%{transform:translateX(-50%) scale(1)}100%{transform:translateX(-50%) scale(1.14)}}
-.gag-goblin{position:absolute;z-index:6;width:5cqw;transform:translate(-50%,-100%);image-rendering:pixelated;pointer-events:none;animation:gobin .35s steps(5) both}
+.gag-goblin{position:absolute;z-index:6;width:11.5cqw;transform:translate(-50%,-100%);image-rendering:pixelated;pointer-events:none;animation:gobin .35s steps(5) both}
 .gag-goblin.gone{animation:gobout .45s steps(5) both}
 @keyframes gobin{0%{transform:translate(-50%,-100%) scale(0)}100%{transform:translate(-50%,-100%) scale(1)}}
 @keyframes gobout{0%{transform:translate(-50%,-100%) scale(1);opacity:1}100%{transform:translate(-50%,-100%) scale(0);opacity:0}}
