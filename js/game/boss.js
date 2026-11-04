@@ -400,7 +400,7 @@ function make(host){
             const d = cur; cur = null; held = null; d.done();
           }
         } else {
-          f = frameAt(sn, el);
+          if (cur.seq) { let t = el, k = 0; while (k < cur.seq.length - 1 && t >= cur.seq[k][1]) { t -= cur.seq[k][1]; k++; } f = cur.seq[k][0]; } else f = frameAt(sn, el);
           const tint = cur.tint ? Math.sin(clamp(el / tot) * Math.PI) * (cur.tint === 'low' ? .28 : .5) * (cur.light ? .6 : 1) : 0;
           g.save(); g.translate(ancCx + vx, ancCy + vy);
           if (tint > 0.005) {   // clarao vermelho so no sprite (num canvas a parte: source-atop direto pintaria a sombra e os brilhos de baixo)
@@ -429,20 +429,20 @@ function make(host){
     return new Promise(res => {
       if (cur) cur.done(false); held = null;
       const m = MAN && MAN[sheetName];
-      const durs = m ? m.durs : [1000];
+      const durs = opts.seq ? opts.seq.map(q => q[1]) : m ? m.durs : [1000];   // seq = [[quadro, ms], ...] (trecho da folha em outra ordem)
       const tot = durs.reduce((a, b) => a + b, 0);
       // guardar definições de eventos como [quadroIdx, 'nome']; converter em ms lazily no frame()
       const evDefs = opts.ev || [];
       cur = { sheet:sheetName, totalDur:tot, evDefs, evs:null, fired:0,
         hold:opts.hold||null, loop:!!opts.loop, front:!!opts.front,
-        tint:opts.tint||null, light:!!opts.light, pxpy:!!opts.pxpy,
+        tint:opts.tint||null, light:!!opts.light, pxpy:!!opts.pxpy, seq:opts.seq||null,
         start:clk(), done:ok => res(ok !== false), ...(opts.extra||{}) };
     });
   }
   // converte evDefs → evs (ms) quando MAN estiver disponível
   function ensureEvs(c){
     if (c.evs || !MAN || !c.evDefs) return;
-    c.evs = c.evDefs.map(([idx, name]) => [msAt(c.sheet, idx), name]);
+    c.evs = c.evDefs.map(([idx, name]) => [c.seq ? c.seq.slice(0, idx).reduce((a, q) => a + q[1], 0) : msAt(c.sheet, idx), name]);
   }
 
   // ── API pública ───────────────────────────────────────────────────────────
@@ -494,7 +494,8 @@ function make(host){
 
       // mapa de ações normais
       const MAP = {
-        attack:    {sheet:'slashH',    ev:[[5,'wave:h']]},
+        // 'attack' = anuncio do inicio da rodada (o chefe junta forca; os golpes nos herois vem depois, um por heroi): carga curta, sem golpe
+        attack:    {sheet:'prep',      seq:[[0,70],[1,80],[2,90],[3,110],[4,230],[3,90],[2,80],[1,80],[0,90]], ev:[[1,'charge']]},
         slashH:    {sheet:'slashH',    ev:[[5,'wave:h']]},
         slashV:    {sheet:'slashV',    ev:[[5,'wave:v']]},
         thrust:    {sheet:'thrust',    ev:[[4,'lance']]},
@@ -510,7 +511,7 @@ function make(host){
         awaken:    {sheet:'enrage',    ev:[[1,'omen'],[5,'slam'],[7,'embers']]},
       };
       const def = MAP[name]; if (!def) return Promise.resolve(false);
-      const p = run(def.sheet, {ev:def.ev||[], hold:def.hold||null, tint:def.tint||null, light:!!o.light});
+      const p = run(def.sheet, {ev:def.ev||[], hold:def.hold||null, tint:def.tint||null, light:!!o.light, seq:def.seq||null});
       p.then(ok => { if (ok) fireHit(); }); return p;
     },
 
