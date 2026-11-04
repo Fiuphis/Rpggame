@@ -1,0 +1,933 @@
+{
+ "maga-agua-conjuracao": {
+  "src": "assets/fx/maga-agua-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "ax": 33,
+  "ay": 33,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-agua-escudo": {
+  "src": "assets/fx/maga-agua-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-agua-impacto": {
+  "src": "assets/fx/maga-agua-impacto.png",
+  "w": 74,
+  "h": 94,
+  "ax": 37,
+  "ay": 37,
+  "frames": 8,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-agua-projetil": {
+  "src": "assets/fx/maga-agua-projetil.png",
+  "w": 48,
+  "h": 48,
+  "ax": 24,
+  "ay": 24,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-ar-conjuracao": {
+  "src": "assets/fx/maga-ar-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "ax": 33,
+  "ay": 33,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-ar-escudo": {
+  "src": "assets/fx/maga-ar-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-ar-impacto": {
+  "src": "assets/fx/maga-ar-impacto.png",
+  "w": 74,
+  "h": 83,
+  "ax": 37,
+  "ay": 40,
+  "frames": 6,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-ar-projetil": {
+  "src": "assets/fx/maga-ar-projetil.png",
+  "w": 48,
+  "h": 48,
+  "ax": 24,
+  "ay": 24,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-buraco-negro": {
+  "src": "assets/fx/maga-buraco-negro.png",
+  "w": 192,
+  "h": 192,
+  "ax": 96,
+  "ay": 96,
+  "frames": 23,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-esquiva-velocidade": {
+  "src": "assets/fx/maga-esquiva-velocidade.png",
+  "w": 162,
+  "h": 72,
+  "ax": 117,
+  "ay": 37,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-fogo-conjuracao": {
+  "src": "assets/fx/maga-fogo-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "ax": 33,
+  "ay": 33,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-fogo-escudo": {
+  "src": "assets/fx/maga-fogo-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-fogo-impacto": {
+  "src": "assets/fx/maga-fogo-impacto.png",
+  "w": 96,
+  "h": 96,
+  "ax": 48,
+  "ay": 48,
+  "frames": 10,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "maga-fogo-projetil": {
+  "src": "assets/fx/maga-fogo-projetil.png",
+  "w": 48,
+  "h": 48,
+  "ax": 24,
+  "ay": 24,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-mana-conjuracao": {
+  "src": "assets/fx/maga-mana-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "ax": 33,
+  "ay": 33,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-mana-escudo": {
+  "src": "assets/fx/maga-mana-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-mana-impacto": {
+  "src": "assets/fx/maga-mana-impacto.png",
+  "w": 80,
+  "h": 79,
+  "ax": 38,
+  "ay": 42,
+  "frames": 7,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-mana-projetil": {
+  "src": "assets/fx/maga-mana-projetil.png",
+  "w": 48,
+  "h": 48,
+  "ax": 24,
+  "ay": 24,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-terra-conjuracao": {
+  "src": "assets/fx/maga-terra-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "ax": 33,
+  "ay": 33,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "maga-terra-escudo": {
+  "src": "assets/fx/maga-terra-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "maga-terra-impacto": {
+  "src": "assets/fx/maga-terra-impacto.png",
+  "w": 92,
+  "h": 117,
+  "ax": 46,
+  "ay": 37,
+  "frames": 9,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "maga-terra-projetil": {
+  "src": "assets/fx/maga-terra-projetil.png",
+  "w": 48,
+  "h": 48,
+  "ax": 24,
+  "ay": 24,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "cleriga-defesa-escudo": {
+  "src": "assets/fx/cleriga-defesa-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "cleriga-sagrado-conjuracao": {
+  "src": "assets/fx/cleriga-sagrado-conjuracao.png",
+  "w": 67,
+  "h": 67,
+  "ax": 33,
+  "ay": 33,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "cleriga-sagrado-escudo": {
+  "src": "assets/fx/cleriga-sagrado-escudo.png",
+  "w": 172,
+  "h": 172,
+  "ax": 86,
+  "ay": 86,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "cleriga-sagrado-impacto": {
+  "src": "assets/fx/cleriga-sagrado-impacto.png",
+  "w": 80,
+  "h": 79,
+  "ax": 38,
+  "ay": 42,
+  "frames": 7,
+  "durs": [
+   48,
+   48,
+   48,
+   48,
+   48,
+   48,
+   48
+  ]
+ },
+ "cleriga-sagrado-raio": {
+  "src": "assets/fx/cleriga-sagrado-raio.png",
+  "w": 72,
+  "h": 122,
+  "ax": 36,
+  "ay": 106,
+  "frames": 10,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "fisico-impacto": {
+  "src": "assets/fx/fisico-impacto.png",
+  "w": 93,
+  "h": 87,
+  "ax": 45,
+  "ay": 45,
+  "frames": 5,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "tank-martelo-impacto": {
+  "src": "assets/fx/tank-martelo-impacto.png",
+  "w": 67,
+  "h": 79,
+  "ax": 33,
+  "ay": 25,
+  "frames": 5,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "tank-onda-choque": {
+  "src": "assets/fx/tank-onda-choque.png",
+  "w": 116,
+  "h": 91,
+  "ax": 58,
+  "ay": 32,
+  "frames": 7,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "tank-protecao": {
+  "src": "assets/fx/tank-protecao.png",
+  "w": 77,
+  "h": 101,
+  "ax": 38,
+  "ay": 50,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "tank-provocacao": {
+  "src": "assets/fx/tank-provocacao.png",
+  "w": 110,
+  "h": 110,
+  "ax": 55,
+  "ay": 55,
+  "frames": 9,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "tank-defesa": {
+  "src": "assets/fx/tank-defesa.png",
+  "w": 77,
+  "h": 101,
+  "ax": 38,
+  "ay": 50,
+  "frames": 8,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ },
+ "guerreiro-corte-pesado": {
+  "src": "assets/fx/guerreiro-corte-pesado.png",
+  "w": 67,
+  "h": 97,
+  "ax": 13,
+  "ay": 49,
+  "frames": 7,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "guerreiro-corte": {
+  "src": "assets/fx/guerreiro-corte.png",
+  "w": 96,
+  "h": 96,
+  "ax": 48,
+  "ay": 48,
+  "frames": 6,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "guerreiro-passar": {
+  "src": "assets/fx/guerreiro-passar.png",
+  "w": 57,
+  "h": 66,
+  "ax": 27,
+  "ay": 50,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "guerreiro-berserk-frente": {
+  "src": "assets/fx/guerreiro-berserk-frente.png",
+  "w": 61,
+  "h": 61,
+  "ax": 30,
+  "ay": 49,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "guerreiro-berserk-tras": {
+  "src": "assets/fx/guerreiro-berserk-tras.png",
+  "w": 62,
+  "h": 54,
+  "ax": 31,
+  "ay": 42,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-cacos": {
+  "src": "assets/fx/malgorath-cacos.png",
+  "w": 101,
+  "h": 75,
+  "ax": 40,
+  "ay": 27,
+  "frames": 11,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "malgorath-carga": {
+  "src": "assets/fx/malgorath-carga.png",
+  "w": 79,
+  "h": 79,
+  "ax": 39,
+  "ay": 39,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-corte": {
+  "src": "assets/fx/malgorath-corte.png",
+  "w": 85,
+  "h": 104,
+  "ax": 37,
+  "ay": 46,
+  "frames": 8,
+  "durs": [
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63,
+   63
+  ]
+ },
+ "malgorath-erupcao": {
+  "src": "assets/fx/malgorath-erupcao.png",
+  "w": 91,
+  "h": 58,
+  "ax": 45,
+  "ay": 39,
+  "frames": 9,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-explosao": {
+  "src": "assets/fx/malgorath-explosao.png",
+  "w": 82,
+  "h": 78,
+  "ax": 41,
+  "ay": 39,
+  "frames": 12,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "malgorath-fumaca": {
+  "src": "assets/fx/malgorath-fumaca.png",
+  "w": 113,
+  "h": 89,
+  "ax": 60,
+  "ay": 54,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-lanca": {
+  "src": "assets/fx/malgorath-lanca.png",
+  "w": 89,
+  "h": 34,
+  "ax": 76,
+  "ay": 18,
+  "frames": 12,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-onda-choque": {
+  "src": "assets/fx/malgorath-onda-choque.png",
+  "w": 182,
+  "h": 99,
+  "ax": 91,
+  "ay": 62,
+  "frames": 12,
+  "durs": [
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71,
+   71
+  ]
+ },
+ "malgorath-orbe": {
+  "src": "assets/fx/malgorath-orbe.png",
+  "w": 63,
+  "h": 27,
+  "ax": 49,
+  "ay": 13,
+  "frames": 8,
+  "durs": [
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83,
+   83
+  ]
+ },
+ "malgorath-sigilo": {
+  "src": "assets/fx/malgorath-sigilo.png",
+  "w": 138,
+  "h": 76,
+  "ax": 69,
+  "ay": 47,
+  "frames": 16,
+  "durs": [
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100,
+   100
+  ]
+ }
+}
