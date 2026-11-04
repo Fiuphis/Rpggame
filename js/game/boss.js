@@ -145,6 +145,7 @@ function make(host){
 
   // ── desenho de um quadro da sheet ─────────────────────────────────────────
   // ── fogo vivo (labaredas da espada e da mao sempre se mexendo, sobre qualquer quadro; 12 fps) ──
+  // usa o relogio REAL (performance.now), nao o das animacoes: o fogo nunca congela, nem no tempo parado da arca
   // fios = pixels de fogo na borda da silhueta: sobem, balancam e piscam; fogo grande (lamina/mao) ganha luz correndo
   // (ciclo de paleta; componentes pequenos como os olhos ficam de fora); brasas sobem das pontas. Mesmo algoritmo de scripts/fogo_vivo.py.
   const RAMP = [[190,3,7],[230,13,10],[249,13,23],[253,67,29]], TIP = [253,67,29], TIP2 = [208,66,29];
@@ -266,7 +267,7 @@ function make(host){
     const ancX = FEET_X * drawSc, ancY = FEET_Y * drawSc;
     g.save(); g.globalAlpha = clamp(al == null ? 1 : al); g.imageSmoothingEnabled = false;
     g.translate((dx || 0), (dy || 0)); if (rot) g.rotate(rot * Math.PI / 180);
-    g.drawImage(fogoFrame(name, frame, clk()), 0, 0, CELL_W, CELL_H, -ancX, -ancY, dstW, dstH); g.restore();
+    g.drawImage(fogoFrame(name, frame, performance.now()), 0, 0, CELL_W, CELL_H, -ancX, -ancY, dstW, dstH); g.restore();
   }
 
   function frameAt(name, elapsed){
@@ -324,8 +325,8 @@ function make(host){
   }
 
   function frame(){
-    if (!running) return; requestAnimationFrame(frame); const now = clk();
-    if (document.hidden || now - last < 16) return; last = now;
+    if (!running) return; requestAnimationFrame(frame); const now = clk(), real = performance.now();
+    if (document.hidden || real - last < 16) return; last = real;   // passo pelo relogio real: com o tempo parado o fogo continua sendo redesenhado
     if (!MAN) return;
     const ft = feet(), tm = now - t0;
     c.clearRect(0, 0, cw, ch);
@@ -405,7 +406,7 @@ function make(host){
           g.save(); g.translate(ancCx + vx, ancCy + vy);
           if (tint > 0.005) {   // clarao vermelho so no sprite (num canvas a parte: source-atop direto pintaria a sombra e os brilhos de baixo)
             if (!tcv) { tcv = document.createElement('canvas'); tcv.width = CELL_W; tcv.height = CELL_H; tg = tcv.getContext('2d'); }
-            tg.globalCompositeOperation = 'copy'; tg.drawImage(fogoFrame(sn, f, clk()), 0, 0);
+            tg.globalCompositeOperation = 'copy'; tg.drawImage(fogoFrame(sn, f, performance.now()), 0, 0);
             tg.globalCompositeOperation = 'source-atop'; tg.globalAlpha = tint; tg.fillStyle = 'rgb(255,40,40)'; tg.fillRect(0, 0, CELL_W, CELL_H); tg.globalAlpha = 1;
             g.save(); g.globalAlpha = clamp(al); g.imageSmoothingEnabled = false; g.drawImage(tcv, -FEET_X * SCALE, -FEET_Y * SCALE, CELL_W * SCALE, CELL_H * SCALE); g.restore();
           } else drawSheet(g, sn, f, al, 0, 0, 0, 1);
