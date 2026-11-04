@@ -1,5 +1,5 @@
 /* Banco de Dados I — RPG · tocador de sprite sheets
-   Cada herói é um <canvas>. Sem sheet = imagem estática (spr_*.webp). Com sheet = toca os quadros desenhados.
+   Cada herói é um <canvas>. Toca os quadros das sprite sheets (data/anim_manifest.json); o chefe usa o rig dele (boss.js / hrimgar.js).
    Configuração em data/anim_manifest.json (veja docs/ANIMACOES.md). API usada pelo js/game/app.js: Anim.play / setDead / setAura / reset (+ say/sfx vazios). */
 (() => {
 'use strict';
@@ -56,10 +56,9 @@ function build(){
   WHO.forEach(w => {
     const m = META[w], P = pad(), cv = document.createElement('canvas'); cv.className = 'hero ' + w;
     ref.after(cv);
-    const still = new Image(); still.src = `assets/sprites/spr_${w}.webp`;
-    H[w] = {who:w, cv, c:cv.getContext('2d'), still, sheets:{}, cur:null, dead:false, idleT:null, token:0, hold:null};
+    H[w] = {who:w, cv, c:cv.getContext('2d'), sheets:{}, cur:null, dead:false, idleT:null, token:0, hold:null};
     applyCanvasLayout(w);
-    drawStill(w); still.onload = () => { if (!H[w].cur) drawStill(w); };
+    drawStill(w);
     if (w === 'boss' && (window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig)) buildMage(H[w], m, P, window.STAGE && STAGE.ice ? window.HrimgarRig : window.BossRig, {PX:150, PXR:150, PT:200, PB:30, orb:{x:m.x + 300, y:m.y + 60}});
   });
   const bodyFeet = w => { const f = feetOf(w); return f ? {x:bodyX(w), y:f.y} : f; };   // efeitos sobre aliados (cura, proteção, pouca vida) centrados no corpo, não nos pés
@@ -91,9 +90,6 @@ function drawStill(w){
     drawFrame(w, h.sheets.idle[0], 0);
     return;
   }
-  if (!h.still.complete || !h.still.naturalWidth) return;
-  const P = pad();
-  h.c.clearRect(0, 0, h.cv.width, h.cv.height); shadow(h.c, w); h.c.drawImage(h.still, P, P);
 }
 function shadow(c, w){
   const m = META[w], P = pad(), g = c.createRadialGradient(P + m.w / 2, P + m.h - 4, 2, P + m.w / 2, P + m.h - 4, m.w * .5);
