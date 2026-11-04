@@ -71,15 +71,13 @@ Transições entre telas (cada saída tem a entrada correspondente):
 **Batalha (`js/game/`)**
 - `app.js`: o núcleo: regras de rodada (pergunta -> votação -> ações dos heróis -> boss), dano, fúria, Mercador, inventário, HUD. Números de balanceamento no topo: `BOSS_MAX_HP`, `HERO_MAX_HP`, `DIFFICULTY`, `SKILLS`.
 - `stage.js`: qual chefe/fase está ativa (`?boss=N` ou `bd1_boss`): nomes, fraquezas, cenário.
-- `boss.js` (Malgorath) e `hrimgar.js` (Rei Gelado): poses, golpes e efeitos de cada chefe.
+- `boss.js` (Malgorath, sprite sheets de `assets/bosses/lorde/anim/`) e `hrimgar.js` (Rei Gelado): animações, golpes e efeitos de cada chefe.
 - `intro*.js`, `cine.js`: aberturas e revelação do chefe. `ambient*.js`: cenário vivo (fogo, neve, neblina).
-- `anim.js`: toca sprite sheets conforme `data/anim_manifest.json`. `extras.js`: efeitos extras dos heróis. `hud.js`, `menu_meta.js`: HUD e posições do menu.
-
-**Heróis (`js/characters/`)**: `mage.js`, `guerreiro.js`, `tank.js`, `cleric.js`; cada um carrega as poses de `assets/characters/<classe>/` e implementa as habilidades.
+- `anim.js`: toca as sprite sheets dos heróis (`anim/`, `data/anim_manifest.json`). `vfx.js`: efeitos em pixel art (`assets/fx/`, `data/vfx_manifest.json`). `extras.js`: efeitos extras dos heróis. Detalhes em `docs/ANIMACOES.md`. `hud.js`, `menu_meta.js`: HUD e posições do menu.
 
 **Telas (`js/pages/`)**: `cover.js` (capa e transição do JOGAR), `salas.js` (salas), `lobby.js` (grupos da seleção de classe), `map.js` e `mapfx.js` (mapa e água viva), `relatorio.js`, `saves.js`/`savesui.js` (saves), `conta.js` (conta).
 
-**Comuns (`js/core/`)**: `fs.js` (tela cheia, teclado virtual, bloqueios de gesto), `gate.js`, `fog.js`, `rebuild.js` (transições), `pxfx.js` e `fxsoft.js` (efeitos), `paper.js` (papiro do rodapé), `quotes.js` (frases do mapa).
+**Comuns (`js/core/`)**: `fs.js` (tela cheia, teclado virtual, bloqueios de gesto), `gate.js`, `fog.js`, `rebuild.js` (transições), `pxfx.js` (efeitos de fogo/elementos), `paper.js` (papiro do rodapé), `quotes.js` (frases do mapa).
 
 **Perguntas**: `data/perguntas.json` é a cópia de referência; nas salas online valem as do servidor (tabela `questions`). Edição: `editor.html`, só para a conta `fiuphis` (a checagem é no servidor).
 
