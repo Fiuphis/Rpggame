@@ -44,6 +44,7 @@ function make(host){
     for (const name of Object.keys(MAN)) {
       const img = new Image(); img.src = `assets/bosses/lorde/${MAN[name].src}`; sheets[name] = img;
     }
+    fogoAquecer();
   }).catch(() => {});
 
   const sheetReady = name => sheets[name] && sheets[name].complete && sheets[name].naturalWidth > 0;
@@ -127,6 +128,60 @@ function make(host){
   function runEv(e){ const [k, a, b] = e.split(':'); if (EV[k]) EV[k](a, b); }
 
   // ── desenho de um quadro da sheet ─────────────────────────────────────────
+  // ── fogo vivo (labaredas da espada e da mao sempre se mexendo, sobre qualquer quadro; 12 fps) ──
+  // fios = pixels de fogo na borda da silhueta: sobem, balancam e piscam; fogo grande (lamina/mao) ganha luz correndo
+  // (ciclo de paleta; componentes pequenos como os olhos ficam de fora); brasas sobem das pontas. Mesmo algoritmo de scripts/fogo_vivo.py.
+  const RAMP = [[190,3,7],[230,13,10],[249,13,23],[253,67,29]], TIP = [253,67,29], TIP2 = [208,66,29];
+  const fogoInfo = {}, fogoCv = document.createElement('canvas'), fogoG = fogoCv.getContext('2d', {willReadFrequently:true});
+  const brasas = []; let fogoTick = -1, fogoKey = '', fogoRng = 1;
+  const rnd01 = () => (fogoRng = (fogoRng * 16807) % 2147483647) / 2147483647;
+  function fogoPrep(name, frame){
+    const k = name + ':' + frame; if (fogoInfo[k]) return fogoInfo[k];
+    fogoCv.width = CELL_W; fogoCv.height = CELL_H; fogoG.clearRect(0, 0, CELL_W, CELL_H);
+    fogoG.drawImage(sheets[name], frame * CELL_W, 0, CELL_W, CELL_H, 0, 0, CELL_W, CELL_H);
+    const d = fogoG.getImageData(0, 0, CELL_W, CELL_H), a = d.data, W = CELL_W, H = CELL_H;
+    const isF = i => a[i + 3] && a[i] >= 185 && a[i + 1] <= 75 && a[i + 2] <= 45;
+    const vaz = (x, y) => x < 0 || y < 0 || x >= W || y >= H || !a[(y * W + x) * 4 + 3];
+    const comps = sel => { const vis = new Uint8Array(W * H), out = [];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const p = y * W + x; if (vis[p] || !sel(x, y)) continue;
+        const st = [p], cc = []; vis[p] = 1;
+        while (st.length) { const q = st.pop(), u = q % W, v = (q - u) / W; cc.push(q);
+          for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) { const uu = u + c, vv = v + b; if (uu < 0 || vv < 0 || uu >= W || vv >= H) continue; const r = vv * W + uu; if (!vis[r] && sel(uu, vv)) { vis[r] = 1; st.push(r); } } }
+        out.push(cc); }
+      return out; };
+    const fio = (x, y) => { if (!isF((y * W + x) * 4)) return false; let n = 0; for (let b = -1; b <= 1; b++) for (let c = -1; c <= 1; c++) n += vaz(x + c, y + b); return n >= 3; };
+    const fios = comps(fio).filter(c => c.length >= 2).map(c => { let top = 1e9, tp = 0; for (const p of c) { const y = (p / W) | 0; if (y < top) { top = y; tp = p; } } return {c, top, tp}; });
+    const grandes = comps((x, y) => isF((y * W + x) * 4)).filter(c => c.length >= 18);
+    const ramp = new Map(); for (const c of grandes) for (const p of c) { const i = p * 4; const k2 = RAMP.findIndex(r => r[0] === a[i] && r[1] === a[i + 1] && r[2] === a[i + 2]); if (k2 >= 0) ramp.set(p, k2); }
+    return (fogoInfo[k] = {src:d, fios, ramp});
+  }
+  function fogoFrame(name, frame, now){   // devolve um canvas CELL_W x CELL_H com o quadro e o fogo animado
+    const tick = Math.floor(now / 83), key = name + ':' + frame;
+    if (tick === fogoTick && key === fogoKey) return fogoCv;
+    const info = fogoPrep(name, frame), W = CELL_W, H = CELL_H, t = tick / 12;
+    const out = new ImageData(new Uint8ClampedArray(info.src.data), W, H), o = out.data, s = info.src.data;
+    const put = (x, y, c) => { if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 4; if (o[i + 3]) return; o[i] = c[0]; o[i + 1] = c[1]; o[i + 2] = c[2]; o[i + 3] = 255; };
+    info.ramp.forEach((k, p) => { const x = p % W, y = (p - x) / W, k2 = Math.max(0, Math.min(3, k + Math.round(Math.sin((x - y) / 3 - t * 7.5)))), i = p * 4; o[i] = RAMP[k2][0]; o[i + 1] = RAMP[k2][1]; o[i + 2] = RAMP[k2][2]; });
+    for (const f of info.fios) for (const p of f.c) o[p * 4 + 3] = 0;
+    const novaBrasa = tick !== fogoTick;
+    info.fios.forEach((f, n) => { const ph = n * 1.7, dy = -Math.round(1 + Math.sin(t * 9 + ph));
+      for (const p of f.c) { const x = p % W, y = (p - x) / W, h = y - f.top; if (h === 0 && Math.sin(t * 13 + ph * 3) > .55) continue;
+        const dx = Math.round(Math.sin(t * 6 + ph + h * .45) * (h < 4 ? 1 : .5)), i = p * 4; put(x + dx, y + dy, [s[i], s[i + 1], s[i + 2]]); }
+      const tx = f.tp % W;
+      if (Math.sin(t * 11 + ph * 2) > .3) put(tx + Math.round(Math.sin(t * 6 + ph)), f.top + dy - 1, TIP);
+      if (novaBrasa && brasas.length < 40 && rnd01() < .025 * Math.sqrt(f.c.length)) brasas.push([tx, f.top - 2, 0, (rnd01() - .5) * .6]); });
+    if (novaBrasa) for (let i = brasas.length - 1; i >= 0; i--) { const b = brasas[i]; b[1] -= 1.1; b[0] += b[3]; if (++b[2] > 9) brasas.splice(i, 1); }
+    for (const b of brasas) put(Math.round(b[0]), Math.round(b[1]), b[2] < 5 ? TIP : TIP2);
+    if (key !== fogoKey) brasas.length = Math.min(brasas.length, 12);
+    fogoCv.width = W; fogoCv.height = H; fogoG.putImageData(out, 0, 0); fogoTick = tick; fogoKey = key;
+    return fogoCv;
+  }
+  // aquece o cache do fogo (componentes por quadro) aos poucos quando o navegador esta ocioso: evita tranco no 1o uso
+  function fogoAquecer(){ const fila = []; Object.keys(MAN || {}).forEach(n => { for (let i = 0; i < MAN[n].frames; i++) fila.push([n, i]); });
+    const passo = dl => { while (fila.length && (!dl || dl.timeRemaining() > 4)) { const [n, i] = fila[0]; if (!sheetReady(n)) break; fila.shift(); fogoPrep(n, i); }
+      if (fila.length) (window.requestIdleCallback || (cb => setTimeout(cb, 50)))(passo); };
+    setTimeout(passo, 1500); }
+  if (/[?&]teste=1/.test(location.search)) window.__bossFogo = fogoFrame;
   let tcv = null, tg = null;
   function drawSheet(g, name, frame, al, dx, dy, rot, sc){
     if (!sheetReady(name) || !MAN[name]) return;
@@ -135,7 +190,7 @@ function make(host){
     const ancX = FEET_X * drawSc, ancY = FEET_Y * drawSc;
     g.save(); g.globalAlpha = clamp(al == null ? 1 : al); g.imageSmoothingEnabled = false;
     g.translate((dx || 0), (dy || 0)); if (rot) g.rotate(rot * Math.PI / 180);
-    g.drawImage(sheets[name], frame * CELL_W, 0, CELL_W, CELL_H, -ancX, -ancY, dstW, dstH); g.restore();
+    g.drawImage(fogoFrame(name, frame, clk()), 0, 0, CELL_W, CELL_H, -ancX, -ancY, dstW, dstH); g.restore();
   }
 
   function frameAt(name, elapsed){
@@ -274,7 +329,7 @@ function make(host){
           g.save(); g.translate(ancCx + vx, ancCy + vy);
           if (tint > 0.005) {   // clarao vermelho so no sprite (num canvas a parte: source-atop direto pintaria a sombra e os brilhos de baixo)
             if (!tcv) { tcv = document.createElement('canvas'); tcv.width = CELL_W; tcv.height = CELL_H; tg = tcv.getContext('2d'); }
-            tg.globalCompositeOperation = 'copy'; tg.drawImage(sheets[sn], f * CELL_W, 0, CELL_W, CELL_H, 0, 0, CELL_W, CELL_H);
+            tg.globalCompositeOperation = 'copy'; tg.drawImage(fogoFrame(sn, f, clk()), 0, 0);
             tg.globalCompositeOperation = 'source-atop'; tg.globalAlpha = tint; tg.fillStyle = 'rgb(255,40,40)'; tg.fillRect(0, 0, CELL_W, CELL_H); tg.globalAlpha = 1;
             g.save(); g.globalAlpha = clamp(al); g.imageSmoothingEnabled = false; g.drawImage(tcv, -FEET_X * SCALE, -FEET_Y * SCALE, CELL_W * SCALE, CELL_H * SCALE); g.restore();
           } else drawSheet(g, sn, f, al, 0, 0, 0, 1);
