@@ -234,7 +234,8 @@ function make(host){
   }
   // golpe com rastro + onda ate o heroi (k = 'h' | 'v')
   function corteFogo(k){
-    const tp = TIPS[k === 'v' ? 'slashV' : 'slashH'], A = pt(tp[0]), B = pt(tp[1]), b = tgt, now = clk(), L = v => v / PXS;
+    const sh = k === 'v' ? 'slashV' : 'slashH', tp = TIPS[sh], A = pt(tp[0]), B = pt(tp[1]), b = tgt, L = v => v / PXS;
+    const now = clk() + Math.max(0, (MAN && MAN[sh] ? MAN[sh].durs[5] : 240) - 90);   // evento no q5 (espada erguida): o rastro nasce 90 ms antes do q6 (espada embaixo)
     // rastro: arco de A ate B, abaulado para fora do corpo
     const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, bx = mx + (k === 'v' ? 70 : 170), by = my + (k === 'v' ? 0 : -40);
     cortes.push({t0:now, d:300, pts:u => { const rev = Math.min(1, u * 2.2), fade = u < .45 ? 1 : 1 - (u - .45) / .55, out = [];
@@ -247,7 +248,7 @@ function make(host){
       const R0 = 70 * sc, w = 9 * sc * (u > .85 ? (1 - u) / .15 : 1);
       return k === 'v' ? arcoPts(L(x), L(y), L(R0 * .45), L(R0 * 1.25), ang - 1.25, ang + 1.25, w, 1)
                        : arcoPts(L(x), L(y), L(R0 * 1.4), L(R0 * .55), ang - 1.35, ang + 1.35, w, 1); }});
-    setTimeout(() => { FX('malgorath-corte', k === 'v' ? {x:b.x - 10, y:b.y - 30} : {x:b.x - 40, y:b.y + 20, rot:-1.15}); fireHit(); }, (120 + dur * .92) / tsc());
+    setTimeout(() => { FX('malgorath-corte', k === 'v' ? {x:b.x - 10, y:b.y - 30} : {x:b.x - 40, y:b.y + 20, rot:-1.15}); fireHit(); }, (now - clk() + 120 + dur * .92) / tsc());
   }
   // estocada: lanca de fogo da ponta ate o heroi, fina perto do chefe e larga perto do heroi
   function lancaFogo(){
@@ -493,9 +494,9 @@ function make(host){
 
       // mapa de ações normais
       const MAP = {
-        attack:    {sheet:'slashH',    ev:[[6,'wave:h']]},
-        slashH:    {sheet:'slashH',    ev:[[6,'wave:h']]},
-        slashV:    {sheet:'slashV',    ev:[[6,'wave:v']]},
+        attack:    {sheet:'slashH',    ev:[[5,'wave:h']]},
+        slashH:    {sheet:'slashH',    ev:[[5,'wave:h']]},
+        slashV:    {sheet:'slashV',    ev:[[5,'wave:v']]},
         thrust:    {sheet:'thrust',    ev:[[4,'lance']]},
         summon:    {sheet:'summon',    ev:[[4,'orb'],[10,'orbThrow']]},
         aoe:       {sheet:'aoe',       ev:[[2,'charge'],[6,'nova']]},
