@@ -162,7 +162,7 @@
 
 .fxl{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
 .fxl.back{z-index:3}
-.fxl.front{z-index:27}
+.fxl.front{z-index:7}   /* efeitos na frente do boss (3) e dos herois (4), mas ABAIXO das barras de vida/mana (8) e status (9) */
 .fxl.back.vfx{z-index:2}   /* efeitos 'back' do VFX: atras do boss (z3) e dos herois (z4), sobre o cenario */
 .vfx-flash{position:absolute;inset:0;pointer-events:none;z-index:28;mix-blend-mode:screen;opacity:0}
 

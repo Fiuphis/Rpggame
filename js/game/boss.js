@@ -95,9 +95,7 @@ function make(host){
       E('glow', 1200, u => ({x:f.x, y:f.y - 260, r:lerp(150, 330, eo(u)), c:RED, a:.5 * Math.sin(Math.PI * u)}), {under:true});
       for (let i = 0; i < 10; i++) { const ox = rnd(-260, 260); E('glow', 900, u => ({x:f.x + ox, y:f.y - 30 - 360 * eo(u), r:16, c:HOT, a:.8 * Math.sin(Math.PI * u)}), {delay:i * 60}); } },
     hit(){ fireHit(); },
-    wave(k){ const b = tgt;   // corte de fogo no heroi; o dano entra no meio do arco
-      if (!FX('malgorath-corte', k === 'v' ? {x:b.x - 10, y:b.y - 30} : {x:b.x - 40, y:b.y + 20, rot:-1.15})) { const o = swordH(); fly(o, b, 480, {len:300, th:30, r:60}); return; }
-      setTimeout(fireHit, 190 / tsc()); },
+    wave(k){ corteFogo(k); },   // rastro de fogo na espada + onda ate o heroi (o dano entra quando ela chega)
     orb(){ const h = hand(); if (FX('malgorath-carga', {x:h.x, y:h.y})) return;
       E('orb', 1000, u => ({x:h.x, y:h.y, r:lerp(10, 82, eo(u)), a:u < .1 ? u / .1 : 1})); },
     orbThrow(){ const h = handT(), b = tgt, d = 620;
@@ -106,10 +104,7 @@ function make(host){
       E('orb', d, u => ({x:lerp(h.x, b.x, eo(u) * .5 + u * .5), y:lerp(h.y, b.y, u * u * .4 + u * .6), r:82 * (1 - .25 * u), a:1 - clamp((u - .9) / .1)}));
       E('glow', d, u => ({x:lerp(h.x, b.x, eo(u) * .5 + u * .5), y:lerp(h.y, b.y, u * u * .4 + u * .6), r:130, c:RED, a:.5}));
       setTimeout(() => { hitFx(b.x, b.y, true); E('ring', 900, u => ({x:b.x, y:b.y + 90, r:lerp(60, 220, eo(u)), c:VIO, a:.7 * (1 - u)})); fireHit(); }, d / tsc()); },
-    lance(){ const o = swordT(), b = tgt, d = 380;
-      if (window.VFX && VFX.has('malgorath-lanca')) { FX('malgorath-lanca', {x:o.x, y:o.y, rot:Math.atan2(b.y - o.y, b.x - o.x), loop:true, to:{x:b.x, y:b.y, ms:d, ease:'in'}});
-        setTimeout(() => { FX('malgorath-explosao', {x:b.x, y:b.y}); fireHit(); }, d / tsc()); return; }
-      fly(o, b, d, {len:420, th:18, r:44, sc:'255,210,190'}); },
+    lance(){ lancaFogo(); },
     nova(){ const f = feet(), y0 = 1075, d = 520;
       if (FXM['malgorath-onda-choque'] && window.VFX && VFX.has('malgorath-erupcao')) { FXU('malgorath-onda-choque', {x:f.x, y:f.y, scale:4});
         const ws = ['mage','guerreiro','tank','cleriga'].map(w => window.Anim && Anim.feet ? Anim.feet(w) : null).filter(Boolean);
@@ -203,6 +198,65 @@ function make(host){
       if (fila.length) (window.requestIdleCallback || (cb => setTimeout(cb, 50)))(passo); };
     setTimeout(passo, 1500); }
   if (/[?&]teste=1/.test(location.search)) window.__bossFogo = fogoFrame;
+
+  // ── cortes de fogo (pixel art desenhado em codigo, no grid de pixel do chefe: 1 px = 3 px do mundo) ──
+  // rastro: faixa de fogo seguindo o caminho da ponta da espada no golpe; onda: meia-lua de fogo que sai da ponta e cresce
+  // em perspectiva ate o heroi (H larga/achatada, V alta/estreita); lanca: estocada de fogo da ponta ate o heroi.
+  const PXS = 3, lc = document.createElement('canvas'); lc.width = 342; lc.height = 512; const lg = lc.getContext('2d');
+  const FRAMP = [[2,1,2],[120,4,20],[190,3,7],[249,13,23],[253,67,29],[244,208,110]];
+  const cortes = [];
+  const pt = (q) => { const f = feet(); return {x:f.x + (q[0] - 128) * 3, y:f.y + (q[1] - 250) * 3}; };   // ponto do quadro 256 -> mundo
+  const TIPS = {slashH:[[145,43],[188,244]], slashV:[[156,22],[124,246]], thrust:[[137,240]]};             // ponta da espada antes/depois do golpe
+  const nz = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); };
+  function plotFogo(img, W, H, x, y, k){   // k: 0 contorno .. 5 nucleo
+    if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 5, c = FRAMP[k];
+    if (img[i + 3] && img[i + 4] >= k) return; img[i] = c[0]; img[i + 1] = c[1]; img[i + 2] = c[2]; img[i + 3] = 255; img[i + 4] = k; }
+  // desenha uma faixa (lista de pontos em px do grid baixo, largura por ponto) com nucleo claro, borda vermelha e lingua de fogo
+  function faixa(buf, W, H, pts, t){
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x0, y0, w0] = pts[i], [x1, y1, w1] = pts[i + 1], n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0)));
+      for (let s2 = 0; s2 <= n; s2++) { const u = s2 / n, cx = x0 + (x1 - x0) * u, cy = y0 + (y1 - y0) * u, w = w0 + (w1 - w0) * u;
+        if (w <= .3) continue; const R2 = Math.ceil(w + 2);
+        for (let dy = -R2; dy <= R2; dy++) for (let dx = -R2; dx <= R2; dx++) {
+          const d = Math.hypot(dx, dy), lick = (nz(Math.round(cx + dx), Math.round(cy + dy) + Math.floor(t * 14)) - .5) * 1.6, ww = w + lick;
+          if (d > ww + 1) continue; const r = d / Math.max(ww, .5);
+          plotFogo(buf, W, H, Math.round(cx + dx), Math.round(cy + dy), d > ww ? 0 : r > .8 ? 2 : r > .55 ? 3 : r > .28 ? 4 : 5); } } }
+  }
+  function arcoPts(cx, cy, rx, ry, a0, a1, wmax, rev){   // meia-lua: elipse de a0 a a1 (rad), afinando nas pontas; rev = quanto ja apareceu (0..1)
+    const n = 28, pts = []; for (let i = 0; i <= n; i++) { const u = i / n; if (u > rev) break; const a = a0 + (a1 - a0) * u;
+      pts.push([cx + Math.cos(a) * rx, cy + Math.sin(a) * ry, wmax * Math.pow(Math.sin(Math.PI * u), .7)]); } return pts; }
+  function drawCortes(now){
+    if (!cortes.length) return; const W = lc.width, H = lc.height, id = lg.createImageData(W, H), img = new Uint8ClampedArray(W * H * 5);
+    for (let i = cortes.length - 1; i >= 0; i--) { const c = cortes[i], u = (now - c.t0) / c.d; if (u < 0) continue; if (u >= 1) { cortes.splice(i, 1); continue; }
+      const t = (now - c.t0) / 1000, pts = c.pts(u); if (pts && pts.length > 1) faixa(img, W, H, pts, t); }
+    for (let p = 0, q = 0; p < W * H; p++, q += 5) { id.data[p * 4] = img[q]; id.data[p * 4 + 1] = img[q + 1]; id.data[p * 4 + 2] = img[q + 2]; id.data[p * 4 + 3] = img[q + 3]; }
+    lg.putImageData(id, 0, 0); fc.save(); fc.imageSmoothingEnabled = false; fc.drawImage(lc, 0, 0, W * PXS, H * PXS); fc.restore();
+  }
+  // golpe com rastro + onda ate o heroi (k = 'h' | 'v')
+  function corteFogo(k){
+    const tp = TIPS[k === 'v' ? 'slashV' : 'slashH'], A = pt(tp[0]), B = pt(tp[1]), b = tgt, now = clk(), L = v => v / PXS;
+    // rastro: arco de A ate B, abaulado para fora do corpo
+    const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, bx = mx + (k === 'v' ? 70 : 170), by = my + (k === 'v' ? 0 : -40);
+    cortes.push({t0:now, d:300, pts:u => { const rev = Math.min(1, u * 2.2), fade = u < .45 ? 1 : 1 - (u - .45) / .55, out = [];
+      for (let i = 0; i <= 20; i++) { const s2 = i / 20; if (s2 > rev) break; const s3 = 1 - s2;
+        const x = s3 * s3 * A.x + 2 * s3 * s2 * bx + s2 * s2 * B.x, y = s3 * s3 * A.y + 2 * s3 * s2 * by + s2 * s2 * B.y;
+        out.push([L(x), L(y), 7 * fade * Math.pow(Math.sin(Math.PI * Math.min(1, s2 / Math.max(rev, .01))) || .2, .5)]); } return out; }});
+    // onda: meia-lua que sai de B e cresce ate o heroi (perspectiva), convexa para o lado do heroi
+    const ang = Math.atan2(b.y - B.y, b.x - B.x), dur = 300;
+    cortes.push({t0:now + 120, d:dur, pts:u => { const e = u * u, x = B.x + (b.x - B.x) * e, y = B.y + (b.y - B.y) * e, sc = .45 + .85 * e;
+      const R0 = 70 * sc, w = 9 * sc * (u > .85 ? (1 - u) / .15 : 1);
+      return k === 'v' ? arcoPts(L(x), L(y), L(R0 * .45), L(R0 * 1.25), ang - 1.25, ang + 1.25, w, 1)
+                       : arcoPts(L(x), L(y), L(R0 * 1.4), L(R0 * .55), ang - 1.35, ang + 1.35, w, 1); }});
+    setTimeout(() => { FX('malgorath-corte', k === 'v' ? {x:b.x - 10, y:b.y - 30} : {x:b.x - 40, y:b.y + 20, rot:-1.15}); fireHit(); }, (120 + dur * .92) / tsc());
+  }
+  // estocada: lanca de fogo da ponta ate o heroi, fina perto do chefe e larga perto do heroi
+  function lancaFogo(){
+    const A = pt(TIPS.thrust[0]), b = tgt, now = clk(), L = v => v / PXS, d = 420;
+    cortes.push({t0:now, d, pts:u => { const reach = Math.min(1, u / .3), fade = u < .55 ? 1 : 1 - (u - .55) / .45, out = [];
+      for (let i = 0; i <= 18; i++) { const s2 = i / 18 * reach, x = A.x + (b.x - A.x) * s2, y = A.y + (b.y - A.y) * s2;
+        const w = (1.2 + 6.5 * s2) * fade * (i === 18 ? .25 : i >= 16 ? .7 : 1); out.push([L(x), L(y), w]); } return out; }});
+    setTimeout(() => { FX('malgorath-explosao', {x:b.x, y:b.y}); shakeT = clk(); fireHit(); }, d * .3 / tsc());
+  }
   let tcv = null, tg = null;
   function drawSheet(g, name, frame, al, dx, dy, rot, sc){
     if (!sheetReady(name) || !MAN[name]) return;
@@ -363,6 +417,7 @@ function make(host){
     }
 
     renderFX(now);
+    drawCortes(now);
     drawMode(ft, tm);
     if (shakeT && now >= shakeT) { const u = (now - shakeT) / 450, ge = host.shakeEl; if (ge) ge.style.transform = u < 1 ? `translate(${Math.sin(u * 60) * 1 * (1 - u)}px,${Math.cos(u * 50) * .8 * (1 - u)}px)` : ''; if (u >= 1) shakeT = 0; }
     if (mark) drawMark(now);
@@ -438,10 +493,10 @@ function make(host){
 
       // mapa de ações normais
       const MAP = {
-        attack:    {sheet:'slashH',    ev:[[7,'wave:h']]},
-        slashH:    {sheet:'slashH',    ev:[[7,'wave:h']]},
-        slashV:    {sheet:'slashV',    ev:[[7,'wave:v']]},
-        thrust:    {sheet:'thrust',    ev:[[5,'lance']]},
+        attack:    {sheet:'slashH',    ev:[[6,'wave:h']]},
+        slashH:    {sheet:'slashH',    ev:[[6,'wave:h']]},
+        slashV:    {sheet:'slashV',    ev:[[6,'wave:v']]},
+        thrust:    {sheet:'thrust',    ev:[[4,'lance']]},
         summon:    {sheet:'summon',    ev:[[4,'orb'],[10,'orbThrow']]},
         aoe:       {sheet:'aoe',       ev:[[2,'charge'],[6,'nova']]},
         enrage:    {sheet:'enrage',    ev:[[1,'charge'],[5,'roar'],[7,'roar:2']]},
