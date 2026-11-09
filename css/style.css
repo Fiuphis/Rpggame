@@ -313,7 +313,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 
 .amb{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}.amb.b{z-index:2}.amb.f{z-index:5}
 .game.boss-attack .amb.b{animation:boss-rumble 1s linear both}.game.boss-hit .amb.b{animation:boss-rumble .38s linear}
-.game:has(#bag-panel:not([hidden])) #toast{top:63.5%;z-index:49;transform:translate(-50%,-100%)}.game:has(#bag-panel:not([hidden])) #toast.show{transform:translate(-50%,-100%)}
+.game:has(.bag-panel:not([hidden])) #toast{top:63.5%;z-index:49;transform:translate(-50%,-100%)}.game:has(.bag-panel:not([hidden])) #toast.show{transform:translate(-50%,-100%)}
 
 .gold-plus{position:absolute;z-index:27;left:86%;width:15.4%;top:5.2%;text-align:center;font:bold 2.7cqw OpenC,OpenD,monospace;color:#ffeaa6;text-shadow:0 0 1.2cqw rgba(255,200,80,.85),0 .2cqw 0 #000;opacity:0;pointer-events:none;animation:gplus 1.25s ease-out forwards}
 @keyframes gplus{0%{opacity:0;transform:translateY(1.4cqw) scale(.7)}18%{opacity:1;transform:translateY(0) scale(1.2)}50%{opacity:.95;transform:translateY(.5cqw) scale(1)}100%{opacity:0;transform:translateY(-2.4cqw) scale(.75)}}
@@ -367,7 +367,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 .gag-bubble{position:absolute;z-index:44;left:47%;top:7%;font:700 9cqw OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;color:#ffe27a;text-shadow:2px 2px 0 #000,-2px 2px 0 #000,2px -2px 0 #000,-2px -2px 0 #000;animation:gagpulse .5s steps(2) infinite;pointer-events:none}
 
 /* v167: topo todo preto (sem esqueletos), jogo encostado no topo; papiro maior cobre o rodapé do jogo */
-.paper .bag-toggle{bottom:11.8%}
+.paper .ui-toggles{bottom:11.8%}
 .paper .bag-panel{bottom:22%}
 .sc-t{font-size:clamp(15px,4.6vw,22px)!important}
 .sc-s{font-size:clamp(12px,3.6vw,16px)!important}
@@ -381,7 +381,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 /* v170: mercador vivo — luz mexendo, humor, placa FECHADO e prateleira que repõe itens */
 .m-stage{position:absolute;left:52.2%;top:19.5%;width:20.1%;height:25%;overflow:hidden;pointer-events:none;z-index:2}
 .m-stage>*{position:absolute}
-.m-port{inset:0;background:url(../assets/ui/bag_panel2.png) 65.3% 26% / 498% 401% no-repeat;transform-origin:50% 100%;animation:mbreath 3.6s ease-in-out infinite alternate}
+.m-port{inset:0;background:url(../assets/ui/merchant_portrait.png) center/cover no-repeat;transform-origin:50% 100%;animation:mbreath 3.6s ease-in-out infinite alternate}
 @keyframes mbreath{from{transform:scale(1) translateY(0)}to{transform:scale(1.02) translateY(-.4%)}}
 .m-stage.mad .m-port{animation:mshake .22s linear infinite}
 @keyframes mshake{0%,100%{transform:translate(0,0)}25%{transform:translate(1.2%,-.8%)}50%{transform:translate(-1%,.6%)}75%{transform:translate(.8%,.8%)}}
@@ -802,25 +802,6 @@ body,button,input{font-family:OpenC,OpenD,monospace}
 .intro.ice .in-cap span{position:absolute;left:26%;right:8%;top:30%;bottom:30%;min-height:0;display:flex;align-items:center;font:bold clamp(12px,3.6vw,17px)/1.3 Georgia,'Times New Roman',serif;color:#e6f6ff;text-shadow:0 0 6px rgba(90,190,255,.6),0 2px 0 #021020}
 .intro.ice .in-cap::after{right:9%;bottom:24%}
 
-/* tema de gelo: botao + inventario/mercador, so na fase do Hrimgar (.game.theme-ice) */
-.theme-ice .bag-toggle img{content:url(../assets/ui/ice_button.png);width:30cqw}
-.theme-ice .bag-panel{aspect-ratio:1943/740}
-.theme-ice .bag-panel>img{content:url(../assets/ui/ice_panel.png)}
-.theme-ice .inventory-hit:nth-child(1){left:9.62%;top:26.1%;width:12.0%;height:26.9%}
-.theme-ice .inventory-hit:nth-child(2){left:23.26%;top:26.1%;width:12.04%;height:26.9%}
-.theme-ice .inventory-hit:nth-child(3){left:36.85%;top:26.1%;width:11.84%;height:26.9%}
-.theme-ice .inventory-hit:nth-child(4){left:9.62%;top:55.8%;width:12.0%;height:26.9%}
-.theme-ice .inventory-hit:nth-child(5){left:23.26%;top:55.8%;width:12.04%;height:26.9%}
-.theme-ice .inventory-hit:nth-child(6){left:36.85%;top:55.8%;width:11.84%;height:26.9%}
-.theme-ice .bag-panel .shop.s0{left:52.2%;top:51.1%;width:9.5%;height:34.3%}
-.theme-ice .bag-panel .shop.s1{left:63.2%;top:51.1%;width:9.4%;height:34.3%}
-.theme-ice .bag-panel .shop.s2{left:74.1%;top:51.1%;width:9.0%;height:34.3%}
-.theme-ice .bag-panel .shop.s3{left:84.4%;top:51.1%;width:8.5%;height:34.3%}
-.theme-ice .m-stage{left:52.2%;top:20.5%;width:21.9%;height:26.1%}
-.theme-ice .m-port{background:url(../assets/ui/ice_panel.png) 66.9% 27.8% / 457% 383% no-repeat}
-.theme-ice .bag-panel .merchant-vote{left:75.9%;top:32.6%;width:16.2%;height:13.2%}
-.theme-ice .m-say{left:75.9%;top:32.8%;width:16.2%;height:13%}
-
 /* abertura do Malgorath (../js/game/intro_malg.js) */
 .intro.mal{background:#040107}
 .mg-hand,.mg-face,.mg-far,.mg-stand{overflow:visible}
@@ -881,3 +862,67 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 .sc-adm span{flex:1;min-width:0;word-break:break-word}
 @keyframes admIn{from{transform:translateY(-8px);opacity:0}to{transform:none;opacity:1}}
 @media (prefers-reduced-motion:reduce){.sc-adm{animation:none}}
+
+/* v349: Mochila e Mercador separados — dois paineis (640x264) e dois botoes lado a lado na borda inferior */
+.ui-toggles{position:absolute;z-index:50;left:50%;bottom:1.2%;transform:translateX(-50%);display:flex;gap:2.4cqw}
+.ui-toggle{border:0;padding:0;margin:0;background:none;cursor:pointer;line-height:0;-webkit-tap-highlight-color:transparent;outline:none}
+.ui-toggle img{height:9cqw;width:auto;display:block;image-rendering:pixelated;filter:drop-shadow(0 .4cqw .6cqw rgba(0,0,0,.75));transition:filter .2s}
+.ui-toggle[aria-expanded=true] img{filter:drop-shadow(0 0 1.2cqw rgba(255,224,138,.95)) brightness(1.15)}
+.ui-toggle:active img{transform:translateY(.3cqw)}
+#shop-toggle.shut img{filter:grayscale(.85) brightness(.55) drop-shadow(0 .4cqw .6cqw rgba(0,0,0,.75))}
+#bag-toggle.bag-pop{animation:bagPop .9s ease-out}
+.bag-panel{aspect-ratio:640/264}
+.bag-panel>img{image-rendering:pixelated}
+/* v349b: arte nova — mochila de couro e latao, mercador = carroca (5 caixas, etiqueta de preco), mago na janela */
+.pn-title{position:absolute;display:flex;align-items:center;justify-content:center;font:700 3.2cqw/1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.35cqw;pointer-events:none;z-index:3}
+#inv-panel .pn-title{left:39.22%;top:9.47%;width:21.41%;height:9.47%;color:#3a220f;text-shadow:0 .2cqw 0 rgba(255,232,170,.45)}
+#shop-panel .pn-title{left:40%;top:12.1%;width:20.2%;height:9.1%;color:#f1cf7a;text-shadow:0 .25cqw 0 #000}
+.inv-say{position:absolute;left:12.81%;top:25.38%;width:74.38%;height:15.53%;display:flex;align-items:center;justify-content:center;font:700 3cqw/1.1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;color:#4a2c14;letter-spacing:.1cqw;pointer-events:none}
+#inv-panel .inventory-hit{top:50.38%;width:10.31%;height:30.68%}
+#inv-panel .inventory-hit:nth-child(1){left:10%}
+#inv-panel .inventory-hit:nth-child(2){left:24.06%}
+#inv-panel .inventory-hit:nth-child(3){left:37.97%}
+#inv-panel .inventory-hit:nth-child(4){left:51.72%}
+#inv-panel .inventory-hit:nth-child(5){left:65.47%}
+#inv-panel .inventory-hit:nth-child(6){left:79.38%}
+#inv-panel .inv-icon{height:96%;filter:drop-shadow(0 .3cqw 0 rgba(0,0,0,.55))}
+#shop-panel>img{z-index:2}
+#shop-panel .m-stage{left:13.125%;top:29.92%;width:19.375%;height:45.45%;z-index:1}
+#shop-panel .m-port{background:url(../assets/ui/merchant_portrait.png) center/100% 100% no-repeat;image-rendering:pixelated}
+#shop-panel .m-closed{left:0;-webkit-mask-image:none;mask-image:none}
+#shop-panel .m-sign{left:9%;top:-2%;width:82%}
+#shop-panel .m-candle{z-index:3}
+#shop-panel .m-candle.l{left:35.5%;top:32%;width:6%;height:16%}
+#shop-panel .m-candle.r{display:none}
+#shop-panel .m-say{left:43.6%;top:28.4%;width:42.8%;height:12.4%;font-size:2.8cqw;line-height:1;color:#fbecc4;text-shadow:0 .25cqw 0 #2a160a;z-index:3}
+#shop-panel .merchant-vote{left:43.6%;top:28.8%;width:42.8%;height:12%;flex-direction:row;align-items:center;gap:1.2cqw;overflow:hidden;z-index:3}
+#shop-panel .merchant-vote .merchant-title{display:none}
+#shop-panel .merchant-body{flex:1;flex-direction:row;align-items:center;gap:1.2cqw;min-width:0}
+#shop-panel .merchant-question{flex:1;min-width:0;font-size:2.6cqw;line-height:1.05;text-align:left;white-space:normal;color:#fbecc4;text-shadow:0 .25cqw 0 #2a160a}
+#shop-panel .vote-row{margin:0;top:0;gap:1cqw;flex:none;grid-template-columns:auto auto}
+#shop-panel .vote-choice{font-size:2.6cqw;height:4.6cqw;padding:0 1.6cqw;background:#7a4a24;border:.35cqw solid #2a160a;box-shadow:inset 0 .35cqw 0 #a86c38,inset 0 -.35cqw 0 #5a3418;color:#fbecc4;text-shadow:0 .2cqw 0 #2a160a}
+#shop-panel .vote-choice.selected,#shop-panel .vote-choice:active{background:#a86c38;box-shadow:inset 0 .35cqw 0 #d39a5a,inset 0 -.35cqw 0 #7a4a24}
+#shop-panel .vote-choice b{display:none}
+#shop-panel .vote-choice>*{top:0}
+#shop-panel .shop{top:46.97%;height:27.65%}
+#shop-panel .shop.s0{left:43.75%;width:8.44%}
+#shop-panel .shop.s1{left:52.5%;width:10.16%}
+#shop-panel .shop.s2{left:62.97%;width:7.34%}
+#shop-panel .shop.s3{left:70.47%;width:7.34%}
+#shop-panel .shop.s4{left:77.97%;width:10.31%}
+/* icone dentro do vao da caixa; preco escrito na etiqueta pendurada */
+#shop-panel .shop .s-icon,#shop-panel .shop .s-ghost{height:47%;object-fit:contain;image-rendering:pixelated}
+#shop-panel .shop .s-pill,#shop-panel .shop .s-coin{display:none}
+#shop-panel .shop .s-tag{position:absolute;top:72.6%;height:26%;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#shop-panel .shop .s-price{position:static;width:auto;height:auto;font:700 2.6cqw/1 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;color:#3b2412;text-shadow:none}
+#shop-panel .shop.s0 .s-icon,#shop-panel .shop.s0 .s-ghost{left:12.11%;top:9.22%;width:75.78%}
+#shop-panel .shop.s1 .s-icon,#shop-panel .shop.s1 .s-ghost{left:10.23%;top:9.22%;width:79.54%}
+#shop-panel .shop.s2 .s-icon,#shop-panel .shop.s2 .s-ghost{left:13.77%;top:11.96%;width:72.47%}
+#shop-panel .shop.s3 .s-icon,#shop-panel .shop.s3 .s-ghost{left:11.64%;top:11.96%;width:74.60%}
+#shop-panel .shop.s4 .s-icon,#shop-panel .shop.s4 .s-ghost{left:8.58%;top:11.96%;width:81.33%}
+#shop-panel .shop.s0 .s-tag{left:24.07%;width:55.56%}
+#shop-panel .shop.s1 .s-tag{left:9.23%;width:46.15%}
+#shop-panel .shop.s2 .s-tag{left:12.77%;width:63.83%}
+#shop-panel .shop.s3 .s-tag{left:14.89%;width:63.83%}
+#shop-panel .shop.s4 .s-tag{left:6.06%;width:45.45%}
+#shop-panel.shut .shop{opacity:.35;filter:grayscale(.85)}

@@ -70,18 +70,25 @@ window.bd1Json = function (u) { var p = new Promise(function (ok, no) { var n = 
     <div id="am-list" class="am-list"></div>
   </section>
 
-  <!-- Inventário + Mercador: escondido; abre ao clicar no botão da borda inferior. -->
+  <!-- Mochila e Mercador: dois paineis separados (v349), cada um com o seu botao na borda inferior; abrir um fecha o outro -->
   <div id="bag-back" class="bag-back" hidden></div>
-  <section id="bag-panel" class="bag-panel" hidden aria-label="Inventário e Mercador">
-    <img src="assets/ui/bag_panel2.png" alt="" draggable="false">
+  <section id="inv-panel" class="bag-panel inv-panel" hidden aria-label="Mochila">
+    <img src="assets/ui/inv_panel.png" alt="" draggable="false">
+    <b class="pn-title">MOCHILA</b>
+    <div class="inv-say" id="inv-say">toque para usar · segure para ver</div>
+    <div id="inventory-hits"></div>
+  </section>
+  <section id="shop-panel" class="bag-panel shop-panel" hidden aria-label="Mercador">
+    <img src="assets/ui/shop_panel.png" alt="" draggable="false">
+    <b class="pn-title">MERCADOR</b>
     <div class="m-stage" id="m-stage" aria-hidden="true"><div class="m-port"></div><div class="m-closed"><div class="m-empty"></div><img class="m-sign" src="assets/ui/shop_sign.png" alt="" draggable="false"></div><div class="m-shade"></div><div class="m-sway"></div><div class="m-light"></div><div class="m-rage"></div><div class="m-puffs" id="m-puffs"></div></div>
     <i class="m-candle l"></i><i class="m-candle r"></i>
     <div class="m-say" id="m-say" aria-live="polite"></div>
-    <div id="inventory-hits"></div>
     <button class="hit shop s0" data-action="buy" data-slot="0" aria-label="Comprar item 1"></button>
     <button class="hit shop s1" data-action="buy" data-slot="1" aria-label="Comprar item 2"></button>
     <button class="hit shop s2" data-action="buy" data-slot="2" aria-label="Comprar item 3"></button>
     <button class="hit shop s3" data-action="buy" data-slot="3" aria-label="Comprar item 4"></button>
+    <button class="hit shop s4" data-action="buy" data-slot="4" aria-label="Comprar item 5"></button>
     <div id="merchant-vote" class="merchant-vote" aria-label="Mercador">
       <div class="merchant-title"><span></span><b id="merchant-timer"></b></div>
       <div class="merchant-body">
@@ -93,7 +100,10 @@ window.bd1Json = function (u) { var p = new Promise(function (ok, no) { var n = 
       </div>
     </div>
   </section>
-  <button id="bag-toggle" class="bag-toggle" type="button" aria-label="Inventário e Mercador" aria-expanded="false"><img src="assets/ui/bag_button.png" alt=""></button>
+  <div class="ui-toggles">
+    <button id="bag-toggle" class="ui-toggle" type="button" aria-label="Mochila" aria-expanded="false"><img src="assets/ui/btn_bag.png" alt="" draggable="false"></button>
+    <button id="shop-toggle" class="ui-toggle" type="button" aria-label="Mercador" aria-expanded="false"><img src="assets/ui/btn_shop.png" alt="" draggable="false"></button>
+  </div>
 
   <button id="back-lobby" class="back-lobby" type="button" aria-label="Sair da partida">◀ SAIR</button>
 

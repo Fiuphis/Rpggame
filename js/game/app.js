@@ -334,14 +334,14 @@ function updateVoteUI(){
     b.disabled = state.voteLocked;
   });
 }
-function showMerchantText(text){ const q = $('#merchant-question'); q.textContent = text; q.style.fontSize = ''; if (text && !$('#bag-panel').hidden) fitBox(q, 1.15, .7, true); }
+function showMerchantText(text){ const q = $('#merchant-question'); q.textContent = text; q.style.fontSize = ''; if (text && !$('#shop-panel').hidden) fitBox(q, 2.6, 1.6, true); }
 
 function openMerchantVote(text, action){
   votes = {yes:0, no:0};
   state.pendingAction = action; state.myVote = null; state.voteLocked = false;
   state.voters = groupMembers(); state.need = majorityOf(state.voters);
   showMerchantText(text);
-  $('#merchant-vote').classList.add('open'); setBag(true); showMerchantText(text);
+  $('#merchant-vote').classList.add('open'); setPanel('shop'); showMerchantText(text);
   updateVoteUI();
   startVoteTimer();
   if (TEST_MODE) startBots();
@@ -425,7 +425,7 @@ const SHOP_POOL = Object.keys(ITEMS).filter(k => !ITEMS[k].rare);
 const RARE_POOL = Object.keys(ITEMS).filter(k => ITEMS[k].rare && !ITEMS[k].legend), RARE_CHANCE = 0.12;
 const LEGEND_POOL = Object.keys(ITEMS).filter(k => ITEMS[k].legend), LEGEND_CHANCE = 0.025;   // lendários (relógios): bem mais raros que os raros
 let qExtend = null;   // enquanto a pergunta está aberta: soma segundos ao relógio dela            // ids de ITEMS que podem aparecer na prateleira (novos itens: adicione em ITEMS e aqui)
-const SHOP_SLOTS = 4, SHOP_CLOSE_AT = 12, SHOP_CLOSED_Q = 3;   // 12 aberturas sem comprar → fecha por 3 perguntas
+const SHOP_SLOTS = 5, SHOP_CLOSE_AT = 12, SHOP_CLOSED_Q = 3;   // 12 aberturas sem comprar → fecha por 3 perguntas
 const MSAY = {
   hi:['O que deseja?','Bem-vindo, viajante!','Olhe à vontade...','Em que posso ajudar?','Tenho o que você precisa.','Mercadoria de primeira!'],
   meh:['Vai comprar alguma coisa?','Já olhou o bastante?','Hm... decidiu algo?','Sem pressa... quase.'],
@@ -470,19 +470,19 @@ function fitBox(el, max, min, byWidth){      // reduz a fonte (em cqw) até o te
 }
 function mBubble(text, mad){          // fala do mercador: no cantinho dele (mesma caixa da confirmação de compra)
   const b = $('#m-say'); if (!b) return; clearTimeout(bubbleT);
-  b.classList.toggle('mad', !!mad); b.innerHTML = '<span></span>'; b.firstChild.textContent = text; fitBox(b, 2, 1.1, false); b.classList.remove('say-in'); void b.offsetWidth; b.classList.add('say-in');
-  bubbleT = setTimeout(() => { b.textContent = ''; }, 3200 + text.length * 55);
+  b.classList.toggle('mad', !!mad); b.innerHTML = '<span></span>'; b.firstChild.textContent = text; fitBox(b, 2.8, 1.4, false); b.classList.remove('say-in'); void b.offsetWidth; b.classList.add('say-in');
+  // v349b: a fala fica na tábua da carroça até a próxima (tábua vazia parecia defeito)
 }
 function mPuff(){ const p = $('#m-puffs'); if (!p) return; for (let i = 0; i < 6; i++) { const d = document.createElement('i'); d.className = 'm-puff'; d.style.left = (Math.random() * 60) + '%'; d.style.top = (Math.random() * 20) + '%'; d.style.animationDelay = (i * 70) + 'ms'; p.appendChild(d); setTimeout(() => d.remove(), 1500); } }
 function renderShop(opt = {}){
-  const bp = $('#bag-panel'); bp.classList.toggle('shut', state.shop.closed > 0);
+  const bp = $('#shop-panel'); bp.classList.toggle('shut', state.shop.closed > 0); $('#shop-toggle').classList.toggle('shut', state.shop.closed > 0);
   state.shop.slots.forEach((type, i) => {
     const b = bp.querySelector('.shop.s' + i); if (!b) return; b.innerHTML = '';
     b.disabled = !type; b.classList.toggle('rare', !!(type && ITEMS[type].rare));
     if (opt.sold === i && opt.soldType) b.insertAdjacentHTML('beforeend', `<img class="s-ghost" src="${ITEMS[opt.soldType].icon}" alt="">`);
     if (!type) return;
     const it = ITEMS[type];
-    b.insertAdjacentHTML('beforeend', `<img class="s-icon${opt.arrive && opt.arrive.includes(i) ? ' arrive' : ''}" src="${it.icon}" alt=""><i class="s-pill"></i><img class="s-coin" src="assets/ui/icon_coin.png" alt=""><b class="s-price">${priceOf(type)}</b>`);
+    b.insertAdjacentHTML('beforeend', `<img class="s-icon${opt.arrive && opt.arrive.includes(i) ? ' arrive' : ''}" src="${it.icon}" alt=""><i class="s-pill"></i><span class="s-tag"><img class="s-coin" src="assets/ui/icon_coin.png" alt=""><b class="s-price">${priceOf(type)}</b></span>`);
     b.setAttribute('aria-label', 'Comprar ' + it.name);
   });
 }
@@ -506,7 +506,7 @@ function shopTick(){               // fim de cada pergunta: conta o tempo da loj
   const sh = state.shop;
   if (sh.closed > 0) {
     sh.closed--;
-    if (sh.closed === 0) { mPuff(); $('#m-stage').classList.remove('shut'); mMood(0); renderShop(); toast('O Mercador reabriu a loja.'); if (!$('#bag-panel').hidden) mBubble(msay('back')); }
+    if (sh.closed === 0) { mPuff(); $('#m-stage').classList.remove('shut'); mMood(0); renderShop(); toast('O Mercador reabriu a loja.'); if (!$('#shop-panel').hidden) mBubble(msay('back')); }
     return;
   }
 }
@@ -1008,7 +1008,7 @@ async function runChestRound(SR){
   state.chestAt = state.round;
   const g = $('#game'), img = document.createElement('img');
   img.className = 'chest'; img.src = CHEST_FRAMES[0]; img.alt = ''; g.appendChild(img);
-  setBag(false); mBubble('');   // a arca nao abre o mercador nem a mochila
+  setPanel(null); mBubble('');   // a arca nao abre o mercador nem a mochila
   timeStop(img);
   showBanner('ARCA DO TESOURO', 'uma arca misteriosa apareceu. Escolha ABRIR ou NÃO ABRIR (sem pergunta nesta rodada)');
   let open, mine, opens = null, rolls = null, onlChestForce = null;
@@ -2438,25 +2438,34 @@ $('#hitmap').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   const action=b.dataset.action;
 });
-function setBag(on){ if (!on) { const t = $('#item-tip'); if (t) t.remove(); } $('#bag-panel').hidden = !on; $('#bag-back').hidden = !on; $('#bag-toggle').setAttribute('aria-expanded', on); }
-$('#bag-toggle').addEventListener('click', () => { const op = $('#bag-panel').hidden; setBag(op); if (op) merchantOpened(); else mBubble(''); });
-$('#bag-back').addEventListener('click', () => { setBag(false); mBubble(''); });
+// Mochila e Mercador separados (v349): cada botao abre o seu painel no mesmo lugar; abrir um fecha o outro.
+// Fecha tocando fora (fundo) ou no mesmo botao. Abrir a loja conta para o humor do mercador.
+function setPanel(which){
+  const t = $('#item-tip'); if (t) t.remove();
+  $('#inv-panel').hidden = which !== 'inv'; $('#shop-panel').hidden = which !== 'shop'; $('#bag-back').hidden = !which;
+  $('#bag-toggle').setAttribute('aria-expanded', which === 'inv'); $('#shop-toggle').setAttribute('aria-expanded', which === 'shop');
+  if (which !== 'shop') mBubble('');
+}
+const panelOpen = () => !$('#inv-panel').hidden ? 'inv' : !$('#shop-panel').hidden ? 'shop' : null;
+$('#bag-toggle').addEventListener('click', () => setPanel(panelOpen() === 'inv' ? null : 'inv'));
+$('#shop-toggle').addEventListener('click', () => { const op = panelOpen() !== 'shop'; setPanel(op ? 'shop' : null); if (op) merchantOpened(); });
+$('#bag-back').addEventListener('click', () => setPanel(null));
 // voltar do aparelho na partida: fecha a mochila se estiver aberta; senão avisa (sair é só pelo botão GRUPOS, para não abandonar sem querer)
 try { history.pushState({ game: 1 }, ''); } catch (e) {}
-addEventListener('popstate', () => { try { history.pushState({ game: 1 }, ''); } catch (e) {} if (!$('#bag-panel').hidden) { setBag(false); mBubble(''); return; } toast('Use o botão SAIR para sair da partida.'); });
+addEventListener('popstate', () => { try { history.pushState({ game: 1 }, ''); } catch (e) {} if (panelOpen()) { setPanel(null); return; } toast('Use o botão SAIR para sair da partida.'); });
 // Loja: tocar no ícone do item mostra a descrição; tocar nas moedas (parte de baixo) tenta comprar.
 function closeItemTip(){ const t = $('#item-tip'); if (t) t.remove(); }
 function showItemTip(slot){
   const type = state.shop.slots[slot]; if (!type) return;
-  const bp = $('#bag-panel'), btn = bp.querySelector('.shop.s' + slot);
-  buildItemTip(type, btn, `<span>PREÇO</span><img src="assets/ui/icon_coin.png" alt=""><b>${priceOf(type)}</b><small>toque nas moedas para comprar</small>`);
+  const bp = $('#shop-panel'), btn = bp.querySelector('.shop.s' + slot);
+  buildItemTip(type, btn, `<span>PREÇO</span><img src="assets/ui/icon_coin.png" alt=""><b>${priceOf(type)}</b><small>toque no preço para comprar</small>`);
 }
 function showInvTip(type, btn, count){   // segurar o item da mochila: mesma ficha do Mercador
   buildItemTip(type, btn, `<span>QTD</span><b>x${count}</b><small>toque rápido para usar</small>`);
 }
 function buildItemTip(type, btn, foot){
   closeItemTip();
-  const it = ITEMS[type], bp = $('#bag-panel'), pr = bp.getBoundingClientRect(), br = btn.getBoundingClientRect();
+  const it = ITEMS[type], bp = btn.closest('.bag-panel'), pr = bp.getBoundingClientRect(), br = btn.getBoundingClientRect();
   const cat = CAT_LABEL[itemCat(type)], aff = (it.aff || []).map(h => GROUPS[h]).join(', ');
   const el = document.createElement('div'); el.id = 'item-tip'; el.className = 'it-tip' + (it.rare ? ' rare' : '');
   el.innerHTML = `<div class="it-top"><div class="it-ico"><img src="${it.icon}" alt=""></div><div class="it-head"><b class="it-name">${it.name}</b><span class="it-tags"><em class="t-${itemCat(type)}">${cat}</em>${it.legend ? '<em class="t-rare">LENDÁRIO</em>' : it.rare ? '<em class="t-rare">RARO</em>' : ''}</span></div></div>` +
@@ -2467,9 +2476,10 @@ function buildItemTip(type, btn, foot){
   el.style.left = left + 'cqw'; el.style.setProperty('--tx', (cx - left) + 'cqw');
   el.onclick = closeItemTip;
 }
-$('#bag-panel').addEventListener('click', e => {
+$('#inv-panel').addEventListener('click', e => { if (!e.target.closest('#item-tip') && !e.target.closest('.inventory-hit')) closeItemTip(); });
+$('#shop-panel').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b || b.dataset.action !== 'buy') { if (!e.target.closest('#item-tip')) closeItemTip(); return; }
-  const slot = +b.dataset.slot, r = b.getBoundingClientRect(), buyZone = (e.clientY - r.top) / r.height >= .66;
+  const slot = +b.dataset.slot, r = b.getBoundingClientRect(), buyZone = (e.clientY - r.top) / r.height >= .62;   // etiqueta de preco pendurada = parte de baixo
   if (buyZone) { closeItemTip(); requestBuy(slot); } else showItemTip(slot);
 });
 $('.merchant-vote').addEventListener('click',e=>{const b=e.target.closest('.vote-choice');if(b)vote(b.dataset.vote)});
