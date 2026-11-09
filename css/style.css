@@ -562,7 +562,7 @@ box-shadow:0 0 0 2px #0a0610,0 0 0 4px #b08a3c,0 0 22px rgba(160,20,40,.5),inset
 /* loja: area das moedas e cartao de descricao do item */
 .shop .s-pill{position:absolute;left:10%;top:71%;width:80%;height:24%;background:linear-gradient(#1a1228,#0b0716);border:1px solid #7a5e2a;box-shadow:0 0 0 1px #05040a;pointer-events:none}
 .shop:active .s-pill{border-color:#ffe08a}
-.it-tip{position:absolute;z-index:6;bottom:calc(100% + 2.2cqw);width:62cqw;box-sizing:border-box;padding:3.2cqw 3.6cqw 3cqw;border:3.2cqw solid transparent;border-image:url(../assets/ui/tip_frame.png) 8 fill/3.2cqw/0 stretch;image-rendering:pixelated;font-family:OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;color:#e8dcc0;animation:tipIn .16s steps(4) both}
+.it-tip{position:absolute;z-index:6;bottom:calc(100% + 2.2cqw);width:62cqw;box-sizing:border-box;padding:3.2cqw 3.6cqw 3cqw;border:3.4cqw solid transparent;border-image:url(../assets/ui/tip_parchment.png) 12 fill/3.4cqw/0 round;image-rendering:pixelated;font-family:OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;color:#3b2412;filter:drop-shadow(0 .6cqw 0 rgba(0,0,0,.55));animation:tipIn .16s steps(4) both}
 .it-tip::after{content:"";position:absolute;left:var(--tx);bottom:-5.6cqw;width:3.6cqw;height:2.4cqw;transform:translateX(-50%);background:#f4d68a;clip-path:polygon(0 0,100% 0,100% 25%,75% 25%,75% 50%,60% 50%,60% 75%,50% 75%,50% 100%,50% 75%,40% 50%,25% 50%,25% 25%,0 25%);filter:drop-shadow(0 .4cqw 0 #05040a)}
 .it-top{display:flex;gap:2.4cqw;align-items:center}
 .it-ico{flex:none;width:8.6cqw;height:11cqw;display:flex;align-items:center;justify-content:center;background:radial-gradient(#2a2048,#0b0716);border:1px solid #6b5a2e;box-shadow:inset 0 0 0 1px #05040a}
@@ -926,3 +926,14 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 #shop-panel .shop.s3 .s-tag{left:14.89%;width:63.83%}
 #shop-panel .shop.s4 .s-tag{left:6.06%;width:45.45%}
 #shop-panel.shut .shop{opacity:.35;filter:grayscale(.85)}
+
+/* v349b: dica do item em pergaminho (combina com a carroca e a mochila) */
+.it-tip::after{background:#2a160a}
+.it-ico{background:#3b2412;border:.35cqw solid #8a6436;box-shadow:inset 0 .5cqw 0 rgba(0,0,0,.45)}
+.it-name{color:#3b2412;text-shadow:0 .25cqw 0 rgba(255,240,200,.6)}
+.it-tags em{background:rgba(59,36,18,.08);border-width:.3cqw}
+.it-tip .t-heal{color:#2f7a3a}.it-tip .t-def{color:#1f5f9a}.it-tip .t-atk{color:#a8321f}.it-tip .t-util{color:#6a3aa8}.it-tip .t-rare{color:#a8700a}
+.it-desc{color:#4a3420}
+.it-aff{color:#5a4a7a}.it-aff b{color:#8a3a10}
+.it-foot{border-top:.3cqw dashed #8a6436;color:#6a5030}.it-foot b{color:#8a5a10}.it-foot small{color:#7a6448}
+.it-tip.rare .it-name{text-shadow:0 0 1.2cqw #ffb84a,0 .25cqw 0 rgba(255,240,200,.6)}
