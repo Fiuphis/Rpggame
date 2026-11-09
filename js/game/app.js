@@ -639,13 +639,14 @@ function buildSkillFrame(panel, title, text, at, seconds, note){
   // v351: painel com o tema do heroi (elemento = da Maga; alvo = de quem esta escolhendo); cartoes montados pelo jogo
   const art = panel === 'elem' ? 'mage' : panel === 'target' ? (SKM2[activeGroup] ? activeGroup : 'guerreiro') : panel;
   const M = Object.assign({v2:true, art}, SKM2[art]), fr = $('#skm-frame'), L = $('#skm-layer');
-  fr.src = `assets/class-select/skm_${art}.png`; L.innerHTML = ''; $('#skill-menu').dataset.art = art;
+  fr.src = `assets/class-select/skm_${art}${panel === 'elem' || panel === 'target' ? '_5' : ''}.png`; L.innerHTML = ''; $('#skill-menu').dataset.art = art;   // alvo/elemento: 5 opcoes -> arte com a 6a vaga pintada de fundo
   if (panel === 'elem' && !title) { title = 'ESCOLHA O ELEMENTO'; text = window.__elemDef ? 'Escudo elemental' : 'Ataque elemental'; }
-  const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box, /^sk-timer/.test(cls) ? .7 : 0); d.innerHTML = html; L.appendChild(d); return d; };
+  at = at || state.curAttack;   // alvo/elemento: mesmo ataque do chefe da rodada (as vagas de tipo e atributo nao ficam vazias)
+  const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box); d.innerHTML = html; L.appendChild(d); return d; };
   if (M.title) add('sk-title' + (panel === 'target' ? ' t2' : ''), M.title, `<b>${title}</b><span>${text}</span>`);
-  const AT = M.attr, vy = AT ? [AT[1] - .4, AT[3] + .8] : null;   // os dois chips ficam na mesma altura (a arte tinha tamanhos diferentes)
-  if (M.tipo) { const T = M.tipo; add('sk-tipo', AT ? [T[0] - .7, vy[0], T[2] + .7, vy[1]] : T, `<img src="assets/ui/icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`); }
-  if (AT && at) { const e = ELEMENTS[at.attr], k = attrKind(at), d = add('sk-attr ' + k, [AT[0], vy[0], Math.min(AT[2] + .7, M.tbox[0] - .6 - AT[0]), vy[1]], `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }   // chip em pixel art cobre o da arte
+  // tipo, atributo e relogio: cada um exatamente na sua vaga escura da arte (sem moldura propria por cima)
+  add('sk-tipo', M.tipo, `<img src="assets/ui/icon_chip_sword.png" alt=""><div><small>TIPO</small><b>${at ? at.tipo : 'FÍSICO'}</b></div>`);
+  if (at) { const e = ELEMENTS[at.attr], k = attrKind(at), d = add('sk-attr ' + k, M.attr, `<img src="${ATTR_ICON[k]}" alt=""><div><small>ATRIBUTO</small><b>${e.name}</b></div>`); d.style.setProperty('--ec', e.color); }
   add('sk-timer', M.tbox, timerHtml(seconds, 'sk-time'));
   fr.className = 'skm-frame' + (panel === 'target' ? ' tgt' : '');
   return M;
@@ -779,7 +780,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.addEventListener('pointerdown', () => { b.__held = false; clearTimeout(ht); ht = setTimeout(showD, 380); });
         ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => clearTimeout(ht)));
       } else if (M && M.v2) {   // v351: cartao montado pelo jogo dentro da vaga da arte (icone na moldura escura, texto ao lado)
-        const [r, c] = o.slot || [2, 0], cd = M.cards[r][c], I = M.ico, used = (M.used = M.used || []); used.push(r * 2 + c);
+        const [r, c] = o.slot || [2, 0], cd = M.cards[r][c], I = M.ico;
         b.className = `sk-card v2 ${o.kind || ''}`; b.style.cssText = pc(cd);
         const ico = o.face ? `assets/class-select/tp_${o.face}.png` : o.ico ? `assets/skills/${o.ico}.png` : '';
         let chips = o.chips || '';
@@ -790,7 +791,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         if (o.kind === 'ult') b.querySelector('.s2-chips').insertAdjacentHTML('afterbegin', '<span class="tag holy esp">ESPECIAL</span>');
         b.querySelector('.s2-desc').textContent = o.back ? (o.desc || 'Escolher outra habilidade') : o.kind === 'elem' ? '' : (o.desc || '');
         b.setAttribute('aria-label', o.label);
-        if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
+        if (o.block) b.querySelector('.s2-chips').insertAdjacentHTML('beforeend', `<span class="tag block">${o.block}</span>`);   // aviso na mesma linha das etiquetas
       } else if (M) {
         const [r, c] = o.slot || [0, 0], I = M.info, cd = o.back ? I : M.cards[r][c], cn = o.back ? [I[0] + I[2] * .84, I[1] + I[3] * .2, I[2] * .13, I[3] * .6] : M.cnt[r * 2 + c];
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
@@ -819,12 +820,6 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       else b.onclick = () => { if (b.__held) { b.__held = false; return; } pick(i); };
       list.appendChild(b); return b;
     });
-    if (M && M.v2) for (let k = 0; k < 6; k++) if (!M.used.includes(k)) {   // vaga sem opcao (elemento, alvo): cartao de informacao, sem toque
-      const d = document.createElement('div'); d.className = 'sk-info'; d.style.cssText = pc(M.cards[k >> 1][k & 1]); const I = M.ico;
-      const ic = panel === 'elem' ? (window.__elemDef ? 'mage_elem_def' : 'mage_elem_atk') : {guerreiro:'guerreiro_pass', tank:'tank_guard', cleriga:'cleriga_ult'}[activeGroup];
-      d.innerHTML = (ic ? `<img class="s2-ico" src="assets/skills/${ic}.png" alt="" style="left:${I[0]}%;top:${I[1]}%;width:${I[2]}%;height:${I[3]}%">` : '') + `<span style="left:${I[0] + I[2] + 3}%"></span>`;
-      d.lastChild.textContent = panel === 'elem' ? (window.__elemDef ? `Escudo do elemento fraco de ${ST.name.split(',')[0]} (${ST.elemDef}) corta 55%; os outros cortam 35%.` : `${ST.name.split(',')[0]}: ${ST.elemTxt}.`) : (text || ''); list.appendChild(d);
-    }
     const total = () => sv.reduce((a, c) => a + c, 0);
     const paint = (final) => btns.forEach((b, i) => { if (options[i].disabled) return; b.querySelector('.cnt').textContent = ''; b.classList.toggle('selected', my === i && !final); });   // sem contagem de votos: um jogador por classe
     const top = () => { const m = Math.max(...sv); return {m, c: sv.map((v, i) => v === m ? i : -1).filter(i => i >= 0)}; };
