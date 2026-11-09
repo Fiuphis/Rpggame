@@ -780,13 +780,13 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         b.addEventListener('pointerdown', () => { b.__held = false; clearTimeout(ht); ht = setTimeout(showD, 380); });
         ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => clearTimeout(ht)));
       } else if (M && M.v2) {   // v351: cartao montado pelo jogo dentro da vaga da arte (icone na moldura escura, texto ao lado)
-        const [r, c] = o.slot || [2, 0], cd = M.cards[r][c], I = M.ico;
+        const [r, c] = o.slot || [2, 0], cd = M.cards[r][c], I = M.icos ? M.icos[r][c] : M.ico;   // icone no miolo da vaga daquele cartao
         b.className = `sk-card v2 ${o.kind || ''}`; b.style.cssText = pc(cd);
         const ico = o.face ? `assets/class-select/tp_${o.face}.png` : o.ico ? `assets/skills/${o.ico}.png` : '';
         let chips = o.chips || '';
         if (o.kind === 'elem') chips = o.label === ELEMENTS.fire.name ? `<span class="tag holy">BOSS FRACO</span><span class="tag holy">${window.__elemDef ? 'CORTA 55%' : '1,5x QUEIMA'}</span>` : `<span class="tag block">${window.__elemDef ? 'SEM EFEITO' : 'BOSS IMUNE'}</span>`;
         b.innerHTML = (ico ? `<img class="s2-ico${o.face ? ' face' : ''}" src="${ico}" alt="" style="left:${I[0]}%;top:${I[1]}%;width:${I[2]}%;height:${I[3]}%">` : '') +
-          `<span class="s2-txt" style="left:${I[0] + I[2] + 3}%"><b class="s2-name"></b><span class="s2-desc"></span><span class="tp-chips s2-chips">${chips}</span></span><b class="cnt sk-cnt" style="right:3%;top:8%;width:12%;height:30%">0</b>`;
+          `<span class="s2-txt" style="left:${M.ico[0] + M.ico[2] + 3}%"><b class="s2-name"></b><span class="s2-desc"></span><span class="tp-chips s2-chips">${chips}</span></span><b class="cnt sk-cnt" style="right:3%;top:8%;width:12%;height:30%">0</b>`;
         b.querySelector('.s2-name').textContent = o.back ? 'VOLTAR' : o.label.replace(/^ESPECIAL: /, '');
         if (o.kind === 'ult') b.querySelector('.s2-chips').insertAdjacentHTML('afterbegin', '<span class="tag holy esp">ESPECIAL</span>');
         b.querySelector('.s2-desc').textContent = o.back ? (o.desc || 'Escolher outra habilidade') : o.kind === 'elem' ? '' : (o.desc || '');

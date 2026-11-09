@@ -941,7 +941,7 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 .skm{left:5%;width:90%}
 .skm-frame{image-rendering:pixelated}
 .sk-card.v2{overflow:visible}
-.sk-card.v2 .s2-ico{position:absolute;object-fit:contain;image-rendering:pixelated;pointer-events:none;padding:1%;box-sizing:border-box}
+.sk-card.v2 .s2-ico{position:absolute;object-fit:contain;image-rendering:pixelated;pointer-events:none;padding:0;box-sizing:border-box}
 .sk-card.v2 .s2-ico.face{padding:0;object-fit:cover}
 .sk-card.v2 .s2-txt{position:absolute;right:3%;top:6%;bottom:6%;display:flex;flex-direction:column;justify-content:center;gap:.8cqw;overflow:hidden;min-width:0;text-align:left;pointer-events:none}
 .sk-card.v2 .s2-name{flex:none;font:700 2.6cqw/1.05 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.05cqw;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
