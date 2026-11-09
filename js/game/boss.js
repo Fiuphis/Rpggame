@@ -1,5 +1,5 @@
 /* Banco de Dados I — RPG · Malgorath, Lorde das Trevas (v88 — sprite sheets)
-   Sprite sheets: assets/bosses/lorde/anim/malgorath_<nome>.png (faixa horizontal, célula 320×256, escala 3 → 960×768 no mundo 1024×1536).
+   Sprite sheets: assets/bosses/lorde/anim/malgorath_<nome>.png (faixa horizontal, célula 320×256, escala 3 → 960×768 no mundo 1024×1536; Malgorath novo, pés em y=850 do mundo).
    Âncora dos pés: (160,250) da célula → mundo pé fixo em feet().
    Eventos por ms absoluto desde o início da ação (calculados pela soma dos durs do manifest).
    API pública: BossRig.make → {start, play, nextHit, idle, has, fx, setMode, setDead, reset, feet}. */
@@ -57,13 +57,12 @@ function make(host){
   const bx0 = Px + W / 2;    // X do pé no canvas (constante)
   const by0 = Py + Hh;        // Y do pé no canvas (constante)
 
-  // pontos medidos nos quadros novos (pe do quadro = 128,250; escala 3): mao erguida da invocacao (q4), ponta da estocada (q5), mascara, peito
-  const hand   = () => { const f = feet(); return {x:f.x + 216, y:f.y - 555}; };
-  const swordH = () => { const f = feet(); return {x:f.x - 150, y:f.y - 300}; };
-  const swordT = () => { const f = feet(); return {x:f.x + 9,   y:f.y - 60}; };
-  const head   = () => { const f = feet(); return {x:f.x,       y:f.y - 405}; };
-  const handT  = () => { const f = feet(); return {x:f.x + 135, y:f.y - 255}; };   // mao no arremesso do orbe (invocacao q10)
-  const chest  = () => { const f = feet(); return {x:f.x,       y:f.y - 270}; };
+  // pontos medidos nos quadros do Malgorath novo (pe do quadro = 128,250; escala 3): bola de fogo na mao erguida (invocacao q3),
+  // mao no golpe da coluna de fogo (invocacao q7), cabeca quando o elmo estoura (morte q1), peito
+  const hand   = () => { const f = feet(); return {x:f.x + 99,  y:f.y - 624}; };
+  const head   = () => { const f = feet(); return {x:f.x,       y:f.y - 510}; };
+  const handT  = () => { const f = feet(); return {x:f.x + 96,  y:f.y - 240}; };
+  const chest  = () => { const f = feet(); return {x:f.x,       y:f.y - 300}; };
   // efeitos em pixel art (assets/fx/malgorath-*, js/game/vfx.js). FX(): camada do jogo (na frente ou atras dos herois);
   // FXU(): efeito de chao (anel, sigilo) na camada de tras do VFX, que fica atras do boss e dos herois
   const FX = (n, o) => (window.VFX && VFX.has(n)) ? VFX.play(n, Object.assign({scale:3}, o)) : null;
@@ -148,7 +147,8 @@ function make(host){
   // usa o relogio REAL (performance.now), nao o das animacoes: o fogo nunca congela, nem no tempo parado da arca
   // fios = pixels de fogo na borda da silhueta: sobem, balancam e piscam; fogo grande (lamina/mao) ganha luz correndo
   // (ciclo de paleta; componentes pequenos como os olhos ficam de fora); brasas sobem das pontas. Mesmo algoritmo de scripts/fogo_vivo.py.
-  const RAMP = [[190,3,7],[230,13,10],[249,13,23],[253,67,29]], TIP = [253,67,29], TIP2 = [208,66,29];
+  // tons claros do fogo do Malgorath novo (so o fogo usa; o vermelho da capa fica de fora)
+  const RAMP = [[224,63,26],[250,97,31],[250,136,50]], TIP = [250,136,50], TIP2 = [224,63,26];
   const fogoInfo = {}, fogoCv = document.createElement('canvas'), fogoG = fogoCv.getContext('2d', {willReadFrequently:true});
   const brasas = []; let fogoTick = -1, fogoKey = '', fogoRng = 1;
   const rnd01 = () => (fogoRng = (fogoRng * 16807) % 2147483647) / 2147483647;
@@ -157,7 +157,7 @@ function make(host){
     fogoCv.width = CELL_W; fogoCv.height = CELL_H; fogoG.clearRect(0, 0, CELL_W, CELL_H);
     fogoG.drawImage(sheets[name], frame * CELL_W, 0, CELL_W, CELL_H, 0, 0, CELL_W, CELL_H);
     const d = fogoG.getImageData(0, 0, CELL_W, CELL_H), a = d.data, W = CELL_W, H = CELL_H;
-    const isF = i => a[i + 3] && a[i] >= 185 && a[i + 1] <= 75 && a[i + 2] <= 45;
+    const isF = i => a[i + 3] && a[i] >= 215 && a[i + 1] <= 140 && a[i + 2] <= 55 && a[i] - a[i + 1] >= 90;
     const vaz = (x, y) => x < 0 || y < 0 || x >= W || y >= H || !a[(y * W + x) * 4 + 3];
     const comps = sel => { const vis = new Uint8Array(W * H), out = [];
       for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const p = y * W + x; if (vis[p] || !sel(x, y)) continue;
@@ -178,7 +178,7 @@ function make(host){
     const info = fogoPrep(name, frame), W = CELL_W, H = CELL_H, t = tick / 12;
     const out = new ImageData(new Uint8ClampedArray(info.src.data), W, H), o = out.data, s = info.src.data;
     const put = (x, y, c) => { if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 4; if (o[i + 3]) return; o[i] = c[0]; o[i + 1] = c[1]; o[i + 2] = c[2]; o[i + 3] = 255; };
-    info.ramp.forEach((k, p) => { const x = p % W, y = (p - x) / W, k2 = Math.max(0, Math.min(3, k + Math.round(Math.sin((x - y) / 3 - t * 7.5)))), i = p * 4; o[i] = RAMP[k2][0]; o[i + 1] = RAMP[k2][1]; o[i + 2] = RAMP[k2][2]; });
+    info.ramp.forEach((k, p) => { const x = p % W, y = (p - x) / W, k2 = Math.max(0, Math.min(RAMP.length - 1, k + Math.round(Math.sin((x - y) / 3 - t * 7.5)))), i = p * 4; o[i] = RAMP[k2][0]; o[i + 1] = RAMP[k2][1]; o[i + 2] = RAMP[k2][2]; });
     for (const f of info.fios) for (const p of f.c) o[p * 4 + 3] = 0;
     const novaBrasa = tick !== fogoTick;
     info.fios.forEach((f, n) => { const ph = n * 1.7, dy = -Math.round(1 + Math.sin(t * 9 + ph));
@@ -207,7 +207,7 @@ function make(host){
   const FRAMP = [[2,1,2],[120,4,20],[190,3,7],[249,13,23],[253,67,29],[244,208,110]];
   const cortes = [];
   const pt = (q) => { const f = feet(); return {x:f.x + (q[0] - 128) * 3, y:f.y + (q[1] - 250) * 3}; };   // ponto do quadro 256 -> mundo
-  const TIPS = {slashH:[[145,43],[188,244]], slashV:[[156,22],[124,246]], thrust:[[137,240]]};             // ponta da espada antes/depois do golpe
+  const TIPS = {slashH:[[150,20],[240,222]], slashV:[[112,12],[128,245]], thrust:[[136,222]]};             // ponta da espada antes/depois do golpe (Malgorath novo)
   const nz = (a, b) => { const v = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return v - Math.floor(v); };
   function plotFogo(img, W, H, x, y, k){   // k: 0 contorno .. 5 nucleo
     if (x < 0 || y < 0 || x >= W || y >= H) return; const i = (y * W + x) * 5, c = FRAMP[k];
@@ -237,12 +237,7 @@ function make(host){
   function corteFogo(k){
     const sh = k === 'v' ? 'slashV' : 'slashH', tp = TIPS[sh], A = pt(tp[0]), B = pt(tp[1]), b = tgt, L = v => v / PXS;
     const now = clk() + Math.max(0, (MAN && MAN[sh] ? MAN[sh].durs[5] : 240) - 90);   // evento no q5 (espada erguida): o rastro nasce 90 ms antes do q6 (espada embaixo)
-    // rastro: arco de A ate B, abaulado para fora do corpo
-    const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, bx = mx + (k === 'v' ? 70 : 170), by = my + (k === 'v' ? 0 : -40);
-    cortes.push({t0:now, d:300, pts:u => { const rev = Math.min(1, u * 2.2), fade = u < .45 ? 1 : 1 - (u - .45) / .55, out = [];
-      for (let i = 0; i <= 20; i++) { const s2 = i / 20; if (s2 > rev) break; const s3 = 1 - s2;
-        const x = s3 * s3 * A.x + 2 * s3 * s2 * bx + s2 * s2 * B.x, y = s3 * s3 * A.y + 2 * s3 * s2 * by + s2 * s2 * B.y;
-        out.push([L(x), L(y), 7 * fade * Math.pow(Math.sin(Math.PI * Math.min(1, s2 / Math.max(rev, .01))) || .2, .5)]); } return out; }});
+    // o rastro do golpe ja vem desenhado nos quadros do Malgorath novo; aqui so a onda
     // onda: meia-lua que sai de B e cresce ate o heroi (perspectiva), convexa para o lado do heroi
     const ang = Math.atan2(b.y - B.y, b.x - B.x), dur = 300;
     cortes.push({t0:now + 120, d:dur, pts:u => { const e = u * u, x = B.x + (b.x - B.x) * e, y = B.y + (b.y - B.y) * e, sc = .45 + .85 * e;
@@ -368,11 +363,11 @@ function make(host){
         g.save(); g.translate(ancCx, ancCy); drawSheet(g, sn, f, al, 0, dy, 0, 1); g.restore();
         if (el >= tot) { const d = cur; cur = null; held = null; d.done(); }
       } else if (cur._gagCast) {
-        const tailStart = msAt('summon', 9), tailMs2 = totalMs('summon') - tailStart;
-        const loopEnd = tot - tailMs2;
+        // segura a mao erguida (invocacao q5) e no fim abaixa pelo caminho inverso (q4..q0, 110 ms cada)
+        const TAIL = [4, 3, 2, 1, 0], loopEnd = tot - TAIL.length * 110;
         let f;
-        if (el < loopEnd) { f = 8; }
-        else { f = frameAt('summon', tailStart + (el - loopEnd)); f = Math.max(9, Math.min(13, f)); }
+        if (el < loopEnd) { f = el < 400 ? Math.min(5, Math.floor(el / 80)) : 5; }
+        else f = TAIL[Math.min(TAIL.length - 1, Math.floor((el - loopEnd) / 110))];
         g.save(); g.translate(ancCx, ancCy); drawSheet(g, 'summon', f, 1, 0, 0, 0, 1); g.restore();
         if (el >= tot) { const d = cur; cur = null; held = null; d.done(); }
       } else if (cur.loop) {
@@ -471,8 +466,6 @@ function make(host){
         });
       }
       if (name === 'gagCast'){
-        const sumDurs = MAN && MAN['summon'] ? MAN['summon'].durs : [];
-        const tailMs2 = sumDurs.slice(9).reduce((a,b)=>a+b,0);
         return new Promise(res => {
           if (cur) cur.done(false); held = null;
           cur = { _gagCast:true, sheet:'summon', totalDur:3600, evs:[], fired:0, loop:false, front:false,
@@ -499,17 +492,17 @@ function make(host){
         attack:    {sheet:'prep',      seq:[[0,70],[1,80],[2,90],[3,110],[4,230],[3,90],[2,80],[1,80],[0,90]], ev:[[1,'charge']]},
         slashH:    {sheet:'slashH',    ev:[[5,'wave:h']]},
         slashV:    {sheet:'slashV',    ev:[[5,'wave:v']]},
-        thrust:    {sheet:'thrust',    ev:[[4,'lance']]},
-        summon:    {sheet:'summon',    ev:[[4,'orb'],[10,'orbThrow']]},
-        aoe:       {sheet:'aoe',       ev:[[2,'charge'],[6,'nova']]},
-        enrage:    {sheet:'enrage',    ev:[[1,'charge'],[5,'roar'],[7,'roar:2']]},
-        phase2:    {sheet:'phase2',    ev:[[18,'roar'],[24,'roar:2']]},
-        prep:      {sheet:'prep',      ev:[[1,'sigil'],[4,'charge']]},
+        thrust:    {sheet:'thrust',    ev:[[6,'lance']]},
+        summon:    {sheet:'summon',    ev:[[3,'orb'],[7,'orbThrow']]},
+        aoe:       {sheet:'aoe',       ev:[[1,'charge'],[5,'nova']]},
+        enrage:    {sheet:'enrage',    ev:[[2,'charge'],[5,'roar'],[8,'roar:2']]},
+        phase2:    {sheet:'phase2',    ev:[[19,'roar'],[25,'roar:2']]},
+        prep:      {sheet:'prep',      ev:[[1,'sigil'],[5,'charge']]},
         laugh:     {sheet:'laugh',     ev:[[3,'charge']]},
-        die:       {sheet:'die',       hold:'gone', tint:'low', ev:[[1,'burst'],[7,'cacos'],[21,'slam'],[23,'embers'],[27,'embers']]},
+        die:       {sheet:'die',       hold:'gone', tint:'low', ev:[[1,'burst'],[1,'cacos'],[17,'slam'],[19,'embers'],[23,'embers']]},
         tpOut:     {sheet:'tpOut',     hold:'gone', ev:[[16,'smoke']]},
         gagDismiss:{sheet:'gagDismiss',ev:[]},
-        awaken:    {sheet:'enrage',    ev:[[1,'omen'],[5,'slam'],[7,'embers']]},
+        awaken:    {sheet:'enrage',    ev:[[2,'omen'],[5,'slam'],[8,'embers']]},
       };
       const def = MAP[name]; if (!def) return Promise.resolve(false);
       const p = run(def.sheet, {ev:def.ev||[], hold:def.hold||null, tint:def.tint||null, light:!!o.light, seq:def.seq||null});

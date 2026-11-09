@@ -12,13 +12,13 @@ const poly = (pts, col, a) => { g.globalAlpha = a; g.fillStyle = col; let y0 = 1
   for (let y = Math.floor(y0); y <= Math.ceil(y1); y++) { const xs = []; for (let i = 0; i < pts.length; i++) { const p = pts[i], q = pts[(i + 1) % pts.length]; if ((p[1] <= y + .5 && q[1] > y + .5) || (q[1] <= y + .5 && p[1] > y + .5)) xs.push(p[0] + (y + .5 - p[1]) / (q[1] - p[1]) * (q[0] - p[0])); }
     xs.sort((a, b) => a - b); for (let i = 0; i + 1 < xs.length; i += 2) g.fillRect(Math.round(xs[i]), y, Math.max(1, Math.round(xs[i + 1]) - Math.round(xs[i])), 1); } };
 
-/* tochas: x,y (arte 1024x1536), tamanho, chama? */
-const T = [[192,205,.8],[230,295,.9],[118,395,1.15],[245,462,.9],[350,312,1],[22,640,1],[668,312,1],[793,293,.9],[905,395,1.15],[775,462,.9],[998,640,1],
-  [293,180,.45,0],[727,178,.45,0],[36,38,.4,0],[158,40,.4,0],[856,48,.4,0]].map(([x, y, s, f], i) => ({ x: x / K, y: y / K, s, f: f !== 0, ph: R(0, 6.28), i }));
+/* tochas: x,y (arte 1024x1536, base da chama), tamanho, chama? — salao do Malgorath novo (v348): tochas das colunas, braseiros do trono, velas dos candelabros */
+const T = [[141,416,.8],[882,416,.8],[232,449,.7],[790,449,.7],[382,530,.85],[640,530,.85],[432,503,.8],[589,503,.8],[291,469,.6],[732,469,.6],[9,380,.9],[1013,380,.9],
+  [62,652,.45,0],[962,652,.45,0]].map(([x, y, s, f], i) => ({ x: x / K, y: y / K, s, f: f !== 0, ph: R(0, 6.28), i }));
 let lit = 1, roarT = -1e9, bossBlink = 0;
 const embers = [], motes = Array.from({ length: 26 }, () => ({ x: R(0, W), y: R(60, 330), v: R(1.5, 4), ph: R(0, 6.28), a: R(.15, .4) }));
-const shim = Array.from({ length: 70 }, () => { const cx = [5, 31, 61, 192, 224, 250][RI(0, 5)]; return { x: cx + RI(-2, 2), y: R(150, 250), ph: R(0, 6.28), sp: R(1.5, 4) }; });
-const clouds = Array.from({ length: 3 }, (_, i) => ({ x: R(80, 175), y: 8 + i * 11 + R(0, 4), w: R(26, 44), v: R(1.2, 2.6), a: R(.05, .1) }));
+const shim = Array.from({ length: 40 }, () => { const cx = [12, 16, 20, 236, 240, 244][RI(0, 5)]; return { x: cx + RI(-3, 3), y: R(190, 198), ph: R(0, 6.28), sp: R(1.5, 4) }; });   // reflexo das velas dos candelabros no chao (base em y 762 da tela = 190 da grade)
+const clouds = Array.from({ length: 4 }, (_, i) => ({ x: R(100, 150), y: 10 + i * 22 + R(0, 6), w: R(16, 30), v: R(1.2, 2.6), a: R(.05, .1) }));
 
 function flame(t, tm) {      // chama pixel art (autômato celular do js/core/pxfx.js, 1 célula = 1 pixel da grade); sem pxfx cai na chama antiga
   if (window.PXFX && PXFX.sim) { const s = t.s, cols = Math.max(5, Math.round(7 * s)), rows = Math.max(9, Math.round(14 * s)); if (!t.sim) { t.sim = PXFX.sim.make(cols, rows, 'fire'); t.cf = Array.from({length:cols}, () => Math.random()); }
@@ -71,14 +71,14 @@ try { new MutationObserver(() => { if (game.classList.contains('boss-attack') &&
 const ref = document.getElementById('reference'), cban = document.createElement('canvas'); cban.width = 1024; cban.height = 330; cban.className = 'amb b'; cban.style.height = (330 / 1536 * 100) + '%'; game.insertBefore(cban, cb); const gban = cban.getContext('2d');
 function banners(tm) {
   if (!ref || !ref.naturalWidth) return; const sc = ref.naturalWidth / 1024;
-  for (const [x0, x1, ph] of [[34, 156, 0], [858, 984, 2.1]]) for (let y = 90; y < 322; y += 3) { const u = (y - 90) / 232, amp = Math.pow(u, 1.4) * 4.2, dx = amp * (Math.sin(tm * 1.5 + ph - u * 1.6) * .7 + Math.sin(tm * 2.7 + ph * 2 - u * 2.5) * .3);
+  for (const [x0, x1, ph] of []) for (let y = 90; y < 322; y += 3) {   // salao novo: sem estandartes pendurados const u = (y - 90) / 232, amp = Math.pow(u, 1.4) * 4.2, dx = amp * (Math.sin(tm * 1.5 + ph - u * 1.6) * .7 + Math.sin(tm * 2.7 + ph * 2 - u * 2.5) * .3);
     gban.drawImage(ref, x0 * sc, y * sc, (x1 - x0) * sc, 3 * sc, x0 + dx, y, x1 - x0, 3); }
 }
 
 /* raios de luar */
 function shafts(tm, flash) {
   g = gb; g.globalCompositeOperation = 'lighter'; const k = (.55 + .45 * Math.sin(tm * .6)) * (1 + flash * 3);
-  for (const [ox, w, sk, a] of [[100, 9, 58, .075], [118, 6, 66, .06], [138, 11, 52, .07], [152, 5, 74, .05]]) {
+  for (const [ox, w, sk, a] of [[110, 9, 40, .075], [121, 6, 48, .06], [133, 10, 36, .07], [144, 5, 54, .05]]) {   // da janela grande ate o chao
     const gr = g.createLinearGradient(0, 8, 0, 175); gr.addColorStop(0, `rgba(150,175,255,${a * k})`); gr.addColorStop(1, 'rgba(150,175,255,0)');
     g.globalAlpha = 1; g.fillStyle = gr; g.beginPath(); g.moveTo(ox, 8); g.lineTo(ox + w, 8); g.lineTo(ox + w - sk, 175); g.lineTo(ox - sk, 175); g.closePath(); g.fill(); }
 }
@@ -92,7 +92,7 @@ function fog(dt) {
 
 /* relâmpago raro no céu */
 let nextBolt = performance.now() + 7000, boltT = -1e9, boltPts = [], boltBr = [];
-function bolt(now) { boltT = now; const sd = Math.random() < .5 ? 1 : 0, x0 = sd ? R(155, 168) : R(88, 100); boltPts = [[x0, 12]]; let x = x0, y = 12; while (y < 76) { x += R(-5, 5) + (sd ? -.8 : .8); y += R(5, 9); boltPts.push([x, y]); } boltBr = []; for (let k = 1; k < boltPts.length - 2; k += 2) { let bx = boltPts[k][0], by = boltPts[k][1]; const dir = Math.random() < .5 ? -1 : 1, br = [[bx, by]]; for (let q = 0; q < 3; q++) { bx += dir * R(3, 6); by += R(3, 6); br.push([bx, by]); } boltBr.push(br); } roar(0); lit = 1; }
+function bolt(now) { boltT = now; const sd = Math.random() < .5 ? 1 : 0, x0 = sd ? R(138, 146) : R(112, 120); boltPts = [[x0, 12]]; let x = x0, y = 12; while (y < 76) { x += R(-5, 5) + (sd ? -.8 : .8); y += R(5, 9); boltPts.push([x, y]); } boltBr = []; for (let k = 1; k < boltPts.length - 2; k += 2) { let bx = boltPts[k][0], by = boltPts[k][1]; const dir = Math.random() < .5 ? -1 : 1, br = [[bx, by]]; for (let q = 0; q < 3; q++) { bx += dir * R(3, 6); by += R(3, 6); br.push([bx, by]); } boltBr.push(br); } roar(0); lit = 1; }
 function lightning(now) {
   if (now > nextBolt) { bolt(now); nextBolt = now + R(10000, 24000); }
   const d = (now - boltT) / 1000; if (d > 1) return 0; const f = Math.max(0, d < .12 ? 1 : d < .22 ? .25 : d < .34 ? 1 : d < .42 ? .3 : Math.max(0, .9 - (d - .42) * 1.5));
@@ -107,14 +107,14 @@ function lightning(now) {
 /* olhos do boss: brilham mais com a Fúria */
 function eyes(tm) {
   const r = rage(), p = .7 + .3 * Math.sin(tm * (4 + r * 8)), a = (.18 + .82 * r) * p; g = gf; g.globalCompositeOperation = 'lighter';
-  for (const ex of [121.6, 129]) { const rad = 3 + 8 * r, gr = g.createRadialGradient(ex, 52, 0, ex, 52, rad); gr.addColorStop(0, `rgba(255,60,40,${.7 * a})`); gr.addColorStop(1, 'rgba(255,40,20,0)'); g.globalAlpha = 1; g.fillStyle = gr; g.fillRect(ex - rad, 52 - rad, rad * 2, rad * 2); rect(ex - .5, 51.5, 1, 1, '#ff9a80', Math.min(1, .3 + a)); }
-  if (r >= 1 && Math.random() < .35) rect(R(105, 145), R(46, 80), 1, 1, '#ff5a30', .7);
+  for (const ex of [127, 132.25]) { const rad = 3 + 8 * r, gr = g.createRadialGradient(ex, 97.75, 0, ex, 97.75, rad); gr.addColorStop(0, `rgba(255,60,40,${.7 * a})`); gr.addColorStop(1, 'rgba(255,40,20,0)'); g.globalAlpha = 1; g.fillStyle = gr; g.fillRect(ex - rad, 97.75 - rad, rad * 2, rad * 2); rect(ex - .5, 97.25, 1, 1, '#ff9a80', Math.min(1, .3 + a)); }
+  if (r >= 1 && Math.random() < .35) rect(R(110, 146), R(92, 120), 1, 1, '#ff5a30', .7);
 }
 
 /* runas rituais no chão */
 const GL = [[1,0,1,1,1,1,0,1,0],[1,1,1,0,1,0,1,1,1],[0,1,0,1,1,1,1,0,1],[1,0,1,0,1,0,1,1,1]];
 function runes(tm) {
-  g = gb; g.globalCompositeOperation = 'lighter'; const cx = 128, cy = 178, rx = 82, ry = 11, n = 16, r = rage();
+  g = gb; g.globalCompositeOperation = 'lighter'; const cx = 128, cy = 217, rx = 62, ry = 31, n = 24, r = rage();   // anel do circulo de invocacao sob os pes do chefe (centro 512,868)
   for (let i = 0; i < n; i++) { const an = i / n * 6.283, x = cx + Math.cos(an) * rx, y = cy + Math.sin(an) * ry, a = Math.max(0, Math.sin(tm * 1.8 - i * .5)), gl = GL[i % 4];
     for (let q = 0; q < 9; q++) if (gl[q]) rect(x - 1 + q % 3, y - 1 + Math.floor(q / 3), 1, 1, r > .6 ? '#ff4a50' : '#c04aff', (.1 + .5 * a) * (.5 + .5 * Math.max(.4, r))); 
     rect(x + Math.cos(an + .2) * 4, y + Math.sin(an + .2) * 1.2, 1, 1, '#a06aff', .14); }
@@ -137,7 +137,7 @@ function shadows(tm, fl) {
 }
 
 /* corvos: pousam nos pilares e voam de vez em quando */
-const SPOTS = [[88, 37], [167, 37], [68, 91], [187, 91]];
+const SPOTS = [[37, 43], [219, 43], [60, 60], [196, 60]];   // cabecas das gargulas nas paredes
 const crows = SPOTS.map((p, i) => ({ x: p[0], y: p[1], st: 'perch', next: performance.now() + R(4000, 16000) + i * 3000, dir: i % 2 ? -1 : 1, turn: performance.now() + R(1500, 4000), blink: 0, t0: 0, from: null, to: null, dur: 0, s: 1 }));
 function drawCrowPerch(c, now) {
   g = gb; g.globalCompositeOperation = 'source-over'; const d = c.dir, x = c.x, y = c.y;
@@ -166,8 +166,8 @@ function loop(now) {
   g = gb; g.globalCompositeOperation = 'lighter';
   const fl = (Math.sin(tm * 8.3) * .5 + Math.sin(tm * 13.7 + 1) * .3 + Math.sin(tm * 3.1) * .2);
   /* nuvens no céu (janela do trono) */
-  g.save(); g.beginPath(); g.rect(84, 4, 90, 58); g.clip();
-  for (const c of clouds) { c.x += c.v * dt; if (c.x > 190) c.x = 60 - c.w; for (let i = 0; i < 3; i++) rect(c.x + i * 4, c.y + i, c.w - i * 8, 2, '#8fa6ff', c.a); }
+  g.save(); g.beginPath(); g.rect(108, 4, 43, 106); g.clip();
+  for (const c of clouds) { c.x += c.v * dt; if (c.x > 152) c.x = 106 - c.w; for (let i = 0; i < 3; i++) rect(c.x + i * 4, c.y + i, c.w - i * 8, 2, '#8fa6ff', c.a); }
   g.restore();
   /* luz no ambiente */
   for (const t of T) glow(t, tm, Math.sin(tm * 9 + t.ph) * .6 + Math.sin(tm * 15 + t.ph * 2) * .4);
@@ -176,7 +176,7 @@ function loop(now) {
   /* chamas */
   for (const t of T) if (t.f) flame(t, tm);
   /* brasas */
-  if (lit > .5 && embers.length < 26 && Math.random() < .5) { const t = T[RI(0, 10)]; embers.push({ x: t.x + R(-2, 2), y: t.y, vy: R(10, 22), vx: R(-3, 3), life: R(.9, 2.2), t: 0, ph: R(0, 6.28) }); }
+  if (lit > .5 && embers.length < 26 && Math.random() < .5) { const t = T[RI(0, 11)]; embers.push({ x: t.x + R(-2, 2), y: t.y, vy: R(10, 22), vx: R(-3, 3), life: R(.9, 2.2), t: 0, ph: R(0, 6.28) }); }
   for (let i = embers.length - 1; i >= 0; i--) { const e = embers[i]; e.t += dt; if (e.t > e.life) { embers.splice(i, 1); continue; } e.y -= e.vy * dt; e.x += (e.vx + Math.sin(e.t * 6 + e.ph) * 4) * dt; const u = e.t / e.life; rect(e.x, e.y, 1, 1, u < .5 ? '#ffd070' : '#ff7a2a', (1 - u) * .9); }
   /* poeira flutuando na luz */
   for (const m of motes) { m.y -= m.v * dt; m.x += Math.sin(tm * .8 + m.ph) * 3 * dt; if (m.y < 50) { m.y = R(300, 360); m.x = R(0, W); } rect(m.x, m.y, 1, 1, '#ffc080', m.a * (.5 + .5 * Math.sin(tm * 2 + m.ph))); }

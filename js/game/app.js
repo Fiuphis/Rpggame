@@ -2077,7 +2077,7 @@ function shoot(fromX, fromY, toX, toY, color, ms){
 // Efeitos em pixel art da Maga (js/game/vfx.js): lançamento na ponta do cajado, projétil, impacto no boss, escudos, esquiva, Buraco Negro
 const MAGE_EL = {fire:'fogo', water:'agua', air:'ar', earth:'terra'};
 const MAGE_GLOW = {mana:'170,110,255', fogo:'255,140,40', agua:'90,170,255', ar:'150,240,210', terra:'214,166,96'};
-const BOSS_HIT = ST.ice ? {x:512, y:390} : {x:512, y:430}, BOSS_FEET_Y = ST.ice ? 690 : 700;   // centro do corpo do boss e linha do chão sob ele (grid 1024x1536); Malgorath novo: pés y=700, centro = pés - 90*3
+const BOSS_HIT = ST.ice ? {x:512, y:390} : {x:512, y:580}, BOSS_FEET_Y = ST.ice ? 690 : 850;   // centro do corpo do boss e linha do chão sob ele (grid 1024x1536); Malgorath novo: pés y=850 (centro do círculo do chão), centro = pés - 90*3
 const magePt = (sx, sy) => { const f = A.feet ? A.feet('mage') : {x:109.5, y:1097}; return {x:f.x + 2 * sx - 175, y:f.y + 2 * sy - 292}; };   // pixel do quadro 172 da Maga -> grid
 const VFXON = () => window.VFX && VFX.has('maga-mana-projetil');
 const heroPt = (w, cx, cy) => { const f = A.feet(w); return {x:f.x + cx - 175, y:f.y + cy - 292}; };   // pixel da célula 344 do herói -> grid

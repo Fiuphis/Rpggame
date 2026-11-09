@@ -3,7 +3,7 @@
    Configuração em data/anim_manifest.json (veja docs/ANIMACOES.md). API usada pelo js/game/app.js: Anim.play / setDead / setAura / reset (+ say/sfx vazios). */
 (() => {
 'use strict';
-const META = {"mage":{"x":5,"y":839,"w":209,"h":284},"guerreiro":{"x":225,"y":838,"w":210,"h":262},"tank":{"x":541,"y":836,"w":244,"h":264},"cleriga":{"x":869,"y":803,"w":196,"h":282},"boss":{"x":93,"y":111,"w":848,"h":589}};
+const META = {"mage":{"x":5,"y":839,"w":209,"h":284},"guerreiro":{"x":225,"y":838,"w":210,"h":262},"tank":{"x":541,"y":836,"w":244,"h":264},"cleriga":{"x":869,"y":803,"w":196,"h":282},"boss":{"x":93,"y":261,"w":848,"h":589}};
 const WHO = Object.keys(META);
 const FALLBACK = {heavy:['melee'], holy:['cast', 'melee'], cast:['melee'], super:['heavy', 'melee'], aoe:['attack'], enrage:['attack'], laugh:['idle'], die:['death', 'hurt']};
 const $ = s => document.querySelector(s), rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
@@ -206,7 +206,7 @@ function react(w, kind){ const h = H[w]; if (!h || h.dead || !h.rig) return; if 
 function low(w, on){ const h = H[w]; if (!h || !h.rig || !h.rig.setLow) return; h.rig.setLow(on && !h.dead); if (window.Extras) Extras.low(w, on && !h.dead); }
 function enterPrep(w){ const h = H[w]; if (h) { h.cv.style.opacity = 0; clearTimeout(h.enT); h.enT = setTimeout(() => { h.cv.style.opacity = ''; }, 6000); } }
 function enter(w, delay = 0){ const h = H[w]; if (!h || !h.cv.animate) { if (h) h.cv.style.opacity = ''; return; }
-  setTimeout(() => { clearTimeout(h.enT); h.cv.style.opacity = ''; h.cv.animate([{transform:'translateY(46px)', opacity:0}, {transform:'translateY(0)', opacity:1}], {duration:650, easing:'cubic-bezier(.2,.8,.3,1)'}); if (window.Extras) Extras.fx(w, 'enter'); }, delay); }
+  setTimeout(() => { clearTimeout(h.enT); h.cv.style.opacity = ''; h.cv.animate([{opacity:0}, {opacity:1}], {duration:650, easing:'ease-out'}); if (window.Extras) Extras.fx(w, 'enter'); }, delay); }   // surge no lugar (antes subia 46 px e parecia deslizar no chao)
 function reset(){ if (window.Extras) Extras.clear(); if (window.VFX) VFX.clear(); if (window.PXFX) PXFX.clear(); WHO.forEach(w => { const h = H[w]; if (!h) return; h.token++; h.cur = null; h.dead = false; clearTimeout(h.grayT); h.cv.classList.remove('dead'); if (h.rig) h.rig.reset(); setAura(w, null); drawStill(w); scheduleIdle(w, 1000); }); }
 const none = () => {};
 // centro do corpo do herói na pose atual (centro de massa horizontal dos pixels opacos do canvas, em coordenadas do mundo)
