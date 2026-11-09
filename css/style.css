@@ -937,3 +937,34 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 .it-aff{color:#5a4a7a}.it-aff b{color:#8a3a10}
 .it-foot{border-top:.3cqw dashed #8a6436;color:#6a5030}.it-foot b{color:#8a5a10}.it-foot small{color:#7a6448}
 .it-tip.rare .it-name{text-shadow:0 0 1.2cqw #ffb84a,0 .25cqw 0 rgba(255,240,200,.6)}
+/* v351: menus de habilidade novos — painel com o tema do heroi (skm_<heroi>.png); icone, nome, descricao e etiquetas escritos pelo jogo */
+.skm{left:5%;width:90%}
+.skm-frame{image-rendering:pixelated}
+.sk-card.v2{overflow:visible}
+.sk-card.v2 .s2-ico{position:absolute;object-fit:contain;image-rendering:pixelated;pointer-events:none;padding:1%;box-sizing:border-box}
+.sk-card.v2 .s2-ico.face{padding:0;object-fit:cover}
+.sk-card.v2 .s2-txt{position:absolute;right:3%;top:6%;bottom:6%;display:flex;flex-direction:column;justify-content:center;gap:.8cqw;overflow:hidden;min-width:0;text-align:left;pointer-events:none}
+.sk-card.v2 .s2-name{flex:none;font:700 2.6cqw/1.05 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.05cqw;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sk-card.v2 .s2-desc{flex:none;font-size:1.55cqw;line-height:1.12;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sk-card.v2 .s2-desc:empty{display:none}
+.sk-card.v2 .tp-chips{position:static;flex:none;display:flex;flex-wrap:nowrap;gap:.4cqw;overflow:hidden;max-width:100%}
+.sk-card.v2 .tp-chips:empty{display:none}
+.sk-card.v2 .tp-chips .tag{flex:none;height:3.1cqw!important;font-size:1.5cqw!important;padding:0 .7cqw!important;border-width:max(1px,.3cqw)!important}
+.sk-card.v2 .lock{right:3%;bottom:8%}
+.sk-info{font-size:1.4cqw;line-height:1.15;overflow:hidden;font-style:italic;pointer-events:none}
+.sk-info .s2-ico{position:absolute;object-fit:contain;image-rendering:pixelated;padding:4%;box-sizing:border-box;opacity:.85}
+.sk-info>span{position:absolute;right:4%;top:8%;bottom:8%;display:flex;align-items:center;text-align:left}
+/* temas: cor do texto conforme o material do cartao */
+.skm[data-art=mage] .s2-name{color:#24306a}.skm[data-art=mage] .s2-desc{color:#4a3a2a}.skm[data-art=mage] .sk-info{color:#5a4a3a}
+.skm[data-art=mage] .sk-title b{color:#2a1a04;text-shadow:0 .2cqw 0 rgba(255,230,160,.5)}.skm[data-art=mage] .sk-title span{color:#3a2a10}
+.skm[data-art=guerreiro] .s2-name{color:#13234a}.skm[data-art=guerreiro] .s2-desc{color:#272c38}.skm[data-art=guerreiro] .sk-info{color:#d8dce6}
+.skm[data-art=guerreiro] .sk-title b{color:#13234a;text-shadow:0 .2cqw 0 rgba(255,255,255,.45)}.skm[data-art=guerreiro] .sk-title span{color:#2a3040}
+.skm[data-art=tank] .s2-name{color:#ffd27a;text-shadow:0 .2cqw 0 #000}.skm[data-art=tank] .s2-desc{color:#d9e0f0;text-shadow:0 .15cqw 0 #000}.skm[data-art=tank] .sk-info{color:#c9d2e8}
+.skm[data-art=tank] .sk-title b{color:#2a1a08;text-shadow:0 .2cqw 0 rgba(255,220,160,.45)}.skm[data-art=tank] .sk-title span{color:#3a2610}
+.skm[data-art=cleriga] .s2-name{color:#8a1c1c}.skm[data-art=cleriga] .s2-desc{color:#4a3a30}.skm[data-art=cleriga] .sk-info{color:#6a5a4a}
+.skm[data-art=cleriga] .sk-title b{color:#4a2a06;text-shadow:0 .2cqw 0 rgba(255,240,190,.55)}.skm[data-art=cleriga] .sk-title span{color:#5a3a10}
+.sk-card.v2 .tp-chips .tag.mana{order:1}.sk-card.v2 .tp-chips .tag.cd{order:2}.sk-card.v2 .tp-chips .tag.mult{order:3}.sk-card.v2 .tp-chips .tag.attr{order:4}.sk-card.v2 .tp-chips .tag.tipo{order:5}
+.sk-card.v2 .s2-desc{display:none}
+.sk-card.v2 .tp-chips .tag.esp{order:0}
+.skm .sk-title{padding:0 3cqw}
+.sk-card.v2.off .tp-chips .tag:not(.esp){display:none!important}

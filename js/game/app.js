@@ -636,8 +636,11 @@ const timerHtml = (s, cls) => `<i class="hg"></i><span id="vote-timer" class="${
 const attrKind = at => at.attr === 'demon' ? 'demon' : at.attr === 'none' ? 'none' : 'elem';
 const ATTR_ICON = {demon:'assets/ui/icon_chip_demon.png', none:'assets/ui/icon_chip_normal.png', elem:'assets/ui/icon_chip_elem.png'};
 function buildSkillFrame(panel, title, text, at, seconds, note){
-  const M = MENU_META[panel], fr = $('#skm-frame'), L = $('#skm-layer');
-  fr.src = `assets/class-select/menu_${panel}${panel === 'elem' && window.__elemDef ? 'def' : ''}.png`; L.innerHTML = '';
+  // v351: painel com o tema do heroi (elemento = da Maga; alvo = de quem esta escolhendo); cartoes montados pelo jogo
+  const art = panel === 'elem' ? 'mage' : panel === 'target' ? (SKM2[activeGroup] ? activeGroup : 'guerreiro') : panel;
+  const M = Object.assign({v2:true, art}, SKM2[art]), fr = $('#skm-frame'), L = $('#skm-layer');
+  fr.src = `assets/class-select/skm_${art}.png`; L.innerHTML = ''; $('#skill-menu').dataset.art = art;
+  if (panel === 'elem' && !title) { title = 'ESCOLHA O ELEMENTO'; text = window.__elemDef ? 'Escudo elemental' : 'Ataque elemental'; }
   const add = (cls, box, html) => { const d = document.createElement('div'); d.className = cls; d.style.cssText = pc(box, /^sk-timer/.test(cls) ? .7 : 0); d.innerHTML = html; L.appendChild(d); return d; };
   if (M.title) add('sk-title' + (panel === 'target' ? ' t2' : ''), M.title, `<b>${title}</b><span>${text}</span>`);
   const AT = M.attr, vy = AT ? [AT[1] - .4, AT[3] + .8] : null;   // os dois chips ficam na mesma altura (a arte tinha tamanhos diferentes)
@@ -775,6 +778,19 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
         const showD = () => { b.__held = true; if (dsc) dsc.textContent = o.label + ': ' + (o.desc || 'sem descrição'); };
         b.addEventListener('pointerdown', () => { b.__held = false; clearTimeout(ht); ht = setTimeout(showD, 380); });
         ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, () => clearTimeout(ht)));
+      } else if (M && M.v2) {   // v351: cartao montado pelo jogo dentro da vaga da arte (icone na moldura escura, texto ao lado)
+        const [r, c] = o.slot || [2, 0], cd = M.cards[r][c], I = M.ico, used = (M.used = M.used || []); used.push(r * 2 + c);
+        b.className = `sk-card v2 ${o.kind || ''}`; b.style.cssText = pc(cd);
+        const ico = o.face ? `assets/class-select/tp_${o.face}.png` : o.ico ? `assets/skills/${o.ico}.png` : '';
+        let chips = o.chips || '';
+        if (o.kind === 'elem') chips = o.label === ELEMENTS.fire.name ? `<span class="tag holy">BOSS FRACO</span><span class="tag holy">${window.__elemDef ? 'CORTA 55%' : '1,5x QUEIMA'}</span>` : `<span class="tag block">${window.__elemDef ? 'SEM EFEITO' : 'BOSS IMUNE'}</span>`;
+        b.innerHTML = (ico ? `<img class="s2-ico${o.face ? ' face' : ''}" src="${ico}" alt="" style="left:${I[0]}%;top:${I[1]}%;width:${I[2]}%;height:${I[3]}%">` : '') +
+          `<span class="s2-txt" style="left:${I[0] + I[2] + 3}%"><b class="s2-name"></b><span class="s2-desc"></span><span class="tp-chips s2-chips">${chips}</span></span><b class="cnt sk-cnt" style="right:3%;top:8%;width:12%;height:30%">0</b>`;
+        b.querySelector('.s2-name').textContent = o.back ? 'VOLTAR' : o.label.replace(/^ESPECIAL: /, '');
+        if (o.kind === 'ult') b.querySelector('.s2-chips').insertAdjacentHTML('afterbegin', '<span class="tag holy esp">ESPECIAL</span>');
+        b.querySelector('.s2-desc').textContent = o.back ? (o.desc || 'Escolher outra habilidade') : o.kind === 'elem' ? '' : (o.desc || '');
+        b.setAttribute('aria-label', o.label);
+        if (o.block) b.insertAdjacentHTML('beforeend', `<span class="lock">${o.block}</span>`);
       } else if (M) {
         const [r, c] = o.slot || [0, 0], I = M.info, cd = o.back ? I : M.cards[r][c], cn = o.back ? [I[0] + I[2] * .84, I[1] + I[3] * .2, I[2] * .13, I[3] * .6] : M.cnt[r * 2 + c];
         b.className = `sk-card ${o.kind || ''}`; b.style.cssText = pc(cd);
@@ -803,6 +819,12 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       else b.onclick = () => { if (b.__held) { b.__held = false; return; } pick(i); };
       list.appendChild(b); return b;
     });
+    if (M && M.v2) for (let k = 0; k < 6; k++) if (!M.used.includes(k)) {   // vaga sem opcao (elemento, alvo): cartao de informacao, sem toque
+      const d = document.createElement('div'); d.className = 'sk-info'; d.style.cssText = pc(M.cards[k >> 1][k & 1]); const I = M.ico;
+      const ic = panel === 'elem' ? (window.__elemDef ? 'mage_elem_def' : 'mage_elem_atk') : {guerreiro:'guerreiro_pass', tank:'tank_guard', cleriga:'cleriga_ult'}[activeGroup];
+      d.innerHTML = (ic ? `<img class="s2-ico" src="assets/skills/${ic}.png" alt="" style="left:${I[0]}%;top:${I[1]}%;width:${I[2]}%;height:${I[3]}%">` : '') + `<span style="left:${I[0] + I[2] + 3}%"></span>`;
+      d.lastChild.textContent = panel === 'elem' ? (window.__elemDef ? `Escudo do elemento fraco de ${ST.name.split(',')[0]} (${ST.elemDef}) corta 55%; os outros cortam 35%.` : `${ST.name.split(',')[0]}: ${ST.elemTxt}.`) : (text || ''); list.appendChild(d);
+    }
     const total = () => sv.reduce((a, c) => a + c, 0);
     const paint = (final) => btns.forEach((b, i) => { if (options[i].disabled) return; b.querySelector('.cnt').textContent = ''; b.classList.toggle('selected', my === i && !final); });   // sem contagem de votos: um jogador por classe
     const top = () => { const m = Math.max(...sv); return {m, c: sv.map((v, i) => v === m ? i : -1).filter(i => i >= 0)}; };
@@ -818,6 +840,7 @@ function runVote({type, text, options, seconds, side, menu, title, attack, panel
       }
       if (locked) return; if (chest) { my = i; finish(i, false); return; }   // arca: um toque decide
       if (my === i) { finish(i, false); return; }   // 1o toque marca, 2o toque na mesma confirma
+      if (M && M.v2 && options[i].desc && !options[i].back) toast(options[i].label.replace(/^ESPECIAL: /, '') + ': ' + options[i].desc);   // v351: a descricao completa vai para o papiro
       if (my !== null) sv[my]--; sv[i]++; my = i; paint();
     }
     async function finish(idx, tie){
@@ -1095,7 +1118,7 @@ async function chooseTarget(title, text, list, fallback, note, endsAt, field){
     options: HERO_ORDER.map((h, n) => { const it = list.find(x => x.hero === h), ok = it && !it.block;
       return {label:GROUPS[h], desc:it ? it.desc : '', kind:'util hero-' + h, face:h, slot:[n >> 1, n & 1],
         chips: ok ? (it.chips || '') : it && it.block ? `<span class="tag block">${it.block}</span>` : !it && h === activeGroup ? '<span class="tag">VOCÊ</span>' : '', disabled:!ok}; })
-      .concat([{label:'VOLTAR', desc:'Escolher outra habilidade', kind:'back', back:true}])
+      .concat([{label:'VOLTAR', desc:'Escolher outra habilidade', kind:'back', ico:'back', back:true, slot:[2, 0]}])
   });
   hideBanner();
   return r.idx === null ? fallback : r.idx === HERO_ORDER.length ? 'BACK' : HERO_ORDER[r.idx];
@@ -1208,9 +1231,9 @@ async function chooseSkill(k, sh = {}){
     const ult = state.ultReady[k] && ultUsable(k);
     const opts = [];
     // o especial aparece sempre; só dá para escolher depois de acertar uma pergunta rank S/SS
-    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:`<span class="tag">SÓ RANK ${HL}</span>`, disabled:!ult || (ONL.on && !!sh.ult), block:ONL.on && sh.ult ? 'ATIVADO' : ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 ' + HL : 'ACERTE RANK ' + HL)});
-    list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
-    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Escolha a habilidade', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts,
+    opts.push({label:'ESPECIAL: ' + ULT_NAME[k], kind:'ult', ico:k + '_ult', slot:SLOT[k].ult, desc:ULT_INFO[k], chips:`<span class="tag">SÓ RANK ${HL}</span>`, disabled:!ult || (ONL.on && !!sh.ult), block:ONL.on && sh.ult ? 'ATIVADO' : ult ? null : (state.ultReady[k] ? 'SEM ALVO' : (state.ultCd[k] || 0) > 0 ? 'RECARGA 1 ' + HL : 'ACERTE RANK ' + HL)});
+    list.forEach(sk => { const b = skillBlock(k, sk); opts.push({label:sk.name, kind:sk.kind, ico:sk.id === 'dodge' ? 'dodge' : k + '_' + sk.id, slot:SLOT[k][sk.id], desc:sk.desc, chips:skillChips(sk, null), disabled:!!b, block:b}); });
+    const r = await runVote({menu:true, panel:k, title:`VEZ ${ARTICLE[k]} ${GROUPS[k]}`, text:'Toque: ver · de novo: usar', seconds:ACTION_SECONDS, endsAt, attack:at, options:opts,
       net: ONL.on ? onlActNet(ONL.round(), i => onlCountBy(a => i === 0 ? a.ult : a.skill === (list[i - 1] || {}).id)) : null});
     if (r.idx === null) return null;
     if (r.idx === 0 && ONL.on) {   // online: o especial entra na proposta do grupo e e ativado na resolucao
@@ -1231,7 +1254,7 @@ async function chooseSkill(k, sh = {}){
       const r2 = await runVote({
         menu:true, panel:'elem', title:'', text:'', seconds:ACTION_SECONDS, endsAt, attack:at,
         net: ONL.on ? onlActNet(ONL.round(), i => i < 4 ? onlCountBy(a => a.element === els[i]) : 0) : null,
-        options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', slot:[2, 0]}])
+        options: els.map((e, n) => ({label:ELEMENTS[e].name, kind:'elem', ico:e, slot:[n >> 1, n & 1]})).concat([{label:'VOLTAR', kind:'back', ico:'back', back:true, slot:[2, 0]}])
       });
       if (r2.idx === els.length) continue;           // voltou ao menu de habilidades
       if (r2.idx === null) return null;              // tempo acabou sem decisão no menu de elementos = como não escolher nada
