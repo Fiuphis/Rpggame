@@ -890,7 +890,7 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 #shop-panel .m-stage{left:13.125%;top:29.92%;width:19.375%;height:45.45%;z-index:1}
 #shop-panel .m-port{background:url(../assets/ui/merchant_portrait.png) center/100% 100% no-repeat;image-rendering:pixelated}
 #shop-panel .m-closed{left:0;-webkit-mask-image:none;mask-image:none}
-#shop-panel .m-sign{left:9%;top:-2%;width:82%}
+#shop-panel .m-sign{left:9.7%;top:-2%;width:80.65%}   /* placa 100 px no vao de 124 px: pixel 1:1 com a carroca */
 #shop-panel .m-candle{z-index:3}
 #shop-panel .m-candle.l{left:35.5%;top:32%;width:6%;height:16%}
 #shop-panel .m-candle.r{display:none}
@@ -942,7 +942,7 @@ canvas.hero.frozen{filter:brightness(1.25) saturate(.45) hue-rotate(165deg) drop
 .skm-frame{image-rendering:pixelated}
 .sk-card.v2{overflow:visible}
 .sk-card.v2 .s2-ico{position:absolute;object-fit:contain;image-rendering:pixelated;pointer-events:none;padding:0;box-sizing:border-box}
-.sk-card.v2 .s2-ico.face{padding:0;object-fit:cover}
+.sk-card.v2 .s2-ico.face{padding:0;object-fit:cover;image-rendering:auto}   /* retrato 88 px reduzido no cartao: suave em vez de pular pixel */
 .sk-card.v2 .s2-txt{position:absolute;right:3%;top:6%;bottom:6%;display:flex;flex-direction:column;justify-content:center;gap:.8cqw;overflow:hidden;min-width:0;text-align:left;pointer-events:none}
 .sk-card.v2 .s2-name{flex:none;font:700 2.6cqw/1.05 OpenC,OpenCl,OpenD,'Pixelify Sans',monospace;letter-spacing:.05cqw;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .sk-card.v2 .s2-desc{flex:none;font-size:1.55cqw;line-height:1.12;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
